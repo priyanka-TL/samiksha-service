@@ -1,0 +1,25 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/dist/css/bootstrap.css";
+@import "~font-awesome/css/font-awesome.css";
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+// @import "~font-awesome/scss/font-awesome.scss";
+// @import "~angular-bootstrap-md/scss/bootstrap/bootstrap.scss";
+// @import "~angular-bootstrap-md/scss/mdb-free.scss";
+
+@import "styles-variables";
+
+md-icon {
+  font-family: "Material Icons" !important;
+}
+
+sl-header {
+  nav {
+    width: 100%;
+  }
+
+  @media (min-width: map-get($grid-breakpoints, sm)) {
+    nav {
+      width: 80%;
+    }
+  }
+}

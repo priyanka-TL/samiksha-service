@@ -1,0 +1,31 @@
+.question-container {
+  padding: 15px;
+  // display: flex;
+  // flex-wrap: wrap;
+}
+
+.form-control {
+  margin: 5px 0px;
+}
+
+.question-remove-btn {
+  cursor: pointer;
+}
+
+.question-card {
+  // width: 25%; //calc(25% - 12px);
+  padding: 5px 2px;
+}
+
+.question-card-title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.display-inline {
+  display: inline;
+}
+
+.question-dialog {
+  overflow-y: auto;
+}

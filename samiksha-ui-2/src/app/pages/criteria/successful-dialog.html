@@ -1,0 +1,19 @@
+<div class="question-dialog">
+  <span class="criteria-success">Criteria successfully created</span>
+  <br>
+  <span class="criteria-id-text"> Criteria ID: </span>
+  <br>
+  <div class="criteria-id">
+    <span>{{criteria._id}}</span>
+  </div>
+
+  <div class="bottom">
+    <hr>
+    <button type="button" ngxClipboard [cbContent]="criteria._id" class=" btn btn-outline-dark btn-sm" (click)="save()">
+      copy _id
+    </button>
+    <button type="button" class=" btn btn-outline-dark btn-sm" (click)="cancel()">
+      cancel
+    </button>
+  </div>
+</div>

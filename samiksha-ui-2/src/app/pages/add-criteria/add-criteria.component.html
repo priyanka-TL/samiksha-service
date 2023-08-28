@@ -1,0 +1,290 @@
+<div class="sl-container">
+  <!-- <form (ngSubmit)="submit(criteriaForm)"> -->
+  <div class="form-group">
+    <label for="externalId">External ID </label>
+    <input type="text" class="form-control" [(ngModel)]="criteriaForm.externalId" name="externalId" placeholder="External ID">
+  </div>
+  <div class="form-group">
+    <label for="name">Name </label>
+    <input type="text" class="form-control" [(ngModel)]="criteriaForm.name" name="name" placeholder="Name">
+  </div>
+  <div class="form-group">
+    <label for="description">Description </label>
+    <input type="text" class="form-control" [(ngModel)]="criteriaForm.description" name="description" placeholder="Description">
+  </div>
+  <!-- <div class="form-group">
+    <label for="criteriaType">Criteria Type</label>
+    <select class="form-control" [(ngModel)]="criteriaForm.criteriaType" name="criteriaType">
+      <option value="auto">Auto</option>
+      <option value="manual">Manual</option>
+    </select>
+  </div> -->
+  <div class="form-group">
+    <mat-tab-group dynamicHeight>
+      <mat-tab label="Rubric">
+        <div class="form-group">
+          <label for="name">Name </label>
+          <input type="text" class="form-control" [(ngModel)]="criteriaForm.rubric.name" name="name" placeholder="Name">
+        </div>
+        <div class="form-group">
+          <label for="rubricType">Rubric Type</label>
+          <select class="form-control" [(ngModel)]="criteriaForm.rubric.type" name="rubricType">
+            <option value="auto">Auto</option>
+            <option value="manual">Manual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="rubric-level" *ngFor="let level of criteriaForm.rubric.levels; let i = index ">
+            <mat-accordion>
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    Rubrics data
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    Define Label, Level, Description & conditions.
+                  </mat-panel-description>
+
+                </mat-expansion-panel-header>
+
+                <div class="form-group">
+                  <label for="level">Level </label>
+                  <input type="text" class="form-control" [(ngModel)]="criteriaForm.rubric.levels[i].level" name="level"
+                    placeholder="Level">
+                </div>
+                <div class="form-group">
+                  <label for="label">Label </label>
+                  <input type="text" class="form-control" [(ngModel)]="criteriaForm.rubric.levels[i].label" name="label"
+                    placeholder="Label">
+                </div>
+                <div class="form-group">
+                  <label for="description">Description </label>
+                  <input type="text" class="form-control" [(ngModel)]="criteriaForm.rubric.levels[i].description" name="description"
+                    placeholder="Description">
+                </div>
+                <mat-action-row>
+                  <button mat-button color="warn" (click)="removeLevel(i)" *ngIf="criteriaForm.rubric.levels.length > 1">Remove
+                    This Level</button>
+                  <button mat-button color="primary" (click)="addLevel()">Add New Level</button>
+                </mat-action-row>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Evidence">
+        <div class="form-group">
+          <div *ngFor="let evidence of criteriaForm.evidences ; let i = index">
+            <mat-accordion>
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    Evidences
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    {{criteriaForm.evidences[i].name}}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+
+                <div class="form-group">
+                  <label for="externalId">External ID </label>
+                  <input type="text" class="form-control" [(ngModel)]="criteriaForm.evidences[i].externalId" name="externalId"
+                    placeholder="External ID">
+                </div>
+                <div class="form-group">
+                  <label for="name">Name </label>
+                  <input type="text" class="form-control" [(ngModel)]="criteriaForm.evidences[i].name" name="name"
+                    placeholder="Name">
+                </div>
+                <div class="form-group">
+                  <label for="description">Description </label>
+                  <input type="text" class="form-control" [(ngModel)]="criteriaForm.evidences[i].description" name="description"
+                    placeholder="Description">
+                </div>
+                <div *ngFor="let section of criteriaForm.evidences[i].sections ; let j = index">
+                  <mat-accordion>
+                    <mat-expansion-panel>
+                      <mat-expansion-panel-header>
+                        <mat-panel-title>
+                          Section
+                        </mat-panel-title>
+                        <mat-panel-description>
+                          {{section.name}}
+                        </mat-panel-description>
+                      </mat-expansion-panel-header>
+                      <div class="form-group">
+                        <label for="name">Name </label>
+                        <input type="text" class="form-control" [(ngModel)]="section.name" name="name" placeholder="Name">
+                      </div>
+                      <div *ngFor="let question of criteriaForm.evidences[i].sections[j].questions ; let k = index">
+                        <mat-accordion>
+                          <mat-expansion-panel>
+                            <mat-expansion-panel-header>
+                              <mat-panel-title>
+                                Questions
+                              </mat-panel-title>
+                              <mat-panel-description>
+                                Questions Details
+                              </mat-panel-description>
+                            </mat-expansion-panel-header>
+
+                            <div class="input-group">
+                              <input type="text" class="form-control" [(ngModel)]="question.externalId" placeholder="External ID">
+                            </div>
+                            <hr>
+                            <div class="input-group">
+                              <button type="button" class=" btn btn-outline-dark btn-sm" (click)="addQuestion()">
+                                Add New Question
+                              </button>
+
+                              <div class="input-group mb-3" *ngFor="let option of question.questions ; let i = index">
+                                <input type="text" class="form-control" [(ngModel)]="question.questions[i].value"
+                                  placeholder="Question" aria-label="Question" aria-describedby="questions">
+                                <div class="input-group-append">
+                                  <span class="input-group-text question-remove-btn" id="questions" (click)="removeQuestion(i)">Remove</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="input-group">
+                              <input type="text" class="form-control" [(ngModel)]="question.tip" placeholder="Question Tip">
+                            </div>
+
+                            <div class="input-group">
+                              <div class="form-group">
+                                <label for="responseType">Question Type</label>
+                                <select class="form-control" [(ngModel)]="question.responseType" id="responseType">
+                                  <option value="radio">Radio</option>
+                                  <option value="multiSelect">Multi Select</option>
+                                  <option value="text">Text</option>
+                                  <option value="number">Number</option>
+                                  <option value="Date">Date</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <button type="button" class=" btn btn-outline-dark btn-sm" (click)="addOption()" *ngIf="['multiSelect','radio'].indexOf(question.responseType)> -1 ">
+                                Add New Options
+                              </button>
+                              <div class="question-options-dev" *ngFor="let option of question.options ; let i = index">
+                                <div class="row">
+                                  <div class="col">
+                                    <input type="text" class="form-control" [(ngModel)]="question.options[i].value"
+                                      placeholder="Value">
+                                  </div>
+                                  <div class="col">
+                                    <input type="text" class="form-control" [(ngModel)]="question.options[i].label"
+                                      placeholder="Label">
+                                  </div>
+
+                                  <!-- <div class="col"> -->
+                                  <button type="button" class=" btn btn-outline-dark btn-sm" (click)="removeOption(i)"
+                                    *ngIf="['multiSelect','radio'].indexOf(question.responseType)> -1 ">Remove</button>
+                                  <!-- </div> -->
+                                </div>
+                              </div>
+                            </div>
+
+
+                            <hr>
+                            <div class="input-group">
+                              <mat-checkbox [(ngModel)]="question.file.required">File Required</mat-checkbox>
+                            </div>
+                            <div class="input-group" *ngIf="question.file.required">
+                              <mat-form-field class="col-md-6">
+                                <mat-select [(ngModel)]="question.file.type" placeholder="File Type" multiple>
+                                  <mat-option *ngFor="let type of typeList" [value]="type">{{type}}</mat-option>
+                                </mat-select>
+                              </mat-form-field>
+
+                              <mat-checkbox class="col-md-6" [(ngModel)]="question.file.caption">Caption</mat-checkbox>
+
+                              <!-- </div> -->
+                              <!-- </div> -->
+                              <div class="row">
+                                <div class="col">
+                                  <input type="number" class="form-control" [(ngModel)]="question.file.minCount"
+                                    placeholder="Minimum number of files">
+                                </div>
+                                <div class="col">
+                                  <input type="number" class="form-control" [(ngModel)]="question.file.maxCount"
+                                    placeholder="Maximum number of files">
+                                </div>
+
+                              </div>
+                            </div>
+
+                            <hr>
+                            <div class="input-group">
+                              <label>Validation</label>
+                              <div class="input-group">
+                                <mat-checkbox class="col-md-6" [(ngModel)]="question.validation.required">Answer
+                                  Required</mat-checkbox>
+
+                                <!-- <input type="text" class="form-control" [(ngModel)]="question.validation.required" placeholder="Required"> -->
+                              </div>
+                            </div>
+
+                            <hr>
+                            <div class="input-group">
+                              <div class="form-group">
+                                <label for="questionType">Question Type</label>
+                                <select class="form-control" [(ngModel)]="question.questionType" id="questionType">
+                                  <option value="auto">Auto</option>
+                                  <option value="manual">Manual</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div class="input-group">
+                              <div class="form-group">
+                                <label for="modeOfCollection">Mode of Collection</label>
+                                <select class="form-control" [(ngModel)]="question.modeOfCollection" id="modeOfCollection">
+                                  <option value="onfield">On Field</option>
+                                  <option value="oncall">On Call</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div class="input-group">
+                              <input type="text" class="form-control" [(ngModel)]="question.usedForScoring" placeholder="Used For Scoring">
+                            </div>
+
+                            <div class="input-group">
+                              <mat-form-field class="col-md-6">
+                                <mat-select [(ngModel)]="question.schoolType" placeholder="School Type" multiple>
+                                  <mat-option *ngFor="let type of ['GOVT','PRIVATE']" [value]="type">{{type}}</mat-option>
+                                </mat-select>
+                              </mat-form-field>
+                            </div>
+                            <mat-action-row>
+                              <button mat-button color="warn" (click)="rmQuestion()">Remove Question</button>
+                              <button mat-button color="primary" (click)="addQuestion()">Add Section</button>
+                            </mat-action-row>
+                          </mat-expansion-panel>
+                        </mat-accordion>
+                      </div>
+                      <mat-action-row>
+                        <button mat-button color="warn" (click)="rmSection()">Remove Section</button>
+                        <button mat-button color="primary" (click)="addSection()">Add Section</button>
+                      </mat-action-row>
+                    </mat-expansion-panel>
+                  </mat-accordion>
+                </div>
+                <mat-action-row>
+                  <button mat-button color="warn" (click)="rmEvidence()">Remove Evidence</button>
+                  <button mat-button color="primary" (click)="addEvidence()">Add Evidence</button>
+                </mat-action-row>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+  <!-- </form> -->
+</div>
+
+<br><br>
+<hr>
+<pre>{{criteriaForm | json}}</pre>
