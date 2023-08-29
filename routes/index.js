@@ -84,7 +84,7 @@ module.exports = function (app) {
           });
         }
         if (ENABLE_BUNYAN_LOGGING === 'ON') {
-          loggerObj.info({ resp: result });
+          // loggerObj.info({ resp: result });
         }
 
         if (ENABLE_DEBUG_LOGGING === 'ON') {
@@ -120,8 +120,8 @@ module.exports = function (app) {
           customFields: customFields,
         };
         slackClient.sendExceptionLogMessage(toLogObject);
-        loggerExceptionObj.info(toLogObject);
-        loggerObj.info({ resp: error });
+        // loggerExceptionObj.info(toLogObject);
+        // loggerObj.info({ resp: error });
         log.error('-------------------Response log starts here-------------------');
         log.error(error);
         log.error('-------------------Response log ends here-------------------');

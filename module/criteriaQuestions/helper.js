@@ -160,7 +160,7 @@ function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion) {
 
       let findQuery = {
         $match: {
-          _id: ObjectId(criteriaId),
+          _id: new ObjectId(criteriaId),
           frameworkCriteriaId: { $exists: true },
         },
       };
