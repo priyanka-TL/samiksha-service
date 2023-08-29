@@ -107,9 +107,9 @@ module.exports = function () {
 
   const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper');
 
-  (async () => {
-    await libraryCategoriesHelper.setLibraryCategories();
-  })();
+  // (async () => {
+  //   await libraryCategoriesHelper.setLibraryCategories();
+  // })();
 };
 
 function mkdirp(dir, exist = '', state = 1) {
