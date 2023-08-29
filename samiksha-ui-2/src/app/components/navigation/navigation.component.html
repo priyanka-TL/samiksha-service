@@ -1,0 +1,57 @@
+<div class="col-xs-12 toolBar">
+  <mat-toolbar color="primary">
+    <div class="col-lg-6 col-md-6 col-sm-1 col-xs-1 noMarginPadding">
+      <button
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        (click)="drawer.toggle()"
+        *ngIf="isHandset$ | async"
+      >
+        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+      </button>
+
+      <span *ngIf="!(isHandset$ | async)">Menu</span>
+    </div>
+
+    <div class="col-lg-6 col-md-6 col-sm-11 col-xs-11 noMarginPadding _flex-spaceBetween">
+      <span>{{ headerText }}</span>
+      <!-- <span class="example-spacer"></span> -->
+      <mat-icon class="auth-icon" (click)="logout()" *ngIf="isAuthenticated">verified_user</mat-icon>
+      <a class="text-right" mat-list-item (click)="login()" *ngIf="!isAuthenticated">Login</a>
+      <!-- <a class="text-right" mat-list-item (click)="logout()" *ngIf="isAuthenticated">Logout</a> -->
+    </div>
+  </mat-toolbar>
+</div>
+<div class="col-xs-12 mainDiv">
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav
+      #drawer
+      class="sidenav"
+      fixedInViewport="true"
+      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+      [mode]="(isHandset$ | async) ? 'over' : 'side'"
+      [opened]="!(isHandset$ | async)"
+    >
+      <!-- <mat-toolbar color="primary">Menu</mat-toolbar> -->
+      <mat-nav-list>
+        <a mat-list-item *ngFor="let nav of navMenu" href="{{ nav.url }}">{{ nav.label }}</a>
+      </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content class="col-xs-12">
+      <!-- <mat-toolbar color="primary">
+            <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()" *ngIf="isHandset$ | async">
+              <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            </button>
+            <span>{{headerText}}</span>
+            <span class="example-spacer"></span>
+            <mat-icon class="auth-icon" (click)="logout()" *ngIf="isAuthenticated">verified_user</mat-icon>
+            <a class="text-right" mat-list-item (click)="login()" *ngIf="!isAuthenticated">Login</a>
+             <a class="text-right" mat-list-item (click)="logout()" *ngIf="isAuthenticated">Logout</a> 
+          </mat-toolbar> -->
+      <!-- Add Content Here -->
+
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

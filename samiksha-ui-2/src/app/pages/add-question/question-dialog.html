@@ -1,0 +1,17 @@
+<div class="question-dialog">
+  <span class="question-success">Question successfully created</span>
+  <br />
+  <span class="question-id-text"> Question ID: </span>
+  <br />
+  <div class="question-id">
+    <span>{{question._id}}</span>
+  </div>
+
+  <div class="bottom">
+    <hr />
+    <button type="button" ngxClipboard [cbContent]="question._id" class="btn btn-outline-dark btn-sm" (click)="save()">
+      copy _id
+    </button>
+    <button type="button" class="btn btn-outline-dark btn-sm" (click)="cancel()">cancel</button>
+  </div>
+</div>

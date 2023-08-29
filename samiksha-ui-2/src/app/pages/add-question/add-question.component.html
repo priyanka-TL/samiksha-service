@@ -1,0 +1,324 @@
+<div class="question-container">
+  <div class="form-group">
+    <mat-form-field class="col-md-12">
+      <input
+        type="text"
+        matInput
+        [(ngModel)]="question.payload.criteriaId"
+        placeholder="criteria ID"
+        [matAutocomplete]="criteriaId"
+        [formControl]="myControl"
+      />
+      <mat-autocomplete #criteriaId="matAutocomplete">
+        <mat-option *ngFor="let option of filteredOptions | async" [value]="option.externalId">
+          {{ option.name }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    <mat-form-field class="col-md-6">
+      <mat-select placeholder="Select Evidence" [(ngModel)]="question.payload.evidenceId">
+        <mat-option *ngFor="let evidence of evidences; let i = index" [value]="evidence.externalId">{{
+          evidence.name
+        }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="col-md-6">
+      <mat-select placeholder="Select Sections" [(ngModel)]="question.payload.section">
+        <mat-option *ngFor="let section of sections; let j = index" [value]="section.name">{{
+          section.name
+        }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <hr />
+
+  <div>
+    <mat-form-field class="col-md-6">
+      <input
+        matInput
+        [(ngModel)]="question.instanceParentId"
+        placeholder="Enter Instance Parent External ID"
+        [matAutocomplete]="instanceParentId"
+      />
+      <mat-autocomplete #instanceParentId="matAutocomplete">
+        <mat-option
+          *ngFor="let option of criteriaQuestions?.result?.instanceParentQuestions"
+          [value]="option.externalId"
+        >
+          {{ option.externalId }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field class="col-md-6">
+      <input
+        matInput
+        [(ngModel)]="question.parentId"
+        placeholder="Enter Parent External ID"
+        [matAutocomplete]="parentId"
+      />
+      <mat-autocomplete #parentId="matAutocomplete">
+        <mat-option *ngFor="let option of criteriaQuestions?.result?.questions" [value]="option.externalId">
+          {{ option.externalId }}
+        </mat-option>
+      </mat-autocomplete>
+      <!-- <mat-select placeholder="Select Parent" [(ngModel)]="question.parentId">
+          <mat-option *ngFor="let que of questions;let i = index" [value]="que.externalId" [disabled]="que.externalId==question.externalId">{{que.externalId}}</mat-option>
+        </mat-select> -->
+    </mat-form-field>
+    <mat-form-field class="col-md-3" *ngIf="question.parentId">
+      <mat-select placeholder="Visible If" [(ngModel)]="question.visibleIf[0].operator">
+        <mat-option value="">N.A.</mat-option>
+        <mat-option value="===">Equals</mat-option>
+        <mat-option value=">">Greater than</mat-option>
+        <mat-option value="!==">Not equal</mat-option>
+        <mat-option value=">=">Greater than equal</mat-option>
+        <mat-option value="<=">Less than equals</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="col-md-3" *ngIf="question.visibleIf[0].operator != '' && question.visibleIf[0].operator">
+      <input matInput [(ngModel)]="question.visibleIf[0].value" placeholder="Value" />
+    </mat-form-field>
+  </div>
+  <hr />
+
+  <div class="form-group">
+    <label for="responseType">External ID</label>
+    <input type="text" class="form-control" [(ngModel)]="question.externalId" placeholder="External ID" />
+  </div>
+  <div class="form-group">
+    <!-- <button type="button" class=" btn btn-outline-dark btn-sm" (click)="addQuestion()">
+      Add Question Translation
+    </button> -->
+
+    <div class="form-group">
+      <label for="responseType">Question in english</label>
+      <input type="text" class="form-control" [(ngModel)]="question.question[0]" placeholder="Question in english" />
+    </div>
+    <div class="form-group">
+      <label for="responseType">Question in hindi</label>
+      <input type="text" class="form-control" [(ngModel)]="question.question[1]" placeholder="Question in hindi" />
+    </div>
+  </div>
+  <hr />
+  <div class="form-group">
+    <label for="responseType">Tip</label>
+    <input type="text" class="form-control" [(ngModel)]="question.tip" placeholder="Question Tip" />
+  </div>
+  <hr />
+
+  <div class="form-group">
+    <div class="form-group">
+      <label for="responseType">Question Type</label>
+      <mat-select
+        class="form-control"
+        [(ngModel)]="question.responseType"
+        id="responseType"
+        (selectionChange)="questionType($event.value)"
+      >
+        <mat-option value="radio">MCQ-Only one correct</mat-option>
+        <mat-option value="multiselect">MCQ-More than one correct</mat-option>
+        <mat-option value="text">Data entry-Text</mat-option>
+        <mat-option value="number">Data entry-Number</mat-option>
+        <mat-option value="date">Date</mat-option>
+        <mat-option value="matrix">Instance Type</mat-option>
+      </mat-select>
+    </div>
+  </div>
+
+  <div class="form-group" *ngIf="question.responseType != 'matrix'">
+    <button
+      type="button"
+      class="btn btn-outline-dark btn-sm"
+      (click)="addOption()"
+      *ngIf="['multiselect', 'radio'].indexOf(question.responseType) > -1"
+    >
+      Add New Options
+    </button>
+    <div class="question-options-dev" *ngFor="let option of question.options; let i = index">
+      <div class="row">
+        <div class="col">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="question.options[i].value"
+            placeholder="Value"
+            *ngIf="['multiselect', 'radio'].indexOf(question.responseType) > -1"
+          />
+        </div>
+        <div class="col">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="question.options[i].label"
+            placeholder="Label"
+            *ngIf="['multiselect', 'radio'].indexOf(question.responseType) > -1"
+          />
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-outline-dark btn-sm"
+          (click)="removeOption(i)"
+          *ngIf="['multiselect', 'radio'].indexOf(question.responseType) > -1"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="form-group" *ngIf="question.responseType == 'matrix'">
+    <div class="row">
+      <div class="col">
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="question.instanceIdentifier"
+          placeholder="Instance Identifier"
+        />
+      </div>
+      <div class="col">
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="question.noOfInstances"
+          placeholder="Enter no of meetings
+    recorded"
+        />
+      </div>
+    </div>
+    <br />
+    <div class="row">
+      <div class="col">
+        <textarea
+          class="form-control"
+          placeholder="Select Instance Questions"
+          [(ngModel)]="question.instanceQuestionsString"
+        ></textarea>
+        <!-- <mat-select placeholder="Select Instance Questions" [(ngModel)]="question.instanceQuestions" multiple>
+          <mat-option *ngFor="let que of questions;let i = index" [value]="que.externalId" [disabled]="que.externalId==question.externalId">{{que.externalId}}</mat-option>
+        </mat-select> matInput-->
+      </div>
+    </div>
+  </div>
+
+  <hr />
+  <div class="form-group">
+    <div class="row">
+      <div class="col">
+        <mat-checkbox [(ngModel)]="question.file.required">File Required</mat-checkbox>
+      </div>
+
+      <div class="col" *ngIf="question.file.required">
+        <!-- <mat-checkbox class="col-md-6" [(ngModel)]="question.file.caption">Caption</mat-checkbox> -->
+      </div>
+    </div>
+  </div>
+  <div class="form-group" *ngIf="question.file.required">
+    <!-- <mat-form-field class="col-md-6">
+      <mat-select [(ngModel)]="question.file.type" placeholder="File Type" multiple>
+        <mat-option *ngFor="let type of typeList" [value]="type">{{type}}</mat-option>
+      </mat-select>
+    </mat-form-field> -->
+
+    <div class="row">
+      <div class="col">
+        Minimum number of files
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="question.file.minCount"
+          placeholder="Minimum number of files"
+        />
+      </div>
+      <div class="col">
+        Maximum number of files
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="question.file.maxCount"
+          placeholder="Maximum number of files"
+        />
+      </div>
+    </div>
+  </div>
+
+  <hr />
+  <div class="form-group">
+    <label>Validation</label>
+    <div class="form-group">
+      <mat-checkbox class="col-md-6" [(ngModel)]="question.validation.required">Answer Required</mat-checkbox>
+      <mat-checkbox
+        class="col-md-6"
+        [(ngModel)]="question.validation.isNumber"
+        *ngIf="['multiselect', 'radio'].indexOf(question.responseType) == -1"
+        (change)="question.validation.regex = question.validation.isNumber ? '^[0-9\s]*$' : ''"
+        >Is Number</mat-checkbox
+      >
+      <mat-checkbox [(ngModel)]="question.canBeNotApplicable">Can be not applicable ?</mat-checkbox>
+    </div>
+  </div>
+
+  <hr />
+  <div class="form-group">
+    <div class="form-group">
+      <label for="questionType">Question Group</label>
+      <mat-select class="form-control" [(ngModel)]="question.questionGroup" id="questionType" multiple>
+        <mat-option value="A1">A1 (All)</mat-option>
+        <!-- <mat-option value="A2">A2 (All (if applicable))</mat-option>
+        <mat-option value="A3">A3 (All Govt.)</mat-option>
+        <mat-option value="A4">A4 (All Private)</mat-option>
+        <mat-option value="A5">A5 (All (6th-12th))</mat-option>
+        <mat-option value="A6">A6 (All (Nursery-5th))</mat-option>
+        <mat-option value="A7">A7 (Govt. DOE (6th-12th))</mat-option>
+        <mat-option value="A8">A8 (Private (Nursery-5th))</mat-option>
+        <mat-option value="A9">A9 (Private (Nursery-8th/10th))</mat-option>
+        <mat-option value="A10">A10 (All Aided)</mat-option> -->
+      </mat-select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-group">
+      <label for="modeOfCollection">Mode of Collection</label>
+      <mat-select class="form-control" [(ngModel)]="question.modeOfCollection" id="modeOfCollection">
+        <mat-option value="onfield">On Field</mat-option>
+        <!-- <mat-option value="oncall">On Call</mat-option> -->
+      </mat-select>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="form-group">
+      <label for="rubricLevel">Rubric Level</label>
+      <mat-select class="form-control" [(ngModel)]="question.rubricLevel" id="rubricLevel">
+        <mat-option *ngFor="let level of rubricLevel" value="{{ level }}">{{ level }} </mat-option>
+        <!-- <mat-option value="oncall">On Call</mat-option> -->
+      </mat-select>
+    </div>
+  </div>
+
+  <!-- <div class="form-group">
+    <mat-form-field class="col-md-6">
+      <mat-select [(ngModel)]="question.questionType" placeholder="Question Type">
+        <mat-option value="auto">Auto</mat-option>
+        <mat-option value="Manual">Manual</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div> -->
+  <hr />
+
+  <div class="form-group">
+    <mat-form-field class="col-md-6">
+      <mat-select [(ngModel)]="question.accessibility" placeholder="Accessibility">
+        <mat-option *ngFor="let accessibility of ['local', 'global']" [value]="accessibility">{{
+          accessibility
+        }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-checkbox class="col-md-6" [(ngModel)]="question.showRemarks">Show Remarks</mat-checkbox>
+  </div>
+  <button type="button" class="btn btn-outline-dark btn-sm" (click)="save()">save</button>
+  <button type="button" class="btn btn-outline-dark btn-sm" (click)="cancel()">reset</button>
+</div>
+
+<pre>{{ question | json }}</pre>

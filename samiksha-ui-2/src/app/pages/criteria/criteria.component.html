@@ -1,0 +1,105 @@
+<div class="sl-container">
+  <!-- <form (ngSubmit)="submit(criteria)"> -->
+  <div class="form-group">
+    <label for="externalId">Criteria ID </label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="criteria.externalId"
+      name="externalId"
+      placeholder="Criteria ID"
+    />
+  </div>
+  <div class="form-group">
+    <label for="name">Criteria Name </label>
+    <input type="text" class="form-control" [(ngModel)]="criteria.name" name="name" placeholder="Name" />
+  </div>
+  <div class="form-group">
+    <label for="description">Description </label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="criteria.description"
+      name="description"
+      placeholder="Description"
+    />
+  </div>
+  <!-- <div class="form-group">
+    <label for="criteriaType">Criteria Type</label>
+    <select class="form-control" [(ngModel)]="criteria.criteriaType" name="criteriaType">
+      <option value="auto">Auto</option>
+      <option value="manual">Manual</option>
+    </select>
+  </div> -->
+  <!-- <div class="from-group">
+    <mat-form-field class="col-md-12">
+      <mat-select placeholder="Rubric Levels" [(ngModel)]="levelsSelected" (selectionChange)="pushLevels($event.value)"
+        multiple>
+        <mat-option *ngFor="let level of levels; let i=index" [value]="i">{{level.label}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div> -->
+  <br />
+  <mat-form-field>
+    <mat-label>Number of Rublic Level</mat-label>
+    <mat-select [value]="criteria.rubric.levels.length">
+      <mat-option *ngFor="let level of levelArray" (click)="changeLevelOfRubric(level)" [value]="level">
+        {{ level }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <div class="form-group">
+    <label>Rubric </label>
+    <!-- <hr> -->
+
+    <div class="row _noMarginPadding">
+      <div
+        class="form-group col-md-3 col-lg-3 col-sm-6 col-xs-12"
+        *ngFor="let level of criteria.rubric.levels; let i = index"
+      >
+        <label for="description">{{ level.label }}: Description </label>
+        <textarea
+          class="form-control"
+          [(ngModel)]="level.description"
+          name="description"
+          placeholder="Description"
+          style="min-height: 250px"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="from-group">
+    <mat-form-field class="col-md-12">
+      <mat-select placeholder="Evidence Group" [(ngModel)]="evidencesSelected" (selectionChange)="pushEvidence($event.value)"
+        multiple>
+        <mat-option *ngFor="let evidence of evidences; let i=index" [value]="i">{{evidence.name}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div> -->
+
+  <!-- <div class="from-group" *ngFor="let evidence of criteria.evidences; let i=index">
+    <label class="col-md-3 sl-ev-section" for="criteriaType">{{evidence.name}}</label>
+    <mat-form-field class="col-md-9">
+      <mat-select placeholder="Select Sections" [(ngModel)]="sectionsSelected[i]" (selectionChange)="pushEvidenceSections(i, $event.value)"
+        multiple>
+        <mat-option *ngFor="let section of sections; let j=index" [value]="j">{{section.name}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div> -->
+  <!-- <br> -->
+  <hr />
+  <div class="from-group">
+    <!-- <button class="btn btn-primary float-left" mat-button (click)="submitCriteria()">Submit</button> -->
+    <button class="btn btn-primary float-right" (click)="saveCriteria()">Submit</button>
+  </div>
+  <!-- <mat-card class="question-card"> -->
+
+  <!-- </mat-card> -->
+</div>
+<br />
+<br />
+<br />
+<br />
+<br />
+<hr />
+<pre>{{ criteria | json }}</pre>
