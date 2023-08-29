@@ -830,7 +830,7 @@ module.exports = class SubmissionsHelper {
               completedDate: new Date(),
             },
           );
-          await this.pushCompletedSubmissionForReporting(submissionId);
+          // await this.pushCompletedSubmissionForReporting(submissionId);
           emailClient.pushMailToEmailService(
             emailRecipients,
             messageConstants.apiResponses.SUBMISSION_AUTO_RATING_SUCCESS + ' - ' + submissionId,
@@ -925,46 +925,46 @@ module.exports = class SubmissionsHelper {
    * or not.
    */
 
-  static pushInCompleteSubmissionForReporting(submissionId) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        if (submissionId == '') {
-          throw messageConstants.apiResponses.SUBMISSION_ID_NOT_FOUND;
-        }
+  // static pushInCompleteSubmissionForReporting(submissionId) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       if (submissionId == '') {
+  //         throw messageConstants.apiResponses.SUBMISSION_ID_NOT_FOUND;
+  //       }
 
-        if (typeof submissionId == 'string') {
-          submissionId = ObjectId(submissionId);
-        }
+  //       if (typeof submissionId == 'string') {
+  //         submissionId = ObjectId(submissionId);
+  //       }
 
-        let submissionsDocument = await database.models.submissions
-          .findOne({
-            _id: submissionId,
-            status: { $ne: 'completed' },
-          })
-          .lean();
+  //       let submissionsDocument = await database.models.submissions
+  //         .findOne({
+  //           _id: submissionId,
+  //           status: { $ne: 'completed' },
+  //         })
+  //         .lean();
 
-        if (!submissionsDocument) {
-          throw messageConstants.apiResponses.SUBMISSION_NOT_FOUND + 'or' + SUBMISSION_STATUS_NOT_COMPLETE;
-        }
+  //       if (!submissionsDocument) {
+  //         throw messageConstants.apiResponses.SUBMISSION_NOT_FOUND + 'or' + SUBMISSION_STATUS_NOT_COMPLETE;
+  //       }
 
-        const kafkaMessage = await kafkaClient.pushInCompleteSubmissionToKafka(submissionsDocument);
+  //       const kafkaMessage = await kafkaClient.pushInCompleteSubmissionToKafka(submissionsDocument);
 
-        if (kafkaMessage.status != 'success') {
-          let errorObject = {
-            formData: {
-              submissionId: submissionsDocument._id.toString(),
-              message: kafkaMessage.message,
-            },
-          };
-          slackClient.kafkaErrorAlert(errorObject);
-        }
+  //       if (kafkaMessage.status != 'success') {
+  //         let errorObject = {
+  //           formData: {
+  //             submissionId: submissionsDocument._id.toString(),
+  //             message: kafkaMessage.message,
+  //           },
+  //         };
+  //         slackClient.kafkaErrorAlert(errorObject);
+  //       }
 
-        return resolve(kafkaMessage);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
+  //       return resolve(kafkaMessage);
+  //     } catch (error) {
+  //       return reject(error);
+  //     }
+  //   });
+  // }
 
   /**
    * Delete submission.
@@ -1148,7 +1148,7 @@ module.exports = class SubmissionsHelper {
 
         let submissionDoc = await this.createASubmission(submissionData, userAgent, userId);
 
-        this.pushInCompleteSubmissionForReporting(submissionDoc._id);
+        // this.pushInCompleteSubmissionForReporting(submissionDoc._id);
 
         return resolve({
           message: messageConstants.apiResponses.SUBMISSION_CREATED,
