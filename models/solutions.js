@@ -8,7 +8,7 @@ module.exports = {
     },
     isReusable: {
       type: Boolean,
-      index: true,
+      index: false,
     },
     name: {
       type: String,
