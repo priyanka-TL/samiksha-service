@@ -6,12 +6,12 @@
  */
 
 // Dependencies
-const csv = require("csvtojson");
-const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
-const criteriaHelper = require(MODULES_BASE_PATH + "/criteria/helper");
-const questionsHelper = require(MODULES_BASE_PATH + "/questions/helper");
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
-const observationsHelper = require(MODULES_BASE_PATH + "/observations/helper");
+const csv = require('csvtojson');
+const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
+const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
+const observationsHelper = require(MODULES_BASE_PATH + '/observations/helper');
 
 /**
  * Solutions
@@ -23,7 +23,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   static get name() {
-    return "solutions";
+    return 'solutions';
   }
 
   /**
@@ -77,14 +77,9 @@ module.exports = class Solutions extends Abstract {
           .findOne(findQuery, { themes: 1, levelToScoreMapping: 1, name: 1 })
           .lean();
 
-        let criteriasIdArray = gen.utils.getCriteriaIds(
-          solutionDocument.themes
-        );
+        let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
         let criteriaDocument = await database.models.criteria
-          .find(
-            { _id: { $in: criteriasIdArray } },
-            { name: 1, "rubric.levels": 1 }
-          )
+          .find({ _id: { $in: criteriasIdArray } }, { name: 1, 'rubric.levels': 1 })
           .lean();
 
         let criteriaObject = {};
@@ -100,13 +95,12 @@ module.exports = class Solutions extends Abstract {
             {
               name: eachCriteria.name,
             },
-            levelsDescription
+            levelsDescription,
           );
         });
 
         let responseObject = {};
-        responseObject.heading =
-          "Solution Framework + rubric for - " + solutionDocument.name;
+        responseObject.heading = 'Solution Framework + rubric for - ' + solutionDocument.name;
 
         responseObject.sections = new Array();
 
@@ -115,12 +109,12 @@ module.exports = class Solutions extends Abstract {
         let sectionHeaders = new Array();
 
         sectionHeaders.push({
-          name: "criteriaName",
-          value: "Domain",
+          name: 'criteriaName',
+          value: 'Domain',
         });
 
         for (let k in solutionDocument.levelToScoreMapping) {
-          levelValue[k] = "";
+          levelValue[k] = '';
           sectionHeaders.push({
             name: k,
             value: solutionDocument.levelToScoreMapping[k].label,
@@ -131,9 +125,7 @@ module.exports = class Solutions extends Abstract {
           themes.forEach((theme) => {
             if (theme.children) {
               let hierarchyTrackToUpdate = [...parentData];
-              hierarchyTrackToUpdate.push(
-                _.pick(theme, ["type", "label", "externalId", "name"])
-              );
+              hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
 
               generateCriteriaThemes(theme.children, hierarchyTrackToUpdate);
             } else {
@@ -141,25 +133,21 @@ module.exports = class Solutions extends Abstract {
               let levelObjectFromCriteria = {};
 
               let hierarchyTrackToUpdate = [...parentData];
-              hierarchyTrackToUpdate.push(
-                _.pick(theme, ["type", "label", "externalId", "name"])
-              );
+              hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
 
               theme.criteria.forEach((criteria) => {
                 if (criteriaObject[criteria.criteriaId.toString()]) {
                   Object.keys(levelValue).forEach((eachLevel) => {
-                    levelObjectFromCriteria[eachLevel] =
-                      criteriaObject[criteria.criteriaId.toString()][eachLevel];
+                    levelObjectFromCriteria[eachLevel] = criteriaObject[criteria.criteriaId.toString()][eachLevel];
                   });
 
                   tableData.push(
                     _.merge(
                       {
-                        criteriaName:
-                          criteriaObject[criteria.criteriaId.toString()].name,
+                        criteriaName: criteriaObject[criteria.criteriaId.toString()].name,
                       },
-                      levelObjectFromCriteria
-                    )
+                      levelObjectFromCriteria,
+                    ),
                   );
                 }
               });
@@ -181,7 +169,7 @@ module.exports = class Solutions extends Abstract {
         generateCriteriaThemes(solutionDocument.themes);
 
         let response = {
-          message: "Solution framework + rubric fetched successfully.",
+          message: 'Solution framework + rubric fetched successfully.',
           result: responseObject,
         };
 
@@ -189,8 +177,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -226,9 +213,9 @@ module.exports = class Solutions extends Abstract {
       try {
         if (
           !req.query.frameworkId ||
-          req.query.frameworkId == "" ||
+          req.query.frameworkId == '' ||
           !req.query.entityType ||
-          req.query.entityType == ""
+          req.query.entityType == ''
         ) {
           throw messageConstants.apiResponses.INVALID_PARAMETER;
         }
@@ -251,7 +238,7 @@ module.exports = class Solutions extends Abstract {
             {
               _id: 1,
               name: 1,
-            }
+            },
           )
           .lean();
 
@@ -259,27 +246,20 @@ module.exports = class Solutions extends Abstract {
           throw messageConstants.apiResponses.INVALID_PARAMETER;
         }
 
-        let criteriasIdArray = gen.utils.getCriteriaIds(
-          frameworkDocument.themes
-        );
+        let criteriasIdArray = gen.utils.getCriteriaIds(frameworkDocument.themes);
 
-        let frameworkCriteria = await database.models.criteria
-          .find({ _id: { $in: criteriasIdArray } })
-          .lean();
+        let frameworkCriteria = await database.models.criteria.find({ _id: { $in: criteriasIdArray } }).lean();
 
         let solutionCriteriaToFrameworkCriteriaMap = {};
 
         await Promise.all(
           frameworkCriteria.map(async (criteria) => {
             criteria.frameworkCriteriaId = criteria._id;
-            let newCriteriaId = await database.models.criteria.create(
-              _.omit(criteria, ["_id"])
-            );
+            let newCriteriaId = await database.models.criteria.create(_.omit(criteria, ['_id']));
             if (newCriteriaId._id) {
-              solutionCriteriaToFrameworkCriteriaMap[criteria._id.toString()] =
-                newCriteriaId._id;
+              solutionCriteriaToFrameworkCriteriaMap[criteria._id.toString()] = newCriteriaId._id;
             }
-          })
+          }),
         );
 
         let updateThemes = function (themes) {
@@ -291,14 +271,9 @@ module.exports = class Solutions extends Abstract {
             } else {
               criteriaIdArray = theme.criteria;
               criteriaIdArray.forEach((eachCriteria) => {
-                eachCriteria.criteriaId =
-                  solutionCriteriaToFrameworkCriteriaMap[
-                    eachCriteria.criteriaId.toString()
-                  ]
-                    ? solutionCriteriaToFrameworkCriteriaMap[
-                        eachCriteria.criteriaId.toString()
-                      ]
-                    : eachCriteria.criteriaId;
+                eachCriteria.criteriaId = solutionCriteriaToFrameworkCriteriaMap[eachCriteria.criteriaId.toString()]
+                  ? solutionCriteriaToFrameworkCriteriaMap[eachCriteria.criteriaId.toString()]
+                  : eachCriteria.criteriaId;
                 themeCriteriaToSet.push(eachCriteria);
               });
               theme.criteria = themeCriteriaToSet;
@@ -311,8 +286,7 @@ module.exports = class Solutions extends Abstract {
 
         updateThemes(newSolutionDocument.themes);
 
-        newSolutionDocument.externalId =
-          frameworkDocument.externalId + "-TEMPLATE";
+        newSolutionDocument.externalId = frameworkDocument.externalId + '-TEMPLATE';
 
         newSolutionDocument.frameworkId = frameworkDocument._id;
         newSolutionDocument.frameworkExternalId = frameworkDocument.externalId;
@@ -321,9 +295,7 @@ module.exports = class Solutions extends Abstract {
         newSolutionDocument.entityType = entityTypeDocument.name;
         newSolutionDocument.isReusable = true;
 
-        let newBaseSolutionId = await database.models.solutions.create(
-          _.omit(newSolutionDocument, ["_id"])
-        );
+        let newBaseSolutionId = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 
         let response = {
           message: messageConstants.apiResponses.SOLUTION_GENERATED,
@@ -334,8 +306,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -367,25 +338,17 @@ module.exports = class Solutions extends Abstract {
   async mapEntityToSolution(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let entityIdsFromCSV = await csv().fromString(
-          req.files.entities.data.toString()
-        );
+        let entityIdsFromCSV = await csv().fromString(req.files.entities.data.toString());
 
-        entityIdsFromCSV = entityIdsFromCSV.map((entity) =>
-          ObjectId(entity.entityIds)
-        );
+        entityIdsFromCSV = entityIdsFromCSV.map((entity) => ObjectId(entity.entityIds));
 
-        let entityData = await solutionsHelper.addEntityToSolution(
-          req.params._id,
-          entityIdsFromCSV
-        );
+        let entityData = await solutionsHelper.addEntityToSolution(req.params._id, entityIdsFromCSV);
 
         return resolve(entityData);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -445,22 +408,18 @@ module.exports = class Solutions extends Abstract {
         let headerSequence;
         let themes = await csv()
           .fromString(req.files.themes.data.toString())
-          .on("header", (headers) => {
+          .on('header', (headers) => {
             headerSequence = headers;
           });
 
         let solutionThemes = await solutionsHelper.uploadTheme(
-          "solutions",
+          'solutions',
           solutionDocument._id,
           themes,
-          headerSequence
+          headerSequence,
         );
 
-        for (
-          let pointerToEditTheme = 0;
-          pointerToEditTheme < solutionThemes.length;
-          pointerToEditTheme++
-        ) {
+        for (let pointerToEditTheme = 0; pointerToEditTheme < solutionThemes.length; pointerToEditTheme++) {
           input.push(solutionThemes[pointerToEditTheme]);
         }
 
@@ -468,8 +427,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -507,9 +465,7 @@ module.exports = class Solutions extends Abstract {
           externalId: req.query.solutionExternalId,
         };
 
-        let solutionDocument = await database.models.solutions
-          .findOne(queryObject, { themes: 0 })
-          .lean();
+        let solutionDocument = await database.models.solutions.findOne(queryObject, { themes: 0 }).lean();
 
         if (!solutionDocument) {
           return resolve({
@@ -520,22 +476,16 @@ module.exports = class Solutions extends Abstract {
 
         let solutionMandatoryField = solutionsHelper.mandatoryField();
 
-        Object.keys(solutionMandatoryField).forEach(
-          (eachSolutionMandatoryField) => {
-            if (
-              solutionDocument[eachSolutionMandatoryField] === undefined &&
-              solutionData[eachSolutionMandatoryField] === undefined
-            ) {
-              solutionData[eachSolutionMandatoryField] =
-                solutionMandatoryField[eachSolutionMandatoryField];
-            }
+        Object.keys(solutionMandatoryField).forEach((eachSolutionMandatoryField) => {
+          if (
+            solutionDocument[eachSolutionMandatoryField] === undefined &&
+            solutionData[eachSolutionMandatoryField] === undefined
+          ) {
+            solutionData[eachSolutionMandatoryField] = solutionMandatoryField[eachSolutionMandatoryField];
           }
-        );
+        });
 
-        let updateObject = _.merge(
-          _.omit(solutionDocument, "createdAt"),
-          solutionData
-        );
+        let updateObject = _.merge(_.omit(solutionDocument, 'createdAt'), solutionData);
 
         updateObject.updatedBy = req.userDetails.id;
 
@@ -543,7 +493,7 @@ module.exports = class Solutions extends Abstract {
           {
             _id: solutionDocument._id,
           },
-          updateObject
+          updateObject,
         );
 
         return resolve({
@@ -553,8 +503,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -588,9 +537,7 @@ module.exports = class Solutions extends Abstract {
           externalId: req.query.solutionExternalId,
         };
 
-        let solutionDocument = await database.models.solutions
-          .findOne(queryObject, { _id: 1 })
-          .lean();
+        let solutionDocument = await database.models.solutions.findOne(queryObject, { _id: 1 }).lean();
 
         if (!solutionDocument) {
           return resolve({
@@ -606,16 +553,16 @@ module.exports = class Solutions extends Abstract {
         let solutionUpdateData = req.body;
 
         Object.keys(solutionUpdateData).forEach((solutionData) => {
-          updateObject["$set"][solutionData] = solutionUpdateData[solutionData];
+          updateObject['$set'][solutionData] = solutionUpdateData[solutionData];
         });
 
-        updateObject["$set"]["updatedBy"] = req.userDetails.id;
+        updateObject['$set']['updatedBy'] = req.userDetails.id;
 
         await database.models.solutions.findOneAndUpdate(
           {
             _id: solutionDocument._id,
           },
-          updateObject
+          updateObject,
         );
 
         return resolve({
@@ -625,8 +572,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -661,9 +607,9 @@ module.exports = class Solutions extends Abstract {
           .findOne(
             {
               externalId: req.params._id,
-              scoringSystem: "pointsBasedScoring",
+              scoringSystem: 'pointsBasedScoring',
             },
-            { themes: 1, levelToScoreMapping: 1 }
+            { themes: 1, levelToScoreMapping: 1 },
           )
           .lean();
 
@@ -674,12 +620,10 @@ module.exports = class Solutions extends Abstract {
           });
         }
 
-        let themeData = await csv().fromString(
-          req.files.themes.data.toString()
-        );
+        let themeData = await csv().fromString(req.files.themes.data.toString());
 
         if (!themeData.length > 0) {
-          throw new Error("Bad data.");
+          throw new Error('Bad data.');
         }
 
         let solutionLevelKeys = new Array();
@@ -688,12 +632,11 @@ module.exports = class Solutions extends Abstract {
           solutionLevelKeys.push(level);
         });
 
-        const themesWithRubricDetails =
-          await solutionsHelper.setThemeRubricExpressions(
-            solutionDocument.themes,
-            themeData,
-            solutionLevelKeys
-          );
+        const themesWithRubricDetails = await solutionsHelper.setThemeRubricExpressions(
+          solutionDocument.themes,
+          themeData,
+          solutionLevelKeys,
+        );
 
         if (themesWithRubricDetails.themes) {
           await database.models.solutions.findOneAndUpdate(
@@ -701,7 +644,7 @@ module.exports = class Solutions extends Abstract {
             {
               themes: themesWithRubricDetails.themes,
               flattenedThemes: themesWithRubricDetails.flattenedThemes,
-            }
+            },
           );
         }
 
@@ -718,10 +661,7 @@ module.exports = class Solutions extends Abstract {
         })();
 
         if (!themesWithRubricDetails.csvData) {
-          throw new Error(
-            messageConstants.apiResponses.SOMETHING_WENT_WRONG +
-              "No CSV Data found."
-          );
+          throw new Error(messageConstants.apiResponses.SOMETHING_WENT_WRONG + 'No CSV Data found.');
         }
 
         for (
@@ -736,8 +676,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -773,7 +712,7 @@ module.exports = class Solutions extends Abstract {
             {
               externalId: req.params._id,
             },
-            { themes: 1, levelToScoreMapping: 1, type: 1, subType: 1 }
+            { themes: 1, levelToScoreMapping: 1, type: 1, subType: 1 },
           )
           .lean();
 
@@ -784,12 +723,10 @@ module.exports = class Solutions extends Abstract {
           });
         }
 
-        let criteriaData = await csv().fromString(
-          req.files.criteria.data.toString()
-        );
+        let criteriaData = await csv().fromString(req.files.criteria.data.toString());
 
         if (!criteriaData.length > 0) {
-          throw new Error("Bad data.");
+          throw new Error('Bad data.');
         }
 
         let solutionLevelKeys = new Array();
@@ -801,15 +738,11 @@ module.exports = class Solutions extends Abstract {
         let allCriteriaIdInSolution = new Array();
         let allCriteriaIdWithWeightageInSolution = {};
         let allCriteriaExternalIdToInternalIdMap = {};
-        let allCriteriaInSolution = gen.utils.getCriteriaIdsAndWeightage(
-          solutionDocument.themes
-        );
+        let allCriteriaInSolution = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
 
         allCriteriaInSolution.forEach((eachCriteria) => {
           allCriteriaIdInSolution.push(eachCriteria.criteriaId);
-          allCriteriaIdWithWeightageInSolution[
-            eachCriteria.criteriaId.toString()
-          ] = {
+          allCriteriaIdWithWeightageInSolution[eachCriteria.criteriaId.toString()] = {
             criteriaId: eachCriteria.criteriaId,
             weightage: eachCriteria.weightage,
           };
@@ -829,20 +762,18 @@ module.exports = class Solutions extends Abstract {
               description: 1,
               criteriaType: 1,
               rubric: 1,
-            }
+            },
           )
           .lean();
 
         if (!allCriteriaDocuments || allCriteriaDocuments.length < 1) {
           criteriaData = criteriaData.map(function (criteriaRow) {
-            criteriaRow.status =
-              messageConstants.apiResponses.CRITERIA_NOT_FOUND;
+            criteriaRow.status = messageConstants.apiResponses.CRITERIA_NOT_FOUND;
             return criteriaRow;
           });
         } else {
           allCriteriaDocuments.forEach((criteriaDocument) => {
-            allCriteriaExternalIdToInternalIdMap[criteriaDocument.externalId] =
-              criteriaDocument;
+            allCriteriaExternalIdToInternalIdMap[criteriaDocument.externalId] = criteriaDocument;
           });
         }
 
@@ -855,35 +786,28 @@ module.exports = class Solutions extends Abstract {
             criteriaData.map(async (criteriaRow) => {
               criteriaRow = gen.utils.valueParser(criteriaRow);
 
-              if (
-                !allCriteriaExternalIdToInternalIdMap[criteriaRow.externalId]
-              ) {
-                criteriaRow.status =
-                  messageConstants.apiResponses.INVALID_CRITERIA_ID;
+              if (!allCriteriaExternalIdToInternalIdMap[criteriaRow.externalId]) {
+                criteriaRow.status = messageConstants.apiResponses.INVALID_CRITERIA_ID;
                 allCriteriaRubricUpdatedSuccessfully = false;
                 return criteriaRow;
               }
 
-              const criteriaId =
-                allCriteriaExternalIdToInternalIdMap[criteriaRow.externalId]
-                  ._id;
+              const criteriaId = allCriteriaExternalIdToInternalIdMap[criteriaRow.externalId]._id;
 
-              let criteriaRubricUpdation =
-                await criteriaHelper.setCriteriaRubricExpressions(
-                  criteriaId,
-                  allCriteriaExternalIdToInternalIdMap[criteriaRow.externalId],
-                  criteriaRow,
-                  solutionLevelKeys
-                );
+              let criteriaRubricUpdation = await criteriaHelper.setCriteriaRubricExpressions(
+                criteriaId,
+                allCriteriaExternalIdToInternalIdMap[criteriaRow.externalId],
+                criteriaRow,
+                solutionLevelKeys,
+              );
 
               if (criteriaRubricUpdation.success) {
-                criteriaRow.status = "Success.";
+                criteriaRow.status = 'Success.';
               }
 
               if (
-                criteriaRow.hasOwnProperty("weightage") &&
-                allCriteriaIdWithWeightageInSolution[criteriaId.toString()]
-                  .weightage != criteriaRow.weightage
+                criteriaRow.hasOwnProperty('weightage') &&
+                allCriteriaIdWithWeightageInSolution[criteriaId.toString()].weightage != criteriaRow.weightage
               ) {
                 criteriaWeightageToUpdate.push({
                   criteriaId: criteriaId,
@@ -896,18 +820,17 @@ module.exports = class Solutions extends Abstract {
               }
 
               return criteriaRow;
-            })
+            }),
           );
         }
 
         let updateSubmissions = false;
         if (allCriteriaRubricUpdatedSuccessfully) {
           if (Object.keys(criteriaWeightageToUpdate).length > 0) {
-            const solutionThemes =
-              await solutionsHelper.updateCriteriaWeightageInThemes(
-                solutionDocument.themes,
-                criteriaWeightageToUpdate
-              );
+            const solutionThemes = await solutionsHelper.updateCriteriaWeightageInThemes(
+              solutionDocument.themes,
+              criteriaWeightageToUpdate,
+            );
 
             if (solutionThemes.success && solutionThemes.themes) {
               await database.models.solutions.findOneAndUpdate(
@@ -916,7 +839,7 @@ module.exports = class Solutions extends Abstract {
                   themes: solutionThemes.themes,
                   flattenedThemes: solutionThemes.flattenedThemes,
                   isRubricDriven: true,
-                }
+                },
               );
               updateSubmissions = true;
             }
@@ -926,27 +849,16 @@ module.exports = class Solutions extends Abstract {
         }
 
         if (updateSubmissions) {
-          let criteriaQuestionDocument =
-            await database.models.criteriaQuestions.find({
-              _id: { $in: allCriteriaIdInSolution },
-            });
+          let criteriaQuestionDocument = await database.models.criteriaQuestions.find({
+            _id: { $in: allCriteriaIdInSolution },
+          });
 
           let submissionDocumentCriterias = new Array();
 
           criteriaQuestionDocument.forEach((criteria) => {
-            criteria.weightage =
-              allCriteriaIdWithWeightageInSolution[
-                criteria._id.toString()
-              ].weightage;
+            criteria.weightage = allCriteriaIdWithWeightageInSolution[criteria._id.toString()].weightage;
             submissionDocumentCriterias.push(
-              _.omit(criteria._doc, [
-                "resourceType",
-                "language",
-                "keywords",
-                "concepts",
-                "createdFor",
-                "evidences",
-              ])
+              _.omit(criteria._doc, ['resourceType', 'language', 'keywords', 'concepts', 'createdFor', 'evidences']),
             );
           });
 
@@ -958,20 +870,20 @@ module.exports = class Solutions extends Abstract {
             };
           }
 
-          let submissionCollectionToUpdate = "";
+          let submissionCollectionToUpdate = '';
 
           if (updatedCriteriasObject.$set.criteria) {
-            if (solutionDocument.type == "observation") {
-              submissionCollectionToUpdate = "observationSubmissions";
-            } else if (solutionDocument.type == "assessment") {
-              submissionCollectionToUpdate = "submissions";
+            if (solutionDocument.type == 'observation') {
+              submissionCollectionToUpdate = 'observationSubmissions';
+            } else if (solutionDocument.type == 'assessment') {
+              submissionCollectionToUpdate = 'submissions';
             }
           }
 
-          if (submissionCollectionToUpdate != "") {
+          if (submissionCollectionToUpdate != '') {
             await database.models[submissionCollectionToUpdate].updateMany(
               { solutionId: solutionDocument._id },
-              updatedCriteriasObject
+              updatedCriteriasObject,
             );
           }
         }
@@ -988,11 +900,7 @@ module.exports = class Solutions extends Abstract {
           });
         })();
 
-        for (
-          let pointerToCriteriaRow = 0;
-          pointerToCriteriaRow < criteriaData.length;
-          pointerToCriteriaRow++
-        ) {
+        for (let pointerToCriteriaRow = 0; pointerToCriteriaRow < criteriaData.length; pointerToCriteriaRow++) {
           input.push(criteriaData[pointerToCriteriaRow]);
         }
 
@@ -1000,8 +908,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1093,32 +1000,24 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let findQuery = {
-          status: "active",
+          status: 'active',
           isDeleted: false,
           type: {
-            $in: ["assessment", "observation", "survey"],
+            $in: ['assessment', 'observation', 'survey'],
           },
         };
 
         let validateSolutionId = gen.utils.isValidMongoId(req.params._id);
 
         if (validateSolutionId) {
-          findQuery["_id"] = req.params._id;
+          findQuery['_id'] = req.params._id;
         } else {
-          findQuery["externalId"] = req.params._id;
+          findQuery['externalId'] = req.params._id;
         }
 
-        let projectionFields = [
-          "name",
-          "themes",
-          "evidenceMethods",
-          "questionSequenceByEcm",
-        ];
+        let projectionFields = ['name', 'themes', 'evidenceMethods', 'questionSequenceByEcm'];
 
-        let solutionDocument = await solutionsHelper.solutionDocuments(
-          findQuery,
-          projectionFields
-        );
+        let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projectionFields);
 
         solutionDocument = solutionDocument[0];
 
@@ -1131,28 +1030,22 @@ module.exports = class Solutions extends Abstract {
         let checkEcmSequenceExists = true;
 
         Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
-          if (
-            !(solutionDocument.evidenceMethods[solutionEcm].isActive === false)
-          ) {
+          if (!(solutionDocument.evidenceMethods[solutionEcm].isActive === false)) {
             activeECMCodes.push(solutionEcm);
             activeECMs.push(solutionDocument.evidenceMethods[solutionEcm]);
-            if (solutionEcm["sequenceNo"] == undefined) {
+            if (solutionEcm['sequenceNo'] == undefined) {
               checkEcmSequenceExists = false;
             }
           }
         });
 
         if (checkEcmSequenceExists) {
-          activeECMs = _.sortBy(activeECMs, "sequenceNo");
+          activeECMs = _.sortBy(activeECMs, 'sequenceNo');
         } else {
-          activeECMs.sort((a, b) =>
-            a.name > b.name ? 1 : b.name > a.name ? -1 : 0
-          );
+          activeECMs.sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0));
         }
 
-        let criteriasIdArray = gen.utils.getCriteriaIds(
-          solutionDocument.themes
-        );
+        let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
 
         let criteriaFindQuery = {
           _id: { $in: criteriasIdArray },
@@ -1160,27 +1053,21 @@ module.exports = class Solutions extends Abstract {
         };
 
         let criteriaProjectionArray = [
-          "name",
-          "externalId",
+          'name',
+          'externalId',
           { evidences: { $elemMatch: { code: { $in: activeECMCodes } } } },
         ];
 
-        let allCriteriaDocument = await criteriaHelper.criteriaDocument(
-          criteriaFindQuery,
-          criteriaProjectionArray
-        );
+        let allCriteriaDocument = await criteriaHelper.criteriaDocument(criteriaFindQuery, criteriaProjectionArray);
 
         if (allCriteriaDocument.length < 1) {
           throw new Error(messageConstants.apiResponses.CRITERIA_NOT_FOUND);
         }
 
-        let allQuestionIdsInCrtieria =
-          gen.utils.getAllQuestionId(allCriteriaDocument);
+        let allQuestionIdsInCrtieria = gen.utils.getAllQuestionId(allCriteriaDocument);
 
         if (allQuestionIdsInCrtieria.length < 1) {
-          throw new Error(
-            messageConstants.apiResponses.CRITERIA_QUESTION_NOT_FOUND
-          );
+          throw new Error(messageConstants.apiResponses.CRITERIA_QUESTION_NOT_FOUND);
         }
 
         let allQuestionDocuments = await questionsHelper.questionDocument({
@@ -1198,7 +1085,7 @@ module.exports = class Solutions extends Abstract {
         allQuestionDocuments.forEach((question) => {
           // Remove weightage of each question from being sent to client.
           if (question.weightage) {
-            delete question["weightage"];
+            delete question['weightage'];
           }
 
           // Remove score from each option from being sent to client.
@@ -1210,71 +1097,53 @@ module.exports = class Solutions extends Abstract {
             });
           }
 
-          if (question.responseType === "matrix") {
+          if (question.responseType === 'matrix') {
             matrixQuestions.push(question);
           }
 
-          questionMapOfExternalIdToInternalId[question.externalId] =
-            question._id.toString();
+          questionMapOfExternalIdToInternalId[question.externalId] = question._id.toString();
           questionMapByInternalId[question._id.toString()] = question;
         });
 
         matrixQuestions.forEach((matrixQuestion) => {
           for (
             let pointerToInstanceQuestionsArray = 0;
-            pointerToInstanceQuestionsArray <
-            matrixQuestion.instanceQuestions.length;
+            pointerToInstanceQuestionsArray < matrixQuestion.instanceQuestions.length;
             pointerToInstanceQuestionsArray++
           ) {
             const instanceChildQuestionId =
-              matrixQuestion.instanceQuestions[
-                pointerToInstanceQuestionsArray
-              ].toString();
+              matrixQuestion.instanceQuestions[pointerToInstanceQuestionsArray].toString();
             if (questionMapByInternalId[instanceChildQuestionId]) {
-              matrixQuestion.instanceQuestions[
-                pointerToInstanceQuestionsArray
-              ] = _.cloneDeep(questionMapByInternalId[instanceChildQuestionId]);
+              matrixQuestion.instanceQuestions[pointerToInstanceQuestionsArray] = _.cloneDeep(
+                questionMapByInternalId[instanceChildQuestionId],
+              );
               delete questionMapByInternalId[instanceChildQuestionId];
             }
           }
-          questionMapByInternalId[matrixQuestion._id.toString()] =
-            matrixQuestion;
+          questionMapByInternalId[matrixQuestion._id.toString()] = matrixQuestion;
         });
 
         let questionList = new Array();
 
         if (solutionDocument.questionSequenceByEcm) {
-          for (
-            let pointerToActiveECMs = 0;
-            pointerToActiveECMs < activeECMs.length;
-            pointerToActiveECMs++
-          ) {
+          for (let pointerToActiveECMs = 0; pointerToActiveECMs < activeECMs.length; pointerToActiveECMs++) {
             const ecmCode = activeECMs[pointerToActiveECMs];
             if (solutionDocument.questionSequenceByEcm[ecmCode]) {
               for (const [sectionCode, sectionQuestionIds] of Object.entries(
-                solutionDocument.questionSequenceByEcm[ecmCode]
+                solutionDocument.questionSequenceByEcm[ecmCode],
               )) {
                 for (
                   let pointerToSectionQuestions = 0;
                   pointerToSectionQuestions < sectionQuestionIds.length;
                   pointerToSectionQuestions++
                 ) {
-                  const externalId =
-                    sectionQuestionIds[pointerToSectionQuestions];
+                  const externalId = sectionQuestionIds[pointerToSectionQuestions];
                   if (
                     questionMapOfExternalIdToInternalId[externalId] &&
-                    questionMapByInternalId[
-                      questionMapOfExternalIdToInternalId[externalId]
-                    ]
+                    questionMapByInternalId[questionMapOfExternalIdToInternalId[externalId]]
                   ) {
-                    questionList.push(
-                      questionMapByInternalId[
-                        questionMapOfExternalIdToInternalId[externalId]
-                      ]
-                    );
-                    delete questionMapByInternalId[
-                      questionMapOfExternalIdToInternalId[externalId]
-                    ];
+                    questionList.push(questionMapByInternalId[questionMapOfExternalIdToInternalId[externalId]]);
+                    delete questionMapByInternalId[questionMapOfExternalIdToInternalId[externalId]];
                   }
                 }
               }
@@ -1293,8 +1162,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1350,18 +1218,17 @@ module.exports = class Solutions extends Abstract {
           req.query.solutionId,
           req.body.programExternalId,
           req.userDetails.id,
-          _.omit(req.body, ["programExternalId"])
+          _.omit(req.body, ['programExternalId']),
         );
 
         return resolve({
           message: messageConstants.apiResponses.DUPLICATE_SOLUTION,
-          result: _.pick(duplicateSolution, ["_id"]),
+          result: _.pick(duplicateSolution, ['_id']),
         });
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1398,16 +1265,12 @@ module.exports = class Solutions extends Abstract {
   async delete(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solution = await solutionsHelper.delete(
-          req.params._id,
-          req.userDetails.userId
-        );
+        let solution = await solutionsHelper.delete(req.params._id, req.userDetails.userId);
         return resolve(solution);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1443,16 +1306,12 @@ module.exports = class Solutions extends Abstract {
   async moveToTrash(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let trashSolution = await solutionsHelper.moveToTrash(
-          req.params._id,
-          req.userDetails.userId
-        );
+        let trashSolution = await solutionsHelper.moveToTrash(req.params._id, req.userDetails.userId);
         return resolve(trashSolution);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1488,16 +1347,12 @@ module.exports = class Solutions extends Abstract {
   async restoreFromTrash(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let restoreSolution = await solutionsHelper.restoreFromTrash(
-          req.params._id,
-          req.userDetails.userId
-        );
+        let restoreSolution = await solutionsHelper.restoreFromTrash(req.params._id, req.userDetails.userId);
         return resolve(restoreSolution);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1547,8 +1402,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1585,16 +1439,12 @@ module.exports = class Solutions extends Abstract {
   async removeFromHomeScreen(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let removeSolution = await solutionsHelper.removeFromHome(
-          req.params._id,
-          req.userDetails.userId
-        );
+        let removeSolution = await solutionsHelper.removeFromHome(req.params._id, req.userDetails.userId);
         return resolve(removeSolution);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1632,17 +1482,12 @@ module.exports = class Solutions extends Abstract {
   async getObservationSolutionLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let observationSolutionDetails =
-          await observationsHelper.getObservationLink(
-            req.params._id,
-            req.query.appName
-          );
+        let observationSolutionDetails = await observationsHelper.getObservationLink(req.params._id, req.query.appName);
         return resolve(observationSolutionDetails);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1719,15 +1564,14 @@ module.exports = class Solutions extends Abstract {
           req.params._id,
           req.rspObj.userToken,
           req.userDetails.userId,
-          req.body
+          req.body,
         );
 
         return resolve(result);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1765,17 +1609,13 @@ module.exports = class Solutions extends Abstract {
   async addEntities(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.addEntityToSolution(
-          req.params._id,
-          req.body.entities
-        );
+        let solutionData = await solutionsHelper.addEntityToSolution(req.params._id, req.body.entities);
 
         return resolve(solutionData);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1876,8 +1716,7 @@ module.exports = class Solutions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1915,17 +1754,13 @@ module.exports = class Solutions extends Abstract {
   async removeEntities(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.removeEntities(
-          req.params._id,
-          req.body.entities
-        );
+        let solutionData = await solutionsHelper.removeEntities(req.params._id, req.body.entities);
 
         return resolve(solutionData);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1959,16 +1794,12 @@ module.exports = class Solutions extends Abstract {
   async deleteCriteria(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionThemes = await solutionsHelper.deleteCriteria(
-          req.params._id,
-          req.body.criteriaIds
-        );
+        let solutionThemes = await solutionsHelper.deleteCriteria(req.params._id, req.body.criteriaIds);
         return resolve(solutionThemes);
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }

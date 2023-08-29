@@ -5,20 +5,20 @@
  * Description : App configurations.
  */
 
- /**
-    * Configurations
-    * @class
-*/
+/**
+ * Configurations
+ * @class
+ */
 module.exports = class Configurations extends Abstract {
-    constructor() {
-        super(configurationsSchema);
-    }
+  constructor() {
+    super(configurationsSchema);
+  }
 
-    static get name() {
-        return "configurations";
-    }
+  static get name() {
+    return 'configurations';
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/configurations/navigation Navigation configurations
     * @apiVersion 1.0.0
     * @apiName Navigation configurations
@@ -50,45 +50,46 @@ module.exports = class Configurations extends Abstract {
     ]
     */
 
-      /**
-      * App navigation links.
-      * @method
-      * @name navigation
-      * @param {Object} req - All requested Data.
-      * @param {Array} req.userDetails.allRoles - Array of loggedin useer roles
-      * @returns {JSON} returns a navigation action required for samiksha app.
-     */
+  /**
+   * App navigation links.
+   * @method
+   * @name navigation
+   * @param {Object} req - All requested Data.
+   * @param {Array} req.userDetails.allRoles - Array of loggedin useer roles
+   * @returns {JSON} returns a navigation action required for samiksha app.
+   */
 
-    async navigation(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                _.pull(req.userDetails.allRoles, 'PUBLIC');
-                const userRole = req.userDetails.allRoles[0];
-                if (!userRole) {
-                    return resolve({
-                        status: httpStatusCode.bad_request.status,
-                        message: httpStatusCode.bad_request.message
-                    });
-                }
-                let tabControlsDocument = await database.models.configurations.findOne({ name: 'navigation' }).lean();
-                if (!tabControlsDocument) {
-                    return resolve({
-                        status: httpStatusCode.bad_request.status,
-                        message: messageConstants.apiResponses.CONFIGURATIONS_NOT_FOUND
-                    });
-                }
-                return resolve({
-                    message: messageConstants.apiResponses.CONFIGURATIONS_FETCHED,
-                    result: tabControlsDocument.result.tabGroups[userRole] ? tabControlsDocument.result.tabGroups[userRole] : tabControlsDocument.result.tabGroups["DEFAULT"]
-                });
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
+  async navigation(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        _.pull(req.userDetails.allRoles, 'PUBLIC');
+        const userRole = req.userDetails.allRoles[0];
+        if (!userRole) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: httpStatusCode.bad_request.message,
+          });
+        }
+        let tabControlsDocument = await database.models.configurations.findOne({ name: 'navigation' }).lean();
+        if (!tabControlsDocument) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.CONFIGURATIONS_NOT_FOUND,
+          });
+        }
+        return resolve({
+          message: messageConstants.apiResponses.CONFIGURATIONS_FETCHED,
+          result: tabControlsDocument.result.tabGroups[userRole]
+            ? tabControlsDocument.result.tabGroups[userRole]
+            : tabControlsDocument.result.tabGroups['DEFAULT'],
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

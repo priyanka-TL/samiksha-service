@@ -7,11 +7,10 @@
 
 // Dependencies
 
-const librarySearchHelper = require(MODULES_BASE_PATH + "/library/search/helper");
+const librarySearchHelper = require(MODULES_BASE_PATH + '/library/search/helper');
 
 module.exports = class Search {
-
-     /**
+  /**
     * @api {get} /assessment/api/v1/library/search/solutions?search=:searchText&limit=1&page=1 Search library solutions.
     * @apiVersion 1.0.0
     * @apiName Search library solutions
@@ -37,33 +36,26 @@ module.exports = class Search {
     }
     */
 
-      /**
-      * Search library solutions
-      * @method
-      * @name solutions
-      * @returns {JSON} returns a list of searched library solutions.
-     */
+  /**
+   * Search library solutions
+   * @method
+   * @name solutions
+   * @returns {JSON} returns a list of searched library solutions.
+   */
 
-    async solutions(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let librarySolutions = 
-                await librarySearchHelper.search(
-                    req.searchText,
-                    req.pageSize, 
-                    req.pageNo
-                );
+  async solutions(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let librarySolutions = await librarySearchHelper.search(req.searchText, req.pageSize, req.pageNo);
 
-                return resolve(librarySolutions);
-
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-}
+        return resolve(librarySolutions);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+};

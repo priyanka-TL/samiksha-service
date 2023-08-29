@@ -6,15 +6,14 @@
  */
 
 // Dependencies
-const staticLinksHelper = require(MODULES_BASE_PATH + "/staticLinks/helper")
-const v1StaticLinks = require(ROOT_PATH + "/controllers/v1/staticLinksController");
+const staticLinksHelper = require(MODULES_BASE_PATH + '/staticLinks/helper');
+const v1StaticLinks = require(ROOT_PATH + '/controllers/v1/staticLinksController');
 
 /**
-    * StaticLinks
-    * @class
-*/
+ * StaticLinks
+ * @class
+ */
 module.exports = class StaticLinks extends v1StaticLinks {
-
   /**
   * @api {get} /assessment/api/v2/staticLinks/list Static Link list
   * @apiVersion 1.0.0
@@ -60,38 +59,30 @@ module.exports = class StaticLinks extends v1StaticLinks {
   * @apiUse errorBody
   */
 
-    /**
+  /**
    * List static links.
    * @method
    * @name list
-   * @returns {Array} List of all static links. 
+   * @returns {Array} List of all static links.
    */
 
   list(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let result = await staticLinksHelper.list(
           req.headers.apptype,
           req.headers.appname,
-          messageConstants.common.VERSION_2
+          messageConstants.common.VERSION_2,
         );
 
         return resolve(result);
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
-
 };

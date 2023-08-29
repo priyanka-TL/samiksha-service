@@ -6,9 +6,9 @@
  */
 
 // Dependencies
-const csv = require("csvtojson");
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
-const criteriaHelper = require(MODULES_BASE_PATH + "/criteria/helper");
+const csv = require('csvtojson');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
+const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 
 /**
  * Criteria
@@ -20,7 +20,7 @@ module.exports = class Criteria extends Abstract {
   }
 
   static get name() {
-    return "criteria";
+    return 'criteria';
   }
 
   /**
@@ -51,9 +51,7 @@ module.exports = class Criteria extends Abstract {
           throw messageConstants.apiResponses.CRITERIA_FILE_NOT_FOUND;
         }
 
-        let criteriaData = await csv().fromString(
-          req.files.criteria.data.toString()
-        );
+        let criteriaData = await csv().fromString(req.files.criteria.data.toString());
 
         const fileName = `Criteria-Upload`;
         let fileStream = new FileStream(fileName);
@@ -67,11 +65,7 @@ module.exports = class Criteria extends Abstract {
           });
         })();
 
-        let updatedCriteria = await criteriaHelper.upload(
-          criteriaData,
-          req.userDetails.id,
-          req.userDetails.userToken
-        );
+        let updatedCriteria = await criteriaHelper.upload(criteriaData, req.userDetails.id, req.userDetails.userToken);
 
         if (updatedCriteria.length > 0) {
           updatedCriteria.forEach((criteria) => {
@@ -83,8 +77,7 @@ module.exports = class Criteria extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -159,19 +152,16 @@ module.exports = class Criteria extends Abstract {
       try {
         let criteriaData = await criteriaHelper.update(
           req.query.externalId,
-          req.query.frameworkIdExists
-            ? Boolean(req.query.frameworkIdExists)
-            : false,
+          req.query.frameworkIdExists ? Boolean(req.query.frameworkIdExists) : false,
           req.body,
-          req.userDetails.id
+          req.userDetails.id,
         );
 
         return resolve(criteriaData);
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }

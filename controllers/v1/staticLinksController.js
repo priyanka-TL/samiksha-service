@@ -6,21 +6,21 @@
  */
 
 // Dependencies
-const csv = require("csvtojson");
-const staticLinksHelper = require(MODULES_BASE_PATH + "/staticLinks/helper")
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
+const csv = require('csvtojson');
+const staticLinksHelper = require(MODULES_BASE_PATH + '/staticLinks/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
 
 /**
-    * StaticLinks
-    * @class
-*/
+ * StaticLinks
+ * @class
+ */
 module.exports = class StaticLinks extends Abstract {
   constructor() {
     super(staticLinksSchema);
   }
 
   static get name() {
-    return "staticLinks";
+    return 'staticLinks';
   }
 
   /**
@@ -49,64 +49,52 @@ module.exports = class StaticLinks extends Abstract {
   * @apiUse errorBody
   */
 
-    /**
+  /**
    * List static links.
    * @method
    * @name list
-   * @returns {Array} List of all static links. 
+   * @returns {Array} List of all static links.
    */
 
   list(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
-        let result = await staticLinksHelper.list(
-          req.headers.apptype,
-          req.headers.appname
-        )
+        let result = await staticLinksHelper.list(req.headers.apptype, req.headers.appname);
 
         return resolve(result);
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
 
   /**
-  * @api {post} /assessment/api/v1/staticLinks/bulkCreate Upload Static Links Information CSV
-  * @apiVersion 1.0.0
-  * @apiName Upload Static Links Information CSV
-  * @apiGroup Static Links
-  * @apiParam {File} staticLinks Mandatory static links file of type CSV.
-  * @apiSampleRequest /assessment/api/v1/staticLinks/bulkCreate
-  * @apiUse successBody
-  * @apiUse errorBody
-  */
+   * @api {post} /assessment/api/v1/staticLinks/bulkCreate Upload Static Links Information CSV
+   * @apiVersion 1.0.0
+   * @apiName Upload Static Links Information CSV
+   * @apiGroup Static Links
+   * @apiParam {File} staticLinks Mandatory static links file of type CSV.
+   * @apiSampleRequest /assessment/api/v1/staticLinks/bulkCreate
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-   /**
+  /**
    * Create bulk static links via csv.
    * @method
    * @name bulkCreate
    * @param {Object} req - request data.
-   * @param {CSV} req.files.staticLinks - static links data. 
-   * @returns {CSV} 
+   * @param {CSV} req.files.staticLinks - static links data.
+   * @returns {CSV}
    */
 
   bulkCreate(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let staticLinksCSVData = await csv().fromString(req.files.staticLinks.data.toString());
 
         if (!staticLinksCSVData || staticLinksCSVData.length < 1) {
@@ -116,7 +104,6 @@ module.exports = class StaticLinks extends Abstract {
         let newStaticLinkData = await staticLinksHelper.bulkCreate(staticLinksCSVData, req.userDetails);
 
         if (newStaticLinkData.length > 0) {
-
           const fileName = `StaticLink-Upload`;
           let fileStream = new FileStream(fileName);
           let input = fileStream.initStream();
@@ -125,59 +112,53 @@ module.exports = class StaticLinks extends Abstract {
             await fileStream.getProcessorPromise();
             return resolve({
               isResponseAStream: true,
-              fileNameWithPath: fileStream.fileNameWithPath()
+              fileNameWithPath: fileStream.fileNameWithPath(),
             });
-          }());
+          })();
 
-          await Promise.all(newStaticLinkData.map(async staticLink => {
-            input.push(staticLink);
-          }))
+          await Promise.all(
+            newStaticLinkData.map(async (staticLink) => {
+              input.push(staticLink);
+            }),
+          );
 
           input.push(null);
-
         } else {
           throw messageConstants.apiResponses.SOMETHING_WENT_WRONG;
         }
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
 
   /**
-  * @api {post} /assessment/api/v1/staticLinks/bulkUpdate Upload Static Links Information CSV
-  * @apiVersion 1.0.0
-  * @apiName Upload Static Links Information CSV
-  * @apiGroup Static Links
-  * @apiParam {File} staticLinks     Mandatory static links file of type CSV.
-  * @apiSampleRequest /assessment/api/v1/staticLinks/bulkUpdate
-  * @apiUse successBody
-  * @apiUse errorBody
-  */
+   * @api {post} /assessment/api/v1/staticLinks/bulkUpdate Upload Static Links Information CSV
+   * @apiVersion 1.0.0
+   * @apiName Upload Static Links Information CSV
+   * @apiGroup Static Links
+   * @apiParam {File} staticLinks     Mandatory static links file of type CSV.
+   * @apiSampleRequest /assessment/api/v1/staticLinks/bulkUpdate
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-   /**
+  /**
    * Upsate bulk static links via csv.
    * @method
    * @name bulkUpdate
    * @param {Object} req - request data.
-   * @param {CSV} req.files.staticLinks - static links data. 
-   * @returns {CSV} 
+   * @param {CSV} req.files.staticLinks - static links data.
+   * @returns {CSV}
    */
 
   bulkUpdate(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let staticLinksCSVData = await csv().fromString(req.files.staticLinks.data.toString());
 
         if (!staticLinksCSVData || staticLinksCSVData.length < 1) {
@@ -187,7 +168,6 @@ module.exports = class StaticLinks extends Abstract {
         let newStaticLinkData = await staticLinksHelper.bulkUpdate(staticLinksCSVData, req.userDetails);
 
         if (newStaticLinkData.length > 0) {
-
           const fileName = `StaticLink-Upload`;
           let fileStream = new FileStream(fileName);
           let input = fileStream.initStream();
@@ -196,32 +176,27 @@ module.exports = class StaticLinks extends Abstract {
             await fileStream.getProcessorPromise();
             return resolve({
               isResponseAStream: true,
-              fileNameWithPath: fileStream.fileNameWithPath()
+              fileNameWithPath: fileStream.fileNameWithPath(),
             });
-          }());
+          })();
 
-          await Promise.all(newStaticLinkData.map(async staticLink => {
-            input.push(staticLink);
-          }))
+          await Promise.all(
+            newStaticLinkData.map(async (staticLink) => {
+              input.push(staticLink);
+            }),
+          );
 
           input.push(null);
-
         } else {
           throw messageConstants.apiResponses.SOMETHING_WENT_WRONG;
         }
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
-
 };

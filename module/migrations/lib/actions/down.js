@@ -1,13 +1,13 @@
-const _ = require("lodash");
-const fnArgs = require("fn-args");
-const { promisify } = require("util");
-const status = require("./status");
-const migrationsDir = require("../env/migrationsDir");
+const _ = require('lodash');
+const fnArgs = require('fn-args');
+const { promisify } = require('util');
+const status = require('./status');
+const migrationsDir = require('../env/migrationsDir');
 
-module.exports = async db => {
+module.exports = async (db) => {
   const downgraded = [];
   const statusItems = await status(db);
-  const appliedItems = statusItems.filter(item => item.appliedAt !== "PENDING");
+  const appliedItems = statusItems.filter((item) => item.appliedAt !== 'PENDING');
   const lastAppliedItem = _.last(appliedItems);
 
   if (lastAppliedItem) {
@@ -17,12 +17,10 @@ module.exports = async db => {
       const down = args.length > 1 ? promisify(migration.down) : migration.down;
       await down(db);
     } catch (err) {
-      throw new Error(
-        `Could not migrate down ${lastAppliedItem.fileName}: ${err.message}`
-      );
+      throw new Error(`Could not migrate down ${lastAppliedItem.fileName}: ${err.message}`);
     }
-  
-    const collectionName = process.env.MIGRATION_COLLECTION || "migrations";
+
+    const collectionName = process.env.MIGRATION_COLLECTION || 'migrations';
     const collection = db.collection(collectionName);
     try {
       await collection.deleteOne({ fileName: lastAppliedItem.fileName });

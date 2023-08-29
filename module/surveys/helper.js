@@ -6,28 +6,24 @@
  */
 
 // Dependencies
-const programsHelper = require(MODULES_BASE_PATH + "/programs/helper");
-const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
-const criteriaHelper = require(MODULES_BASE_PATH + "/criteria/helper");
-const shikshalokamHelper = require(MODULES_BASE_PATH + "/shikshalokam/helper");
-const kafkaClient = require(ROOT_PATH +
-  "/generics/helpers/kafkaCommunications");
-const slackClient = require(ROOT_PATH +
-  "/generics/helpers/slackCommunications");
-const assessmentsHelper = require(MODULES_BASE_PATH + "/assessments/helper");
-const surveySubmissionsHelper = require(MODULES_BASE_PATH +
-  "/surveySubmissions/helper");
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
+const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
+const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
+const slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications');
+const assessmentsHelper = require(MODULES_BASE_PATH + '/assessments/helper');
+const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
 const appsPortalBaseUrl =
-  process.env.APP_PORTAL_BASE_URL && process.env.APP_PORTAL_BASE_URL !== ""
-    ? process.env.APP_PORTAL_BASE_URL + "/"
-    : "https://apps.shikshalokam.org/";
-const criteriaQuestionsHelper = require(MODULES_BASE_PATH +
-  "/criteriaQuestions/helper");
-const kendraService = require(ROOT_PATH + "/generics/services/kendra");
-const surveySolutionTemplate = "-SURVEY-TEMPLATE";
-const surveyAndFeedback = "SF";
-const questionsHelper = require(MODULES_BASE_PATH + "/questions/helper");
-const userRolesHelper = require(MODULES_BASE_PATH + "/userRoles/helper");
+  process.env.APP_PORTAL_BASE_URL && process.env.APP_PORTAL_BASE_URL !== ''
+    ? process.env.APP_PORTAL_BASE_URL + '/'
+    : 'https://apps.shikshalokam.org/';
+const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
+const kendraService = require(ROOT_PATH + '/generics/services/kendra');
+const surveySolutionTemplate = '-SURVEY-TEMPLATE';
+const surveyAndFeedback = 'SF';
+const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
+const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 
 /**
  * SurveysHelper
@@ -45,25 +41,20 @@ module.exports = class SurveysHelper {
    * @returns {Array} List of surveys.
    */
 
-  static surveyDocuments(
-    surveyFilter = "all",
-    fieldsArray = "all",
-    sortedData = "all",
-    skipFields = "none"
-  ) {
+  static surveyDocuments(surveyFilter = 'all', fieldsArray = 'all', sortedData = 'all', skipFields = 'none') {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = surveyFilter != "all" ? surveyFilter : {};
+        let queryObject = surveyFilter != 'all' ? surveyFilter : {};
 
         let projection = {};
 
-        if (fieldsArray != "all") {
+        if (fieldsArray != 'all') {
           fieldsArray.forEach((field) => {
             projection[field] = 1;
           });
         }
 
-        if (skipFields !== "none") {
+        if (skipFields !== 'none') {
           skipFields.forEach((field) => {
             projection[field] = 0;
           });
@@ -71,15 +62,10 @@ module.exports = class SurveysHelper {
 
         let surveyDocuments;
 
-        if (sortedData !== "all") {
-          surveyDocuments = await database.models.surveys
-            .find(queryObject, projection)
-            .sort(sortedData)
-            .lean();
+        if (sortedData !== 'all') {
+          surveyDocuments = await database.models.surveys.find(queryObject, projection).sort(sortedData).lean();
         } else {
-          surveyDocuments = await database.models.surveys
-            .find(queryObject, projection)
-            .lean();
+          surveyDocuments = await database.models.surveys.find(queryObject, projection).lean();
         }
 
         return resolve(surveyDocuments);
@@ -127,7 +113,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - solutionId.
    */
 
-  static createSolutionTemplate(solutionData, userId = "") {
+  static createSolutionTemplate(solutionData, userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
         if (!solutionData.name) {
@@ -135,18 +121,14 @@ module.exports = class SurveysHelper {
         }
 
         if (!solutionData.externalId) {
-          throw new Error(
-            messageConstants.apiResponses.SOLUTION_EXTERNAL_ID_REQUIRED
-          );
+          throw new Error(messageConstants.apiResponses.SOLUTION_EXTERNAL_ID_REQUIRED);
         }
 
         if (!solutionData.description) {
-          throw new Error(
-            messageConstants.apiResponses.SOLUTION_DESCRIPTION_REQUIRED
-          );
+          throw new Error(messageConstants.apiResponses.SOLUTION_DESCRIPTION_REQUIRED);
         }
 
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
@@ -154,57 +136,54 @@ module.exports = class SurveysHelper {
         newSolutionDocument.type = messageConstants.common.SURVEY;
         newSolutionDocument.subType = messageConstants.common.SURVEY;
         newSolutionDocument.name = solutionData.name;
-        newSolutionDocument.externalId =
-          solutionData.externalId + surveySolutionTemplate;
+        newSolutionDocument.externalId = solutionData.externalId + surveySolutionTemplate;
         newSolutionDocument.description = solutionData.description;
         newSolutionDocument.linkTitle = solutionData.linkTitle;
         newSolutionDocument.linkUrl = solutionData.linkUrl;
         newSolutionDocument.author = userId;
-        newSolutionDocument.resourceType = ["Survey Solution"];
-        newSolutionDocument.language = ["English"];
-        newSolutionDocument.keywords = ["Survey"];
+        newSolutionDocument.resourceType = ['Survey Solution'];
+        newSolutionDocument.language = ['English'];
+        newSolutionDocument.keywords = ['Survey'];
         newSolutionDocument.isReusable = true;
         newSolutionDocument.status = messageConstants.common.ACTIVE_STATUS;
         let date = new Date();
-        newSolutionDocument.startDate = solutionData.startDate
-          ? new Date(solutionData.startDate)
-          : new Date();
+        newSolutionDocument.startDate = solutionData.startDate ? new Date(solutionData.startDate) : new Date();
         newSolutionDocument.endDate = solutionData.endDate
           ? new Date(solutionData.endDate)
           : date.setFullYear(date.getFullYear() + 1);
 
-        newSolutionDocument.sections = { SQ: "Survey Questions" };
+        newSolutionDocument.sections = { SQ: 'Survey Questions' };
         newSolutionDocument.evidenceMethods = {
           SF: {
             externalId: surveyAndFeedback,
-            name: "Survey And Feedback",
-            description: "Survey And Feedback",
-            modeOfCollection: "",
+            name: 'Survey And Feedback',
+            description: 'Survey And Feedback',
+            modeOfCollection: '',
             canBeNotApplicable: false,
             notApplicable: false,
             canBeNotAllowed: false,
-            remarks: "",
+            remarks: '',
             isActive: true,
           },
         };
 
         let themes = [
           {
-            type: "theme",
-            label: "theme",
+            type: 'theme',
+            label: 'theme',
             externalId: surveyAndFeedback,
-            name: "Survey and Feedback",
+            name: 'Survey and Feedback',
             weightage: 0,
           },
         ];
 
         let criteriaDocument = {
-          name: "Survey and Feedback",
-          description: "Survey and Feedback",
-          externalId: newSolutionDocument.externalId + "-" + surveyAndFeedback,
+          name: 'Survey and Feedback',
+          description: 'Survey and Feedback',
+          externalId: newSolutionDocument.externalId + '-' + surveyAndFeedback,
           owner: userId,
-          language: ["English"],
-          keywords: ["Keyword 1", "Keyword 2"],
+          language: ['English'],
+          keywords: ['Keyword 1', 'Keyword 2'],
           frameworkCriteriaId: null,
         };
 
@@ -221,9 +200,7 @@ module.exports = class SurveysHelper {
 
         newSolutionDocument.themes = themes;
 
-        let newSolution = await solutionsHelper.create(
-          _.omit(newSolutionDocument, ["_id"])
-        );
+        let newSolution = await solutionsHelper.create(_.omit(newSolutionDocument, ['_id']));
 
         if (newSolution._id) {
           return resolve({
@@ -234,9 +211,7 @@ module.exports = class SurveysHelper {
             },
           });
         } else {
-          throw new Error(
-            messageConstants.apiResponses.ERROR_CREATING_SURVEY_SOLUTION
-          );
+          throw new Error(messageConstants.apiResponses.ERROR_CREATING_SURVEY_SOLUTION);
         }
       } catch (error) {
         return resolve({
@@ -258,25 +233,19 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - sharable link.
    */
 
-  static importSurveryTemplateToSolution(
-    solutionId = "",
-    userId = "",
-    appName = ""
-  ) {
+  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (solutionId == "") {
+        if (solutionId == '') {
           throw new Error(messageConstants.apiResponses.SOLUTION_ID_REQUIRED);
         }
 
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
-        if (appName == "") {
-          throw new Error(
-            messageConstants.apiResponses.APP_NAME_FIELD_REQUIRED
-          );
+        if (appName == '') {
+          throw new Error(messageConstants.apiResponses.APP_NAME_FIELD_REQUIRED);
         }
 
         let solutionDocument = await solutionsHelper.solutionDocuments({
@@ -289,74 +258,56 @@ module.exports = class SurveysHelper {
 
         let newSolutionDocument = solutionDocument[0];
         let solutionExternalId =
-          solutionDocument[0].externalId.split(surveySolutionTemplate)[0] +
-          "-" +
-          gen.utils.epochTime();
+          solutionDocument[0].externalId.split(surveySolutionTemplate)[0] + '-' + gen.utils.epochTime();
 
-        let criteriaId = await gen.utils.getCriteriaIds(
-          newSolutionDocument.themes
-        );
+        let criteriaId = await gen.utils.getCriteriaIds(newSolutionDocument.themes);
 
         let solutionCriteria = await criteriaHelper.criteriaDocument({
           _id: criteriaId[0],
         });
 
-        solutionCriteria[0].externalId =
-          solutionExternalId + "-" + surveyAndFeedback;
+        solutionCriteria[0].externalId = solutionExternalId + '-' + surveyAndFeedback;
 
-        let duplicateQuestionsResponse = await questionsHelper.duplicate([
-          solutionCriteria[0]._id,
-        ]);
+        let duplicateQuestionsResponse = await questionsHelper.duplicate([solutionCriteria[0]._id]);
 
         if (
           duplicateQuestionsResponse.success &&
           Object.keys(duplicateQuestionsResponse.data.questionIdMap).length > 0
         ) {
-          solutionCriteria[0].evidences[0].sections[0].questions =
-            Object.values(duplicateQuestionsResponse.data.questionIdMap);
+          solutionCriteria[0].evidences[0].sections[0].questions = Object.values(
+            duplicateQuestionsResponse.data.questionIdMap,
+          );
         }
 
         let questionExternalIdMap = {};
         if (
           duplicateQuestionsResponse.success &&
-          Object.keys(duplicateQuestionsResponse.data.questionExternalIdMap)
-            .length > 0
+          Object.keys(duplicateQuestionsResponse.data.questionExternalIdMap).length > 0
         ) {
-          questionExternalIdMap =
-            duplicateQuestionsResponse.data.questionExternalIdMap;
+          questionExternalIdMap = duplicateQuestionsResponse.data.questionExternalIdMap;
         }
 
         if (
-          newSolutionDocument["questionSequenceByEcm"] &&
+          newSolutionDocument['questionSequenceByEcm'] &&
           Object.keys(newSolutionDocument.questionSequenceByEcm).length > 0
         ) {
-          Object.keys(newSolutionDocument.questionSequenceByEcm).map(
-            (evidence) => {
-              Object.keys(
-                newSolutionDocument.questionSequenceByEcm[evidence]
-              ).map((section) => {
-                let questionExternalIds =
-                  newSolutionDocument.questionSequenceByEcm[evidence][section];
-                let newQuestionExternalIds = [];
-                questionExternalIds.map((questionExternalId) => {
-                  if (questionExternalIdMap[questionExternalId]) {
-                    newQuestionExternalIds.push(
-                      questionExternalIdMap[questionExternalId]
-                    );
-                  }
-                });
-                newSolutionDocument.questionSequenceByEcm[evidence][section] =
-                  newQuestionExternalIds;
+          Object.keys(newSolutionDocument.questionSequenceByEcm).map((evidence) => {
+            Object.keys(newSolutionDocument.questionSequenceByEcm[evidence]).map((section) => {
+              let questionExternalIds = newSolutionDocument.questionSequenceByEcm[evidence][section];
+              let newQuestionExternalIds = [];
+              questionExternalIds.map((questionExternalId) => {
+                if (questionExternalIdMap[questionExternalId]) {
+                  newQuestionExternalIds.push(questionExternalIdMap[questionExternalId]);
+                }
               });
-            }
-          );
+              newSolutionDocument.questionSequenceByEcm[evidence][section] = newQuestionExternalIds;
+            });
+          });
         }
 
         solutionCriteria[0].parentCriteriaId = solutionCriteria[0]._id;
 
-        let newCriteriaId = await criteriaHelper.create(
-          _.omit(solutionCriteria[0], ["_id"])
-        );
+        let newCriteriaId = await criteriaHelper.create(_.omit(solutionCriteria[0], ['_id']));
 
         if (newCriteriaId._id) {
           newSolutionDocument.themes[0].criteria = [
@@ -373,18 +324,18 @@ module.exports = class SurveysHelper {
         newSolutionDocument.isReusable = false;
         newSolutionDocument.parentSolutionId = solutionId;
         newSolutionDocument.createdAt = new Date();
-        newSolutionDocument = _.omit(newSolutionDocument, ["_id"]);
+        newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
 
         let newSolution = await solutionsHelper.create(newSolutionDocument);
 
         if (newSolution._id) {
-          let link = await gen.utils.md5Hash(userId + "###" + newSolution._id);
+          let link = await gen.utils.md5Hash(userId + '###' + newSolution._id);
 
           await solutionsHelper.updateSolutionDocument(
             { _id: newSolution._id },
             {
               $set: { link: link },
-            }
+            },
           );
 
           //   let appDetails = await kendraService.getAppDetails(appName);
@@ -399,17 +350,11 @@ module.exports = class SurveysHelper {
             data: {
               solutionId: newSolution._id,
               solutionExternalId: newSolution.externalId,
-              link:
-                appsPortalBaseUrl +
-                appName +
-                messageConstants.common.TAKE_SURVEY +
-                link,
+              link: appsPortalBaseUrl + appName + messageConstants.common.TAKE_SURVEY + link,
             },
           });
         } else {
-          throw new Error(
-            messageConstants.apiResponses.ERROR_IMPORTING_SURVEY_SOLUTION
-          );
+          throw new Error(messageConstants.apiResponses.ERROR_IMPORTING_SURVEY_SOLUTION);
         }
       } catch (error) {
         return resolve({
@@ -430,14 +375,14 @@ module.exports = class SurveysHelper {
    * @returns {String} - message.
    */
 
-  static mapSurverySolutionToProgram(solutionId = "", programId = "") {
+  static mapSurverySolutionToProgram(solutionId = '', programId = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (solutionId == "") {
+        if (solutionId == '') {
           throw new Error(messageConstants.apiResponses.SOLUTION_ID_REQUIRED);
         }
 
-        if (programId == "") {
+        if (programId == '') {
           throw new Error(messageConstants.apiResponses.PROGRAM_ID_REQUIRED);
         }
 
@@ -445,7 +390,7 @@ module.exports = class SurveysHelper {
           {
             externalId: programId,
           },
-          ["externalId", "name", "description"]
+          ['externalId', 'name', 'description'],
         );
 
         if (!programDocument.length) {
@@ -463,10 +408,10 @@ module.exports = class SurveysHelper {
           { _id: solutionId },
           {
             $set: updateSolutionData,
-          }
+          },
         );
 
-        if (typeof solutionId == "string") {
+        if (typeof solutionId == 'string') {
           solutionId = ObjectId(solutionId);
         }
 
@@ -476,7 +421,7 @@ module.exports = class SurveysHelper {
           },
           {
             $addToSet: { components: solutionId },
-          }
+          },
         );
 
         return resolve({
@@ -508,16 +453,12 @@ module.exports = class SurveysHelper {
    * @returns {Object} status.
    */
 
-  static bulkCreate(userId = "", solution = {}, userOrganisations = {}) {
+  static bulkCreate(userId = '', solution = {}, userOrganisations = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveyDocument = await this.createSurveyDocument(
-          userId,
-          solution,
-          userOrganisations
-        );
+        let surveyDocument = await this.createSurveyDocument(userId, solution, userOrganisations);
 
-        if (surveyDocument.success && surveyDocument.data._id !== "") {
+        if (surveyDocument.success && surveyDocument.data._id !== '') {
           await this.details(surveyDocument.data._id, userId);
 
           await this.sendUserNotifications(userId, {
@@ -550,11 +491,11 @@ module.exports = class SurveysHelper {
    * @returns {Object} status and survey id.
    */
 
-  static createSurveyDocument(userId = "", solution = {}, userOrganisations) {
+  static createSurveyDocument(userId = '', solution = {}, userOrganisations) {
     return new Promise(async (resolve, reject) => {
       try {
         let status;
-        let surveyId = "";
+        let surveyId = '';
         let date = new Date();
 
         let surveyDocument = await this.surveyDocuments(
@@ -563,7 +504,7 @@ module.exports = class SurveysHelper {
             createdBy: userId,
             isDeleted: false,
           },
-          ["_id"]
+          ['_id'],
         );
 
         if (surveyDocument.length > 0) {
@@ -572,25 +513,23 @@ module.exports = class SurveysHelper {
           let survey = {};
 
           if (userOrganisations.createdFor) {
-            survey["createdFor"] = userOrganisations;
+            survey['createdFor'] = userOrganisations;
           }
           //   }
           //   if (userOrganisations.rootOrganisations) {
           //     survey["rootOrganisations"] = userOrganisations.rootOrganisations;
           //   }
 
-          survey["status"] = messageConstants.common.PUBLISHED;
-          survey["deleted"] = false;
-          survey["solutionId"] = solution._id;
-          survey["solutionExternalId"] = solution.externalId;
-          survey["createdBy"] = userId;
-          survey["startDate"] = date;
-          survey["endDate"] = solution.endDate
-            ? solution.endDate
-            : date.setFullYear(date.getFullYear() + 1);
-          survey["name"] = solution.name;
-          survey["description"] = solution.description;
-          survey["isAPrivateProgram"] = solution.isAPrivateProgram;
+          survey['status'] = messageConstants.common.PUBLISHED;
+          survey['deleted'] = false;
+          survey['solutionId'] = solution._id;
+          survey['solutionExternalId'] = solution.externalId;
+          survey['createdBy'] = userId;
+          survey['startDate'] = date;
+          survey['endDate'] = solution.endDate ? solution.endDate : date.setFullYear(date.getFullYear() + 1);
+          survey['name'] = solution.name;
+          survey['description'] = solution.description;
+          survey['isAPrivateProgram'] = solution.isAPrivateProgram;
 
           //   if (solution.programId) {
           //     survey["programId"] = solution.programId;
@@ -605,9 +544,7 @@ module.exports = class SurveysHelper {
             surveyId = surveyDocument._id;
           }
 
-          surveyId
-            ? (status = `${surveyId._id} created`)
-            : (status = `${surveyId._id} could not be created`);
+          surveyId ? (status = `${surveyId._id} created`) : (status = `${surveyId._id} could not be created`);
         }
 
         return resolve({
@@ -636,31 +573,30 @@ module.exports = class SurveysHelper {
    * @returns {Object} message and success status.
    */
 
-  static sendUserNotifications(userId = "", surveyData = {}) {
+  static sendUserNotifications(userId = '', surveyData = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
-        const kafkaMessage =
-          await kafkaClient.pushUserMappingNotificationToKafka({
-            user_id: userId,
-            internal: false,
-            text: `New survey is assigned to you`,
-            type: "information",
-            action: "mapping",
-            payload: {
-              type: surveyData.solutionType,
-              solution_id: surveyData.solutionId,
-              survey_id: surveyData.surveyId,
-            },
-            title: "New Survey",
-            created_at: new Date(),
-            appType: process.env.MOBILE_APPLICATION_APP_TYPE,
-          });
+        const kafkaMessage = await kafkaClient.pushUserMappingNotificationToKafka({
+          user_id: userId,
+          internal: false,
+          text: `New survey is assigned to you`,
+          type: 'information',
+          action: 'mapping',
+          payload: {
+            type: surveyData.solutionType,
+            solution_id: surveyData.solutionId,
+            survey_id: surveyData.surveyId,
+          },
+          title: 'New Survey',
+          created_at: new Date(),
+          appType: process.env.MOBILE_APPLICATION_APP_TYPE,
+        });
 
-        if (kafkaMessage.status != "success") {
+        if (kafkaMessage.status != 'success') {
           let errorObject = {
             formData: {
               userId: userId,
@@ -673,7 +609,7 @@ module.exports = class SurveysHelper {
           throw new Error(
             `Failed to push notification for survey ${surveyData.surveyId.toString()} in the solution ${
               surveyData.solutionName
-            }`
+            }`,
           );
         }
 
@@ -702,27 +638,19 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution,program and question details.
    */
 
-  static getDetailsByLink(
-    link = "",
-    userId = "",
-    token = "",
-    roleInformation = {},
-    version = ""
-  ) {
+  static getDetailsByLink(link = '', userId = '', token = '', roleInformation = {}, version = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (link == "") {
+        if (link == '') {
           throw new Error(messageConstants.apiResponses.LINK_REQUIRED_CHECK);
         }
 
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
-        if (token == "") {
-          throw new Error(
-            messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN
-          );
+        if (token == '') {
+          throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
         }
 
         let solutionDocument = await solutionsHelper.solutionDocuments(
@@ -730,31 +658,28 @@ module.exports = class SurveysHelper {
             link: link,
           },
           [
-            "externalId",
-            "name",
-            "description",
-            "type",
-            "endDate",
-            "status",
-            "programId",
-            "programExternalId",
-            "isAPrivateProgram",
-          ]
+            'externalId',
+            'name',
+            'description',
+            'type',
+            'endDate',
+            'status',
+            'programId',
+            'programExternalId',
+            'isAPrivateProgram',
+          ],
         );
 
         if (!solutionDocument.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
         }
 
-        if (version === "") {
+        if (version === '') {
           if (new Date() > new Date(solutionDocument[0].endDate)) {
-            if (
-              solutionDocument[0].status ==
-              messageConstants.common.ACTIVE_STATUS
-            ) {
+            if (solutionDocument[0].status == messageConstants.common.ACTIVE_STATUS) {
               await solutionsHelper.updateSolutionDocument(
                 { link: link },
-                { $set: { status: messageConstants.common.INACTIVE_STATUS } }
+                { $set: { status: messageConstants.common.INACTIVE_STATUS } },
               );
             }
 
@@ -762,20 +687,16 @@ module.exports = class SurveysHelper {
           }
         }
 
-        let surveyDocument = await this.surveyDocuments(
-          { solutionId: solutionDocument[0]._id, createdBy: userId },
-          ["_id"]
-        );
+        let surveyDocument = await this.surveyDocuments({ solutionId: solutionDocument[0]._id, createdBy: userId }, [
+          '_id',
+        ]);
 
         let surveyId;
 
         if (surveyDocument.length > 0) {
           surveyId = surveyDocument[0]._id;
         } else {
-          let userOrgDetails = await this.getUserOrganisationDetails(
-            [userId],
-            token
-          );
+          let userOrgDetails = await this.getUserOrganisationDetails([userId], token);
 
           userOrgDetails = userOrgDetails.data;
 
@@ -784,21 +705,17 @@ module.exports = class SurveysHelper {
             !Array.isArray(userOrgDetails[userId].rootOrganisations) ||
             userOrgDetails[userId].rootOrganisations.length < 1
           ) {
-            throw new Error(
-              messageConstants.apiResponses.ORGANISATION_DETAILS_NOT_FOUND_FOR_USER
-            );
+            throw new Error(messageConstants.apiResponses.ORGANISATION_DETAILS_NOT_FOUND_FOR_USER);
           }
 
           let createSurveyDocument = await this.createSurveyDocument(
             userId,
             solutionDocument[0],
-            userOrgDetails[userId]
+            userOrgDetails[userId],
           );
 
           if (!createSurveyDocument.success) {
-            throw new Error(
-              messageConstants.apiResponses.SURVEY_CREATION_FAILED
-            );
+            throw new Error(messageConstants.apiResponses.SURVEY_CREATION_FAILED);
           }
 
           surveyId = createSurveyDocument.data._id;
@@ -807,21 +724,14 @@ module.exports = class SurveysHelper {
         let validateSurvey = await this.validateSurvey(
           surveyId,
           userId,
-          version && version === messageConstants.common.VERSION_3
-            ? false
-            : true
+          version && version === messageConstants.common.VERSION_3 ? false : true,
         );
 
         if (!validateSurvey.success) {
           return resolve(validateSurvey);
         }
 
-        let surveyDetails = await this.details(
-          surveyId,
-          userId,
-          validateSurvey.data.submissionId,
-          roleInformation
-        );
+        let surveyDetails = await this.details(surveyId, userId, validateSurvey.data.submissionId, roleInformation);
 
         if (!surveyDetails.success) {
           return resolve(surveyDetails);
@@ -851,19 +761,14 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static details(
-    surveyId = "",
-    userId = "",
-    submissionId = "",
-    roleInformation = {}
-  ) {
+  static details(surveyId = '', userId = '', submissionId = '', roleInformation = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (surveyId == "") {
+        if (surveyId == '') {
           throw new Error(messageConstants.apiResponses.SURVEY_ID_REQUIRED);
         }
 
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
@@ -885,12 +790,11 @@ module.exports = class SurveysHelper {
           isDeleted: false,
         };
 
-        let solutionDocumentProjectionFields =
-          await this.solutionDocumentProjectionFieldsForDetailsAPI();
+        let solutionDocumentProjectionFields = await this.solutionDocumentProjectionFieldsForDetailsAPI();
 
         let solutionDocument = await solutionsHelper.solutionDocuments(
           solutionQueryObject,
-          solutionDocumentProjectionFields
+          solutionDocumentProjectionFields,
         );
 
         if (!solutionDocument.length) {
@@ -909,23 +813,19 @@ module.exports = class SurveysHelper {
           };
 
           programDocument = await programsHelper.list(programQueryObject, [
-            "externalId",
-            "name",
-            "description",
-            "imageCompression",
-            "isAPrivateProgram",
+            'externalId',
+            'name',
+            'description',
+            'imageCompression',
+            'isAPrivateProgram',
           ]);
         }
 
-        let solutionDocumentFieldList =
-          await this.solutionDocumentFieldListInResponse();
+        let solutionDocumentFieldList = await this.solutionDocumentFieldListInResponse();
 
         let result = {};
 
-        result.solution = await _.pick(
-          solutionDocument,
-          solutionDocumentFieldList
-        );
+        result.solution = await _.pick(solutionDocument, solutionDocumentFieldList);
 
         if (programDocument.length > 0) {
           result.program = programDocument[0];
@@ -940,22 +840,23 @@ module.exports = class SurveysHelper {
         let criteriaId = solutionDocument.themes[0].criteria[0].criteriaId;
         let weightage = solutionDocument.themes[0].criteria[0].weightage;
 
-        let criteriaQuestionDocument = await criteriaQuestionsHelper.list(
-          { _id: criteriaId },
-          "all",
-          ["resourceType", "language", "keywords", "concepts", "createdFor"]
-        );
+        let criteriaQuestionDocument = await criteriaQuestionsHelper.list({ _id: criteriaId }, 'all', [
+          'resourceType',
+          'language',
+          'keywords',
+          'concepts',
+          'createdFor',
+        ]);
 
         let evidenceMethodArray = {};
         let submissionDocumentEvidences = {};
         let submissionDocumentCriterias = [];
 
         Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
-          solutionDocument.evidenceMethods[solutionEcm].startTime = "";
-          solutionDocument.evidenceMethods[solutionEcm].endTime = "";
+          solutionDocument.evidenceMethods[solutionEcm].startTime = '';
+          solutionDocument.evidenceMethods[solutionEcm].endTime = '';
           solutionDocument.evidenceMethods[solutionEcm].isSubmitted = false;
-          solutionDocument.evidenceMethods[solutionEcm].submissions =
-            new Array();
+          solutionDocument.evidenceMethods[solutionEcm].submissions = new Array();
         });
 
         submissionDocumentEvidences = solutionDocument.evidenceMethods;
@@ -964,7 +865,7 @@ module.exports = class SurveysHelper {
 
         criteria.weightage = weightage;
 
-        submissionDocumentCriterias.push(_.omit(criteria, ["evidences"]));
+        submissionDocumentCriterias.push(_.omit(criteria, ['evidences']));
 
         criteria.evidences.forEach((evidenceMethod) => {
           if (evidenceMethod.code) {
@@ -972,59 +873,42 @@ module.exports = class SurveysHelper {
               evidenceMethod.sections.forEach((ecmSection) => {
                 ecmSection.name = solutionDocument.sections[ecmSection.code];
               });
-              _.merge(
-                evidenceMethod,
-                submissionDocumentEvidences[evidenceMethod.code]
-              );
+              _.merge(evidenceMethod, submissionDocumentEvidences[evidenceMethod.code]);
               evidenceMethodArray[evidenceMethod.code] = evidenceMethod;
             } else {
               evidenceMethod.sections.forEach((evidenceMethodSection) => {
                 let sectionExisitsInEvidenceMethod = 0;
                 let existingSectionQuestionsArrayInEvidenceMethod = [];
 
-                evidenceMethodArray[evidenceMethod.code].sections.forEach(
-                  (exisitingSectionInEvidenceMethod) => {
-                    if (
-                      exisitingSectionInEvidenceMethod.code ==
-                      evidenceMethodSection.code
-                    ) {
-                      sectionExisitsInEvidenceMethod = 1;
-                      existingSectionQuestionsArrayInEvidenceMethod =
-                        exisitingSectionInEvidenceMethod.questions;
-                    }
+                evidenceMethodArray[evidenceMethod.code].sections.forEach((exisitingSectionInEvidenceMethod) => {
+                  if (exisitingSectionInEvidenceMethod.code == evidenceMethodSection.code) {
+                    sectionExisitsInEvidenceMethod = 1;
+                    existingSectionQuestionsArrayInEvidenceMethod = exisitingSectionInEvidenceMethod.questions;
                   }
-                );
+                });
 
                 if (!sectionExisitsInEvidenceMethod) {
-                  evidenceMethodSection.name =
-                    solutionDocument.sections[evidenceMethodSection.code];
-                  evidenceMethodArray[evidenceMethod.code].sections.push(
-                    evidenceMethodSection
-                  );
+                  evidenceMethodSection.name = solutionDocument.sections[evidenceMethodSection.code];
+                  evidenceMethodArray[evidenceMethod.code].sections.push(evidenceMethodSection);
                 } else {
-                  evidenceMethodSection.questions.forEach(
-                    (questionInEvidenceMethodSection) => {
-                      existingSectionQuestionsArrayInEvidenceMethod.push(
-                        questionInEvidenceMethodSection
-                      );
-                    }
-                  );
+                  evidenceMethodSection.questions.forEach((questionInEvidenceMethodSection) => {
+                    existingSectionQuestionsArrayInEvidenceMethod.push(questionInEvidenceMethodSection);
+                  });
                 }
               });
             }
           }
         });
 
-        if (submissionId !== "") {
+        if (submissionId !== '') {
           assessment.submissionId = submissionId;
 
-          let surveySubmissionDocument =
-            await surveySubmissionsHelper.surveySubmissionDocuments(
-              {
-                _id: submissionId,
-              },
-              ["evidences"]
-            );
+          let surveySubmissionDocument = await surveySubmissionsHelper.surveySubmissionDocuments(
+            {
+              _id: submissionId,
+            },
+            ['evidences'],
+          );
 
           submissionDocumentEvidences = surveySubmissionDocument[0].evidences;
         } else {
@@ -1039,17 +923,14 @@ module.exports = class SurveysHelper {
             evidencesStatus: Object.values(submissionDocumentEvidences),
             criteria: submissionDocumentCriterias,
             surveyInformation: {
-              ..._.omit(surveyDocument, ["_id", "deleted", "__v"]),
+              ..._.omit(surveyDocument, ['_id', 'deleted', '__v']),
             },
             isAPrivateProgram: surveyDocument.isAPrivateProgram,
           };
           submissionDocument.surveyInformation.startDate = new Date();
 
           if (Object.keys(roleInformation).length > 0 && roleInformation.role) {
-            let roleDocument = await userRolesHelper.list(
-              { code: roleInformation.role },
-              ["_id"]
-            );
+            let roleDocument = await userRolesHelper.list({ code: roleInformation.role }, ['_id']);
 
             if (roleDocument.length > 0) {
               roleInformation.roleId = roleDocument[0]._id;
@@ -1060,13 +941,10 @@ module.exports = class SurveysHelper {
 
           if (programDocument.length > 0) {
             submissionDocument.programId = programDocument[0]._id;
-            submissionDocument.programExternalId =
-              programDocument[0].externalId;
+            submissionDocument.programExternalId = programDocument[0].externalId;
           }
 
-          let submissionDoc = await database.models.surveySubmissions.create(
-            submissionDocument
-          );
+          let submissionDoc = await database.models.surveySubmissions.create(submissionDocument);
 
           if (submissionDoc._id) {
             assessment.submissionId = submissionDoc._id;
@@ -1075,19 +953,14 @@ module.exports = class SurveysHelper {
 
         const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
           Object.values(evidenceMethodArray),
-          ["A1"],
+          ['A1'],
           submissionDocumentEvidences,
-          solutionDocument && solutionDocument.questionSequenceByEcm
-            ? solutionDocument.questionSequenceByEcm
-            : false
+          solutionDocument && solutionDocument.questionSequenceByEcm ? solutionDocument.questionSequenceByEcm : false,
         );
 
         assessment.evidences = parsedAssessment.evidences;
         assessment.submissions = parsedAssessment.submissions;
-        if (
-          parsedAssessment.generalQuestions &&
-          parsedAssessment.generalQuestions.length > 0
-        ) {
+        if (parsedAssessment.generalQuestions && parsedAssessment.generalQuestions.length > 0) {
           assessment.generalQuestions = parsedAssessment.generalQuestions;
         }
 
@@ -1095,8 +968,7 @@ module.exports = class SurveysHelper {
 
         return resolve({
           success: true,
-          message:
-            messageConstants.apiResponses.SURVEY_DETAILS_FETCHED_SUCCESSFULLY,
+          message: messageConstants.apiResponses.SURVEY_DETAILS_FETCHED_SUCCESSFULLY,
           data: result,
         });
       } catch (error) {
@@ -1118,32 +990,22 @@ module.exports = class SurveysHelper {
    * @returns {Object} User organisation details.
    */
 
-  static getUserOrganisationDetails(
-    userIds = [],
-    requestingUserAuthToken = ""
-  ) {
+  static getUserOrganisationDetails(userIds = [], requestingUserAuthToken = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (requestingUserAuthToken == "") {
-          throw new Error(
-            messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN
-          );
+        if (requestingUserAuthToken == '') {
+          throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
         }
 
         let userOrganisationDetails = {};
 
         if (userIds.length > 0) {
-          for (
-            let pointerToUserIds = 0;
-            pointerToUserIds < userIds.length;
-            pointerToUserIds++
-          ) {
+          for (let pointerToUserIds = 0; pointerToUserIds < userIds.length; pointerToUserIds++) {
             const user = userIds[pointerToUserIds];
-            let userOrganisations =
-              await shikshalokamHelper.getOrganisationsAndRootOrganisations(
-                requestingUserAuthToken,
-                userIds[pointerToUserIds]
-              );
+            let userOrganisations = await shikshalokamHelper.getOrganisationsAndRootOrganisations(
+              requestingUserAuthToken,
+              userIds[pointerToUserIds],
+            );
 
             userOrganisationDetails[user] = userOrganisations;
           }
@@ -1151,8 +1013,7 @@ module.exports = class SurveysHelper {
 
         return resolve({
           success: true,
-          message:
-            messageConstants.apiResponses.USER_ORGANISATION_DETAILS_FETCHED,
+          message: messageConstants.apiResponses.USER_ORGANISATION_DETAILS_FETCHED,
           data: userOrganisationDetails,
         });
       } catch (error) {
@@ -1175,18 +1036,18 @@ module.exports = class SurveysHelper {
   static solutionDocumentProjectionFieldsForDetailsAPI() {
     return new Promise(async (resolve, reject) => {
       return resolve([
-        "name",
-        "externalId",
-        "programId",
-        "programExternalId",
-        "description",
-        "themes",
-        "questionSequenceByEcm",
-        "evidenceMethods",
-        "sections",
-        "captureGpsLocationAtQuestionLevel",
-        "enableQuestionReadOut",
-        "author",
+        'name',
+        'externalId',
+        'programId',
+        'programExternalId',
+        'description',
+        'themes',
+        'questionSequenceByEcm',
+        'evidenceMethods',
+        'sections',
+        'captureGpsLocationAtQuestionLevel',
+        'enableQuestionReadOut',
+        'author',
       ]);
     });
   }
@@ -1201,12 +1062,12 @@ module.exports = class SurveysHelper {
   static solutionDocumentFieldListInResponse() {
     return new Promise(async (resolve, reject) => {
       return resolve([
-        "_id",
-        "externalId",
-        "name",
-        "description",
-        "captureGpsLocationAtQuestionLevel",
-        "enableQuestionReadOut",
+        '_id',
+        'externalId',
+        'name',
+        'description',
+        'captureGpsLocationAtQuestionLevel',
+        'enableQuestionReadOut',
       ]);
     });
   }
@@ -1223,48 +1084,39 @@ module.exports = class SurveysHelper {
   static validateSurvey(surveyId, userId, validateSurveySubmission = true) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (surveyId == "") {
+        if (surveyId == '') {
           throw new Error(messageConstants.apiResponses.SURVEY_ID_REQUIRED);
         }
 
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
-        let surveySubmissionDocument =
-          await surveySubmissionsHelper.surveySubmissionDocuments(
-            {
-              surveyId: surveyId,
-              createdBy: userId,
-            },
-            ["status", "surveyInformation.endDate"]
-          );
+        let surveySubmissionDocument = await surveySubmissionsHelper.surveySubmissionDocuments(
+          {
+            surveyId: surveyId,
+            createdBy: userId,
+          },
+          ['status', 'surveyInformation.endDate'],
+        );
 
-        let submissionId = "";
+        let submissionId = '';
 
         if (surveySubmissionDocument.length > 0) {
           submissionId = surveySubmissionDocument[0]._id;
 
           if (validateSurveySubmission) {
-            if (
-              surveySubmissionDocument[0].status ==
-              messageConstants.common.SUBMISSION_STATUS_COMPLETED
-            ) {
+            if (surveySubmissionDocument[0].status == messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
               return resolve({
                 success: false,
-                message:
-                  messageConstants.apiResponses
-                    .MULTIPLE_SUBMISSIONS_NOT_ALLOWED,
+                message: messageConstants.apiResponses.MULTIPLE_SUBMISSIONS_NOT_ALLOWED,
                 data: {
                   status: surveySubmissionDocument[0].status,
                 },
               });
             }
 
-            if (
-              new Date() >
-              new Date(surveySubmissionDocument[0].surveyInformation.endDate)
-            ) {
+            if (new Date() > new Date(surveySubmissionDocument[0].surveyInformation.endDate)) {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
           }
@@ -1306,7 +1158,7 @@ module.exports = class SurveysHelper {
         };
 
         if (searchQuery && searchQuery.length > 0) {
-          matchQuery["$match"]["$or"] = searchQuery;
+          matchQuery['$match']['$or'] = searchQuery;
         }
         let projection = {};
         fieldsArray.forEach((field) => {
@@ -1321,7 +1173,7 @@ module.exports = class SurveysHelper {
           },
           {
             $facet: {
-              totalCount: [{ $count: "count" }],
+              totalCount: [{ $count: 'count' }],
               data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
             },
           },
@@ -1329,10 +1181,10 @@ module.exports = class SurveysHelper {
             $project: {
               data: 1,
               count: {
-                $arrayElemAt: ["$totalCount.count", 0],
+                $arrayElemAt: ['$totalCount.count', 0],
               },
             },
-          }
+          },
         );
 
         let result = await database.models.surveys.aggregate(aggregateData);
@@ -1370,14 +1222,14 @@ module.exports = class SurveysHelper {
    * @returns {Object}
    */
 
-  static getSurvey(bodyData, userId, token, pageSize, pageNo, search = "") {
+  static getSurvey(bodyData, userId, token, pageSize, pageNo, search = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let surveySolutions = await surveySubmissionsHelper.surveySolutions(
           userId,
           messageConstants.common.DEFAULT_PAGE_NO,
           messageConstants.common.DEFAULT_PAGE_SIZE,
-          search
+          search,
         );
 
         let solutionIds = [];
@@ -1403,13 +1255,10 @@ module.exports = class SurveysHelper {
           userId,
           messageConstants.common.DEFAULT_PAGE_NO,
           messageConstants.common.DEFAULT_PAGE_SIZE,
-          search
+          search,
         );
 
-        if (
-          surveySubmissions.success &&
-          surveySubmissions.data.data.length > 0
-        ) {
+        if (surveySubmissions.success && surveySubmissions.data.data.length > 0) {
           totalCount += surveySubmissions.data.count;
 
           surveySubmissions.data.data.forEach((surveyData) => {
@@ -1423,28 +1272,24 @@ module.exports = class SurveysHelper {
         }
 
         if (solutionIds.length > 0) {
-          bodyData["filter"] = {};
-          bodyData["filter"]["skipSolutions"] = solutionIds;
+          bodyData['filter'] = {};
+          bodyData['filter']['skipSolutions'] = solutionIds;
         }
 
-        let targetedSolutions =
-          await kendraService.solutionBasedOnRoleAndLocation(
-            token,
-            bodyData,
-            messageConstants.common.SURVEY,
-            search
-          );
+        let targetedSolutions = await kendraService.solutionBasedOnRoleAndLocation(
+          token,
+          bodyData,
+          messageConstants.common.SURVEY,
+          search,
+        );
 
         if (targetedSolutions.success) {
-          if (
-            targetedSolutions.data.data &&
-            targetedSolutions.data.data.length > 0
-          ) {
+          if (targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
             totalCount += targetedSolutions.data.count;
 
             targetedSolutions.data.data.forEach((targetedSolution) => {
               targetedSolution.solutionId = targetedSolution._id;
-              targetedSolution._id = "";
+              targetedSolution._id = '';
               targetedSolution.isCreator = false;
               mergedData.push(targetedSolution);
               delete targetedSolution.type;
@@ -1489,22 +1334,10 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static detailsV2(
-    bodyData,
-    surveyId = "",
-    solutionId = "",
-    userId = "",
-    token = ""
-  ) {
+  static detailsV2(bodyData, surveyId = '', solutionId = '', userId = '', token = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveyData = await this.findOrCreateSurvey(
-          bodyData,
-          surveyId,
-          solutionId,
-          userId,
-          token
-        );
+        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token);
 
         if (!surveyData.success) {
           return resolve(surveyData);
@@ -1516,12 +1349,7 @@ module.exports = class SurveysHelper {
           return resolve(validateSurvey);
         }
 
-        let surveyDetails = await this.details(
-          surveyData.data,
-          userId,
-          validateSurvey.data.submissionId,
-          bodyData
-        );
+        let surveyDetails = await this.details(surveyData.data, userId, validateSurvey.data.submissionId, bodyData);
 
         if (!surveyDetails.success) {
           return resolve(surveyDetails);
@@ -1554,27 +1382,19 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static findOrCreateSurvey(
-    bodyData,
-    surveyId = "",
-    solutionId = "",
-    userId = "",
-    token = ""
-  ) {
+  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
-        if (solutionId == "") {
+        if (solutionId == '') {
           throw new Error(messageConstants.apiResponses.SOLUTION_ID_REQUIRED);
         }
 
-        if (token == "") {
-          throw new Error(
-            messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN
-          );
+        if (token == '') {
+          throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
         }
 
         let solutionDocument = await solutionsHelper.solutionDocuments({
@@ -1582,13 +1402,13 @@ module.exports = class SurveysHelper {
           author: userId,
         });
 
-        if (surveyId == "") {
+        if (surveyId == '') {
           let surveyDocument = await this.surveyDocuments(
             {
               solutionId: solutionId,
               createdBy: userId,
             },
-            ["_id"]
+            ['_id'],
           );
 
           if (surveyDocument.length > 0) {
@@ -1624,16 +1444,10 @@ module.exports = class SurveysHelper {
             //   );
             // }
 
-            let createSurveyDocument = await this.createSurveyDocument(
-              userId,
-              solutionData,
-              userId
-            );
+            let createSurveyDocument = await this.createSurveyDocument(userId, solutionData, userId);
 
             if (!createSurveyDocument.success) {
-              throw new Error(
-                messageConstants.apiResponses.SURVEY_CREATION_FAILED
-              );
+              throw new Error(messageConstants.apiResponses.SURVEY_CREATION_FAILED);
             }
 
             surveyId = createSurveyDocument.data._id;
@@ -1666,43 +1480,22 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static detailsV3(
-    bodyData,
-    surveyId = "",
-    solutionId = "",
-    userId = "",
-    token = ""
-  ) {
+  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveyData = await this.findOrCreateSurvey(
-          bodyData,
-          surveyId,
-          solutionId,
-          userId,
-          token
-        );
+        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token);
 
         if (!surveyData.success) {
           return resolve(surveyData);
         }
 
-        let validateSurvey = await this.validateSurvey(
-          surveyData.data,
-          userId,
-          false
-        );
+        let validateSurvey = await this.validateSurvey(surveyData.data, userId, false);
 
         if (!validateSurvey.success) {
           return resolve(validateSurvey);
         }
 
-        let surveyDetails = await this.details(
-          surveyData.data,
-          userId,
-          validateSurvey.data.submissionId,
-          bodyData
-        );
+        let surveyDetails = await this.details(surveyData.data, userId, validateSurvey.data.submissionId, bodyData);
 
         if (!surveyDetails.success) {
           return resolve(surveyDetails);
@@ -1735,31 +1528,15 @@ module.exports = class SurveysHelper {
    * @returns {Object}
    */
 
-  static userAssigned(
-    userId,
-    pageSize,
-    pageNo,
-    search = "",
-    filter,
-    surveyReportPage = ""
-  ) {
+  static userAssigned(userId, pageSize, pageNo, search = '', filter, surveyReportPage = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let surveySolutions = {
           success: false,
         };
 
-        if (
-          surveyReportPage === "" ||
-          gen.utils.convertStringToBoolean(surveyReportPage)
-        ) {
-          surveySolutions = await surveySubmissionsHelper.surveySolutions(
-            userId,
-            pageNo,
-            pageSize,
-            search,
-            filter
-          );
+        if (surveyReportPage === '' || gen.utils.convertStringToBoolean(surveyReportPage)) {
+          surveySolutions = await surveySubmissionsHelper.surveySolutions(userId, pageNo, pageSize, search, filter);
         }
 
         let totalCount = 0;
@@ -1782,13 +1559,10 @@ module.exports = class SurveysHelper {
           pageSize,
           search,
           filter,
-          surveyReportPage
+          surveyReportPage,
         );
 
-        if (
-          surveySubmissions.success &&
-          surveySubmissions.data.data.length > 0
-        ) {
+        if (surveySubmissions.success && surveySubmissions.data.data.length > 0) {
           totalCount += surveySubmissions.data.count;
 
           surveySubmissions.data.data.forEach((surveyData) => {
@@ -1834,7 +1608,7 @@ module.exports = class SurveysHelper {
             isReusable: false,
             type: messageConstants.common.SURVEY,
           },
-          ["link"]
+          ['link'],
         );
 
         if (!surveyData.length) {
@@ -1847,11 +1621,7 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.APP_NOT_FOUND);
         }
 
-        let link =
-          appsPortalBaseUrl +
-          appName +
-          messageConstants.common.TAKE_SURVEY +
-          surveyData[0].link;
+        let link = appsPortalBaseUrl + appName + messageConstants.common.TAKE_SURVEY + surveyData[0].link;
 
         return resolve({
           success: true,

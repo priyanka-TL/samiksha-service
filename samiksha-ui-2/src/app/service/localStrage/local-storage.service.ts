@@ -1,17 +1,16 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root',
 })
 export class LocalStorageService {
   constructor() {
-    window.onbeforeunload = () =>
-      localStorage.setItem(LocalStorageService.id, JSON.stringify(this._items));
+    window.onbeforeunload = () => localStorage.setItem(LocalStorageService.id, JSON.stringify(this._items));
   }
 
   private static _instance;
 
-  public static id = "[Local Storage Service]";
+  public static id = '[Local Storage Service]';
 
   public static get Instance(): LocalStorageService {
     if (!LocalStorageService._instance) {
@@ -26,10 +25,10 @@ export class LocalStorageService {
   public get items() {
     if (this._items === null) {
       var storageItems = localStorage.getItem(LocalStorageService.id);
-      if (storageItems === "null") {
+      if (storageItems === 'null') {
         storageItems = null;
       }
-      this._items = JSON.parse(storageItems || "[]");
+      this._items = JSON.parse(storageItems || '[]');
     }
 
     return this._items;

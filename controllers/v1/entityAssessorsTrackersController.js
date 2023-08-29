@@ -5,17 +5,16 @@
  * Description : All Entity Assessors Trackers.
  */
 
- /**
-    * EntityAssessorsTrackers
-    * @class
-*/
+/**
+ * EntityAssessorsTrackers
+ * @class
+ */
 module.exports = class EntityAssessorsTrackers extends Abstract {
-    constructor() {
-        super(entityAssessorsTrackersSchema);
-    }
+  constructor() {
+    super(entityAssessorsTrackersSchema);
+  }
 
-    static get name() {
-        return "entityAssessorsTrackers";
-    }
-
+  static get name() {
+    return 'entityAssessorsTrackers';
+  }
 };

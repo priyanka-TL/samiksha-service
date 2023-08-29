@@ -6,29 +6,25 @@
  */
 
 // Dependencies
-const entitiesHelper = require(MODULES_BASE_PATH + "/entities/helper");
-const userExtensionHelper = require(MODULES_BASE_PATH +
-  "/userExtension/helper");
-const observationSubmissionsHelper = require(MODULES_BASE_PATH +
-  "/observationSubmissions/helper");
-const shikshalokamHelper = require(MODULES_BASE_PATH + "/shikshalokam/helper");
-const slackClient = require(ROOT_PATH +
-  "/generics/helpers/slackCommunications");
-const kafkaClient = require(ROOT_PATH +
-  "/generics/helpers/kafkaCommunications");
+const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
+const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
+const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
+const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
+const slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications');
+const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
 const chunkOfObservationSubmissionsLength = 500;
-const solutionHelper = require(MODULES_BASE_PATH + "/solutions/helper");
-const kendraService = require(ROOT_PATH + "/generics/services/kendra");
-const moment = require("moment-timezone");
-const { ObjectId } = require("mongodb");
+const solutionHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const kendraService = require(ROOT_PATH + '/generics/services/kendra');
+const moment = require('moment-timezone');
+const { ObjectId } = require('mongodb');
 const appsPortalBaseUrl =
-  process.env.APP_PORTAL_BASE_URL && process.env.APP_PORTAL_BASE_URL !== ""
-    ? process.env.APP_PORTAL_BASE_URL + "/"
-    : "https://apps.shikshalokam.org/";
-const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
-const submissionsHelper = require(MODULES_BASE_PATH + "/submissions/helper");
-const programsHelper = require(MODULES_BASE_PATH + "/programs/helper");
+  process.env.APP_PORTAL_BASE_URL && process.env.APP_PORTAL_BASE_URL !== ''
+    ? process.env.APP_PORTAL_BASE_URL + '/'
+    : 'https://apps.shikshalokam.org/';
+const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
+const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 
 /**
  * ObservationsHelper
@@ -44,26 +40,24 @@ module.exports = class ObservationsHelper {
    * @returns {Array} - List of observations.
    */
 
-  static observationDocuments(findQuery = "all", fields = "all") {
+  static observationDocuments(findQuery = 'all', fields = 'all') {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {};
 
-        if (findQuery != "all") {
+        if (findQuery != 'all') {
           queryObject = _.merge(queryObject, findQuery);
         }
 
         let projectionObject = {};
 
-        if (fields != "all") {
+        if (fields != 'all') {
           fields.forEach((element) => {
             projectionObject[element] = 1;
           });
         }
 
-        let observationDocuments = await database.models.observations
-          .find(queryObject, projectionObject)
-          .lean();
+        let observationDocuments = await database.models.observations.find(queryObject, projectionObject).lean();
 
         return resolve(observationDocuments);
       } catch (error) {
@@ -88,7 +82,7 @@ module.exports = class ObservationsHelper {
     solutionId,
     data,
     userId,
-    requestingUserAuthToken = ""
+    requestingUserAuthToken = '',
     // programId = ""
   ) {
     return new Promise(async (resolve, reject) => {
@@ -110,16 +104,16 @@ module.exports = class ObservationsHelper {
             _id: solutionId,
           },
           [
-            "isReusable",
-            "externalId",
-            "programId",
-            "programExternalId",
-            "frameworkId",
-            "frameworkExternalId",
-            "entityType",
-            "entityTypeId",
-            "isAPrivateProgram",
-          ]
+            'isReusable',
+            'externalId',
+            'programId',
+            'programExternalId',
+            'frameworkId',
+            'frameworkExternalId',
+            'entityType',
+            'entityTypeId',
+            'isAPrivateProgram',
+          ],
         );
 
         if (!solutionData.length > 0) {
@@ -130,30 +124,25 @@ module.exports = class ObservationsHelper {
         }
 
         if (solutionData[0].isReusable) {
-          solutionData =
-            await solutionHelper.createProgramAndSolutionFromTemplate(
-              solutionId,
-              //   {
-              //     _id: programId,
-              //   },
-              userId,
-              _.omit(data, ["entities"]),
-              true,
-              userId
-              //   organisationAndRootOrganisation.,
-              //   organisationAndRootOrganisation.rootOrganisations
-            );
+          solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
+            solutionId,
+            //   {
+            //     _id: programId,
+            //   },
+            userId,
+            _.omit(data, ['entities']),
+            true,
+            userId,
+            //   organisationAndRootOrganisation.,
+            //   organisationAndRootOrganisation.rootOrganisations
+          );
         } else {
           solutionData = solutionData[0];
         }
 
-        let observationData = await this.createObservation(
-          data,
-          userId,
-          solutionData
-        );
+        let observationData = await this.createObservation(data, userId, solutionData);
 
-        return resolve(_.pick(observationData, ["_id", "name", "description"]));
+        return resolve(_.pick(observationData, ['_id', 'name', 'description']));
       } catch (error) {
         return reject(error);
       }
@@ -176,10 +165,7 @@ module.exports = class ObservationsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         if (data.entities) {
-          let entitiesToAdd = await entitiesHelper.validateEntities(
-            data.entities,
-            solution.entityTypeId
-          );
+          let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solution.entityTypeId);
           data.entities = entitiesToAdd.entityIds;
         }
 
@@ -204,7 +190,7 @@ module.exports = class ObservationsHelper {
             // rootOrganisations:
             // organisationAndRootOrganisation.rootOrganisations,
             isAPrivateProgram: solution.isAPrivateProgram,
-          })
+          }),
         );
 
         if (!observationData._id) {
@@ -230,32 +216,22 @@ module.exports = class ObservationsHelper {
    * @returns {Object} User organisation details.
    */
 
-  static getUserOrganisationDetails(
-    userIds = [],
-    requestingUserAuthToken = ""
-  ) {
+  static getUserOrganisationDetails(userIds = [], requestingUserAuthToken = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (requestingUserAuthToken == "") {
-          throw new Error(
-            messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN
-          );
+        if (requestingUserAuthToken == '') {
+          throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
         }
 
         let userOrganisationDetails = {};
 
         if (userIds.length > 0) {
-          for (
-            let pointerToUserIds = 0;
-            pointerToUserIds < userIds.length;
-            pointerToUserIds++
-          ) {
+          for (let pointerToUserIds = 0; pointerToUserIds < userIds.length; pointerToUserIds++) {
             const user = userIds[pointerToUserIds];
-            let userOrganisations =
-              await shikshalokamHelper.getOrganisationsAndRootOrganisations(
-                requestingUserAuthToken,
-                userIds[pointerToUserIds]
-              );
+            let userOrganisations = await shikshalokamHelper.getOrganisationsAndRootOrganisations(
+              requestingUserAuthToken,
+              userIds[pointerToUserIds],
+            );
 
             userOrganisationDetails[user] = userOrganisations;
           }
@@ -263,7 +239,7 @@ module.exports = class ObservationsHelper {
 
         return resolve({
           success: true,
-          message: "User organisation details fetched successfully.",
+          message: 'User organisation details fetched successfully.',
           data: userOrganisationDetails,
         });
       } catch (error) {
@@ -283,14 +259,14 @@ module.exports = class ObservationsHelper {
    * @returns {Object} observation list.
    */
 
-  static listV1(userId = "") {
+  static listV1(userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.INVALID_USER_ID);
         }
 
-        let observations = this.listCommon(userId, "v1");
+        let observations = this.listCommon(userId, 'v1');
 
         return resolve(observations);
       } catch (error) {
@@ -307,14 +283,14 @@ module.exports = class ObservationsHelper {
    * @returns {Object} observation list.
    */
 
-  static listV2(userId = "") {
+  static listV2(userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.INVALID_USER_ID);
         }
 
-        let observations = this.listCommon(userId, "v2");
+        let observations = this.listCommon(userId, 'v2');
 
         return resolve(observations);
       } catch (error) {
@@ -331,10 +307,10 @@ module.exports = class ObservationsHelper {
    * @returns {Object} observation list.
    */
 
-  static listCommon(userId = "", sourceApi = "v2") {
+  static listCommon(userId = '', sourceApi = 'v2') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.INVALID_USER_ID);
         }
 
@@ -344,15 +320,15 @@ module.exports = class ObservationsHelper {
           {
             $match: {
               createdBy: userId,
-              status: { $ne: "inactive" },
+              status: { $ne: 'inactive' },
             },
           },
           {
             $lookup: {
-              from: "entities",
-              localField: "entities",
-              foreignField: "_id",
-              as: "entityDocuments",
+              from: 'entities',
+              localField: 'entities',
+              foreignField: '_id',
+              as: 'entityDocuments',
             },
           },
           {
@@ -364,16 +340,14 @@ module.exports = class ObservationsHelper {
               endDate: 1,
               status: 1,
               solutionId: 1,
-              "entityDocuments._id": 1,
-              "entityDocuments.metaInformation.externalId": 1,
-              "entityDocuments.metaInformation.name": 1,
+              'entityDocuments._id': 1,
+              'entityDocuments.metaInformation.externalId': 1,
+              'entityDocuments.metaInformation.name': 1,
             },
           },
         ];
 
-        const userObservations = await database.models.observations.aggregate(
-          assessorObservationsQueryObject
-        );
+        const userObservations = await database.models.observations.aggregate(assessorObservationsQueryObject);
 
         let observation;
         let submissions;
@@ -386,7 +360,7 @@ module.exports = class ObservationsHelper {
         ) {
           observation = userObservations[pointerToAssessorObservationArray];
 
-          if (sourceApi == "v2") {
+          if (sourceApi == 'v2') {
             submissions = await database.models.observationSubmissions
               .find(
                 {
@@ -400,7 +374,7 @@ module.exports = class ObservationsHelper {
                   criteria: 0,
                   evidences: 0,
                   answers: 0,
-                }
+                },
               )
               .sort({ createdAt: -1 });
           } else {
@@ -416,31 +390,24 @@ module.exports = class ObservationsHelper {
                 criteria: 0,
                 evidences: 0,
                 answers: 0,
-              }
+              },
             );
           }
 
           let observationEntitySubmissions = {};
           submissions.forEach((observationEntitySubmission) => {
-            if (
-              !observationEntitySubmissions[
-                observationEntitySubmission.entityId.toString()
-              ]
-            ) {
-              observationEntitySubmissions[
-                observationEntitySubmission.entityId.toString()
-              ] = {
-                submissionStatus: "",
+            if (!observationEntitySubmissions[observationEntitySubmission.entityId.toString()]) {
+              observationEntitySubmissions[observationEntitySubmission.entityId.toString()] = {
+                submissionStatus: '',
                 submissions: new Array(),
                 entityId: observationEntitySubmission.entityId.toString(),
               };
             }
-            observationEntitySubmissions[
-              observationEntitySubmission.entityId.toString()
-            ].submissionStatus = observationEntitySubmission.status;
-            observationEntitySubmissions[
-              observationEntitySubmission.entityId.toString()
-            ].submissions.push(observationEntitySubmission);
+            observationEntitySubmissions[observationEntitySubmission.entityId.toString()].submissionStatus =
+              observationEntitySubmission.status;
+            observationEntitySubmissions[observationEntitySubmission.entityId.toString()].submissions.push(
+              observationEntitySubmission,
+            );
           });
 
           // entityObservationSubmissionStatus = submissions.reduce(
@@ -450,22 +417,16 @@ module.exports = class ObservationsHelper {
           observation.entityDocuments.forEach((observationEntity) => {
             observation.entities.push({
               _id: observationEntity._id,
-              submissionStatus: observationEntitySubmissions[
-                observationEntity._id.toString()
-              ]
-                ? observationEntitySubmissions[observationEntity._id.toString()]
-                    .submissionStatus
-                : "pending",
-              submissions: observationEntitySubmissions[
-                observationEntity._id.toString()
-              ]
-                ? observationEntitySubmissions[observationEntity._id.toString()]
-                    .submissions
+              submissionStatus: observationEntitySubmissions[observationEntity._id.toString()]
+                ? observationEntitySubmissions[observationEntity._id.toString()].submissionStatus
+                : 'pending',
+              submissions: observationEntitySubmissions[observationEntity._id.toString()]
+                ? observationEntitySubmissions[observationEntity._id.toString()].submissions
                 : new Array(),
               ...observationEntity.metaInformation,
             });
           });
-          observations.push(_.omit(observation, ["entityDocuments"]));
+          observations.push(_.omit(observation, ['entityDocuments']));
         }
 
         return resolve(observations);
@@ -500,21 +461,14 @@ module.exports = class ObservationsHelper {
           .lean();
 
         if (!submissionDocument) {
-          submissionDocument =
-            await database.models.observationSubmissions.create(document);
+          submissionDocument = await database.models.observationSubmissions.create(document);
 
-          if (
-            submissionDocument.referenceFrom === messageConstants.common.PROJECT
-          ) {
-            await submissionsHelper.pushSubmissionToImprovementService(
-              submissionDocument
-            );
+          if (submissionDocument.referenceFrom === messageConstants.common.PROJECT) {
+            await submissionsHelper.pushSubmissionToImprovementService(submissionDocument);
           }
 
           // Push new observation submission to kafka for reporting/tracking.
-          observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(
-            submissionDocument._id
-          );
+          observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(submissionDocument._id);
         }
 
         return resolve({
@@ -536,23 +490,18 @@ module.exports = class ObservationsHelper {
    * @returns {Object} submissionNumber.
    */
 
-  static findLastSubmissionForObservationEntity(
-    observationId = "",
-    entityId = ""
-  ) {
+  static findLastSubmissionForObservationEntity(observationId = '', entityId = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        if (observationId == "" || entityId == "") {
-          throw new Error(
-            messageConstants.apiResponses.INVALID_OBSERVATION_ENTITY_ID
-          );
+        if (observationId == '' || entityId == '') {
+          throw new Error(messageConstants.apiResponses.INVALID_OBSERVATION_ENTITY_ID);
         }
 
-        if (typeof observationId == "string") {
+        if (typeof observationId == 'string') {
           observationId = ObjectId(observationId);
         }
 
-        if (typeof entityId == "string") {
+        if (typeof entityId == 'string') {
           entityId = ObjectId(entityId);
         }
 
@@ -564,7 +513,7 @@ module.exports = class ObservationsHelper {
             },
             {
               submissionNumber: 1,
-            }
+            },
           )
           .sort({ createdAt: -1 })
           .limit(1)
@@ -616,10 +565,9 @@ module.exports = class ObservationsHelper {
 
         endDate.setFullYear(endDate.getFullYear() + 1);
 
-        if (entityDocument._id && entityDocument._id.toString() != "") {
+        if (entityDocument._id && entityDocument._id.toString() != '') {
           if (
-            solution.entityTypeId.toString() ===
-              entityDocument.entityTypeId.toString() &&
+            solution.entityTypeId.toString() === entityDocument.entityTypeId.toString() &&
             solution.entityType === entityDocument.entityType
           ) {
             isEntityDocumentValid = true;
@@ -631,9 +579,9 @@ module.exports = class ObservationsHelper {
             {
               solutionExternalId: solution.externalId,
               createdBy: userId,
-              status: "published",
+              status: 'published',
             },
-            { _id: 1 }
+            { _id: 1 },
           )
           .lean();
 
@@ -646,7 +594,7 @@ module.exports = class ObservationsHelper {
                 },
                 {
                   $addToSet: { entities: entityDocument._id },
-                }
+                },
               )
               .lean();
             updateObservationData
@@ -658,33 +606,30 @@ module.exports = class ObservationsHelper {
         } else {
           let observation = {};
 
-          observation["createdFor"] = userOrganisations.createdFor;
-          observation["rootOrganisations"] =
-            userOrganisations.rootOrganisations;
-          observation["status"] = "published";
-          observation["deleted"] = false;
-          observation["solutionId"] = solution._id;
-          observation["solutionExternalId"] = solution.externalId;
-          observation["programId"] = solution.programId;
-          observation["programExternalId"] = solution.programExternalId;
-          observation["frameworkId"] = solution.frameworkId;
-          observation["frameworkExternalId"] = solution.frameworkExternalId;
-          observation["entityTypeId"] = solution.entityTypeId;
-          observation["entityType"] = solution.entityType;
-          observation["createdBy"] = userId;
-          observation["startDate"] = startDate;
-          observation["endDate"] = endDate;
-          observation["name"] = solution.name;
-          observation["description"] = solution.description;
-          observation["entities"] = new Array();
+          observation['createdFor'] = userOrganisations.createdFor;
+          observation['rootOrganisations'] = userOrganisations.rootOrganisations;
+          observation['status'] = 'published';
+          observation['deleted'] = false;
+          observation['solutionId'] = solution._id;
+          observation['solutionExternalId'] = solution.externalId;
+          observation['programId'] = solution.programId;
+          observation['programExternalId'] = solution.programExternalId;
+          observation['frameworkId'] = solution.frameworkId;
+          observation['frameworkExternalId'] = solution.frameworkExternalId;
+          observation['entityTypeId'] = solution.entityTypeId;
+          observation['entityType'] = solution.entityType;
+          observation['createdBy'] = userId;
+          observation['startDate'] = startDate;
+          observation['endDate'] = endDate;
+          observation['name'] = solution.name;
+          observation['description'] = solution.description;
+          observation['entities'] = new Array();
 
           if (isEntityDocumentValid) {
-            observation["entities"].push(entityDocument._id);
+            observation['entities'].push(entityDocument._id);
           }
 
-          let observationDocument = await database.models.observations.create(
-            observation
-          );
+          let observationDocument = await database.models.observations.create(observation);
           observationDocument._id
             ? (status = `${observationDocument._id} created`)
             : (status = `${observationDocument._id} could not be created`);
@@ -717,31 +662,30 @@ module.exports = class ObservationsHelper {
    * @returns {Object} message and success status.
    */
 
-  static sendUserNotifications(userId = "", observationData = {}) {
+  static sendUserNotifications(userId = '', observationData = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.INVALID_USER_ID);
         }
 
-        const kafkaMessage =
-          await kafkaClient.pushUserMappingNotificationToKafka({
-            user_id: userId,
-            internal: false,
-            text: `New observation available now (Observation form)`,
-            type: "information",
-            action: "mapping",
-            payload: {
-              type: observationData.solutionType,
-              solution_id: observationData.solutionId,
-              observation_id: observationData.observationId,
-            },
-            title: "New Observation",
-            created_at: new Date(),
-            appType: process.env.MOBILE_APPLICATION_APP_TYPE,
-          });
+        const kafkaMessage = await kafkaClient.pushUserMappingNotificationToKafka({
+          user_id: userId,
+          internal: false,
+          text: `New observation available now (Observation form)`,
+          type: 'information',
+          action: 'mapping',
+          payload: {
+            type: observationData.solutionType,
+            solution_id: observationData.solutionId,
+            observation_id: observationData.observationId,
+          },
+          title: 'New Observation',
+          created_at: new Date(),
+          appType: process.env.MOBILE_APPLICATION_APP_TYPE,
+        });
 
-        if (kafkaMessage.status != "success") {
+        if (kafkaMessage.status != 'success') {
           let errorObject = {
             formData: {
               userId: userId,
@@ -754,7 +698,7 @@ module.exports = class ObservationsHelper {
           throw new Error(
             `Failed to push entity notification for observation ${observationData._id.toString()} in the solution ${
               observationData.solutionName
-            }`
+            }`,
           );
         }
 
@@ -784,12 +728,11 @@ module.exports = class ObservationsHelper {
           },
         };
 
-        let observationSubmissionsDocuments =
-          await database.models.observationSubmissions
-            .find(findQuery, {
-              _id: 1,
-            })
-            .lean();
+        let observationSubmissionsDocuments = await database.models.observationSubmissions
+          .find(findQuery, {
+            _id: 1,
+          })
+          .lean();
 
         if (observationSubmissionsDocuments.length < 0) {
           throw {
@@ -799,7 +742,7 @@ module.exports = class ObservationsHelper {
 
         let chunkOfObservationSubmissions = _.chunk(
           observationSubmissionsDocuments,
-          chunkOfObservationSubmissionsLength
+          chunkOfObservationSubmissionsLength,
         );
 
         let observationData = [];
@@ -811,44 +754,37 @@ module.exports = class ObservationsHelper {
           pointerToObservationSubmission < chunkOfObservationSubmissions.length;
           pointerToObservationSubmission++
         ) {
-          observationSubmissionsIds = chunkOfObservationSubmissions[
-            pointerToObservationSubmission
-          ].map((observationSubmission) => {
-            return observationSubmission._id;
-          });
+          observationSubmissionsIds = chunkOfObservationSubmissions[pointerToObservationSubmission].map(
+            (observationSubmission) => {
+              return observationSubmission._id;
+            },
+          );
 
-          observationSubmissionsDocument =
-            await database.models.observationSubmissions
-              .find(
-                {
-                  _id: { $in: observationSubmissionsIds },
-                },
-                {
-                  _id: 1,
-                  solutionId: 1,
-                  createdAt: 1,
-                  entityId: 1,
-                  observationId: 1,
-                  createdBy: 1,
-                  "entityInformation.name": 1,
-                  "entityInformation.externalId": 1,
-                  programId: 1,
-                }
-              )
-              .lean();
+          observationSubmissionsDocument = await database.models.observationSubmissions
+            .find(
+              {
+                _id: { $in: observationSubmissionsIds },
+              },
+              {
+                _id: 1,
+                solutionId: 1,
+                createdAt: 1,
+                entityId: 1,
+                observationId: 1,
+                createdBy: 1,
+                'entityInformation.name': 1,
+                'entityInformation.externalId': 1,
+                programId: 1,
+              },
+            )
+            .lean();
 
           await Promise.all(
             observationSubmissionsDocument.map(async (eachObservationData) => {
-              let entityName = "";
-              if (
-                eachObservationData.entityInformation &&
-                eachObservationData.entityInformation.name
-              ) {
+              let entityName = '';
+              if (eachObservationData.entityInformation && eachObservationData.entityInformation.name) {
                 entityName = eachObservationData.entityInformation.name;
-              } else if (
-                eachObservationData.entityInformation &&
-                eachObservationData.entityInformation.externalId
-              ) {
+              } else if (eachObservationData.entityInformation && eachObservationData.entityInformation.externalId) {
                 entityName = eachObservationData.entityInformation.externalId;
               }
 
@@ -862,7 +798,7 @@ module.exports = class ObservationsHelper {
                 entityName: entityName,
                 programId: eachObservationData.programId,
               });
-            })
+            }),
           );
         }
 
@@ -906,10 +842,7 @@ module.exports = class ObservationsHelper {
           };
         }
 
-        let chunkOfObservationSubmissions = _.chunk(
-          observationDocuments,
-          chunkOfObservationSubmissionsLength
-        );
+        let chunkOfObservationSubmissions = _.chunk(observationDocuments, chunkOfObservationSubmissionsLength);
 
         let observationData = [];
         let observationSubmissionsIds;
@@ -920,43 +853,36 @@ module.exports = class ObservationsHelper {
           pointerToObservationSubmission < chunkOfObservationSubmissions.length;
           pointerToObservationSubmission++
         ) {
-          observationSubmissionsIds = chunkOfObservationSubmissions[
-            pointerToObservationSubmission
-          ].map((observationSubmission) => {
-            return observationSubmission._id;
-          });
+          observationSubmissionsIds = chunkOfObservationSubmissions[pointerToObservationSubmission].map(
+            (observationSubmission) => {
+              return observationSubmission._id;
+            },
+          );
 
-          observationSubmissionsDocument =
-            await database.models.observationSubmissions
-              .find(
-                {
-                  _id: { $in: observationSubmissionsIds },
-                },
-                {
-                  _id: 1,
-                  solutionId: 1,
-                  entityId: 1,
-                  observationId: 1,
-                  createdBy: 1,
-                  "entityInformation.name": 1,
-                  "entityInformation.externalId": 1,
-                  completedDate: 1,
-                  programId: 1,
-                }
-              )
-              .lean();
+          observationSubmissionsDocument = await database.models.observationSubmissions
+            .find(
+              {
+                _id: { $in: observationSubmissionsIds },
+              },
+              {
+                _id: 1,
+                solutionId: 1,
+                entityId: 1,
+                observationId: 1,
+                createdBy: 1,
+                'entityInformation.name': 1,
+                'entityInformation.externalId': 1,
+                completedDate: 1,
+                programId: 1,
+              },
+            )
+            .lean();
           await Promise.all(
             observationSubmissionsDocument.map(async (eachObservationData) => {
-              let entityName = "";
-              if (
-                eachObservationData.entityInformation &&
-                eachObservationData.entityInformation.name
-              ) {
+              let entityName = '';
+              if (eachObservationData.entityInformation && eachObservationData.entityInformation.name) {
                 entityName = eachObservationData.entityInformation.name;
-              } else if (
-                eachObservationData.entityInformation &&
-                eachObservationData.entityInformation.externalId
-              ) {
+              } else if (eachObservationData.entityInformation && eachObservationData.entityInformation.externalId) {
                 entityName = eachObservationData.entityInformation.externalId;
               }
 
@@ -970,7 +896,7 @@ module.exports = class ObservationsHelper {
                 completedDate: eachObservationData.completedDate,
                 programId: eachObservationData.programId,
               });
-            })
+            }),
           );
         }
 
@@ -1005,7 +931,7 @@ module.exports = class ObservationsHelper {
             _id: { $in: observationDocument[0].entities },
           });
 
-          observationDocument[0]["count"] = entitiesDocument.length;
+          observationDocument[0]['count'] = entitiesDocument.length;
           observationDocument[0].entities = entitiesDocument;
         }
 
@@ -1064,18 +990,18 @@ module.exports = class ObservationsHelper {
   static solutionDocumentFieldListInResponse() {
     return new Promise(async (resolve, reject) => {
       return resolve([
-        "_id",
-        "externalId",
-        "name",
-        "description",
-        "registry",
-        "captureGpsLocationAtQuestionLevel",
-        "enableQuestionReadOut",
-        "scoringSystem",
-        "isRubricDriven",
-        "pageHeading",
-        "criteriaLevelReport",
-        "isAPrivateProgram",
+        '_id',
+        'externalId',
+        'name',
+        'description',
+        'registry',
+        'captureGpsLocationAtQuestionLevel',
+        'enableQuestionReadOut',
+        'scoringSystem',
+        'isRubricDriven',
+        'pageHeading',
+        'criteriaLevelReport',
+        'isAPrivateProgram',
       ]);
     });
   }
@@ -1094,11 +1020,10 @@ module.exports = class ObservationsHelper {
   static createV2(templateId, userId, requestedData, token) {
     return new Promise(async (resolve, reject) => {
       try {
-        let organisationAndRootOrganisation =
-          await shikshalokamHelper.getOrganisationsAndRootOrganisations(
-            token,
-            userId
-          );
+        let organisationAndRootOrganisation = await shikshalokamHelper.getOrganisationsAndRootOrganisations(
+          token,
+          userId,
+        );
 
         let solutionInformation = {
           name: requestedData.name,
@@ -1106,21 +1031,19 @@ module.exports = class ObservationsHelper {
         };
 
         if (requestedData.project) {
-          solutionInformation["project"] = requestedData.project;
-          solutionInformation["referenceFrom"] =
-            messageConstants.common.PROJECT;
+          solutionInformation['project'] = requestedData.project;
+          solutionInformation['referenceFrom'] = messageConstants.common.PROJECT;
         }
 
-        let createdSolutionAndProgram =
-          await solutionHelper.createProgramAndSolutionFromTemplate(
-            templateId,
-            requestedData.program,
-            userId,
-            solutionInformation,
-            true,
-            organisationAndRootOrganisation.createdFor,
-            organisationAndRootOrganisation.rootOrganisations
-          );
+        let createdSolutionAndProgram = await solutionHelper.createProgramAndSolutionFromTemplate(
+          templateId,
+          requestedData.program,
+          userId,
+          solutionInformation,
+          true,
+          organisationAndRootOrganisation.createdFor,
+          organisationAndRootOrganisation.rootOrganisations,
+        );
 
         let startDate = new Date();
         let endDate = new Date();
@@ -1136,21 +1059,20 @@ module.exports = class ObservationsHelper {
         };
 
         if (requestedData.project) {
-          observationData["project"] = requestedData.project;
-          observationData["referenceFrom"] = messageConstants.common.PROJECT;
+          observationData['project'] = requestedData.project;
+          observationData['referenceFrom'] = messageConstants.common.PROJECT;
         }
 
         let observation = await this.createObservation(
           observationData,
           userId,
           createdSolutionAndProgram,
-          organisationAndRootOrganisation
+          organisationAndRootOrganisation,
         );
 
-        createdSolutionAndProgram["observationName"] = observation.name;
-        createdSolutionAndProgram["observationId"] = observation._id;
-        createdSolutionAndProgram["observationExternalId"] =
-          observation.externalId;
+        createdSolutionAndProgram['observationName'] = observation.name;
+        createdSolutionAndProgram['observationId'] = observation._id;
+        createdSolutionAndProgram['observationExternalId'] = observation.externalId;
 
         return resolve({
           message: messageConstants.apiResponses.CREATED_SOLUTION,
@@ -1180,7 +1102,7 @@ module.exports = class ObservationsHelper {
             isReusable: false,
             type: messageConstants.common.OBSERVATION,
           },
-          ["link"]
+          ['link'],
         );
 
         if (!Array.isArray(observationData) || observationData.length < 1) {
@@ -1196,11 +1118,7 @@ module.exports = class ObservationsHelper {
           throw new Error(messageConstants.apiResponses.APP_NOT_FOUND);
         }
 
-        let link =
-          appsPortalBaseUrl +
-          appName +
-          messageConstants.common.CREATE_OBSERVATION +
-          observationData[0].link;
+        let link = appsPortalBaseUrl + appName + messageConstants.common.CREATE_OBSERVATION + observationData[0].link;
 
         return resolve({
           message: messageConstants.apiResponses.OBSERVATION_LINK_GENERATED,
@@ -1222,25 +1140,18 @@ module.exports = class ObservationsHelper {
    * @returns {Object} observation data.
    */
 
-  static verifyLink(
-    link = "",
-    requestingUserAuthToken = "",
-    userId = "",
-    bodyData = {}
-  ) {
+  static verifyLink(link = '', requestingUserAuthToken = '', userId = '', bodyData = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (link == "") {
+        if (link == '') {
           throw new Error(messageConstants.apiResponses.LINK_REQUIRED_CHECK);
         }
 
-        if (requestingUserAuthToken == "") {
-          throw new Error(
-            messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN
-          );
+        if (requestingUserAuthToken == '') {
+          throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
         }
 
-        if (userId == "") {
+        if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
@@ -1252,36 +1163,30 @@ module.exports = class ObservationsHelper {
             status: { $ne: messageConstants.common.INACTIVE_STATUS },
           },
           [
-            "externalId",
-            "subType",
-            "programId",
-            "name",
-            "description",
-            "frameworkExternalId",
-            "frameworkId",
-            "entityTypeId",
-            "entityType",
-            "isAPrivateProgram",
-            "programExternalId",
-            "endDate",
-            "status",
-          ]
+            'externalId',
+            'subType',
+            'programId',
+            'name',
+            'description',
+            'frameworkExternalId',
+            'frameworkId',
+            'entityTypeId',
+            'entityType',
+            'isAPrivateProgram',
+            'programExternalId',
+            'endDate',
+            'status',
+          ],
         );
 
-        if (
-          !Array.isArray(observationSolutionData) ||
-          observationSolutionData.length < 1
-        ) {
+        if (!Array.isArray(observationSolutionData) || observationSolutionData.length < 1) {
           return resolve({
             message: messageConstants.apiResponses.INVALID_LINK,
             result: [],
           });
         }
 
-        if (
-          observationSolutionData[0].status !=
-          messageConstants.common.ACTIVE_STATUS
-        ) {
+        if (observationSolutionData[0].status != messageConstants.common.ACTIVE_STATUS) {
           return resolve({
             message: messageConstants.apiResponses.LINK_IS_EXPIRED,
             result: [],
@@ -1289,13 +1194,10 @@ module.exports = class ObservationsHelper {
         }
 
         if (new Date() > new Date(observationSolutionData[0].endDate)) {
-          if (
-            observationSolutionData[0].status ==
-            messageConstants.common.ACTIVE_STATUS
-          ) {
+          if (observationSolutionData[0].status == messageConstants.common.ACTIVE_STATUS) {
             await solutionHelper.updateSolutionDocument(
               { link: link },
-              { $set: { status: messageConstants.common.INACTIVE_STATUS } }
+              { $set: { status: messageConstants.common.INACTIVE_STATUS } },
             );
           }
 
@@ -1322,25 +1224,22 @@ module.exports = class ObservationsHelper {
         let registryIds = [];
         let userEntities = [];
 
-        Object.keys(_.omit(bodyData, ["role"])).forEach((requestedDataKey) => {
+        Object.keys(_.omit(bodyData, ['role'])).forEach((requestedDataKey) => {
           registryIds.push(bodyData[requestedDataKey]);
         });
 
         let filterQuery = {
           $or: [
             {
-              "registryDetails.code": { $in: registryIds },
+              'registryDetails.code': { $in: registryIds },
             },
             {
-              "registryDetails.locationId": { $in: registryIds },
+              'registryDetails.locationId': { $in: registryIds },
             },
           ],
         };
 
-        let entitiyDocuments = await entitiesHelper.entityDocuments(
-          filterQuery,
-          ["_id"]
-        );
+        let entitiyDocuments = await entitiesHelper.entityDocuments(filterQuery, ['_id']);
 
         if (entitiyDocuments.length > 0) {
           userEntities = entitiyDocuments.map((entity) => {
@@ -1353,33 +1252,28 @@ module.exports = class ObservationsHelper {
         }
 
         if (userEntities.length > 0) {
-          let entityIdsWithSolutionSubType =
-            await entitiesHelper.entityDocuments(
-              {
-                _id: { $in: userEntities },
-                entityType: observationSolutionData[0].subType,
-              },
-              ["_id"]
-            );
+          let entityIdsWithSolutionSubType = await entitiesHelper.entityDocuments(
+            {
+              _id: { $in: userEntities },
+              entityType: observationSolutionData[0].subType,
+            },
+            ['_id'],
+          );
 
           for (
             let pointerToUserExtension = 0;
             pointerToUserExtension < entityIdsWithSolutionSubType.length;
             pointerToUserExtension++
           ) {
-            entities.push(
-              entityIdsWithSolutionSubType[pointerToUserExtension]._id
-            );
+            entities.push(entityIdsWithSolutionSubType[pointerToUserExtension]._id);
           }
         }
 
         let solutionId = observationSolutionData[0]._id;
         let programId = observationSolutionData[0].programId;
         let today = new Date();
-        let startDate = moment(today).format("YYYY-MM-DD");
-        let endDate = moment(startDate, "YYYY-MM-DD")
-          .add("years", 1)
-          .format("YYYY-MM-DD");
+        let startDate = moment(today).format('YYYY-MM-DD');
+        let endDate = moment(startDate, 'YYYY-MM-DD').add('years', 1).format('YYYY-MM-DD');
         let dataObj = {
           name: observationSolutionData[0].name,
           description: observationSolutionData[0].description,
@@ -1390,11 +1284,10 @@ module.exports = class ObservationsHelper {
           link: link,
         };
 
-        let organisationAndRootOrganisation =
-          await shikshalokamHelper.getOrganisationsAndRootOrganisations(
-            requestingUserAuthToken,
-            userId
-          );
+        let organisationAndRootOrganisation = await shikshalokamHelper.getOrganisationsAndRootOrganisations(
+          requestingUserAuthToken,
+          userId,
+        );
 
         let solution = {
           _id: solutionId,
@@ -1409,12 +1302,7 @@ module.exports = class ObservationsHelper {
           entities: entities,
         };
 
-        let result = await this.createObservation(
-          dataObj,
-          userId,
-          solution,
-          organisationAndRootOrganisation
-        );
+        let result = await this.createObservation(dataObj, userId, solution, organisationAndRootOrganisation);
 
         return resolve({
           message: messageConstants.apiResponses.OBSERVATION_LINK_VERIFIED,
@@ -1440,13 +1328,11 @@ module.exports = class ObservationsHelper {
       try {
         let userAndEntityList = await kendraService.getUsersByEntityAndRole(
           userObservationData.entityId,
-          userObservationData.role
+          userObservationData.role,
         );
 
         if (!userAndEntityList.success) {
-          throw new Error(
-            messageConstants.apiResponses.USERS_AND_ENTITIES_NOT_FOUND
-          );
+          throw new Error(messageConstants.apiResponses.USERS_AND_ENTITIES_NOT_FOUND);
         }
 
         let entityIds = [];
@@ -1458,7 +1344,7 @@ module.exports = class ObservationsHelper {
               entityIds.push(user.entityId);
             }
             usersKeycloakIdMap[user.userId] = true;
-          })
+          }),
         );
 
         const fileName = `Observation-Upload-Result`;
@@ -1476,7 +1362,7 @@ module.exports = class ObservationsHelper {
         if (Object.keys(usersKeycloakIdMap).length > 0) {
           let userOrganisationDetails = await this.getUserOrganisationDetails(
             Object.keys(usersKeycloakIdMap),
-            userToken
+            userToken,
           );
 
           usersKeycloakIdMap = userOrganisationDetails.data;
@@ -1491,54 +1377,43 @@ module.exports = class ObservationsHelper {
             },
           };
 
-          let entityProjection = ["entityTypeId", "entityType"];
+          let entityProjection = ['entityTypeId', 'entityType'];
 
-          entityDocument = await entitiesHelper.entityDocuments(
-            entityQuery,
-            entityProjection
-          );
+          entityDocument = await entitiesHelper.entityDocuments(entityQuery, entityProjection);
         }
 
         let entityObject = {};
 
-        if (
-          entityDocument &&
-          Array.isArray(entityDocument) &&
-          entityDocument.length > 0
-        ) {
+        if (entityDocument && Array.isArray(entityDocument) && entityDocument.length > 0) {
           entityDocument.forEach((eachEntityDocument) => {
-            entityObject[eachEntityDocument._id.toString()] =
-              eachEntityDocument;
+            entityObject[eachEntityDocument._id.toString()] = eachEntityDocument;
           });
         }
 
         let solutionQuery = {
           externalId: userObservationData.solutionExternalId,
-          status: "active",
+          status: 'active',
           isDeleted: false,
           isReusable: false,
-          type: "observation",
+          type: 'observation',
           programId: { $exists: true },
         };
 
         let solutionProjection = [
-          "externalId",
-          "frameworkExternalId",
-          "frameworkId",
-          "name",
-          "description",
-          "type",
-          "subType",
-          "entityTypeId",
-          "entityType",
-          "programId",
-          "programExternalId",
+          'externalId',
+          'frameworkExternalId',
+          'frameworkId',
+          'name',
+          'description',
+          'type',
+          'subType',
+          'entityTypeId',
+          'entityType',
+          'programId',
+          'programExternalId',
         ];
 
-        let solutionDocument = await solutionsHelper.solutionDocuments(
-          solutionQuery,
-          solutionProjection
-        );
+        let solutionDocument = await solutionsHelper.solutionDocuments(solutionQuery, solutionProjection);
 
         if (!solutionDocument.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
@@ -1564,11 +1439,11 @@ module.exports = class ObservationsHelper {
           });
 
           try {
-            if (currentData["userId"] && currentData["userId"] !== "") {
-              userId = currentData["userId"];
+            if (currentData['userId'] && currentData['userId'] !== '') {
+              userId = currentData['userId'];
             }
 
-            if (userId == "") {
+            if (userId == '') {
               throw new Error(messageConstants.apiResponses.USER_NOT_FOUND);
             }
 
@@ -1577,14 +1452,12 @@ module.exports = class ObservationsHelper {
               !Array.isArray(usersKeycloakIdMap[userId].rootOrganisations) ||
               usersKeycloakIdMap[userId].rootOrganisations.length < 1
             ) {
-              throw new Error(
-                messageConstants.apiResponses.USER_ORGANISATION_DETAILS_NOT_FOUND
-              );
+              throw new Error(messageConstants.apiResponses.USER_ORGANISATION_DETAILS_NOT_FOUND);
             } else {
               userOrganisations = usersKeycloakIdMap[userId];
             }
 
-            if (currentData.entityId && currentData.entityId != "") {
+            if (currentData.entityId && currentData.entityId != '') {
               if (entityObject[currentData.entityId.toString()] !== undefined) {
                 entityDocument = entityObject[currentData.entityId.toString()];
               } else {
@@ -1592,18 +1465,13 @@ module.exports = class ObservationsHelper {
               }
             }
 
-            observationHelperData = await this.bulkCreate(
-              userId,
-              solution,
-              entityDocument,
-              userOrganisations
-            );
+            observationHelperData = await this.bulkCreate(userId, solution, entityDocument, userOrganisations);
             status = observationHelperData.status;
           } catch (error) {
             status = error.message;
           }
 
-          csvResult["status"] = status;
+          csvResult['status'] = status;
           input.push(csvResult);
         }
 
@@ -1633,37 +1501,34 @@ module.exports = class ObservationsHelper {
             createdBy: userId,
             entities: ObjectId(entityId),
           },
-          ["_id"]
+          ['_id'],
         );
 
         if (!observation.length > 0) {
           throw {
             message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND,
-            status: httpStatusCode["bad_request"].status,
+            status: httpStatusCode['bad_request'].status,
           };
         }
 
-        let observationSubmissions =
-          await observationSubmissionsHelper.observationSubmissionsDocument(
-            {
-              observationId: observationId,
-              entityId: entityId,
-              isDeleted: false,
-            },
-            ["status", "submissionNumber"]
-          );
+        let observationSubmissions = await observationSubmissionsHelper.observationSubmissionsDocument(
+          {
+            observationId: observationId,
+            entityId: entityId,
+            isDeleted: false,
+          },
+          ['status', 'submissionNumber'],
+        );
 
         if (!observationSubmissions.length > 0) {
           throw {
-            message:
-              messageConstants.apiResponses.OBSERVATION_SUBMISSSION_NOT_FOUND,
-            status: httpStatusCode["bad_request"].status,
+            message: messageConstants.apiResponses.OBSERVATION_SUBMISSSION_NOT_FOUND,
+            status: httpStatusCode['bad_request'].status,
           };
         }
 
         return resolve({
-          message:
-            messageConstants.apiResponses.OBSERVATION_SUBMISSIONS_LIST_FETCHED,
+          message: messageConstants.apiResponses.OBSERVATION_SUBMISSIONS_LIST_FETCHED,
           data: observationSubmissions,
         });
       } catch (error) {
@@ -1684,7 +1549,7 @@ module.exports = class ObservationsHelper {
    * @returns {Object} List of user assigned observations.
    */
 
-  static userAssigned(userId, pageNo, pageSize, search, filter = "") {
+  static userAssigned(userId, pageNo, pageSize, search, filter = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let matchQuery = {
@@ -1695,20 +1560,17 @@ module.exports = class ObservationsHelper {
           },
         };
 
-        if (search && search !== "") {
-          matchQuery["$match"]["$or"] = [
-            { name: new RegExp(search, "i") },
-            { description: new RegExp(search, "i") },
-          ];
+        if (search && search !== '') {
+          matchQuery['$match']['$or'] = [{ name: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }];
         }
 
-        if (filter && filter !== "") {
+        if (filter && filter !== '') {
           if (filter === messageConstants.common.CREATED_BY_ME) {
-            matchQuery["$match"]["isAPrivateProgram"] = {
+            matchQuery['$match']['isAPrivateProgram'] = {
               $ne: false,
             };
           } else if (filter === messageConstants.common.ASSIGN_TO_ME) {
-            matchQuery["$match"]["isAPrivateProgram"] = false;
+            matchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
 
@@ -1722,20 +1584,17 @@ module.exports = class ObservationsHelper {
         };
 
         let facetQuery = {};
-        facetQuery["$facet"] = {};
+        facetQuery['$facet'] = {};
 
-        facetQuery["$facet"]["totalCount"] = [{ $count: "count" }];
+        facetQuery['$facet']['totalCount'] = [{ $count: 'count' }];
 
-        facetQuery["$facet"]["data"] = [
-          { $skip: pageSize * (pageNo - 1) },
-          { $limit: pageSize },
-        ];
+        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }];
 
         let projection2 = {};
-        projection2["$project"] = {
+        projection2['$project'] = {
           data: 1,
           count: {
-            $arrayElemAt: ["$totalCount.count", 0],
+            $arrayElemAt: ['$totalCount.count', 0],
           },
         };
 
@@ -1747,12 +1606,10 @@ module.exports = class ObservationsHelper {
           },
           projection1,
           facetQuery,
-          projection2
+          projection2,
         );
 
-        let result = await database.models.observations.aggregate(
-          aggregateData
-        );
+        let result = await database.models.observations.aggregate(aggregateData);
 
         if (result[0].data.length > 0) {
           let solutionIds = [];
@@ -1765,26 +1622,21 @@ module.exports = class ObservationsHelper {
             {
               _id: { $in: solutionIds },
             },
-            ["language", "creator"]
+            ['language', 'creator'],
           );
 
           solutionDocuments.forEach((solutionDocument) => {
             let solution = result[0].data.find(
-              (resultData) =>
-                resultData.solutionId.toString() ===
-                solutionDocument._id.toString()
+              (resultData) => resultData.solutionId.toString() === solutionDocument._id.toString(),
             );
-            solution["language"] = solutionDocument.language;
-            solution["creator"] = solutionDocument.creator
-              ? solutionDocument.creator
-              : "";
+            solution['language'] = solutionDocument.language;
+            solution['creator'] = solutionDocument.creator ? solutionDocument.creator : '';
           });
         }
 
         return resolve({
           success: true,
-          message:
-            messageConstants.apiResponses.USER_ASSIGNED_OBSERVATION_FETCHED,
+          message: messageConstants.apiResponses.USER_ASSIGNED_OBSERVATION_FETCHED,
           data: {
             data: result[0].data,
             count: result[0].count ? result[0].count : 0,
@@ -1812,21 +1664,14 @@ module.exports = class ObservationsHelper {
    * @returns {Object}
    */
 
-  static getObservation(
-    bodyData,
-    userId,
-    token,
-    pageSize,
-    pageNo,
-    search = ""
-  ) {
+  static getObservation(bodyData, userId, token, pageSize, pageNo, search = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let observations = await this.userAssigned(
           userId,
           messageConstants.common.DEFAULT_PAGE_NO,
           messageConstants.common.DEFAULT_PAGE_SIZE,
-          search
+          search,
         );
 
         let solutionIds = [];
@@ -1855,14 +1700,11 @@ module.exports = class ObservationsHelper {
               {
                 _id: { $in: programIds },
               },
-              ["name"]
+              ['name'],
             );
 
             if (programsData.length > 0) {
-              let programs = programsData.reduce(
-                (ac, program) => ({ ...ac, [program._id.toString()]: program }),
-                {}
-              );
+              let programs = programsData.reduce((ac, program) => ({ ...ac, [program._id.toString()]: program }), {});
 
               mergedData = mergedData.map((data) => {
                 if (programs[data.programId.toString()]) {
@@ -1875,29 +1717,25 @@ module.exports = class ObservationsHelper {
         }
 
         if (solutionIds.length > 0) {
-          bodyData["filter"] = {};
-          bodyData["filter"]["skipSolutions"] = solutionIds;
+          bodyData['filter'] = {};
+          bodyData['filter']['skipSolutions'] = solutionIds;
         }
 
-        let targetedSolutions =
-          await kendraService.solutionBasedOnRoleAndLocation(
-            token,
-            bodyData,
-            messageConstants.common.OBSERVATION,
-            search
-          );
+        let targetedSolutions = await kendraService.solutionBasedOnRoleAndLocation(
+          token,
+          bodyData,
+          messageConstants.common.OBSERVATION,
+          search,
+        );
 
         if (targetedSolutions.success) {
-          if (
-            targetedSolutions.data.data &&
-            targetedSolutions.data.data.length > 0
-          ) {
+          if (targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
             totalCount += targetedSolutions.data.count;
 
             if (mergedData.length !== pageSize) {
               targetedSolutions.data.data.forEach((targetedSolution) => {
                 targetedSolution.solutionId = targetedSolution._id;
-                targetedSolution._id = "";
+                targetedSolution._id = '';
                 mergedData.push(targetedSolution);
                 delete targetedSolution.type;
                 delete targetedSolution.externalId;
@@ -1942,13 +1780,13 @@ module.exports = class ObservationsHelper {
   static entities(userId, token, observationId, solutionId, bodyData) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (observationId === "") {
+        if (observationId === '') {
           let observationData = await this.observationDocuments(
             {
               solutionId: solutionId,
               createdBy: userId,
             },
-            ["_id"]
+            ['_id'],
           );
 
           if (observationData.length > 0) {
@@ -1960,40 +1798,32 @@ module.exports = class ObservationsHelper {
 
             if (solutionData.length === 0) {
               throw {
-                message:
-                  messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND,
+                message: messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND,
               };
             }
             solutionData.data = solutionData[0];
 
-            solutionData.data["startDate"] = new Date();
+            solutionData.data['startDate'] = new Date();
             let endDate = new Date();
             endDate.setFullYear(endDate.getFullYear() + 1);
-            solutionData.data["endDate"] = endDate;
-            solutionData.data["status"] = messageConstants.common.PUBLISHED;
+            solutionData.data['endDate'] = endDate;
+            solutionData.data['status'] = messageConstants.common.PUBLISHED;
 
-            let entityTypes = Object.keys(_.omit(bodyData, ["role"]));
+            let entityTypes = Object.keys(_.omit(bodyData, ['role']));
 
             if (entityTypes.includes(solutionData.data.entityType)) {
-              let entityData = await entitiesHelper.listByLocationIds([
-                bodyData[solutionData.data.entityType],
-              ]);
+              let entityData = await entitiesHelper.listByLocationIds([bodyData[solutionData.data.entityType]]);
 
               if (!entityData.success) {
                 return resolve(entityData);
               }
 
-              solutionData.data["entities"] = [entityData.data[0]._id];
+              solutionData.data['entities'] = [entityData.data[0]._id];
             }
 
             delete solutionData.data._id;
 
-            let observation = await this.create(
-              solutionId,
-              solutionData.data,
-              userId,
-              token
-            );
+            let observation = await this.create(solutionId, solutionData.data, userId, token);
 
             observationId = observation._id;
           }
@@ -2005,7 +1835,7 @@ module.exports = class ObservationsHelper {
           {
             _id: observationId,
           },
-          ["_id", "solutionId"]
+          ['_id', 'solutionId'],
         );
 
         let solutionData;
@@ -2014,7 +1844,7 @@ module.exports = class ObservationsHelper {
             {
               _id: observationData[0].solutionId,
             },
-            ["allowMultipleAssessemts"]
+            ['allowMultipleAssessemts'],
           );
         }
 
@@ -2030,9 +1860,7 @@ module.exports = class ObservationsHelper {
         });
       } catch (error) {
         return resolve({
-          status: error.status
-            ? error.status
-            : httpStatusCode["internal_server_error"].status,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
           success: false,
           message: error.message,
           data: [],
@@ -2056,7 +1884,7 @@ module.exports = class ObservationsHelper {
           {
             _id: observationId,
           },
-          ["entities", "entityType"]
+          ['entities', 'entityType'],
         );
 
         if (!observationDocument[0]) {
@@ -2067,15 +1895,12 @@ module.exports = class ObservationsHelper {
 
         let entities = [];
 
-        if (
-          observationDocument[0].entities &&
-          observationDocument[0].entities.length > 0
-        ) {
+        if (observationDocument[0].entities && observationDocument[0].entities.length > 0) {
           let entitiesData = await entitiesHelper.entityDocuments(
             {
               _id: { $in: observationDocument[0].entities },
             },
-            ["metaInformation.externalId", "metaInformation.name"]
+            ['metaInformation.externalId', 'metaInformation.name'],
           );
 
           if (!entitiesData.length > 0) {
@@ -2084,33 +1909,23 @@ module.exports = class ObservationsHelper {
             };
           }
 
-          for (
-            let pointerToEntities = 0;
-            pointerToEntities < entitiesData.length;
-            pointerToEntities++
-          ) {
+          for (let pointerToEntities = 0; pointerToEntities < entitiesData.length; pointerToEntities++) {
             let currentEntities = entitiesData[pointerToEntities];
 
-            let observationSubmissions =
-              await observationSubmissionsHelper.observationSubmissionsDocument(
-                {
-                  observationId: observationId,
-                  entityId: currentEntities._id,
-                }
-              );
+            let observationSubmissions = await observationSubmissionsHelper.observationSubmissionsDocument({
+              observationId: observationId,
+              entityId: currentEntities._id,
+            });
 
             let entity = {
               _id: currentEntities._id,
               externalId: currentEntities.metaInformation.externalId,
               name: currentEntities.metaInformation.name,
-              submissionsCount:
-                observationSubmissions.length > 0
-                  ? observationSubmissions.length
-                  : 0,
+              submissionsCount: observationSubmissions.length > 0 ? observationSubmissions.length : 0,
             };
 
             if (observationSubmissions.length == 1) {
-              entity["submissionId"] = observationSubmissions[0]._id;
+              entity['submissionId'] = observationSubmissions[0]._id;
             }
 
             entities.push(entity);
@@ -2148,20 +1963,18 @@ module.exports = class ObservationsHelper {
   static addEntityToObservation(observationId, requestedData, userId) {
     return new Promise(async (resolve, reject) => {
       try {
-        let responseMessage = "Updated successfully.";
+        let responseMessage = 'Updated successfully.';
 
         let observationDocument = await this.observationDocuments(
           {
             _id: observationId,
             createdBy: userId,
-            status: { $ne: "inactive" },
+            status: { $ne: 'inactive' },
           },
-          ["entityTypeId", "status"]
+          ['entityTypeId', 'status'],
         );
 
-        if (
-          observationDocument[0].status != messageConstants.common.PUBLISHED
-        ) {
+        if (observationDocument[0].status != messageConstants.common.PUBLISHED) {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message:
@@ -2170,10 +1983,7 @@ module.exports = class ObservationsHelper {
           });
         }
 
-        let entitiesToAdd = await entitiesHelper.validateEntities(
-          requestedData,
-          observationDocument[0].entityTypeId
-        );
+        let entitiesToAdd = await entitiesHelper.validateEntities(requestedData, observationDocument[0].entityTypeId);
 
         if (entitiesToAdd.entityIds.length > 0) {
           await database.models.observations.updateOne(
@@ -2182,7 +1992,7 @@ module.exports = class ObservationsHelper {
             },
             {
               $addToSet: { entities: entitiesToAdd.entityIds },
-            }
+            },
           );
         }
 
@@ -2196,8 +2006,7 @@ module.exports = class ObservationsHelper {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -2220,14 +2029,14 @@ module.exports = class ObservationsHelper {
         await database.models.observations.updateOne(
           {
             _id: ObjectId(observationId),
-            status: { $ne: "completed" },
+            status: { $ne: 'completed' },
             createdBy: userId,
           },
           {
             $pull: {
               entities: { $in: gen.utils.arrayIdsTobjectIds(requestedData) },
             },
-          }
+          },
         );
 
         return resolve({
@@ -2236,8 +2045,7 @@ module.exports = class ObservationsHelper {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }

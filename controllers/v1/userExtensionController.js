@@ -6,22 +6,22 @@
  */
 
 // Dependencies
-const csv = require("csvtojson");
-const userExtensionHelper = require(MODULES_BASE_PATH + "/userExtension/helper")
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
-const entitiesHelper = require(MODULES_BASE_PATH + "/entities/helper")
+const csv = require('csvtojson');
+const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
+const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 
 /**
-    * UserExtension
-    * @class
-*/
+ * UserExtension
+ * @class
+ */
 module.exports = class UserExtension extends Abstract {
   constructor() {
     super(userExtensionSchema);
   }
 
   static get name() {
-    return "userExtension";
+    return 'userExtension';
   }
 
   /**
@@ -77,51 +77,44 @@ module.exports = class UserExtension extends Abstract {
    * @name getProfile
    * @param {Object} req - request data.
    * @param {String} req.params._id - user id.
-   * @returns {JSON} User profile data. 
+   * @returns {JSON} User profile data.
    */
 
   getProfile(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let result = await userExtensionHelper.profileWithEntityDetails({
-          userId: (req.params._id && req.params._id != "") ? req.params._id : req.userDetails.userId,
-          status: "active",
-          isDeleted: false
+          userId: req.params._id && req.params._id != '' ? req.params._id : req.userDetails.userId,
+          status: 'active',
+          isDeleted: false,
         });
 
         return resolve({
           message: messageConstants.apiResponses.USER_EXTENSION_FETCHED,
-          result: result
+          result: result,
         });
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
 
   /**
-  * @api {post} /assessment/api/v1/userExtension/bulkUpload Bulk Upload User Roles
-  * @apiVersion 1.0.0
-  * @apiName Bulk Upload User Roles
-  * @apiGroup User Extension
-  * @apiParam {File} userRoles Mandatory user roles file of type CSV.
-  * @apiSampleRequest /assessment/api/v1/userExtension/bulkUpload
-  * @apiUse successBody
-  * @apiUse errorBody
-  */
+   * @api {post} /assessment/api/v1/userExtension/bulkUpload Bulk Upload User Roles
+   * @apiVersion 1.0.0
+   * @apiName Bulk Upload User Roles
+   * @apiGroup User Extension
+   * @apiParam {File} userRoles Mandatory user roles file of type CSV.
+   * @apiSampleRequest /assessment/api/v1/userExtension/bulkUpload
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-   /**
+  /**
    * Bulk upload user.
    * @method
    * @name bulkUpload
@@ -132,9 +125,7 @@ module.exports = class UserExtension extends Abstract {
 
   bulkUpload(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let userRolesCSVData = await csv().fromString(req.files.userRoles.data.toString());
 
         if (!userRolesCSVData || userRolesCSVData.length < 1) {
@@ -144,7 +135,6 @@ module.exports = class UserExtension extends Abstract {
         let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(userRolesCSVData, req.userDetails);
 
         if (newUserRoleData.length > 0) {
-
           const fileName = `UserRole-Upload`;
           let fileStream = new FileStream(fileName);
           let input = fileStream.initStream();
@@ -153,32 +143,28 @@ module.exports = class UserExtension extends Abstract {
             await fileStream.getProcessorPromise();
             return resolve({
               isResponseAStream: true,
-              fileNameWithPath: fileStream.fileNameWithPath()
+              fileNameWithPath: fileStream.fileNameWithPath(),
             });
-          }());
+          })();
 
-          await Promise.all(newUserRoleData.map(async userRole => {
-            input.push(userRole);
-          }));
+          await Promise.all(
+            newUserRoleData.map(async (userRole) => {
+              input.push(userRole);
+            }),
+          );
 
           input.push(null);
-
         } else {
           throw messageConstants.apiResponses.SOMETHING_WENT_WRONG;
         }
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message: error.message || httpStatusCode.internal_server_error.message, 
-          errorObject: error
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
         });
-
       }
-
-
-    })
+    });
   }
 
   /**
@@ -209,7 +195,7 @@ module.exports = class UserExtension extends Abstract {
     "count": 1
    */
 
-    /**
+  /**
    * Entities in user extension.
    * @method
    * @name entities
@@ -224,36 +210,28 @@ module.exports = class UserExtension extends Abstract {
 
   entities(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let userId = req.params._id ? req.params._id : req.userDetails.id;
-        let entityType = req.query.entityType ? req.query.entityType : "school";
-        
+        let entityType = req.query.entityType ? req.query.entityType : 'school';
+
         let userExtensionEntities = await userExtensionHelper.entities(
           userId,
           entityType,
           req.pageSize,
           req.pageNo,
-          req.searchText
+          req.searchText,
         );
 
         return resolve(userExtensionEntities);
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
+          errorObject: error,
         });
-
       }
-
-
-    })
+    });
   }
-
 
   /**
   * @api {get} /assessment/api/v1/userExtension/update/{{userId}} Update user profile
@@ -274,33 +252,25 @@ module.exports = class UserExtension extends Abstract {
    * @name update
    * @param {Object} req - request data.
    * @param {String} req.params._id - user id.
-   * @returns {JSON} User profile data. 
+   * @returns {JSON} User profile data.
    */
 
   update(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let result = await userExtensionHelper.update(
-          (req.params._id && req.params._id != "") ? req.params._id : req.userDetails.userId,
-          req.body
+          req.params._id && req.params._id != '' ? req.params._id : req.userDetails.userId,
+          req.body,
         );
 
         return resolve(result);
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
-
 };

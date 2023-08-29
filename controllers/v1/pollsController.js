@@ -6,24 +6,22 @@
  */
 
 // Dependencies
-const pollsHelper = require(MODULES_BASE_PATH + "/polls/helper");
-
+const pollsHelper = require(MODULES_BASE_PATH + '/polls/helper');
 
 /**
-    * Polls
-    * @class
-*/
+ * Polls
+ * @class
+ */
 module.exports = class Polls extends Abstract {
+  constructor() {
+    super(pollsSchema);
+  }
 
-    constructor() {
-        super(pollsSchema);
-    }
+  static get name() {
+    return 'polls';
+  }
 
-    static get name() {
-        return "polls";
-    }
-
-     /**
+  /**
     * @api {get} /assessment/api/v1/polls/metaForm Poll Creation Meta Form
     * @apiVersion 1.0.0
     * @apiName Poll Creation Meta Form
@@ -115,7 +113,7 @@ module.exports = class Polls extends Abstract {
     }
     */
 
-     /**
+  /**
    * Poll Creation Meta Form
    * @method
    * @name metaForm
@@ -123,32 +121,26 @@ module.exports = class Polls extends Abstract {
    * @returns {JSON} - Poll Creation Meta Form.
    */
 
-   async metaForm(req) {
-
+  async metaForm(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let pollCreationForm = await pollsHelper.metaForm();
 
-        try {
-           
-            let pollCreationForm = 
-            await pollsHelper.metaForm();
-
-            return resolve({
-                          message: pollCreationForm.message,
-                          result: pollCreationForm.data
-                        });
-
-        } catch (error) {
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
+        return resolve({
+          message: pollCreationForm.message,
+          result: pollCreationForm.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
     });
-   }
+  }
 
-    
-    /**
+  /**
      * @api {post} /assessment/api/v1/polls/create Create Poll
      * @apiVersion 1.0.0
      * @apiName Create Poll
@@ -180,149 +172,126 @@ module.exports = class Polls extends Abstract {
      * @apiUse successBody
      * @apiUse errorBody
      */
-     
-    /**
-    * Create Poll
-    * @method
-    * @name create
-    * @param {Object} req - request Data. 
-    * @param req.body - poll creation  object
-    * @returns {String} - Sharable link.
-    */
 
-   create(req) {
+  /**
+   * Create Poll
+   * @method
+   * @name create
+   * @param {Object} req - request Data.
+   * @param req.body - poll creation  object
+   * @returns {String} - Sharable link.
+   */
+
+  create(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let createDocument = await pollsHelper.create(req.body, req.userDetails.userId, req.headers['appname']);
 
-        try {
+        return resolve({
+          message: createDocument.message,
+          result: createDocument.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-            let createDocument = await pollsHelper.create(
-               req.body,
-               req.userDetails.userId,
-               req.headers['appname']
-            );
+  /**
+   * @api {get} /assessment/api/v1/polls/list List polls
+   * @apiVersion 1.0.0
+   * @apiName List polls
+   * @apiGroup Polls
+   * @apiHeader {String} X-authenticated-user-token Authenticity token
+   * @apiSampleRequest /assessment/api/v1/polls/list
+   * @apiParamExample {json} Response:
+   * {
+   *  "status": 200,
+   *  "message": "Polls list fetched successfully",
+   *  "result": [{
+   *      "_id": "5f3a72359e156a44ee7565b8",
+   *      "name": "Feedback"
+   *     }]
+   * }
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-            return resolve({
-                  message : createDocument.message,
-                  result: createDocument.data
-            });
+  /**
+   * List active polls.
+   * @method
+   * @name list
+   * @param {Object} req -request Data.
+   * @returns {JSON} - active polls list.
+   */
 
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-    /**
-     * @api {get} /assessment/api/v1/polls/list List polls
-     * @apiVersion 1.0.0
-     * @apiName List polls
-     * @apiGroup Polls
-     * @apiHeader {String} X-authenticated-user-token Authenticity token
-     * @apiSampleRequest /assessment/api/v1/polls/list
-     * @apiParamExample {json} Response:
-     * {
-     *  "status": 200,
-     *  "message": "Polls list fetched successfully",
-     *  "result": [{
-     *      "_id": "5f3a72359e156a44ee7565b8",
-     *      "name": "Feedback"
-     *     }]
-     * }
-     * @apiUse successBody
-     * @apiUse errorBody
-     */
-     
-    /**
-    * List active polls.
-    * @method
-    * @name list
-    * @param {Object} req -request Data. 
-    * @returns {JSON} - active polls list.
-    */
-
-   list(req) {
+  list(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let pollsList = await pollsHelper.list(req.userDetails.userId);
 
-        try {
+        return resolve({
+          message: pollsList.message,
+          result: pollsList.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-            let pollsList = await pollsHelper.list(
-               req.userDetails.userId
-            );
+  /**
+   * @api {get} /assessment/api/v1/polls/delete/:pollId Delete an poll
+   * @apiVersion 1.0.0
+   * @apiName Delete an poll
+   * @apiGroup Polls
+   * @apiHeader {String} X-authenticated-user-token Authenticity token
+   * @apiSampleRequest /assessment/api/v1/polls/delete/5b98fa069f664f7e1ae7498c
+   * @apiParamExample {json} Response:
+   * {
+   *  "status": 200,
+   *  "message": "Poll deleted successfully"
+   * }
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-            return resolve({
-                message: pollsList.message,
-                result: pollsList.data
-            });
+  /**
+   * Delete poll.
+   * @method
+   * @name delete
+   * @param {Object} req -request Data.
+   * @param {String} req.params._id - pollId.
+   * @returns {String} - message
+   */
 
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-
-     /**
-     * @api {get} /assessment/api/v1/polls/delete/:pollId Delete an poll
-     * @apiVersion 1.0.0
-     * @apiName Delete an poll
-     * @apiGroup Polls
-     * @apiHeader {String} X-authenticated-user-token Authenticity token
-     * @apiSampleRequest /assessment/api/v1/polls/delete/5b98fa069f664f7e1ae7498c
-     * @apiParamExample {json} Response:
-     * {
-     *  "status": 200,
-     *  "message": "Poll deleted successfully"
-     * }
-     * @apiUse successBody
-     * @apiUse errorBody
-     */
-     
-    /**
-    * Delete poll.
-    * @method
-    * @name delete
-    * @param {Object} req -request Data.
-    * @param {String} req.params._id - pollId.  
-    * @returns {String} - message
-    */
-
-   delete(req) {
+  delete(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let result = await pollsHelper.delete(req.params._id, req.userDetails.userId);
 
-        try {
+        return resolve({
+          message: result.message,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-            let result = await pollsHelper.delete(
-                req.params._id,
-                req.userDetails.userId
-            );
-
-            return resolve({
-               message: result.message
-            });
-
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-   
-   /**
+  /**
      * @api {get} /assessment/api/v1/polls/getPollQuestions/:pollId Get the poll questions
      * @apiVersion 1.0.0
      * @apiName Get the poll questions
@@ -348,44 +317,36 @@ module.exports = class Polls extends Abstract {
      * @apiUse successBody
      * @apiUse errorBody
      */
-     
-    /**
-    * Get the poll questions
-    * @method
-    * @name getPollQuestions
-    * @param {Object} req -request Data.
-    * @param {String} req.params._id - pollId.  
-    * @returns {JSON} - poll questions and options
-    */
 
-   getPollQuestions(req) {
+  /**
+   * Get the poll questions
+   * @method
+   * @name getPollQuestions
+   * @param {Object} req -request Data.
+   * @param {String} req.params._id - pollId.
+   * @returns {JSON} - poll questions and options
+   */
+
+  getPollQuestions(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let pollQuestions = await pollsHelper.getPollQuestions(req.params._id, req.headers['appname']);
 
-        try {
+        return resolve({
+          message: pollQuestions.message,
+          result: pollQuestions.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-            let pollQuestions = await pollsHelper.getPollQuestions(
-                req.params._id,
-                req.headers['appname']
-            );
-
-            return resolve({
-                  message: pollQuestions.message,
-                  result: pollQuestions.data
-            });
-
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-
-    /**
+  /**
      * @api {get} /assessment/api/v1/polls/getPollQuestionsByLink/:link Get the poll questions by link
      * @apiVersion 1.0.0
      * @apiName Get the poll questions by link
@@ -412,44 +373,36 @@ module.exports = class Polls extends Abstract {
      * @apiUse successBody
      * @apiUse errorBody
      */
-     
-    /**
-    * Get the poll questions by link
-    * @method
-    * @name getPollQuestionsByLink
-    * @param {Object} req -request Data.
-    * @param {String} req.params._id - link.  
-    * @returns {JSON} - poll questions and options
-    */
 
-   getPollQuestionsByLink(req) {
+  /**
+   * Get the poll questions by link
+   * @method
+   * @name getPollQuestionsByLink
+   * @param {Object} req -request Data.
+   * @param {String} req.params._id - link.
+   * @returns {JSON} - poll questions and options
+   */
+
+  getPollQuestionsByLink(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let pollQuestions = await pollsHelper.getPollQuestionsByLink(req.params._id, req.userDetails.userId);
 
-        try {
+        return resolve({
+          message: pollQuestions.message,
+          result: pollQuestions.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-            let pollQuestions = await pollsHelper.getPollQuestionsByLink(
-                req.params._id,
-                req.userDetails.userId
-            );
-
-            return resolve({
-                  message: pollQuestions.message,
-                  result: pollQuestions.data
-            });
-
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-   
-    /**
+  /**
      * @api {get} /assessment/api/v1/polls/report/:pollId Poll Report
      * @apiVersion 1.0.0
      * @apiName Poll Report
@@ -506,39 +459,32 @@ module.exports = class Polls extends Abstract {
      * @apiUse successBody
      * @apiUse errorBody
      */
-     
-    /**
-    * Poll Report
-    * @method
-    * @name report
-    * @param {Object} req - request Data. 
-    * @param {String} req.params._id - pollId
-    * @returns {JSON} - poll report data
-    */
 
-   report(req) {
+  /**
+   * Poll Report
+   * @method
+   * @name report
+   * @param {Object} req - request Data.
+   * @param {String} req.params._id - pollId
+   * @returns {JSON} - poll report data
+   */
+
+  report(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let pollReport = await pollsHelper.report(req.params._id);
 
-        try {
-
-            let pollReport = await pollsHelper.report(
-                req.params._id
-            );
-
-            return resolve({
-                message: pollReport.message,
-                result: pollReport.data
-            });
-
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-}
+        return resolve({
+          message: pollReport.message,
+          result: pollReport.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+};

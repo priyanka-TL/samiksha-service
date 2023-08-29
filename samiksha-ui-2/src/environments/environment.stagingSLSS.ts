@@ -8,7 +8,7 @@
 
 export const environment = {
   production: true,
-  baseUrl: "slss-assessment-service/web2/",
-  apiHost: "https://staginghome.shikshalokam.org/slss-assessment-service/api/v1",
-  keycloakBaseUrl:"https://staging.shikshalokam.org",
+  baseUrl: 'slss-assessment-service/web2/',
+  apiHost: 'https://staginghome.shikshalokam.org/slss-assessment-service/api/v1',
+  keycloakBaseUrl: 'https://staging.shikshalokam.org',
 };

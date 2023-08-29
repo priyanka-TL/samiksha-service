@@ -1,26 +1,26 @@
 module.exports = {
-  name: "polls",
+  name: 'polls',
   schema: {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     creator: {
       type: String,
-      required: true
+      required: true,
     },
     createdBy: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
     questions: {
       type: Array,
-      required: true
+      required: true,
     },
     link: {
       type: String,
-      index: true
+      index: true,
     },
     result: Object,
     numberOfResponses: Number,
@@ -28,19 +28,19 @@ module.exports = {
     isDeleted: {
       type: Boolean,
       default: false,
-      required: true
+      required: true,
     },
     startDate: {
       type: Date,
-      required: true
+      required: true,
     },
     endDate: {
       type: Date,
-      required: true
+      required: true,
     },
     status: {
       type: String,
-      required: true
-    }
-  }
+      required: true,
+    },
+  },
 };

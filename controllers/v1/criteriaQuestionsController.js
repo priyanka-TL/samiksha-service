@@ -5,19 +5,16 @@
  * Description : Criteria Questions.
  */
 
-  /**
-    * CriteriaQuestions
-    * @class
-*/
+/**
+ * CriteriaQuestions
+ * @class
+ */
 module.exports = class CriteriaQuestions extends Abstract {
+  constructor() {
+    super(criteriaQuestionsSchema);
+  }
 
-    constructor() {
-      super(criteriaQuestionsSchema);
-    }
-
-    static get name() {
-        return "criteriaQuestions";
-    }
-
-
+  static get name() {
+    return 'criteriaQuestions';
+  }
 };

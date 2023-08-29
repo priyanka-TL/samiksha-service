@@ -5,25 +5,24 @@
  * Description : All forms related information.
  */
 
-  // Dependencies
+// Dependencies
 
-const formsHelper = require(MODULES_BASE_PATH + "/forms/helper");
+const formsHelper = require(MODULES_BASE_PATH + '/forms/helper');
 
 /**
-    * Forms
-    * @class
-*/
+ * Forms
+ * @class
+ */
 module.exports = class Forms extends Abstract {
-
   constructor() {
     super(formsSchema);
   }
 
   static get name() {
-    return "forms";
+    return 'forms';
   }
 
-     /**
+  /**
    * @api {post} /assessment/api/v1/forms/find
    * Find forms.
    * @apiVersion 0.0.1
@@ -91,32 +90,24 @@ module.exports = class Forms extends Abstract {
    * @param {Array} req.body.projection - Projected data.
    * @param {Array} req.body.skipFields - Field to skip.
    * @returns {JSON} Find solutions data.
-  */
+   */
 
- async find(req) {
-  return new Promise(async (resolve, reject) => {
-    try {
+  async find(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let formsData = await formsHelper.formDocuments(req.body.query, req.body.projection, req.body.skipFields);
 
-      let formsData = 
-      await formsHelper.formDocuments(
-        req.body.query,
-        req.body.projection,
-        req.body.skipFields
-      );
-
-      return resolve({
-        message : messageConstants.apiResponses.FORMS_FETCHED,
-        result : formsData
-      });
-
-    } catch (error) {
-      return reject({
-        status: error.status || httpStatusCode.internal_server_error.status,
-        message: error.message || httpStatusCode.internal_server_error.message,
-        errorObject: error
-      });
-    }
-  });
-}
-
+        return resolve({
+          message: messageConstants.apiResponses.FORMS_FETCHED,
+          result: formsData,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

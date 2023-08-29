@@ -6,11 +6,10 @@
  */
 
 // Dependencies
-const csv = require("csvtojson");
-const questionsHelper = require(MODULES_BASE_PATH + "/questions/helper");
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
-const criteriaQuestionsHelper = require(MODULES_BASE_PATH +
-  "/criteriaQuestions/helper");
+const csv = require('csvtojson');
+const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
+const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
 
 /**
  * Questions
@@ -22,7 +21,7 @@ module.exports = class Questions extends Abstract {
   }
 
   static get name() {
-    return "questions";
+    return 'questions';
   }
 
   /**
@@ -88,9 +87,7 @@ module.exports = class Questions extends Abstract {
           });
         }
 
-        let questionData = await csv().fromString(
-          req.files.questions.data.toString()
-        );
+        let questionData = await csv().fromString(req.files.questions.data.toString());
 
         let criteriaIds = new Array();
         let criteriaObject = {};
@@ -100,7 +97,7 @@ module.exports = class Questions extends Abstract {
 
         let solutionDocument = await database.models.solutions
           .findOne(
-            { externalId: questionData[0]["solutionId"] },
+            { externalId: questionData[0]['solutionId'] },
             {
               evidenceMethods: 1,
               sections: 1,
@@ -108,7 +105,7 @@ module.exports = class Questions extends Abstract {
               entityType: 1,
               externalId: 1,
               type: 1,
-            }
+            },
           )
           .lean();
 
@@ -124,7 +121,7 @@ module.exports = class Questions extends Abstract {
             {
               name: solutionDocument.entityType,
             },
-            { profileFields: 1 }
+            { profileFields: 1 },
           )
           .lean();
 
@@ -134,10 +131,8 @@ module.exports = class Questions extends Abstract {
         let defaultSurveyCriteriaExternalId;
         if (solutionDocument.type == messageConstants.common.SURVEY) {
           defaultSurveyEvidenceMethod =
-            solutionDocument.evidenceMethods[
-              Object.keys(solutionDocument.evidenceMethods)[0]
-            ].externalId;
-          defaultSurveyCriteriaExternalId = solutionDocument.externalId + "-SF";
+            solutionDocument.evidenceMethods[Object.keys(solutionDocument.evidenceMethods)[0]].externalId;
+          defaultSurveyCriteriaExternalId = solutionDocument.externalId + '-SF';
           defaultSurveySectionCode = Object.keys(solutionDocument.sections)[0];
 
           if (!entityTypeDocument) {
@@ -147,9 +142,7 @@ module.exports = class Questions extends Abstract {
           }
         }
 
-        let criteriasIdArray = gen.utils.getCriteriaIds(
-          solutionDocument.themes
-        );
+        let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
         let criteriasArray = new Array();
 
         criteriasIdArray.forEach((eachCriteriaIdArray) => {
@@ -161,29 +154,27 @@ module.exports = class Questions extends Abstract {
           let parsedQuestion = gen.utils.valueParser(eachQuestionData);
 
           if (solutionDocument.type == messageConstants.common.SURVEY) {
-            parsedQuestion["criteriaExternalId"] =
-              defaultSurveyCriteriaExternalId;
+            parsedQuestion['criteriaExternalId'] = defaultSurveyCriteriaExternalId;
           }
 
-          if (!criteriaIds.includes(parsedQuestion["criteriaExternalId"])) {
-            criteriaIds.push(parsedQuestion["criteriaExternalId"]);
+          if (!criteriaIds.includes(parsedQuestion['criteriaExternalId'])) {
+            criteriaIds.push(parsedQuestion['criteriaExternalId']);
           }
 
-          if (!questionIds.includes(parsedQuestion["externalId"]))
-            questionIds.push(parsedQuestion["externalId"]);
+          if (!questionIds.includes(parsedQuestion['externalId'])) questionIds.push(parsedQuestion['externalId']);
 
           if (
-            parsedQuestion["hasAParentQuestion"] !== "NO" &&
-            !questionIds.includes(parsedQuestion["parentQuestionId"])
+            parsedQuestion['hasAParentQuestion'] !== 'NO' &&
+            !questionIds.includes(parsedQuestion['parentQuestionId'])
           ) {
-            questionIds.push(parsedQuestion["parentQuestionId"]);
+            questionIds.push(parsedQuestion['parentQuestionId']);
           }
 
           if (
-            parsedQuestion["instanceParentQuestionId"] !== "NA" &&
-            !questionIds.includes(parsedQuestion["instanceParentQuestionId"])
+            parsedQuestion['instanceParentQuestionId'] !== 'NA' &&
+            !questionIds.includes(parsedQuestion['instanceParentQuestionId'])
           ) {
-            questionIds.push(parsedQuestion["instanceParentQuestionId"]);
+            questionIds.push(parsedQuestion['instanceParentQuestionId']);
           }
         });
 
@@ -199,8 +190,7 @@ module.exports = class Questions extends Abstract {
 
         criteriaDocument.forEach((eachCriteriaDocument) => {
           if (criteriasArray.includes(eachCriteriaDocument._id.toString())) {
-            criteriaObject[eachCriteriaDocument.externalId] =
-              eachCriteriaDocument;
+            criteriaObject[eachCriteriaDocument.externalId] = eachCriteriaDocument;
           }
         });
 
@@ -234,78 +224,59 @@ module.exports = class Questions extends Abstract {
         function questionInCsv(parsedQuestionData) {
           let question = {};
 
-          if (questionCollection[parsedQuestionData["externalId"]]) {
-            question[parsedQuestionData["externalId"]] =
-              questionCollection[parsedQuestionData["externalId"]];
+          if (questionCollection[parsedQuestionData['externalId']]) {
+            question[parsedQuestionData['externalId']] = questionCollection[parsedQuestionData['externalId']];
           }
 
           if (
-            parsedQuestionData["instanceParentQuestionId"] !== "NA" &&
-            questionCollection[parsedQuestionData["instanceParentQuestionId"]]
+            parsedQuestionData['instanceParentQuestionId'] !== 'NA' &&
+            questionCollection[parsedQuestionData['instanceParentQuestionId']]
           ) {
-            question[parsedQuestionData["instanceParentQuestionId"]] =
-              questionCollection[
-                parsedQuestionData["instanceParentQuestionId"]
-              ];
+            question[parsedQuestionData['instanceParentQuestionId']] =
+              questionCollection[parsedQuestionData['instanceParentQuestionId']];
           }
 
           if (
-            parsedQuestionData["hasAParentQuestion"] == "YES" &&
-            questionCollection[parsedQuestionData["parentQuestionId"]]
+            parsedQuestionData['hasAParentQuestion'] == 'YES' &&
+            questionCollection[parsedQuestionData['parentQuestionId']]
           ) {
-            question[parsedQuestionData["parentQuestionId"]] =
-              questionCollection[parsedQuestionData["parentQuestionId"]];
+            question[parsedQuestionData['parentQuestionId']] =
+              questionCollection[parsedQuestionData['parentQuestionId']];
           }
           return question;
         }
 
         // Create question
-        function createQuestion(
-          parsedQuestion,
-          question,
-          criteria,
-          ecm,
-          section,
-          profileFields
-        ) {
+        function createQuestion(parsedQuestion, question, criteria, ecm, section, profileFields) {
           let resultFromCreateQuestions = questionsHelper.createQuestions(
             parsedQuestion,
             question,
             criteria,
             ecm,
             section,
-            profileFields
+            profileFields,
           );
 
           return resultFromCreateQuestions;
         }
 
-        for (
-          let pointerToQuestionData = 0;
-          pointerToQuestionData < questionData.length;
-          pointerToQuestionData++
-        ) {
-          let parsedQuestion = gen.utils.valueParser(
-            questionData[pointerToQuestionData]
-          );
+        for (let pointerToQuestionData = 0; pointerToQuestionData < questionData.length; pointerToQuestionData++) {
+          let parsedQuestion = gen.utils.valueParser(questionData[pointerToQuestionData]);
 
           let criteria = {};
           let ecm = {};
 
           if (solutionDocument.type == messageConstants.common.SURVEY) {
-            parsedQuestion["evidenceMethod"] = defaultSurveyEvidenceMethod;
+            parsedQuestion['evidenceMethod'] = defaultSurveyEvidenceMethod;
             parsedQuestion.criteriaExternalId = defaultSurveyCriteriaExternalId;
             parsedQuestion.section = defaultSurveySectionCode;
           }
 
-          ecm[parsedQuestion["evidenceMethod"]] = {
-            code: solutionDocument.evidenceMethods[
-              parsedQuestion["evidenceMethod"]
-            ].externalId,
+          ecm[parsedQuestion['evidenceMethod']] = {
+            code: solutionDocument.evidenceMethods[parsedQuestion['evidenceMethod']].externalId,
           };
 
-          criteria[parsedQuestion.criteriaExternalId] =
-            criteriaObject[parsedQuestion.criteriaExternalId];
+          criteria[parsedQuestion.criteriaExternalId] = criteriaObject[parsedQuestion.criteriaExternalId];
 
           let section;
 
@@ -313,10 +284,10 @@ module.exports = class Questions extends Abstract {
             section = parsedQuestion.section;
           }
           if (
-            (parsedQuestion["hasAParentQuestion"] == "YES" &&
-              !questionCollection[parsedQuestion["parentQuestionId"]]) ||
-            (parsedQuestion["instanceParentQuestionId"] !== "NA" &&
-              !questionCollection[parsedQuestion["instanceParentQuestionId"]])
+            (parsedQuestion['hasAParentQuestion'] == 'YES' &&
+              !questionCollection[parsedQuestion['parentQuestionId']]) ||
+            (parsedQuestion['instanceParentQuestionId'] !== 'NA' &&
+              !questionCollection[parsedQuestion['instanceParentQuestionId']])
           ) {
             pendingItems.push({
               parsedQuestion: parsedQuestion,
@@ -333,23 +304,18 @@ module.exports = class Questions extends Abstract {
               criteria,
               ecm,
               section,
-              entityTypeDocument.profileFields
+              entityTypeDocument.profileFields,
             );
 
             if (resultFromCreateQuestions.result) {
-              questionCollection[resultFromCreateQuestions.result.externalId] =
-                resultFromCreateQuestions.result;
+              questionCollection[resultFromCreateQuestions.result.externalId] = resultFromCreateQuestions.result;
             }
             input.push(resultFromCreateQuestions.total[0]);
           }
         }
 
         if (pendingItems) {
-          for (
-            let pointerToPendingData = 0;
-            pointerToPendingData < pendingItems.length;
-            pointerToPendingData++
-          ) {
+          for (let pointerToPendingData = 0; pointerToPendingData < pendingItems.length; pointerToPendingData++) {
             let eachPendingItem = pendingItems[pointerToPendingData];
 
             let question = questionInCsv(eachPendingItem);
@@ -360,7 +326,7 @@ module.exports = class Questions extends Abstract {
               eachPendingItem.criteriaToBeSent,
               eachPendingItem.evaluationFrameworkMethod,
               eachPendingItem.section,
-              entityTypeDocument.profileFields
+              entityTypeDocument.profileFields,
             );
 
             input.push(csvQuestionData.total[0]);
@@ -407,13 +373,11 @@ module.exports = class Questions extends Abstract {
           });
         }
 
-        let questionData = await csv().fromString(
-          req.files.questions.data.toString()
-        );
+        let questionData = await csv().fromString(req.files.questions.data.toString());
 
         let solutionDocument = await database.models.solutions
           .findOne(
-            { externalId: questionData[0]["solutionId"] },
+            { externalId: questionData[0]['solutionId'] },
             {
               evidenceMethods: 1,
               sections: 1,
@@ -421,7 +385,7 @@ module.exports = class Questions extends Abstract {
               entityType: 1,
               externalId: 1,
               type: 1,
-            }
+            },
           )
           .lean();
 
@@ -437,7 +401,7 @@ module.exports = class Questions extends Abstract {
             {
               name: solutionDocument.entityType,
             },
-            { profileFields: 1 }
+            { profileFields: 1 },
           )
           .lean();
 
@@ -447,10 +411,8 @@ module.exports = class Questions extends Abstract {
         let defaultSurveyCriteriaExternalId;
         if (solutionDocument.type == messageConstants.common.SURVEY) {
           defaultSurveyEvidenceMethod =
-            solutionDocument.evidenceMethods[
-              Object.keys(solutionDocument.evidenceMethods)[0]
-            ].externalId;
-          defaultSurveyCriteriaExternalId = solutionDocument.externalId + "-SF";
+            solutionDocument.evidenceMethods[Object.keys(solutionDocument.evidenceMethods)[0]].externalId;
+          defaultSurveyCriteriaExternalId = solutionDocument.externalId + '-SF';
           defaultSurveySectionCode = Object.keys(solutionDocument.sections)[0];
 
           if (!entityTypeDocument) {
@@ -460,19 +422,14 @@ module.exports = class Questions extends Abstract {
           }
         }
 
-        let criteriasIdArray = gen.utils.getCriteriaIds(
-          solutionDocument.themes
-        );
+        let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
 
         if (criteriasIdArray.length < 1) {
           throw messageConstants.apiResponses.CRITERIA_NOT_FOUND;
         }
 
         let allCriteriaDocument = await database.models.criteria
-          .find(
-            { _id: { $in: criteriasIdArray } },
-            { evidences: 1, externalId: 1 }
-          )
+          .find({ _id: { $in: criteriasIdArray } }, { evidences: 1, externalId: 1 })
           .lean();
 
         if (allCriteriaDocument.length < 1) {
@@ -508,7 +465,7 @@ module.exports = class Questions extends Abstract {
               externalId: 1,
               children: 1,
               instanceQuestions: 1,
-            }
+            },
           )
           .lean();
 
@@ -518,29 +475,21 @@ module.exports = class Questions extends Abstract {
 
         let questionExternalToInternalIdMap = {};
         allQuestionsDocument.forEach((eachQuestion) => {
-          currentQuestionMap[eachQuestion._id.toString()].externalId =
-            eachQuestion.externalId;
-          questionExternalToInternalIdMap[eachQuestion.externalId] =
-            eachQuestion._id.toString();
+          currentQuestionMap[eachQuestion._id.toString()].externalId = eachQuestion.externalId;
+          questionExternalToInternalIdMap[eachQuestion.externalId] = eachQuestion._id.toString();
 
           if (eachQuestion.children && eachQuestion.children.length > 0) {
             eachQuestion.children.forEach((childQuestion) => {
               if (currentQuestionMap[childQuestion.toString()]) {
-                currentQuestionMap[childQuestion.toString()].parent =
-                  eachQuestion._id.toString();
+                currentQuestionMap[childQuestion.toString()].parent = eachQuestion._id.toString();
               }
             });
           }
 
-          if (
-            eachQuestion.instanceQuestions &&
-            eachQuestion.instanceQuestions.length > 0
-          ) {
+          if (eachQuestion.instanceQuestions && eachQuestion.instanceQuestions.length > 0) {
             eachQuestion.instanceQuestions.forEach((instanceChildQuestion) => {
               if (currentQuestionMap[instanceChildQuestion.toString()]) {
-                currentQuestionMap[
-                  instanceChildQuestion.toString()
-                ].instanceParent = eachQuestion._id.toString();
+                currentQuestionMap[instanceChildQuestion.toString()].instanceParent = eachQuestion._id.toString();
               }
             });
           }
@@ -560,189 +509,146 @@ module.exports = class Questions extends Abstract {
 
         let pendingItems = new Array();
 
-        for (
-          let pointerToQuestionData = 0;
-          pointerToQuestionData < questionData.length;
-          pointerToQuestionData++
-        ) {
-          let parsedQuestion = gen.utils.valueParser(
-            questionData[pointerToQuestionData]
-          );
+        for (let pointerToQuestionData = 0; pointerToQuestionData < questionData.length; pointerToQuestionData++) {
+          let parsedQuestion = gen.utils.valueParser(questionData[pointerToQuestionData]);
 
           if (
-            !parsedQuestion["_SYSTEM_ID"] ||
-            parsedQuestion["_SYSTEM_ID"] == "" ||
-            !currentQuestionMap[parsedQuestion["_SYSTEM_ID"]]
+            !parsedQuestion['_SYSTEM_ID'] ||
+            parsedQuestion['_SYSTEM_ID'] == '' ||
+            !currentQuestionMap[parsedQuestion['_SYSTEM_ID']]
           ) {
-            parsedQuestion["UPDATE_STATUS"] = "Invalid Question Internal ID";
+            parsedQuestion['UPDATE_STATUS'] = 'Invalid Question Internal ID';
             input.push(
               _.omitBy(parsedQuestion, (value, key) => {
-                return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-              })
+                return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+              }),
             );
             continue;
           }
 
           if (solutionDocument.type == messageConstants.common.SURVEY) {
-            parsedQuestion["criteriaExternalId"] =
-              defaultSurveyCriteriaExternalId;
-            parsedQuestion["evidenceMethod"] = defaultSurveyEvidenceMethod;
+            parsedQuestion['criteriaExternalId'] = defaultSurveyCriteriaExternalId;
+            parsedQuestion['evidenceMethod'] = defaultSurveyEvidenceMethod;
             parsedQuestion.section = defaultSurveySectionCode;
           }
 
           if (
-            !parsedQuestion["criteriaExternalId"] ||
-            parsedQuestion["criteriaExternalId"] == "" ||
-            !criteriaMap[parsedQuestion["criteriaExternalId"]]
+            !parsedQuestion['criteriaExternalId'] ||
+            parsedQuestion['criteriaExternalId'] == '' ||
+            !criteriaMap[parsedQuestion['criteriaExternalId']]
           ) {
-            parsedQuestion["UPDATE_STATUS"] = "Invalid Criteria External ID";
+            parsedQuestion['UPDATE_STATUS'] = 'Invalid Criteria External ID';
             input.push(
               _.omitBy(parsedQuestion, (value, key) => {
-                return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-              })
+                return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+              }),
             );
             continue;
           } else {
-            parsedQuestion["_criteriaInternalId"] =
-              criteriaMap[parsedQuestion["criteriaExternalId"]];
+            parsedQuestion['_criteriaInternalId'] = criteriaMap[parsedQuestion['criteriaExternalId']];
           }
 
           let ecm =
-            solutionDocument.evidenceMethods[
-              parsedQuestion["evidenceMethod"]
-            ] &&
-            solutionDocument.evidenceMethods[parsedQuestion["evidenceMethod"]]
-              .externalId
-              ? solutionDocument.evidenceMethods[
-                  parsedQuestion["evidenceMethod"]
-                ].externalId
-              : "";
-          if (ecm == "") {
-            parsedQuestion["UPDATE_STATUS"] = "Invalid Evidence Method Code";
+            solutionDocument.evidenceMethods[parsedQuestion['evidenceMethod']] &&
+            solutionDocument.evidenceMethods[parsedQuestion['evidenceMethod']].externalId
+              ? solutionDocument.evidenceMethods[parsedQuestion['evidenceMethod']].externalId
+              : '';
+          if (ecm == '') {
+            parsedQuestion['UPDATE_STATUS'] = 'Invalid Evidence Method Code';
             input.push(
               _.omitBy(parsedQuestion, (value, key) => {
-                return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-              })
+                return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+              }),
             );
             continue;
           } else {
-            parsedQuestion["_evidenceMethodCode"] =
-              solutionDocument.evidenceMethods[
-                parsedQuestion["evidenceMethod"]
-              ].externalId;
+            parsedQuestion['_evidenceMethodCode'] =
+              solutionDocument.evidenceMethods[parsedQuestion['evidenceMethod']].externalId;
           }
 
           let section = solutionDocument.sections[parsedQuestion.section]
             ? solutionDocument.sections[parsedQuestion.section]
-            : "";
-          if (section == "") {
-            parsedQuestion["UPDATE_STATUS"] = "Invalid Section Method Code";
+            : '';
+          if (section == '') {
+            parsedQuestion['UPDATE_STATUS'] = 'Invalid Section Method Code';
             input.push(
               _.omitBy(parsedQuestion, (value, key) => {
-                return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-              })
+                return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+              }),
             );
             continue;
           } else {
-            parsedQuestion["_sectionCode"] = parsedQuestion.section;
+            parsedQuestion['_sectionCode'] = parsedQuestion.section;
           }
 
           // Parent question CSV data validation begins.
-          parsedQuestion["hasAParentQuestion"] =
-            parsedQuestion["hasAParentQuestion"].toUpperCase();
+          parsedQuestion['hasAParentQuestion'] = parsedQuestion['hasAParentQuestion'].toUpperCase();
 
-          if (
-            parsedQuestion["hasAParentQuestion"] != "YES" &&
-            parsedQuestion["hasAParentQuestion"] != "NO"
-          ) {
-            parsedQuestion["UPDATE_STATUS"] =
-              "Invalid value for column hasAParentQuestion";
+          if (parsedQuestion['hasAParentQuestion'] != 'YES' && parsedQuestion['hasAParentQuestion'] != 'NO') {
+            parsedQuestion['UPDATE_STATUS'] = 'Invalid value for column hasAParentQuestion';
             input.push(
               _.omitBy(parsedQuestion, (value, key) => {
-                return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-              })
+                return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+              }),
             );
             continue;
-          } else if (parsedQuestion["hasAParentQuestion"] == "YES") {
+          } else if (parsedQuestion['hasAParentQuestion'] == 'YES') {
             if (
-              parsedQuestion["parentQuestionId"] == "" ||
-              !currentQuestionMap[
-                questionExternalToInternalIdMap[
-                  parsedQuestion["parentQuestionId"]
-                ]
-              ]
+              parsedQuestion['parentQuestionId'] == '' ||
+              !currentQuestionMap[questionExternalToInternalIdMap[parsedQuestion['parentQuestionId']]]
             ) {
-              parsedQuestion["UPDATE_STATUS"] = "Invalid Parent Question ID";
+              parsedQuestion['UPDATE_STATUS'] = 'Invalid Parent Question ID';
               input.push(
                 _.omitBy(parsedQuestion, (value, key) => {
-                  return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-                })
+                  return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+                }),
               );
               continue;
             } else {
-              parsedQuestion["_parentQuestionId"] =
-                questionExternalToInternalIdMap[
-                  parsedQuestion["parentQuestionId"]
-                ];
+              parsedQuestion['_parentQuestionId'] = questionExternalToInternalIdMap[parsedQuestion['parentQuestionId']];
             }
-          } else if (parsedQuestion["hasAParentQuestion"] == "NO") {
-            parsedQuestion["_parentQuestionId"] = "";
+          } else if (parsedQuestion['hasAParentQuestion'] == 'NO') {
+            parsedQuestion['_parentQuestionId'] = '';
           }
           // Parent question CSV data validation ends.
 
           // Instance Parent question CSV data validation begins.
-          parsedQuestion["instanceParentQuestionId"] =
-            parsedQuestion["instanceParentQuestionId"].toUpperCase();
-          if (parsedQuestion["instanceParentQuestionId"] == "") {
-            parsedQuestion["UPDATE_STATUS"] =
-              "Invalid value for column instanceParentQuestionId";
+          parsedQuestion['instanceParentQuestionId'] = parsedQuestion['instanceParentQuestionId'].toUpperCase();
+          if (parsedQuestion['instanceParentQuestionId'] == '') {
+            parsedQuestion['UPDATE_STATUS'] = 'Invalid value for column instanceParentQuestionId';
             input.push(
               _.omitBy(parsedQuestion, (value, key) => {
-                return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-              })
+                return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+              }),
             );
             continue;
-          } else if (parsedQuestion["instanceParentQuestionId"] == "NA") {
-            parsedQuestion["_instanceParentQuestionId"] = "";
+          } else if (parsedQuestion['instanceParentQuestionId'] == 'NA') {
+            parsedQuestion['_instanceParentQuestionId'] = '';
           } else {
             if (
-              currentQuestionMap[
-                questionExternalToInternalIdMap[
-                  parsedQuestion["instanceParentQuestionId"]
-                ]
-              ] &&
-              currentQuestionMap[
-                questionExternalToInternalIdMap[
-                  parsedQuestion["instanceParentQuestionId"]
-                ]
-              ] != ""
+              currentQuestionMap[questionExternalToInternalIdMap[parsedQuestion['instanceParentQuestionId']]] &&
+              currentQuestionMap[questionExternalToInternalIdMap[parsedQuestion['instanceParentQuestionId']]] != ''
             ) {
-              parsedQuestion["_instanceParentQuestionId"] =
-                questionExternalToInternalIdMap[
-                  parsedQuestion["instanceParentQuestionId"]
-                ];
+              parsedQuestion['_instanceParentQuestionId'] =
+                questionExternalToInternalIdMap[parsedQuestion['instanceParentQuestionId']];
             } else {
-              parsedQuestion["UPDATE_STATUS"] =
-                "Invalid Instance Parent Question ID";
+              parsedQuestion['UPDATE_STATUS'] = 'Invalid Instance Parent Question ID';
               input.push(
                 _.omitBy(parsedQuestion, (value, key) => {
-                  return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-                })
+                  return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+                }),
               );
               continue;
             }
           }
           // Instance Parent question CSV data validation ends.
 
-          let currentQuestion =
-            currentQuestionMap[parsedQuestion["_SYSTEM_ID"]];
+          let currentQuestion = currentQuestionMap[parsedQuestion['_SYSTEM_ID']];
 
           if (
-            currentQuestion.criteriaId !=
-              parsedQuestion["_criteriaInternalId"] ||
-            currentQuestion.sectionCode != parsedQuestion["_sectionCode"] ||
-            currentQuestion.evidenceMethodCode !=
-              parsedQuestion["_evidenceMethodCode"]
+            currentQuestion.criteriaId != parsedQuestion['_criteriaInternalId'] ||
+            currentQuestion.sectionCode != parsedQuestion['_sectionCode'] ||
+            currentQuestion.evidenceMethodCode != parsedQuestion['_evidenceMethodCode']
           ) {
             // remove question from criteria (qid,criteiaid, ecm, section)
             let criteriaToUpdate = await database.models.criteria.findOne(
@@ -751,7 +657,7 @@ module.exports = class Questions extends Abstract {
               },
               {
                 evidences: 1,
-              }
+              },
             );
 
             criteriaToUpdate.evidences.forEach((eachEvidence) => {
@@ -764,14 +670,8 @@ module.exports = class Questions extends Abstract {
                       questionObjectPointer < eachSection.questions.length;
                       questionObjectPointer++
                     ) {
-                      if (
-                        eachSection.questions[
-                          questionObjectPointer
-                        ].toString() != currentQuestion.qid
-                      ) {
-                        newSectionQuestions.push(
-                          eachSection.questions[questionObjectPointer]
-                        );
+                      if (eachSection.questions[questionObjectPointer].toString() != currentQuestion.qid) {
+                        newSectionQuestions.push(eachSection.questions[questionObjectPointer]);
                       }
                     }
                     eachSection.questions = newSectionQuestions;
@@ -786,27 +686,20 @@ module.exports = class Questions extends Abstract {
 
             let updateCriteriaObject = {};
             updateCriteriaObject.$set = {
-              ["evidences"]: criteriaToUpdate.evidences,
+              ['evidences']: criteriaToUpdate.evidences,
             };
 
-            await database.models.criteria.findOneAndUpdate(
-              queryCriteriaObject,
-              updateCriteriaObject
-            );
+            await database.models.criteria.findOneAndUpdate(queryCriteriaObject, updateCriteriaObject);
 
-            await criteriaQuestionsHelper.createOrUpdate(
-              criteriaToUpdate._id,
-              true
-            );
+            await criteriaQuestionsHelper.createOrUpdate(criteriaToUpdate._id, true);
 
-            parsedQuestion["_setQuestionInCriteria"] = true;
+            parsedQuestion['_setQuestionInCriteria'] = true;
           }
 
           if (
             currentQuestion.instanceParent &&
-            currentQuestion.instanceParent != "" &&
-            currentQuestion.instanceParent !=
-              parsedQuestion["_instanceParentQuestionId"]
+            currentQuestion.instanceParent != '' &&
+            currentQuestion.instanceParent != parsedQuestion['_instanceParentQuestionId']
           ) {
             // remove instance child from instance parent (childQid,instanceParentQid)
             await database.models.questions.findOneAndUpdate(
@@ -818,14 +711,14 @@ module.exports = class Questions extends Abstract {
               },
               {
                 _id: 1,
-              }
+              },
             );
           }
 
           if (
             currentQuestion.parent &&
-            currentQuestion.parent != "" &&
-            currentQuestion.parent != parsedQuestion["_parentQuestionId"]
+            currentQuestion.parent != '' &&
+            currentQuestion.parent != parsedQuestion['_parentQuestionId']
           ) {
             // remove child from parent and , parent from child (childQid,parentQid)
 
@@ -838,7 +731,7 @@ module.exports = class Questions extends Abstract {
               },
               {
                 _id: 1,
-              }
+              },
             );
 
             await database.models.questions.findOneAndUpdate(
@@ -850,19 +743,16 @@ module.exports = class Questions extends Abstract {
               },
               {
                 _id: 1,
-              }
+              },
             );
           }
 
-          let updateQuestion = await questionsHelper.updateQuestion(
-            parsedQuestion,
-            entityTypeDocument.profileFields
-          );
+          let updateQuestion = await questionsHelper.updateQuestion(parsedQuestion, entityTypeDocument.profileFields);
 
           input.push(
             _.omitBy(updateQuestion, (value, key) => {
-              return _.startsWith(key, "_") && key != "_SYSTEM_ID";
-            })
+              return _.startsWith(key, '_') && key != '_SYSTEM_ID';
+            }),
           );
         }
 
@@ -907,8 +797,7 @@ module.exports = class Questions extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }

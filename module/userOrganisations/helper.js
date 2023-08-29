@@ -6,61 +6,57 @@
  */
 
 /**
-    * UserOrganisationsHelper
-    * @class
-*/
+ * UserOrganisationsHelper
+ * @class
+ */
 
 module.exports = class UserOrganisationsHelper {
-
-    /**
+  /**
    * Lists of user organisations
    * @method
    * @name list
    * @param {Array} userIds - Array of keycloak user ids.
-   * @returns {Object} - key userId and value as organisations and root organisations lists 
+   * @returns {Object} - key userId and value as organisations and root organisations lists
    */
 
-    static list(userIds = []) {
-        return new Promise(async (resolve, reject) => {
-            try {
+  static list(userIds = []) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let result = {
+          success: false,
+          data: {},
+        };
 
-                let result = {
-                    success : false,
-                    data : {}
-                };
+        await Promise.all(
+          userIds.map(async function (userId) {
+            result.data[userId] = {};
 
-                await Promise.all(userIds.map(async function (userId) {
+            let organisationLists = await cassandraDatabase.models.user_org.findAsync(
+              {
+                userid: userId,
+              },
+              {
+                allow_filtering: true,
+                select: ['organisationid'],
+              },
+            );
 
-                    result.data[userId] = {};
+            if (organisationLists.length > 0) {
+              result.success = true;
 
-                    let organisationLists = 
-                    await cassandraDatabase.models.user_org.findAsync(
-                        {
-                            userid : userId
-                        },{
-                            allow_filtering: true,
-                            select: ['organisationid']
-                        }
-                    );
+              result.data[userId]['rootOrganisations'] = [organisationLists[0].organisationid];
 
-                    if ( organisationLists.length > 0 ) {
-                        result.success = true;
-
-                        result.data[userId]["rootOrganisations"] = [organisationLists[0].organisationid];
-
-                        result.data[userId]["organisations"] = organisationLists.map(organisation=>{
-                            return organisation.organisationid
-                        })
-                    }
-                }));
-
-                return resolve(result);
-
-            } catch (error) {
-                return reject(error);
+              result.data[userId]['organisations'] = organisationLists.map((organisation) => {
+                return organisation.organisationid;
+              });
             }
-        })
+          }),
+        );
 
-
-    }
-}
+        return resolve(result);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+};

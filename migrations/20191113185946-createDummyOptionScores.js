@@ -1,6 +1,6 @@
 module.exports = {
   async up(db) {
-    global.migrationMsg = "Create dummy question weightage and option scores."
+    global.migrationMsg = 'Create dummy question weightage and option scores.';
 
     // let currentQuestionCollection = await db.collection('questions').find({
     //   "responseType": {
@@ -11,7 +11,6 @@ module.exports = {
     //     ]
     //   }
     // }).project({options: 1, responseType : 1}).toArray();
-
 
     // currentQuestionCollection.forEach( async (question) => {
     //   if(question.options && question.options.length >0) {
@@ -52,11 +51,9 @@ module.exports = {
     //     }
     //   )
     // });
-
-
   },
 
   async down(db) {
     // return await db.collection('albums').updateOne({artist: 'The Beatles'}, {$set: {blacklisted: false}});
-  }
+  },
 };

@@ -1,13 +1,12 @@
-const fs = require("fs-extra");
-const path = require("path");
+const fs = require('fs-extra');
+const path = require('path');
 
-const DEFAULT_MIGRATIONS_DIR_NAME = "migrations";
+const DEFAULT_MIGRATIONS_DIR_NAME = 'migrations';
 
 async function resolveMigrationsDirPath() {
   let migrationsDir;
   try {
-        
-    migrationsDir = process.env.MIGRATION_DIR; 
+    migrationsDir = process.env.MIGRATION_DIR;
 
     if (!migrationsDir) {
       migrationsDir = DEFAULT_MIGRATIONS_DIR_NAME;
@@ -36,15 +35,13 @@ module.exports = {
 
   async shouldNotExist() {
     const migrationsDir = await resolveMigrationsDirPath();
-    const error = new Error(
-      `migrations directory already exists: ${migrationsDir}`
-    );
+    const error = new Error(`migrations directory already exists: ${migrationsDir}`);
 
     try {
       await fs.stat(migrationsDir);
       throw error;
     } catch (err) {
-      if (err.code !== "ENOENT") {
+      if (err.code !== 'ENOENT') {
         throw error;
       }
     }
@@ -53,11 +50,11 @@ module.exports = {
   async getFileNames() {
     const migrationsDir = await resolveMigrationsDirPath();
     const files = await fs.readdir(migrationsDir);
-    return files.filter(file => path.extname(file) === ".js");
+    return files.filter((file) => path.extname(file) === '.js');
   },
 
   async loadMigration(fileName) {
     const migrationsDir = await resolveMigrationsDirPath();
     return require(path.join(migrationsDir, fileName)); // eslint-disable-line
-  }
+  },
 };

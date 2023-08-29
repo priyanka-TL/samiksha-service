@@ -6,8 +6,8 @@
  */
 
 // Dependencies
-const surveysHelper = require(MODULES_BASE_PATH + "/surveys/helper");
-const v2Survey = require(ROOT_PATH + "/controllers/v2/surveysController");
+const surveysHelper = require(MODULES_BASE_PATH + '/surveys/helper');
+const v2Survey = require(ROOT_PATH + '/controllers/v2/surveysController');
 
 /**
  * Surveys
@@ -343,14 +343,14 @@ module.exports = class Surveys extends v2Survey {
         let surveyDetails = {};
 
         if (validateSurveyId || req.query.solutionId) {
-          let surveyId = req.params._id ? req.params._id : "";
+          let surveyId = req.params._id ? req.params._id : '';
 
           surveyDetails = await surveysHelper.detailsV3(
             req.body,
             surveyId,
             req.query.solutionId,
             req.userDetails.userId,
-            req.userDetails.userToken
+            req.userDetails.userToken,
           );
         } else {
           surveyDetails = await surveysHelper.getDetailsByLink(
@@ -358,7 +358,7 @@ module.exports = class Surveys extends v2Survey {
             req.userDetails.userId,
             req.rspObj.userToken,
             req.body,
-            messageConstants.common.VERSION_3
+            messageConstants.common.VERSION_3,
           );
         }
 
@@ -369,8 +369,7 @@ module.exports = class Surveys extends v2Survey {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }

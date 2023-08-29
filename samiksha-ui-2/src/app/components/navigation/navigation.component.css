@@ -1,21 +1,20 @@
 .sidenav-container {
   height: 100%;
-  
 }
 
 .sidenav {
   width: 200px;
-  top:65px !important;
+  top: 65px !important;
 }
 
 .mat-toolbar.mat-primary {
   position: sticky;
   top: 0;
 }
-.toolBar{
+.toolBar {
   height: 65px;
 }
-.mainDiv{
+.mainDiv {
   height: calc(100vh - 65px);
 }
 .auth-icon {
@@ -27,11 +26,11 @@
   flex: 1 1 auto;
 }
 
-.noMarginPadding{
-  padding:0 ;
+.noMarginPadding {
+  padding: 0;
   margin: 0;
 }
-._flex-spaceBetween{
+._flex-spaceBetween {
   display: flex;
   align-items: center;
   justify-content: space-between;

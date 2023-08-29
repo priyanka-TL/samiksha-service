@@ -5,22 +5,20 @@
  * Description : Institutional assessments library related information.
  */
 
-const libraryInstitutionalAssessmentsHelper = 
-require(MODULES_BASE_PATH + "/library/institutionalAssessments/helper");
+const libraryInstitutionalAssessmentsHelper = require(MODULES_BASE_PATH + '/library/institutionalAssessments/helper');
 
- /**
-    * InstitutionalAssessments
-    * @class
-*/
+/**
+ * InstitutionalAssessments
+ * @class
+ */
 module.exports = class InstitutionalAssessments {
-    
-    constructor() {}
+  constructor() {}
 
-    static get name() {
-        return "InstitutionalAssessments";
-    }
+  static get name() {
+    return 'InstitutionalAssessments';
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/institutionalAssessments/list?search=:searchText&page=:page&limit=:limit List of institutional assessment solutions
     * @apiVersion 1.0.0
     * @apiName List of institutional assessment solutions
@@ -46,39 +44,37 @@ module.exports = class InstitutionalAssessments {
 
     */
 
-      /**
-      * List of institutional assessment solutions
-      * @method
-      * @name list
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns a list of templates institutional solution.
-     */
+  /**
+   * List of institutional assessment solutions
+   * @method
+   * @name list
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns a list of templates institutional solution.
+   */
 
-    async list(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let institutionalAssessmentSolutions = 
-                await libraryInstitutionalAssessmentsHelper.list( 
-                  req.searchText, 
-                  req.pageSize, 
-                  req.pageNo,
-                  req.userDetails.userId,
-                  req.rspObj.userToken  
-                );
+  async list(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let institutionalAssessmentSolutions = await libraryInstitutionalAssessmentsHelper.list(
+          req.searchText,
+          req.pageSize,
+          req.pageNo,
+          req.userDetails.userId,
+          req.rspObj.userToken,
+        );
 
-                return resolve(institutionalAssessmentSolutions);
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
+        return resolve(institutionalAssessmentSolutions);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/institutionalAssessments/details/:librarySolutionId Details of institutional assessment solution.
     * @apiVersion 1.0.0
     * @apiName Details of institutional assessment solution
@@ -108,32 +104,27 @@ module.exports = class InstitutionalAssessments {
     }}
     */
 
-      /**
-      * Details of Institutional Assessment solution
-      * @method
-      * @name details
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns creator,about and questions details.
-     */
+  /**
+   * Details of Institutional Assessment solution
+   * @method
+   * @name details
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns creator,about and questions details.
+   */
 
-    async details(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let institutionalAssessmentSolution = 
-                await libraryInstitutionalAssessmentsHelper.details( 
-                    req.params._id  
-                );
+  async details(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let institutionalAssessmentSolution = await libraryInstitutionalAssessmentsHelper.details(req.params._id);
 
-                return resolve(institutionalAssessmentSolution);
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
+        return resolve(institutionalAssessmentSolution);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

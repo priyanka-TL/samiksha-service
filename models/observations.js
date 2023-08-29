@@ -1,5 +1,5 @@
 module.exports = {
-  name: "observations",
+  name: 'observations',
   schema: {
     name: String,
     description: String,
@@ -7,10 +7,10 @@ module.exports = {
       type: String,
       index: true,
     },
-    frameworkId: "ObjectId",
+    frameworkId: 'ObjectId',
     frameworkExternalId: String,
     solutionId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
     },
     // programId: {
@@ -34,7 +34,7 @@ module.exports = {
       index: true,
     },
     entityTypeId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
     },
     entityType: String,

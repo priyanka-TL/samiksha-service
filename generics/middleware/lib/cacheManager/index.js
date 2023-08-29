@@ -5,12 +5,12 @@ var cacheManager = require('cache-manager');
  * @param {[Object]} config [fields with (store, ttl)]
  */
 function CacheManager(config) {
-    this.ttl = config.ttl || 3600;
-    this.store = config.store || 'memory';
-    this.cache = cacheManager.caching({
-        store: this.store,
-        ttl: this.ttl
-    });
+  this.ttl = config.ttl || 3600;
+  this.store = config.store || 'memory';
+  this.cache = cacheManager.caching({
+    store: this.store,
+    ttl: this.ttl,
+  });
 }
 
 /**
@@ -18,20 +18,19 @@ function CacheManager(config) {
  * @param {[object]}   data     [key - required, value - required, ttl - optional]
  * @param {Function} callback [If error or success]
  */
-CacheManager.prototype.set = function(data, callback) {
+CacheManager.prototype.set = function (data, callback) {
+  if (typeof callback !== 'function') {
+    return;
+  }
 
-    if(typeof callback !== "function") {
-        return;
+  var ttl = data.ttl || this.ttl;
+  this.cache.set(data.key, data.value, { ttl: ttl }, function (err) {
+    if (err) {
+      return callback(err, null);
+    } else {
+      return callback(null, { success: true });
     }
-
-    var ttl = data.ttl || this.ttl;
-    this.cache.set(data.key, data.value, {ttl: ttl}, function(err) {
-        if (err) {
-            return callback(err, null);
-        } else {
-            return callback(null, {success : true});
-        }
-    });
+  });
 };
 
 /**
@@ -40,19 +39,18 @@ CacheManager.prototype.set = function(data, callback) {
  * @param  {Function} callback [error or cache data]
  * @return {[Function]} callback [error or cache data]
  */
-CacheManager.prototype.get = function(key, callback) {
+CacheManager.prototype.get = function (key, callback) {
+  if (typeof callback !== 'function') {
+    return;
+  }
 
-    if(typeof callback !== "function") {
-        return;
+  this.cache.get(key, function (err, cacheData) {
+    if (err) {
+      return callback(err, null);
+    } else {
+      return callback(null, cacheData);
     }
-
-    this.cache.get(key, function(err, cacheData) {
-        if (err) {
-            return callback(err, null);
-        } else {
-            return callback(null, cacheData);
-        }
-    });
+  });
 };
 
 /**
@@ -61,19 +59,18 @@ CacheManager.prototype.get = function(key, callback) {
  * @param  {Function} callback [error or success]
  * @return {Function} callback [error or success]
  */
-CacheManager.prototype.delete = function(key, callback) {
+CacheManager.prototype.delete = function (key, callback) {
+  if (typeof callback !== 'function') {
+    return;
+  }
 
-    if(typeof callback !== "function") {
-        return;
+  this.cache.del(key, function (err) {
+    if (err) {
+      return callback(err, null);
+    } else {
+      return callback(null, { success: true });
     }
-
-    this.cache.del(key, function(err) {
-        if (err) {
-            return callback(err, null);
-        } else {
-            return callback(null, {success : true});
-        }
-    });
+  });
 };
 
 module.exports = CacheManager;

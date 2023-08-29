@@ -6,20 +6,20 @@
  */
 
 // Dependencies
-const entityAssessorsHelper = require(MODULES_BASE_PATH + "/entityAssessors/helper");
-const csv = require("csvtojson");
+const entityAssessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
+const csv = require('csvtojson');
 
 /**
-    * EntityAssessors
-    * @class
-*/
+ * EntityAssessors
+ * @class
+ */
 module.exports = class EntityAssessors extends Abstract {
   constructor() {
     super(entityAssessorsSchema);
   }
 
   static get name() {
-    return "entityAssessors";
+    return 'entityAssessors';
   }
 
   /**
@@ -75,54 +75,51 @@ module.exports = class EntityAssessors extends Abstract {
    * @param {String} req.query.programId - requested programId.
    * @param {String} req.query.solutionId - requested solutionId.
    * @param {String} req.query.type - requested entity type.
-   * @param {String} req.query.subType - requested entity subType. 
+   * @param {String} req.query.subType - requested entity subType.
    * @returns {JSON} - Entities details information.
    */
 
   async entities(req) {
-
     return new Promise(async (resolve, reject) => {
-
       try {
-
-        let programs = new Array;
+        let programs = new Array();
         let responseMessage = messageConstants.apiResponses.UNAUTHORIZED;
 
         let assessorEntitiesQueryObject = [
           {
             $match: {
-              userId: req.userDetails.userId
-            }
+              userId: req.userDetails.userId,
+            },
           },
           {
             $lookup: {
-              from: "entities",
-              localField: "entities",
-              foreignField: "_id",
-              as: "entityDocuments"
-            }
+              from: 'entities',
+              localField: 'entities',
+              foreignField: '_id',
+              as: 'entityDocuments',
+            },
           },
           {
             $project: {
-              "entities": 1,
-              "solutionId": 1,
-              "programId": 1,
-              "entityDocuments._id": 1,
-              "entityDocuments.metaInformation.externalId": 1,
-              "entityDocuments.metaInformation.name": 1,
-              "entityDocuments.metaInformation.addressLine1": 1,
-              "entityDocuments.metaInformation.addressLine2": 1,
-              "entityDocuments.metaInformation.city": 1,
-              "entityDocuments.metaInformation.state": 1
-            }
-          }
+              entities: 1,
+              solutionId: 1,
+              programId: 1,
+              'entityDocuments._id': 1,
+              'entityDocuments.metaInformation.externalId': 1,
+              'entityDocuments.metaInformation.name': 1,
+              'entityDocuments.metaInformation.addressLine1': 1,
+              'entityDocuments.metaInformation.addressLine2': 1,
+              'entityDocuments.metaInformation.city': 1,
+              'entityDocuments.metaInformation.state': 1,
+            },
+          },
         ];
 
         if (req.query.programId) {
-          assessorEntitiesQueryObject[0]["$match"]["programId"] = ObjectId(req.query.programId);
+          assessorEntitiesQueryObject[0]['$match']['programId'] = ObjectId(req.query.programId);
         }
         if (req.query.solutionId) {
-          assessorEntitiesQueryObject[0]["$match"]["solutionId"] = ObjectId(req.query.solutionId);
+          assessorEntitiesQueryObject[0]['$match']['solutionId'] = ObjectId(req.query.solutionId);
         }
 
         const assessorsDocument = await database.models.entityAssessors.aggregate(assessorEntitiesQueryObject);
@@ -133,120 +130,128 @@ module.exports = class EntityAssessors extends Abstract {
         let program = {};
         let solution = {};
         let submissions;
-        let entityPAISubmissionStatus = new Array;
+        let entityPAISubmissionStatus = new Array();
 
-        for (let pointerToAssessorDocumentArray = 0; pointerToAssessorDocumentArray < assessorsDocument.length; pointerToAssessorDocumentArray++) {
-
+        for (
+          let pointerToAssessorDocumentArray = 0;
+          pointerToAssessorDocumentArray < assessorsDocument.length;
+          pointerToAssessorDocumentArray++
+        ) {
           assessor = assessorsDocument[pointerToAssessorDocumentArray];
 
+          solutionQueryObject['_id'] = assessor.solutionId;
+          solutionQueryObject['type'] = req.query.type;
+          solutionQueryObject['subType'] = req.query.subType;
+          solutionQueryObject['status'] = 'active';
+          solutionQueryObject['isDeleted'] = false;
 
-          solutionQueryObject["_id"] = assessor.solutionId;
-          solutionQueryObject["type"] = req.query.type;
-          solutionQueryObject["subType"] = req.query.subType;
-          solutionQueryObject["status"] = "active";
-          solutionQueryObject["isDeleted"] = false;
-
-          solution = await database.models.solutions.findOne(
-            solutionQueryObject,
-            {
+          solution = await database.models.solutions
+            .findOne(solutionQueryObject, {
               name: 1,
               description: 1,
               externalId: 1,
               type: 1,
-              subType: 1
-            }
-          ).lean();
+              subType: 1,
+            })
+            .lean();
 
+          programQueryObject['_id'] = assessor.programId;
+          programQueryObject['status'] = 'active';
+          programQueryObject['isDeleted'] = false;
 
-          programQueryObject["_id"] = assessor.programId;
-          programQueryObject["status"] = "active";
-          programQueryObject["isDeleted"] = false;
-
-          program = await database.models.programs.findOne(
-            programQueryObject,
-            {
+          program = await database.models.programs
+            .findOne(programQueryObject, {
               name: 1,
               description: 1,
               externalId: 1,
               startDate: 1,
-              endDate: 1
-            }
-          ).lean();
-
+              endDate: 1,
+            })
+            .lean();
 
           if (solution && program) {
-
             submissions = await database.models.submissions.find(
               {
                 entityId: {
-                  $in: assessor.entities
+                  $in: assessor.entities,
                 },
-                solutionId: assessor.solutionId
+                solutionId: assessor.solutionId,
               },
               {
-                "entityId": 1,
-                "status": 1,
-                "evidences.PAI.isSubmitted": 1
-              }
+                entityId: 1,
+                status: 1,
+                'evidences.PAI.isSubmitted': 1,
+              },
             );
 
             entityPAISubmissionStatus = submissions.reduce(
               (ac, entitySubmission) => ({
                 ...ac,
                 [entitySubmission.entityId.toString()]: {
-                  PAIStatus: (entitySubmission.entityId && entitySubmission.entityId.evidences && entitySubmission.entityId.evidences.PAI && entitySubmission.entityId.evidences.PAI.isSubmitted === true) ? entity.entityId.evidences.PAI.isSubmitted : false,
+                  PAIStatus:
+                    entitySubmission.entityId &&
+                    entitySubmission.entityId.evidences &&
+                    entitySubmission.entityId.evidences.PAI &&
+                    entitySubmission.entityId.evidences.PAI.isSubmitted === true
+                      ? entity.entityId.evidences.PAI.isSubmitted
+                      : false,
                   submissionId: entitySubmission._id,
-                  submissionStatus: (entitySubmission.entityId && entitySubmission.status) ? entitySubmission.status : "pending"
-                }
-              }), {});
+                  submissionStatus:
+                    entitySubmission.entityId && entitySubmission.status ? entitySubmission.status : 'pending',
+                },
+              }),
+              {},
+            );
 
             let programDocument = program;
-            programDocument.solutions = new Array;
-            solution.entities = new Array;
-            assessor.entityDocuments.forEach(assessorEntity => {
+            programDocument.solutions = new Array();
+            solution.entities = new Array();
+            assessor.entityDocuments.forEach((assessorEntity) => {
               solution.entities.push({
                 _id: assessorEntity._id,
-                isParentInterviewCompleted: (entityPAISubmissionStatus[assessorEntity._id.toString()]) ? entityPAISubmissionStatus[assessorEntity._id.toString()]["PAIStatus"] : false,
-                submissionId: (entityPAISubmissionStatus[assessorEntity._id.toString()]) ? entityPAISubmissionStatus[assessorEntity._id.toString()]["submissionId"] : "",
-                submissionStatus: (entityPAISubmissionStatus[assessorEntity._id.toString()]) ? entityPAISubmissionStatus[assessorEntity._id.toString()]["submissionStatus"] : "pending",
-                ...assessorEntity.metaInformation
+                isParentInterviewCompleted: entityPAISubmissionStatus[assessorEntity._id.toString()]
+                  ? entityPAISubmissionStatus[assessorEntity._id.toString()]['PAIStatus']
+                  : false,
+                submissionId: entityPAISubmissionStatus[assessorEntity._id.toString()]
+                  ? entityPAISubmissionStatus[assessorEntity._id.toString()]['submissionId']
+                  : '',
+                submissionStatus: entityPAISubmissionStatus[assessorEntity._id.toString()]
+                  ? entityPAISubmissionStatus[assessorEntity._id.toString()]['submissionStatus']
+                  : 'pending',
+                ...assessorEntity.metaInformation,
               });
-            })
+            });
             programDocument.solutions.push(solution);
             programs.push(programDocument);
           }
-
         }
 
         responseMessage = messageConstants.apiResponses.ENTITY_FETCHED;
 
         return resolve({
           message: responseMessage,
-          result: programs
+          result: programs,
         });
-
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
+          errorObject: error,
         });
       }
-
     });
-
   }
 
   /**
-* @api {post} /assessment/api/v1/entityAssessors/upload Upload Entity Information CSV
-* @apiVersion 1.0.0
-* @apiName Upload Entity Assessor Information CSV
-* @apiGroup Entity Assessor
-* @apiParam {File} assessors Mandatory assessors file of type CSV.
-* @apiSampleRequest /assessment/api/v1/entityAssessors/upload
-* @apiUse successBody
-* @apiUse errorBody
-*/
+   * @api {post} /assessment/api/v1/entityAssessors/upload Upload Entity Information CSV
+   * @apiVersion 1.0.0
+   * @apiName Upload Entity Assessor Information CSV
+   * @apiGroup Entity Assessor
+   * @apiParam {File} assessors Mandatory assessors file of type CSV.
+   * @apiSampleRequest /assessment/api/v1/entityAssessors/upload
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
   /**
    * Upload entity assessors via csv.
@@ -260,88 +265,81 @@ module.exports = class EntityAssessors extends Abstract {
    */
 
   async upload(req) {
-
     return new Promise(async (resolve, reject) => {
-
       try {
-
         if (!req.files || !req.files.assessors) {
-          throw { 
-              status: httpStatusCode.bad_request.status, 
-              message: httpStatusCode.bad_request.message
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: httpStatusCode.bad_request.message,
           };
         }
 
-      let assessorData = await csv().fromString(req.files.assessors.data.toString());
+        let assessorData = await csv().fromString(req.files.assessors.data.toString());
 
-      await entityAssessorsHelper.upload(assessorData, null, null, req.userDetails.userId, req.rspObj.userToken);
+        await entityAssessorsHelper.upload(assessorData, null, null, req.userDetails.userId, req.rspObj.userToken);
 
-      let response = { message : messageConstants.apiResponses.ASSESSOR_CREATED };
+        let response = { message: messageConstants.apiResponses.ASSESSOR_CREATED };
 
-      return resolve(response);
-
+        return resolve(response);
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
+          errorObject: error,
         });
-
       }
-
-    })
-
+    });
   }
 
   /**
-* @api {post} /assessment/api/v1/entityAssessors/uploadForPortal?programId=:programExternalId&solutionId=:solutionExternalId Upload Entity Information CSV Using Portal
-* @apiVersion 1.0.0
-* @apiName Upload Entity Assessor Information CSV Using Portal
-* @apiGroup Entity Assessor
-* @apiParam {File} assessors Mandatory assessors file of type CSV.
-* @apiSampleRequest /assessment/api/v1/entityAssessors/uploadForPortal?programId=PROGID01&solutionId=EF-DCPCR-2018-001
-* @apiUse successBody
-* @apiUse errorBody
-*/
+   * @api {post} /assessment/api/v1/entityAssessors/uploadForPortal?programId=:programExternalId&solutionId=:solutionExternalId Upload Entity Information CSV Using Portal
+   * @apiVersion 1.0.0
+   * @apiName Upload Entity Assessor Information CSV Using Portal
+   * @apiGroup Entity Assessor
+   * @apiParam {File} assessors Mandatory assessors file of type CSV.
+   * @apiSampleRequest /assessment/api/v1/entityAssessors/uploadForPortal?programId=PROGID01&solutionId=EF-DCPCR-2018-001
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-/**
+  /**
    * Upload entity assessors via csv in portal.
    * @method
    * @name uploadForPortal
    * @param {Object} req - All requested Data.
    * @param {String} req.userDetails.userId - Logged in user id.
    * @param {String} req.query.programId - program id.
-   * @param {String} req.query.solutionId - solution id. 
+   * @param {String} req.query.solutionId - solution id.
    * @param {Object} req.files - requested files.
    * @param {String} req.rspObj.userToken - requested user token.
    * @returns {JSON} - message indicating entity assessors created.
-  */
+   */
 
   async uploadForPortal(req) {
-
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let programId = req.query.programId;
         let solutionId = req.query.solutionId;
 
-        await entityAssessorsHelper.upload(req.files, programId, solutionId, req.userDetails.userId, req.rspObj.userToken);
+        await entityAssessorsHelper.upload(
+          req.files,
+          programId,
+          solutionId,
+          req.userDetails.userId,
+          req.rspObj.userToken,
+        );
 
         let response = { message: messageConstants.apiResponses.ASSESSOR_CREATED };
 
         return resolve(response);
-
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
+          errorObject: error,
         });
       }
-
-    })
+    });
   }
 
   /**
@@ -375,30 +373,26 @@ module.exports = class EntityAssessors extends Abstract {
    * @method
    * @name pendingAssessments
    * @returns {JSON} - List of pending assessments.
-  */
+   */
 
   async pendingAssessments() {
     return new Promise(async (resolve, reject) => {
       try {
-
-        let pendingAssessmentDocument = 
-        await entityAssessorsHelper.pendingAssessment();
+        let pendingAssessmentDocument = await entityAssessorsHelper.pendingAssessment();
 
         return resolve({
           message: messageConstants.apiResponses.PENDING_ASSESSMENT,
-          result: pendingAssessmentDocument
+          result: pendingAssessmentDocument,
         });
-
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
+          errorObject: error,
         });
       }
     });
   }
-
 
   /**
   * @api {get} /assessment/api/v1/entityAssessors/completedAssessments Completed Assessments
@@ -432,35 +426,31 @@ module.exports = class EntityAssessors extends Abstract {
    * @method
    * @name completedAssessments
    * @returns {JSON} - List of completed assessments.
-  */
+   */
 
   async completedAssessments(req) {
     return new Promise(async (resolve, reject) => {
       try {
-
-        let completedAssessmentDocument = 
-        await entityAssessorsHelper.completedAssessment(
+        let completedAssessmentDocument = await entityAssessorsHelper.completedAssessment(
           req.query.fromDate,
-          req.query.toDate
+          req.query.toDate,
         );
 
         return resolve({
           message: messageConstants.apiResponses.COMPLETED_ASSESSMENT,
-          result: completedAssessmentDocument
+          result: completedAssessmentDocument,
         });
-
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
+          errorObject: error,
         });
       }
     });
   }
 
-
-    /**
+  /**
     * @api {post} /assessment/api/v1/entityAssessors/bulkCreateByUserRoleAndEntity 
     * Bulk create assessments by entity and role.
     * @apiVersion 1.0.0
@@ -478,41 +468,36 @@ module.exports = class EntityAssessors extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * Bulk create assessments by entity and role.
-      * @method
-      * @name bulkCreateByUserRoleAndEntity
-      * @param {Object} req - request data.
-      * @param {String} req.userDetails.userId - Logged in user id.
-      * @param {String} req.body.solutionId - solution external id.
-      * @param {String} req.body.programId - program externalid.
-      * @param {String} req.body.assessorRole - assessor role.
-      * @param {String} req.body.entityId - entity id.
-      * @param {String} req.body.role - role code.
-      * @returns {JSON} - message indicating entity assessors created.
-     */
+  /**
+   * Bulk create assessments by entity and role.
+   * @method
+   * @name bulkCreateByUserRoleAndEntity
+   * @param {Object} req - request data.
+   * @param {String} req.userDetails.userId - Logged in user id.
+   * @param {String} req.body.solutionId - solution external id.
+   * @param {String} req.body.programId - program externalid.
+   * @param {String} req.body.assessorRole - assessor role.
+   * @param {String} req.body.entityId - entity id.
+   * @param {String} req.body.role - role code.
+   * @returns {JSON} - message indicating entity assessors created.
+   */
 
-    async bulkCreateByUserRoleAndEntity(req) {
-      return new Promise(async (resolve, reject) => {
-          try {
+  async bulkCreateByUserRoleAndEntity(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let assessments = await entityAssessorsHelper.bulkCreateByUserRoleAndEntity(req.body, req.userDetails.userId);
 
-              let assessments = await entityAssessorsHelper.bulkCreateByUserRoleAndEntity(
-                  req.body,
-                  req.userDetails.userId
-              );
-
-              return resolve(assessments);
-
-          } catch (error) {
-              return reject({
-                  status: error.status || httpStatusCode.internal_server_error.status,
-                  message: error.message || httpStatusCode.internal_server_error.message,
-                  errorObject: error
-              });
-          }
-      })
+        return resolve(assessments);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
   }
-    /**
+  /**
   * @api {post} /assessment/api/v1/entityAssessors/create/:programId?solutionId=solutionId Create entity assessors
   * @apiVersion 1.0.0
   * @apiName Create entity assessors
@@ -556,33 +541,29 @@ module.exports = class EntityAssessors extends Abstract {
    * @method
    * @name create
    * @returns {Object} - entity assessor data.
-  */
+   */
 
- async create(req) {
-  return new Promise(async (resolve, reject) => {
-    try {
+  async create(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let entityAssessor = await entityAssessorsHelper.create(
+          req.userDetails,
+          req.params._id,
+          req.query.solutionId,
+          req.body.entities,
+        );
 
-      let entityAssessor = 
-      await entityAssessorsHelper.create(
-        req.userDetails,
-        req.params._id,
-        req.query.solutionId,
-        req.body.entities
-      );
-
-      return resolve({
-        message: messageConstants.apiResponses.ENTITY_ASSESSORS_CREATED,
-        result: entityAssessor
-      });
-
-    } catch (error) {
-      return reject({
-        status: error.status || httpStatusCode.internal_server_error.status,
-        message: error.message || httpStatusCode.internal_server_error.message,
-        errorObject: error
-      });
-    }
-  });
-}
-
+        return resolve({
+          message: messageConstants.apiResponses.ENTITY_ASSESSORS_CREATED,
+          result: entityAssessor,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

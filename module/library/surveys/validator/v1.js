@@ -6,20 +6,18 @@
  */
 
 module.exports = (req) => {
+  let templateValidator = {
+    details: function () {
+      req
+        .checkParams('_id')
+        .exists()
+        .withMessage('required survey template solution id')
+        .isMongoId()
+        .withMessage('Invalid survey solution id');
+    },
+  };
 
-    let templateValidator = {
-
-        details : function () {
-            req.checkParams('_id')
-            .exists()
-            .withMessage("required survey template solution id")
-            .isMongoId()
-            .withMessage("Invalid survey solution id");
-        }
-    }
-
-    if (templateValidator[req.params.method]) {
-        templateValidator[req.params.method]();
-    }
-
+  if (templateValidator[req.params.method]) {
+    templateValidator[req.params.method]();
+  }
 };

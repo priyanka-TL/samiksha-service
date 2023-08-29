@@ -6,16 +6,13 @@
  */
 
 module.exports = (req) => {
+  let criteriaValidator = {
+    update: function () {
+      req.checkQuery('externalId').exists().withMessage('required criteria external id');
+    },
+  };
 
-    let criteriaValidator = {
-
-        update : function () {
-            req.checkQuery('externalId').exists().withMessage("required criteria external id");
-        }
-    }
-
-    if (criteriaValidator[req.params.method]) {
-        criteriaValidator[req.params.method]();
-    }
-
+  if (criteriaValidator[req.params.method]) {
+    criteriaValidator[req.params.method]();
+  }
 };

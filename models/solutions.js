@@ -1,5 +1,5 @@
 module.exports = {
-  name: "solutions",
+  name: 'solutions',
   schema: {
     externalId: {
       type: String,
@@ -16,7 +16,7 @@ module.exports = {
     },
     description: String,
     author: String,
-    parentSolutionId: "ObjectId",
+    parentSolutionId: 'ObjectId',
     resourceType: Array,
     language: Array,
     keywords: Array,
@@ -29,7 +29,7 @@ module.exports = {
     themes: Array,
     flattenedThemes: Array,
     questionSequenceByEcm: Object,
-    entityTypeId: "ObjectId",
+    entityTypeId: 'ObjectId',
     entityType: String,
     type: {
       type: String,
@@ -52,9 +52,9 @@ module.exports = {
     evidenceMethods: Object,
     sections: Object,
     registry: Array,
-    frameworkId: "ObjectId",
+    frameworkId: 'ObjectId',
     frameworkExternalId: String,
-    parentSolutionId: "ObjectId",
+    parentSolutionId: 'ObjectId',
     noOfRatingLevels: Number,
     isRubricDriven: { type: Boolean, default: false },
     enableQuestionReadOut: { type: Boolean, default: false },
@@ -91,14 +91,14 @@ module.exports = {
     referenceFrom: String,
     scope: {
       entityType: String,
-      entityTypeId: "ObjectId",
+      entityTypeId: 'ObjectId',
       entities: {
         type: Array,
         index: true,
       },
       roles: [
         {
-          _id: "ObjectId",
+          _id: 'ObjectId',
           code: {
             type: String,
             index: true,
@@ -107,7 +107,7 @@ module.exports = {
       ],
     },
     pageHeading: {
-      default: "Domains",
+      default: 'Domains',
       type: String,
     },
     criteriaLevelReport: {

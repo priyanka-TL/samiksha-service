@@ -5,22 +5,20 @@
  * Description : Observations library related information.
  */
 
-const libraryObservationsHelper = 
-require(MODULES_BASE_PATH + "/library/observations/helper");
+const libraryObservationsHelper = require(MODULES_BASE_PATH + '/library/observations/helper');
 
- /**
-    * Observations
-    * @class
-*/
+/**
+ * Observations
+ * @class
+ */
 module.exports = class Observations {
-    
-    constructor() {}
+  constructor() {}
 
-    static get name() {
-        return "Observations";
-    }
+  static get name() {
+    return 'Observations';
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/observations/list?search=:searchText&page=:page&limit=:limit List of observation solutions
     * @apiVersion 1.0.0
     * @apiName List of observation solutions
@@ -45,39 +43,37 @@ module.exports = class Observations {
     }}
     */
 
-      /**
-      * List of observation solutions
-      * @method
-      * @name list
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns a list of templates observation solution.
-     */
+  /**
+   * List of observation solutions
+   * @method
+   * @name list
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns a list of templates observation solution.
+   */
 
-    async list(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let observationSolutions = 
-                await libraryObservationsHelper.list( 
-                  req.searchText, 
-                  req.pageSize, 
-                  req.pageNo,
-                  req.userDetails.userId,
-                  req.rspObj.userToken  
-                );
+  async list(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let observationSolutions = await libraryObservationsHelper.list(
+          req.searchText,
+          req.pageSize,
+          req.pageNo,
+          req.userDetails.userId,
+          req.rspObj.userToken,
+        );
 
-                return resolve(observationSolutions);
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
+        return resolve(observationSolutions);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/observations/details/:librarySolutionId Details of observation solution.
     * @apiVersion 1.0.0
     * @apiName Details of observation solution
@@ -104,32 +100,27 @@ module.exports = class Observations {
     }}
     */
 
-      /**
-      * Details of library solution
-      * @method
-      * @name details
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns creator,about and questions details.
-     */
+  /**
+   * Details of library solution
+   * @method
+   * @name details
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns creator,about and questions details.
+   */
 
-    async details(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let observationSolution = 
-                await libraryObservationsHelper.details( 
-                    req.params._id
-                );
+  async details(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let observationSolution = await libraryObservationsHelper.details(req.params._id);
 
-                return resolve(observationSolution);
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
+        return resolve(observationSolution);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

@@ -8,9 +8,8 @@ describe('OauthLogoutcallbackComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OauthLogoutcallbackComponent ]
-    })
-    .compileComponents();
+      declarations: [OauthLogoutcallbackComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -1,12 +1,7 @@
 module.exports = (req) => {
+  let surveysValidator = {};
 
-    let surveysValidator = {
-        
-    }
-
-    if (surveysValidator[req.params.method]) {
-        surveysValidator[req.params.method]();
-    }
-
-    
+  if (surveysValidator[req.params.method]) {
+    surveysValidator[req.params.method]();
+  }
 };

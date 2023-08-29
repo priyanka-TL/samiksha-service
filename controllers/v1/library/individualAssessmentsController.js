@@ -5,23 +5,21 @@
  * Description : Individual assessments library related information.
  */
 
-const libraryIndividualAssessmentsHelper = 
-require(MODULES_BASE_PATH + "/library/individualAssessments/helper");
+const libraryIndividualAssessmentsHelper = require(MODULES_BASE_PATH + '/library/individualAssessments/helper');
 
- /**
-    * IndividualAssessments
-    * @class
-*/
+/**
+ * IndividualAssessments
+ * @class
+ */
 
 module.exports = class IndividualAssessments {
-    
-    constructor() {}
+  constructor() {}
 
-    static get name() {
-        return "IndividualAssessments";
-    }
+  static get name() {
+    return 'IndividualAssessments';
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/individualAssessments/list?search=:searchText&page=:page&limit=:limit List of Individual assessment solution
     * @apiVersion 1.0.0
     * @apiName List of Individual assessment solution
@@ -47,39 +45,37 @@ module.exports = class IndividualAssessments {
 
     */
 
-      /**
-      * List of Individual assessment solution
-      * @method
-      * @name list
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns a list of templates individual library.
-     */
+  /**
+   * List of Individual assessment solution
+   * @method
+   * @name list
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns a list of templates individual library.
+   */
 
-    async list(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let individualAssessmentSolutions = 
-                await libraryIndividualAssessmentsHelper.list( 
-                  req.searchText, 
-                  req.pageSize, 
-                  req.pageNo,
-                  req.userDetails.userId,
-                  req.rspObj.userToken 
-                );
+  async list(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let individualAssessmentSolutions = await libraryIndividualAssessmentsHelper.list(
+          req.searchText,
+          req.pageSize,
+          req.pageNo,
+          req.userDetails.userId,
+          req.rspObj.userToken,
+        );
 
-                return resolve(individualAssessmentSolutions);
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
+        return resolve(individualAssessmentSolutions);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/individualAssessments/details/:librarySolutionId Details of Individual Assessment solution.
     * @apiVersion 1.0.0
     * @apiName Details of Individual Assessment solution
@@ -109,32 +105,27 @@ module.exports = class IndividualAssessments {
     }}
     */
 
-      /**
-      * Details of Individual Assessment solution
-      * @method
-      * @name details
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns creator,about and questions details.
-     */
+  /**
+   * Details of Individual Assessment solution
+   * @method
+   * @name details
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns creator,about and questions details.
+   */
 
-    async details(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let individualAssessmentSolution = 
-                await libraryIndividualAssessmentsHelper.details( 
-                    req.params._id  
-                );
+  async details(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let individualAssessmentSolution = await libraryIndividualAssessmentsHelper.details(req.params._id);
 
-                return resolve(individualAssessmentSolution);
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
+        return resolve(individualAssessmentSolution);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

@@ -5,22 +5,22 @@
  * Description : Users related information.
  */
 
- // Dependencies 
+// Dependencies
 
- const usersHelper = require(MODULES_BASE_PATH + "/users/helper");
+const usersHelper = require(MODULES_BASE_PATH + '/users/helper');
 
- /**
-    * Users
-    * @class
-*/
+/**
+ * Users
+ * @class
+ */
 module.exports = class Users {
-    constructor() {}
+  constructor() {}
 
-    static get name() {
-        return "users";
-    }
+  static get name() {
+    return 'users';
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/users/programs/:userId List of user programs
     * @apiVersion 1.0.0
     * @apiName List of user programs
@@ -86,40 +86,30 @@ module.exports = class Users {
 }
   */
 
-    /**
-   * Programs list information 
+  /**
+   * Programs list information
    * @method
    * @name programs
-   * @returns {JSON} list of programs information. 
+   * @returns {JSON} list of programs information.
    */
-  
-   programs(req) {
+
+  programs(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
-        let userPrograms = await usersHelper.programs(
-            req.params._id ? req.params._id : req.userDetails.userId
-        );
+        let userPrograms = await usersHelper.programs(req.params._id ? req.params._id : req.userDetails.userId);
 
         return resolve(userPrograms);
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
 
-
-    /**
+  /**
     * @api {get} /assessment/api/v1/users/entities/:userId List of user entities
     * @apiVersion 1.0.0
     * @apiName List of user entities
@@ -167,38 +157,29 @@ module.exports = class Users {
 }
   */
 
-    /**
+  /**
    * List of user entities.
    * @method
    * @name entities
    * @param {Object} req -request Data.
    * @param {String} req.params._id - user id
-   * @returns {JSON} List of user entities.  
+   * @returns {JSON} List of user entities.
    */
-  
+
   entities(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
-        let entitiesData = await usersHelper.entities(
-            req.params._id ? req.params._id : req.userDetails.userId
-        );
+        let entitiesData = await usersHelper.entities(req.params._id ? req.params._id : req.userDetails.userId);
 
         return resolve(entitiesData);
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
 
   /**
@@ -224,41 +205,34 @@ module.exports = class Users {
      * @apiUse errorBody
      */
 
-    /**
-    * Private Programs .
-    * @method
-    * @name privatePrograms
-    * @param {Object} req -request Data.
-    * @param {String} req.params._id - user id
-    * @returns {JSON} - List of programs created by user.
-    */
+  /**
+   * Private Programs .
+   * @method
+   * @name privatePrograms
+   * @param {Object} req -request Data.
+   * @param {String} req.params._id - user id
+   * @returns {JSON} - List of programs created by user.
+   */
 
-   async privatePrograms(req) {
+  async privatePrograms(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let programsData = await usersHelper.privatePrograms(
+          req.params._id && req.params._id != '' ? req.params._id : req.userDetails.userId,
+        );
 
-        try {
-
-            let programsData = 
-            await usersHelper.privatePrograms(
-                (req.params._id && req.params._id != "") ? 
-                req.params._id : 
-                req.userDetails.userId
-            );
-
-            return resolve(programsData);
-
-        } catch (error) {
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-
+        return resolve(programsData);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
     });
   }
 
-     /**
+  /**
      * @api {post} /assessment/api/v1/users/createProgramAndSolution/:userId Users created program and solution.
      * @apiVersion 2.0.0
      * @apiName Users created program and solution.
@@ -339,40 +313,32 @@ module.exports = class Users {
     }}
      */
 
-    /**
-    * Create user program and solution.
-    * @method
-    * @name createProgramAndSolution
-    * @param {Object} req -request Data.
-    * @param {String} req.params._id - user id
-    * @returns {JSON} - Created user program and solution.
-    */
+  /**
+   * Create user program and solution.
+   * @method
+   * @name createProgramAndSolution
+   * @param {Object} req -request Data.
+   * @param {String} req.params._id - user id
+   * @returns {JSON} - Created user program and solution.
+   */
 
-   async createProgramAndSolution(req) {
+  async createProgramAndSolution(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let createdProgramAndSolution = await usersHelper.createProgramAndSolution(
+          req.params._id && req.params._id != '' ? req.params._id : req.userDetails.id,
+          req.body,
+          req.userDetails.userToken,
+        );
 
-        try {
-
-            let createdProgramAndSolution = 
-            await usersHelper.createProgramAndSolution(
-                (req.params._id && req.params._id != "") ? 
-                req.params._id : 
-                req.userDetails.id,
-                req.body,
-                req.userDetails.userToken
-            );
-
-            return resolve(createdProgramAndSolution);
-
-        } catch (error) {
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-
+        return resolve(createdProgramAndSolution);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
     });
   }
-
-}
+};

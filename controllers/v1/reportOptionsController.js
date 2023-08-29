@@ -6,16 +6,15 @@
  */
 
 /**
-    * ReportOptions
-    * @class
-*/
+ * ReportOptions
+ * @class
+ */
 module.exports = class ReportOptions extends Abstract {
-    constructor() {
-        super(reportOptionsSchema);
-    }
+  constructor() {
+    super(reportOptionsSchema);
+  }
 
-    static get name() {
-        return "reportOptions";
-    }
-
+  static get name() {
+    return 'reportOptions';
+  }
 };

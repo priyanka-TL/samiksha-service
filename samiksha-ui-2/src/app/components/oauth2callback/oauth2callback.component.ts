@@ -1,17 +1,17 @@
-import { Component, OnInit } from "@angular/core";
-import { AuthService } from "../../service/auth/auth.service";
-import { ActivatedRoute, Router } from "@angular/router";
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../../service/auth/auth.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
-  selector: "sl-oauth2callback",
-  templateUrl: "./oauth2callback.component.html",
-  styleUrls: ["./oauth2callback.component.scss"]
+  selector: 'sl-oauth2callback',
+  templateUrl: './oauth2callback.component.html',
+  styleUrls: ['./oauth2callback.component.scss'],
 })
 export class Oauth2callbackComponent implements OnInit {
   constructor(
     private activeRoute: ActivatedRoute,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -22,14 +22,12 @@ export class Oauth2callbackComponent implements OnInit {
     console.log(queryParams, routeParams);
     this.authService
       .doOAuthStepTwo(queryParams.code)
-      .then(result => {
+      .then((result) => {
         if (result.ok) {
-          this.router.navigateByUrl("/");
+          this.router.navigateByUrl('/');
         }
-        console.log("result---->", result.ok);
+        console.log('result---->', result.ok);
       })
-      .catch(
-        console.error
-        );
+      .catch(console.error);
   }
 }

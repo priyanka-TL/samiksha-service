@@ -3,57 +3,52 @@
  * author : Aman Karki.
  * created-date : 09-Feb-2021.
  * Description : Improvement service health check.
-*/
+ */
 
-// Dependencies 
+// Dependencies
 const request = require('request');
 
 /**
-   * Health check of improvement service.
-   * @function
-   * @name health_check
-   * @returns {Boolean} - true/false.
-*/
+ * Health check of improvement service.
+ * @function
+ * @name health_check
+ * @returns {Boolean} - true/false.
+ */
 
 function health_check() {
-    return new Promise(async (resolve, reject) => {
-        try {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let healthCheckUrl = process.env.IMPROVEMENT_PROJECT_HOST + '/healthCheckStatus';
 
-            let healthCheckUrl = 
-            process.env.IMPROVEMENT_PROJECT_HOST +  "/healthCheckStatus";
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+        },
+      };
 
-            const options = {
-                headers : {
-                    "content-type": "application/json"
-                }
-            };
-            
-            request.get(healthCheckUrl,options,improvementCallback);
+      request.get(healthCheckUrl, options, improvementCallback);
 
-            function improvementCallback(err, data) {
+      function improvementCallback(err, data) {
+        let result = false;
 
-                let result = false;
-
-                if (err) {
-                    result = false;
-                } else {
-                    
-                    let response = JSON.parse(data.body);
-                    if( response.status === 200 ) {
-                        result = true;
-                    } else {
-                        result = false;
-                    }
-                }
-                return resolve(result);
-            }
-
-        } catch (error) {
-            return reject(error);
+        if (err) {
+          result = false;
+        } else {
+          let response = JSON.parse(data.body);
+          if (response.status === 200) {
+            result = true;
+          } else {
+            result = false;
+          }
         }
-    })
+        return resolve(result);
+      }
+    } catch (error) {
+      return reject(error);
+    }
+  });
 }
 
 module.exports = {
-    health_check : health_check
-}
+  health_check: health_check,
+};

@@ -5,111 +5,95 @@
  * Description : Entity types related helper functionality.
  */
 
- /**
-    * EntityTypesHelper
-    * @class
-*/
+/**
+ * EntityTypesHelper
+ * @class
+ */
 module.exports = class EntityTypesHelper {
+  /**
+   * List of all entity types.
+   * @method
+   * @name list
+   * @param {Object} [queryParameter = "all"] - Filtered query data.
+   * @param {Object} [projection = {}] - Projected data.
+   * @returns {Object} returns a entity types list from the filtered data.
+   */
 
-    /**
-      * List of all entity types.
-      * @method
-      * @name list
-      * @param {Object} [queryParameter = "all"] - Filtered query data.
-      * @param {Object} [projection = {}] - Projected data.   
-      * @returns {Object} returns a entity types list from the filtered data.
-     */
+  static list(queryParameter = 'all', projection = {}) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (queryParameter === 'all') {
+          queryParameter = {};
+        }
 
-    static list(queryParameter = "all", projection = {}) {
-        return new Promise(async (resolve, reject) => {
-            try {
+        let entityTypeData = await database.models.entityTypes.find(queryParameter, projection).lean();
 
-                if( queryParameter === "all" ) {
-                    queryParameter = {};
-                };
+        return resolve(entityTypeData);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 
-                let entityTypeData = 
-                await database.models.entityTypes.find(queryParameter, projection).lean();
+  /**
+   * List of entity types which can be observed in a state.
+   * @method
+   * @name canBeObserved
+   * @param {String} stateId
+   * @returns {Object} returns list of all entity type which can be observed in a state.
+   */
 
-                return resolve(entityTypeData);
+  static canBeObserved(stateId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let observableEntityTypes = await this.list(
+          {
+            isObservable: true,
+          },
+          {
+            name: 1,
+          },
+        );
 
-            } catch (error) {
-                return reject(error);
-            }
-        })
+        if (stateId) {
+          let entityDocument = await database.models.entities
+            .findOne(
+              {
+                _id: stateId,
+              },
+              {
+                childHierarchyPath: 1,
+              },
+            )
+            .lean();
 
-    }
+          if (!entityDocument) {
+            return resolve({
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.ENTITY_NOT_FOUND,
+            });
+          }
 
-    /**
-      * List of entity types which can be observed in a state.
-      * @method
-      * @name canBeObserved
-      * @param {String} stateId
-      * @returns {Object} returns list of all entity type which can be observed in a state.
-     */
+          let result = [];
 
-    static canBeObserved( stateId ) {
-        return new Promise(async (resolve, reject) => {
-            try {
+          if (entityDocument.childHierarchyPath && entityDocument.childHierarchyPath.length > 0) {
+            observableEntityTypes.forEach((entityType) => {
+              if (entityDocument.childHierarchyPath.includes(entityType.name)) {
+                result.push(entityType);
+              }
+            });
+          }
 
-                let observableEntityTypes = 
-                await this.list(
-                    { 
-                        isObservable: true 
-                    }, { 
-                        name: 1 
-                    }
-                );
+          observableEntityTypes = result;
+        }
 
-                if ( stateId ) {
-
-                    let entityDocument = await database.models.entities.findOne(
-                        {
-                            _id : stateId
-                        },{
-                            childHierarchyPath : 1
-                        }
-                    ).lean();
-
-                    if ( !entityDocument ) {
-                        return resolve(
-                            {
-                                status : httpStatusCode.bad_request.status,
-                                message : messageConstants.apiResponses.ENTITY_NOT_FOUND
-                            }
-                        );
-                    }
-
-                    let result = [];
-
-                    if( 
-                        entityDocument.childHierarchyPath && 
-                        entityDocument.childHierarchyPath.length > 0 
-                    ) {
-                        
-                        observableEntityTypes.forEach(entityType=>{
-                            
-                            if( 
-                                entityDocument.childHierarchyPath.includes(entityType.name) 
-                            ) {
-                                result.push(entityType);
-                            }
-                        })
-                    }
-
-                    observableEntityTypes = result;
-                }
-
-                return resolve({
-                    message : messageConstants.apiResponses.ENTITY_TYPES_FETCHED,
-                    result : observableEntityTypes
-                });
-
-            } catch (error) {
-                return reject(error);
-            }
-        })
-
-    }
-
+        return resolve({
+          message: messageConstants.apiResponses.ENTITY_TYPES_FETCHED,
+          result: observableEntityTypes,
+        });
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 };

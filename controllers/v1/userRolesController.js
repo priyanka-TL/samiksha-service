@@ -6,21 +6,21 @@
  */
 
 // Dependencies
-const csv = require("csvtojson");
-const userRolesHelper = require(MODULES_BASE_PATH + "/userRoles/helper")
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
+const csv = require('csvtojson');
+const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
 
 /**
-    * UserRoles
-    * @class
-*/
+ * UserRoles
+ * @class
+ */
 module.exports = class UserRoles extends Abstract {
   constructor() {
     super(userRolesSchema);
   }
 
   static get name() {
-    return "userRoles";
+    return 'userRoles';
   }
 
   /**
@@ -48,71 +48,65 @@ module.exports = class UserRoles extends Abstract {
       ]
   */
 
-    /**
+  /**
    * list user roles.
    * @method
    * @name list
-   * @returns {JSON} list of user roles. 
+   * @returns {JSON} list of user roles.
    */
 
   list(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
-        let result = await userRolesHelper.list({
-          status: "active",
-          isDeleted: false
-        }, {
+        let result = await userRolesHelper.list(
+          {
+            status: 'active',
+            isDeleted: false,
+          },
+          {
             code: 1,
             title: 1,
-            entityTypes: 1
-          });
+            entityTypes: 1,
+          },
+        );
 
         return resolve({
           message: messageConstants.apiResponses.USER_ROLES_FETCHED,
-          result: result
+          result: result,
         });
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
 
   /**
-  * @api {post} /assessment/api/v1/userRoles/bulkCreate Bulk Create User Roles
-  * @apiVersion 1.0.0
-  * @apiName Bulk Create User Roles
-  * @apiGroup User Roles
-  * @apiParam {File} userRoles Mandatory user roles file of type CSV.
-  * @apiSampleRequest /assessment/api/v1/userRoles/bulkCreate
-  * @apiUse successBody
-  * @apiUse errorBody
-  */
+   * @api {post} /assessment/api/v1/userRoles/bulkCreate Bulk Create User Roles
+   * @apiVersion 1.0.0
+   * @apiName Bulk Create User Roles
+   * @apiGroup User Roles
+   * @apiParam {File} userRoles Mandatory user roles file of type CSV.
+   * @apiSampleRequest /assessment/api/v1/userRoles/bulkCreate
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-    /**
+  /**
    * Bulk create user roles.
    * @method
    * @name bulkCreate
    * @param {Object} req -request data.
    * @param {Object} req.files.userRoles -userRoles data.
-   * @returns {CSV} Bulk create user roles data. 
+   * @returns {CSV} Bulk create user roles data.
    */
 
   bulkCreate(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let userRolesCSVData = await csv().fromString(req.files.userRoles.data.toString());
 
         if (!userRolesCSVData || userRolesCSVData.length < 1) {
@@ -122,7 +116,6 @@ module.exports = class UserRoles extends Abstract {
         let newUserRoleData = await userRolesHelper.bulkCreate(userRolesCSVData, req.userDetails);
 
         if (newUserRoleData.length > 0) {
-
           const fileName = `UserRole-Upload`;
           let fileStream = new FileStream(fileName);
           let input = fileStream.initStream();
@@ -131,59 +124,53 @@ module.exports = class UserRoles extends Abstract {
             await fileStream.getProcessorPromise();
             return resolve({
               isResponseAStream: true,
-              fileNameWithPath: fileStream.fileNameWithPath()
+              fileNameWithPath: fileStream.fileNameWithPath(),
             });
-          }());
+          })();
 
-          await Promise.all(newUserRoleData.map(async userRole => {
-            input.push(userRole);
-          }))
+          await Promise.all(
+            newUserRoleData.map(async (userRole) => {
+              input.push(userRole);
+            }),
+          );
 
           input.push(null);
-
         } else {
           throw messageConstants.apiResponses.SOMETHING_WENT_WRONG;
         }
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
+          errorObject: error,
         });
-
       }
-
-
-    })
+    });
   }
 
   /**
-  * @api {post} /assessment/api/v1/userRoles/bulkUpdate Bulk Update User Roles
-  * @apiVersion 1.0.0
-  * @apiName Bulk Update User Roles
-  * @apiGroup User Roles
-  * @apiParam {File} userRoles Mandatory user roles file of type CSV.
-  * @apiSampleRequest /assessment/api/v1/userRoles/bulkUpdate
-  * @apiUse successBody
-  * @apiUse errorBody
-  */
+   * @api {post} /assessment/api/v1/userRoles/bulkUpdate Bulk Update User Roles
+   * @apiVersion 1.0.0
+   * @apiName Bulk Update User Roles
+   * @apiGroup User Roles
+   * @apiParam {File} userRoles Mandatory user roles file of type CSV.
+   * @apiSampleRequest /assessment/api/v1/userRoles/bulkUpdate
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-   /**
+  /**
    * Bulk update user roles.
    * @method
    * @name bulkUpdate
    * @param {Object} req -request data.
    * @param {Object} req.files.userRoles -userRoles data.
-   * @returns {CSV} Bulk update user roles data. 
+   * @returns {CSV} Bulk update user roles data.
    */
 
   bulkUpdate(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
         let userRolesCSVData = await csv().fromString(req.files.userRoles.data.toString());
 
         if (!userRolesCSVData || userRolesCSVData.length < 1) {
@@ -193,7 +180,6 @@ module.exports = class UserRoles extends Abstract {
         let newUserRoleData = await userRolesHelper.bulkUpdate(userRolesCSVData, req.userDetails);
 
         if (newUserRoleData.length > 0) {
-
           const fileName = `UserRole-Upload`;
           let fileStream = new FileStream(fileName);
           let input = fileStream.initStream();
@@ -202,32 +188,28 @@ module.exports = class UserRoles extends Abstract {
             await fileStream.getProcessorPromise();
             return resolve({
               isResponseAStream: true,
-              fileNameWithPath: fileStream.fileNameWithPath()
+              fileNameWithPath: fileStream.fileNameWithPath(),
             });
-          }());
+          })();
 
-          await Promise.all(newUserRoleData.map(async userRole => {
-            input.push(userRole);
-          }));
+          await Promise.all(
+            newUserRoleData.map(async (userRole) => {
+              input.push(userRole);
+            }),
+          );
 
           input.push(null);
-
         } else {
           throw messageConstants.apiResponses.SOMETHING_WENT_WRONG;
         }
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
 
   /**
@@ -263,41 +245,29 @@ module.exports = class UserRoles extends Abstract {
   }
   */
 
-    /**
+  /**
    * find user roles.
    * @method
    * @name find
-   * @returns {JSON} list of user roles. 
+   * @returns {JSON} list of user roles.
    */
 
   find(req) {
     return new Promise(async (resolve, reject) => {
-
       try {
-
-        let result = await userRolesHelper.list(
-          req.body.query,
-          req.body.projection,
-          req.body.skipFields
-        );
+        let result = await userRolesHelper.list(req.body.query, req.body.projection, req.body.skipFields);
 
         return resolve({
           message: messageConstants.apiResponses.USER_ROLES_FETCHED,
-          result: result
+          result: result,
         });
-
       } catch (error) {
-
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-
+          errorObject: error,
+        });
       }
-
-
-    })
+    });
   }
-
 };

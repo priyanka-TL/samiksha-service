@@ -8,9 +8,8 @@ describe('AddCriteriaComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AddCriteriaComponent ]
-    })
-    .compileComponents();
+      declarations: [AddCriteriaComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -1,7 +1,6 @@
 let Abstract = class Abstract {
   constructor(schema) {
-    
-    if (schema.db_type && schema.db_type =="cassandra") {
+    if (schema.db_type && schema.db_type == 'cassandra') {
       this.model = cassandraDatabase.createModel(schema);
       this.schema = schema.name;
     } else {
@@ -12,7 +11,7 @@ let Abstract = class Abstract {
     this.httpStatus = {
       ok: 200,
       notFound: 404,
-      badRequest: 400
+      badRequest: 400,
     };
   }
 
@@ -23,18 +22,18 @@ let Abstract = class Abstract {
     return new Promise((resolve, reject) => {
       return this.model
         .create(query)
-        .then(result => {
+        .then((result) => {
           resolve({
             result: result,
             status: self.httpStatus.ok,
-            message: self.schema + " record created successfully"
+            message: self.schema + ' record created successfully',
           });
         })
-        .catch(error => {
+        .catch((error) => {
           reject({
             error: error,
             status: self.httpStatus.badRequest,
-            message: error.message
+            message: error.message,
           });
         });
     });
@@ -50,18 +49,18 @@ let Abstract = class Abstract {
           reject({
             error: error,
             status: self.httpStatus.badRequest,
-            message: error.message
+            message: error.message,
           });
         } else if (!data || !data.nModified) {
           reject({
             error: error,
             status: self.httpStatus.notFound,
-            message: "No " + self.schema + " record found"
+            message: 'No ' + self.schema + ' record found',
           });
         } else {
           resolve({
             status: self.httpStatus.ok,
-            message: self.schema + " record updated successfully"
+            message: self.schema + ' record updated successfully',
           });
         }
       });
@@ -71,7 +70,7 @@ let Abstract = class Abstract {
   findByIdAndUpdate(req) {
     let query = req.body ? req.body : req,
       self = this;
-    if (!query._id) throw new Error("_id is missing");
+    if (!query._id) throw new Error('_id is missing');
     let options = { runValidators: true, new: true };
     return new Promise((resolve, reject) => {
       self.model.findByIdAndUpdate(query._id, query, options, (error, data) => {
@@ -79,19 +78,19 @@ let Abstract = class Abstract {
           reject({
             error: error,
             status: self.httpStatus.badRequest,
-            message: error.message
+            message: error.message,
           });
         } else if (!data) {
           reject({
             error: error,
             status: self.httpStatus.notFound,
-            message: "No " + self.schema + " record found"
+            message: 'No ' + self.schema + ' record found',
           });
         } else {
           resolve({
             result: data,
             status: self.httpStatus.ok,
-            message: self.schema + " record updated successfully"
+            message: self.schema + ' record updated successfully',
           });
         }
       });
@@ -108,18 +107,18 @@ let Abstract = class Abstract {
           reject({
             error: error,
             status: self.httpStatus.badRequest,
-            message: error.message
+            message: error.message,
           });
         } else if (!data || (data && data.nModified == 0)) {
           reject({
             error: true,
             status: self.httpStatus.notFound,
-            message: "No " + self.schema + " record found"
+            message: 'No ' + self.schema + ' record found',
           });
         } else {
           resolve({
             status: self.httpStatus.ok,
-            message: self.schema + " record deleted successfully"
+            message: self.schema + ' record deleted successfully',
           });
         }
       });
@@ -136,19 +135,19 @@ let Abstract = class Abstract {
           reject({
             error: error,
             status: self.httpStatus.badRequest,
-            message: error.message
+            message: error.message,
           });
         } else if (!data || data.length == 0) {
           reject({
             error: true,
             status: self.httpStatus.notFound,
-            message: "No " + self.schema + " record found"
+            message: 'No ' + self.schema + ' record found',
           });
         } else {
           resolve({
             result: data,
             status: self.httpStatus.ok,
-            message: self.schema + " record found successfully"
+            message: self.schema + ' record found successfully',
           });
         }
       });
@@ -165,25 +164,25 @@ let Abstract = class Abstract {
           reject({
             error: error,
             status: self.httpStatus.badRequest,
-            message: error.message
+            message: error.message,
           });
         } else if (!data || data.length == 0) {
           reject({
             error: true,
             status: self.httpStatus.notFound,
-            message: "No " + self.schema + " record found"
+            message: 'No ' + self.schema + ' record found',
           });
         } else {
           resolve({
             result: data,
             status: self.httpStatus.ok,
-            message: self.schema + " record found successfully"
+            message: self.schema + ' record found successfully',
           });
         }
       });
     });
   }
-  
+
   _getSelectedFields(fields) {
     // Removed below line from layer
     //let f = fields !== undefined ? fields.replace(/,/g, " ") : "";
@@ -211,11 +210,11 @@ let Abstract = class Abstract {
     //for search
     if (query.searchText && query.searchFields) {
       let search = [];
-      let searchText = query["searchText"].split(",");
-      query["searchFields"].split(",").forEach(function(field) {
+      let searchText = query['searchText'].split(',');
+      query['searchFields'].split(',').forEach(function (field) {
         var dict = {};
-        searchText.forEach(function(text) {
-          dict[field] = new RegExp(text, "i");
+        searchText.forEach(function (text) {
+          dict[field] = new RegExp(text, 'i');
           search.push(dict);
         });
         delete query.searchFields;
@@ -224,7 +223,7 @@ let Abstract = class Abstract {
       query.$or = search;
     }
 
-    let fields = "";
+    let fields = '';
     if (query.fields) {
       fields = this._getSelectedFields(query.fields);
       delete query.fields;
@@ -233,15 +232,13 @@ let Abstract = class Abstract {
     //for populate
     if (query.populate) {
       let populate = query.populate,
-        subFields = "";
+        subFields = '';
       delete query.populate;
       if (query.subFields) {
         subFields = this._getSelectedFields(query.subFields);
         delete query.subFields;
       }
-      return this.model
-        .find(query, fields, paginate)
-        .populate(populate, subFields);
+      return this.model.find(query, fields, paginate).populate(populate, subFields);
     } else {
       return this.model.find(query, fields, paginate);
     }

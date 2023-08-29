@@ -5,187 +5,186 @@
  * Description : All http status code and there message.
  */
 
-
 module.exports = {
-  'continue': {
+  continue: {
     status: 100,
-    message: "Continue"
+    message: 'Continue',
   },
-  'switching_protocols': {
+  switching_protocols: {
     status: 101,
-    message: "Switching protocols"
+    message: 'Switching protocols',
   },
-  'ok': {
+  ok: {
     status: 200,
-    message: "Success"
+    message: 'Success',
   },
-  'created': {
+  created: {
     status: 201,
-    message: "Created"
+    message: 'Created',
   },
-  'accepted': {
+  accepted: {
     status: 202,
-    message: "Accepted"
+    message: 'Accepted',
   },
-  'non_authoritative_information': {
+  non_authoritative_information: {
     status: 203,
-    message: "Non-Authoritative Information"
+    message: 'Non-Authoritative Information',
   },
-  'no_content': {
+  no_content: {
     status: 204,
-    message: "No Content"
+    message: 'No Content',
   },
-  'reset_content': {
+  reset_content: {
     status: 205,
-    message: "Reset Content"
+    message: 'Reset Content',
   },
-  'partial_content': {
+  partial_content: {
     status: 206,
-    message: "Partial Content"
+    message: 'Partial Content',
   },
-  'multiple_choices': {
+  multiple_choices: {
     status: 300,
-    message: "Multiple Choices"
+    message: 'Multiple Choices',
   },
 
-  'moved_permanently': {
+  moved_permanently: {
     status: 301,
-    message: "Moved Permanently"
+    message: 'Moved Permanently',
   },
-  'found': {
+  found: {
     status: 302,
-    message: "Found"
+    message: 'Found',
   },
-  'see_other': {
+  see_other: {
     status: 303,
-    message: "See Other"
+    message: 'See Other',
   },
-  'not_modified': {
+  not_modified: {
     status: 304,
-    message: "Not Modified"
+    message: 'Not Modified',
   },
-  'use_proxy': {
+  use_proxy: {
     status: 305,
-    message: "Use Proxy"
+    message: 'Use Proxy',
   },
-  'temporary_redirect': {
+  temporary_redirect: {
     status: 307,
-    message: "Temporary Redirect"
+    message: 'Temporary Redirect',
   },
-  'bad_request': {
+  bad_request: {
     status: 400,
-    message: "Bad request"
+    message: 'Bad request',
   },
-  'unauthorized': {
+  unauthorized: {
     status: 401,
-    message: "Unauthorized"
+    message: 'Unauthorized',
   },
-  'payment_required': {
+  payment_required: {
     status: 402,
-    message: "Payment Required"
+    message: 'Payment Required',
   },
-  'forbidden': {
+  forbidden: {
     status: 403,
-    message: "Forbidden"
+    message: 'Forbidden',
   },
-  'not_found': {
+  not_found: {
     status: 404,
-    message: "Not Found"
+    message: 'Not Found',
   },
-  'method_not_allowed': {
+  method_not_allowed: {
     status: 405,
-    message: "Method Not allowed"
+    message: 'Method Not allowed',
   },
-  'not_acceptable': {
+  not_acceptable: {
     status: 406,
-    message: "Not Acceptable"
+    message: 'Not Acceptable',
   },
-  'proxy_authentication_required': {
+  proxy_authentication_required: {
     status: 407,
-    message: "Proxy Authentication Required"
+    message: 'Proxy Authentication Required',
   },
-  'request_timeout': {
+  request_timeout: {
     status: 408,
-    message: "Request Timeout"
+    message: 'Request Timeout',
   },
-  'conflict': {
+  conflict: {
     status: 409,
-    message: "Conflict"
+    message: 'Conflict',
   },
-  'gone': {
+  gone: {
     status: 410,
-    message: "Gone"
+    message: 'Gone',
   },
-  'length_required': {
+  length_required: {
     status: 411,
-    message: "Length Required"
+    message: 'Length Required',
   },
-  'precondition_failed': {
+  precondition_failed: {
     status: 412,
-    message: "Pre-Condition failed"
+    message: 'Pre-Condition failed',
   },
-  'request_entity_too_large': {
+  request_entity_too_large: {
     status: 413,
-    message: "Request Entity Too Large"
+    message: 'Request Entity Too Large',
   },
-  'request_uri_too_long': {
+  request_uri_too_long: {
     status: 414,
-    message: "Request URI Too Long"
+    message: 'Request URI Too Long',
   },
-  'unsupported_media_type': {
+  unsupported_media_type: {
     status: 415,
-    message: "Un Supported Media Type"
+    message: 'Un Supported Media Type',
   },
-  'requested_range_not_satisfiable': {
+  requested_range_not_satisfiable: {
     status: 416,
-    message: "Requested Range Not Satisfiable"
+    message: 'Requested Range Not Satisfiable',
   },
-  'expectation_failed': {
+  expectation_failed: {
     status: 417,
-    message: "Expectation Failed"
+    message: 'Expectation Failed',
   },
-  'unprocessable_entity': {
+  unprocessable_entity: {
     status: 422,
-    message: "Unprocessable entity"
+    message: 'Unprocessable entity',
   },
-  'failed_dependency': {
+  failed_dependency: {
     status: 424,
-    message: "Failed Dependency"
+    message: 'Failed Dependency',
   },
-  'too_many_requests': {
+  too_many_requests: {
     status: 429,
-    message: "Too Many Requests"
+    message: 'Too Many Requests',
   },
-  'unavailable_for_legal_reasons': {
+  unavailable_for_legal_reasons: {
     status: 451,
-    message: "Unavailable For Legal Reasons"
+    message: 'Unavailable For Legal Reasons',
   },
-  'internal_server_error': {
+  internal_server_error: {
     status: 500,
-    message: "Oops! Something Went Wrong."
+    message: 'Oops! Something Went Wrong.',
   },
-  'not_implemented': {
+  not_implemented: {
     status: 501,
-    message: "Not Implemented"
+    message: 'Not Implemented',
   },
-  'bad_gateway': {
+  bad_gateway: {
     status: 502,
-    message: "Bad Gateway"
+    message: 'Bad Gateway',
   },
-  'service_unavailable': {
+  service_unavailable: {
     status: 503,
-    message: "Service Unavailable"
+    message: 'Service Unavailable',
   },
-  'gateway_timeout': {
+  gateway_timeout: {
     status: 504,
-    message: "Gateway Timeout"
+    message: 'Gateway Timeout',
   },
-  'http_version_not_supported': {
+  http_version_not_supported: {
     status: 505,
-    message: "HTTP Version Not Supported"
+    message: 'HTTP Version Not Supported',
   },
-  'insufficient_storage': {
+  insufficient_storage: {
     status: 507,
-    message: "Insufficient Storage"
-  }
+    message: 'Insufficient Storage',
+  },
 };

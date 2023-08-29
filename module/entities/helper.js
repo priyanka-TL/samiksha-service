@@ -6,10 +6,10 @@
  */
 
 // Dependencies
-const entityTypesHelper = require(MODULES_BASE_PATH + "/entityTypes/helper");
-const elasticSearch = require(ROOT_PATH + "/generics/helpers/elasticSearch");
-const userRolesHelper = require(MODULES_BASE_PATH + "/userRoles/helper");
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
+const entityTypesHelper = require(MODULES_BASE_PATH + '/entityTypes/helper');
+const elasticSearch = require(ROOT_PATH + '/generics/helpers/elasticSearch');
+const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
 
 /**
  * EntitiesHelper
@@ -44,25 +44,21 @@ module.exports = class EntitiesHelper {
           let singleEntity = data[pointer];
 
           if (singleEntity.createdByProgramId) {
-            singleEntity.createdByProgramId = ObjectId(
-              singleEntity.createdByProgramId
-            );
+            singleEntity.createdByProgramId = ObjectId(singleEntity.createdByProgramId);
           }
 
           if (singleEntity.createdBySolutionId) {
-            singleEntity.createdBySolutionId = ObjectId(
-              singleEntity.solutionId
-            );
+            singleEntity.createdBySolutionId = ObjectId(singleEntity.solutionId);
           }
 
           let registryDetails = {};
           if (singleEntity.locationId) {
-            registryDetails["locationId"] = singleEntity.locationId;
+            registryDetails['locationId'] = singleEntity.locationId;
             if (singleEntity.code) {
-              registryDetails["code"] = singleEntity.code;
+              registryDetails['code'] = singleEntity.code;
             }
 
-            registryDetails["lastUpdatedAt"] = new Date();
+            registryDetails['lastUpdatedAt'] = new Date();
           }
 
           let entityDoc = {
@@ -70,19 +66,14 @@ module.exports = class EntitiesHelper {
             entityType: queryParams.type,
             registryDetails: registryDetails,
             groups: {},
-            metaInformation: _.omit(singleEntity, ["locationId", "code"]),
+            metaInformation: _.omit(singleEntity, ['locationId', 'code']),
             updatedBy: userDetails.userId,
             createdBy: userDetails.userId,
             userId: userDetails.userId,
           };
 
-          if (
-            singleEntity.allowedRoles &&
-            singleEntity.allowedRoles.length > 0
-          ) {
-            entityDoc["allowedRoles"] = await allowedRoles(
-              singleEntity.allowedRoles
-            );
+          if (singleEntity.allowedRoles && singleEntity.allowedRoles.length > 0) {
+            entityDoc['allowedRoles'] = await allowedRoles(singleEntity.allowedRoles);
             delete entityDoc.metaInformation.allowedRoles;
           }
 
@@ -95,16 +86,12 @@ module.exports = class EntitiesHelper {
 
         //update entity id in parent entity
 
-        for (
-          let eachEntityData = 0;
-          eachEntityData < entityData.length;
-          eachEntityData++
-        ) {
+        for (let eachEntityData = 0; eachEntityData < entityData.length; eachEntityData++) {
           if (queryParams.parentEntityId && queryParams.programId) {
             await this.addSubEntityToParent(
               queryParams.parentEntityId,
               entityData[eachEntityData]._id.toString(),
-              queryParams.programId
+              queryParams.programId,
             );
           }
 
@@ -138,19 +125,17 @@ module.exports = class EntitiesHelper {
   static list(
     entityType,
     entityId,
-    limitingValue = "",
-    skippingValue = "",
-    schoolTypes = "",
-    administrationTypes = ""
+    limitingValue = '',
+    skippingValue = '',
+    schoolTypes = '',
+    administrationTypes = '',
   ) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = { _id: ObjectId(entityId) };
         let projectObject = { [`groups.${entityType}`]: 1 };
 
-        let result = await database.models.entities
-          .findOne(queryObject, projectObject)
-          .lean();
+        let result = await database.models.entities.findOne(queryObject, projectObject).lean();
 
         if (!result) {
           return resolve({
@@ -173,7 +158,7 @@ module.exports = class EntitiesHelper {
           {
             name: 1,
             immediateChildrenEntityType: 1,
-          }
+          },
         );
 
         let enityTypeToImmediateChildrenEntityMap = {};
@@ -181,8 +166,7 @@ module.exports = class EntitiesHelper {
         if (entityTypesArray.length > 0) {
           entityTypesArray.forEach((entityType) => {
             enityTypeToImmediateChildrenEntityMap[entityType.name] =
-              entityType.immediateChildrenEntityType &&
-              entityType.immediateChildrenEntityType.length > 0
+              entityType.immediateChildrenEntityType && entityType.immediateChildrenEntityType.length > 0
                 ? entityType.immediateChildrenEntityType
                 : [];
           });
@@ -194,25 +178,20 @@ module.exports = class EntitiesHelper {
 
         let schoolOrAdministrationTypes = [];
 
-        if (schoolTypes !== "") {
-          schoolOrAdministrationTypes = schoolOrAdministrationTypes.concat(
-            schoolTypes.split(",")
-          );
+        if (schoolTypes !== '') {
+          schoolOrAdministrationTypes = schoolOrAdministrationTypes.concat(schoolTypes.split(','));
         }
 
-        if (administrationTypes !== "") {
-          schoolOrAdministrationTypes = schoolOrAdministrationTypes.concat(
-            administrationTypes.split(",")
-          );
+        if (administrationTypes !== '') {
+          schoolOrAdministrationTypes = schoolOrAdministrationTypes.concat(administrationTypes.split(','));
         }
 
         if (schoolOrAdministrationTypes.length > 0) {
-          schoolOrAdministrationTypes = schoolOrAdministrationTypes.map(
-            (schoolOrAdministrationType) =>
-              schoolOrAdministrationType.toLowerCase()
+          schoolOrAdministrationTypes = schoolOrAdministrationTypes.map((schoolOrAdministrationType) =>
+            schoolOrAdministrationType.toLowerCase(),
           );
 
-          filteredQuery["$match"]["metaInformation.tags"] = {
+          filteredQuery['$match']['metaInformation.tags'] = {
             $in: schoolOrAdministrationTypes,
           };
         }
@@ -229,7 +208,7 @@ module.exports = class EntitiesHelper {
           },
           {
             $facet: {
-              totalCount: [{ $count: "count" }],
+              totalCount: [{ $count: 'count' }],
               data: [{ $skip: skippingValue }, { $limit: limitingValue }],
             },
           },
@@ -237,7 +216,7 @@ module.exports = class EntitiesHelper {
             $project: {
               data: 1,
               count: {
-                $arrayElemAt: ["$totalCount.count", 0],
+                $arrayElemAt: ['$totalCount.count', 0],
               },
             },
           },
@@ -254,19 +233,13 @@ module.exports = class EntitiesHelper {
             entity.metaInformation.subEntityGroups = new Array();
 
             entity.groups &&
-              Array.isArray(
-                enityTypeToImmediateChildrenEntityMap[entity.entityType]
-              ) &&
-              enityTypeToImmediateChildrenEntityMap[entity.entityType].forEach(
-                (immediateChildrenEntityType) => {
-                  if (entity.groups[immediateChildrenEntityType]) {
-                    entity.metaInformation.immediateSubEntityType =
-                      immediateChildrenEntityType;
-                    entity.metaInformation.childrenCount =
-                      entity.groups[immediateChildrenEntityType].length;
-                  }
+              Array.isArray(enityTypeToImmediateChildrenEntityMap[entity.entityType]) &&
+              enityTypeToImmediateChildrenEntityMap[entity.entityType].forEach((immediateChildrenEntityType) => {
+                if (entity.groups[immediateChildrenEntityType]) {
+                  entity.metaInformation.immediateSubEntityType = immediateChildrenEntityType;
+                  entity.metaInformation.childrenCount = entity.groups[immediateChildrenEntityType].length;
                 }
-              );
+              });
 
             entity.groups &&
               Array.isArray(Object.keys(entity.groups)) &&
@@ -308,9 +281,7 @@ module.exports = class EntitiesHelper {
           .findOne({ name: entityType }, { profileForm: 1 })
           .lean();
 
-        let result = entityTypeDocument.profileForm.length
-          ? entityTypeDocument.profileForm
-          : [];
+        let result = entityTypeDocument.profileForm.length ? entityTypeDocument.profileForm : [];
 
         return resolve(result);
       } catch (error) {
@@ -336,7 +307,7 @@ module.exports = class EntitiesHelper {
             {
               name: entityType,
             },
-            { profileForm: 1 }
+            { profileForm: 1 },
           )
           .lean();
 
@@ -388,24 +359,24 @@ module.exports = class EntitiesHelper {
         let registryDetails = {};
 
         if (data.locationId) {
-          registryDetails["locationId"] = data.locationId;
+          registryDetails['locationId'] = data.locationId;
 
           if (data.code) {
-            registryDetails["code"] = data.code;
+            registryDetails['code'] = data.code;
             delete data.code;
           }
-          registryDetails["lastUpdatedAt"] = new Date();
+          registryDetails['lastUpdatedAt'] = new Date();
           delete data.locationId;
         }
 
-        if (entityType == "parent") {
+        if (entityType == 'parent') {
           entityInformation = await this.parentRegistryUpdate(entityId, data);
         } else {
           entityInformation = await database.models.entities
             .findOneAndUpdate(
               { _id: ObjectId(entityId) },
               { metaInformation: data, registryDetails: registryDetails },
-              { new: true }
+              { new: true },
             )
             .lean();
         }
@@ -430,10 +401,7 @@ module.exports = class EntitiesHelper {
     return new Promise(async (resolve, reject) => {
       try {
         const parentDocument = await database.models.entities
-          .findOne(
-            { _id: ObjectId(entityId) },
-            { "metaInformation.callResponse": 1 }
-          )
+          .findOne({ _id: ObjectId(entityId) }, { 'metaInformation.callResponse': 1 })
           .lean();
 
         if (!parentDocument) {
@@ -444,7 +412,7 @@ module.exports = class EntitiesHelper {
         if (data.updateFromParentPortal === true) {
           if (
             data.callResponse &&
-            data.callResponse != "" &&
+            data.callResponse != '' &&
             (!parentDocument.metaInformation.callResponse ||
               parentDocument.metaInformation.callResponse != data.callResponse)
           ) {
@@ -453,15 +421,10 @@ module.exports = class EntitiesHelper {
           updateSubmissionDocument = true;
         }
 
-        if (typeof data.createdByProgramId == "string")
-          data.createdByProgramId = ObjectId(data.createdByProgramId);
+        if (typeof data.createdByProgramId == 'string') data.createdByProgramId = ObjectId(data.createdByProgramId);
 
         let parentInformation = await database.models.entities
-          .findOneAndUpdate(
-            { _id: ObjectId(entityId) },
-            { metaInformation: data },
-            { new: true }
-          )
+          .findOneAndUpdate({ _id: ObjectId(entityId) }, { metaInformation: data }, { new: true })
           .lean();
 
         if (updateSubmissionDocument) {
@@ -471,8 +434,7 @@ module.exports = class EntitiesHelper {
 
           let submissionDocument = await database.models.submissions
             .findOne(queryObject, {
-              ["parentInterviewResponses." +
-              parentInformation._id.toString()]: 1,
+              ['parentInterviewResponses.' + parentInformation._id.toString()]: 1,
               parentInterviewResponsesStatus: 1,
             })
             .lean();
@@ -482,66 +444,45 @@ module.exports = class EntitiesHelper {
           let parentInterviewResponse = {};
           if (
             submissionDocument.parentInterviewResponses &&
-            submissionDocument.parentInterviewResponses[
-              parentInformation._id.toString()
-            ]
+            submissionDocument.parentInterviewResponses[parentInformation._id.toString()]
           ) {
-            parentInterviewResponse =
-              submissionDocument.parentInterviewResponses[
-                parentInformation._id.toString()
-              ];
-            parentInterviewResponse.parentInformation =
-              parentInformation.metaInformation;
+            parentInterviewResponse = submissionDocument.parentInterviewResponses[parentInformation._id.toString()];
+            parentInterviewResponse.parentInformation = parentInformation.metaInformation;
           } else {
             parentInterviewResponse = {
               parentInformation: parentInformation.metaInformation,
-              status: "started",
+              status: 'started',
               startedAt: new Date(),
             };
           }
 
           updateObject.$set = {
-            ["parentInterviewResponses." + parentInformation._id.toString()]:
-              parentInterviewResponse,
+            ['parentInterviewResponses.' + parentInformation._id.toString()]: parentInterviewResponse,
           };
 
-          let parentInterviewResponseStatus = _.omit(parentInterviewResponse, [
-            "parentInformation",
-            "answers",
-          ]);
+          let parentInterviewResponseStatus = _.omit(parentInterviewResponse, ['parentInformation', 'answers']);
           parentInterviewResponseStatus.parentId = parentInformation._id;
-          parentInterviewResponseStatus.parentType =
-            parentInformation.metaInformation.type;
+          parentInterviewResponseStatus.parentType = parentInformation.metaInformation.type;
 
           if (submissionDocument.parentInterviewResponsesStatus) {
-            let parentInterviewReponseStatusElementIndex =
-              submissionDocument.parentInterviewResponsesStatus.findIndex(
-                (parentInterviewStatus) =>
-                  parentInterviewStatus.parentId.toString() ===
-                  parentInterviewResponseStatus.parentId.toString()
-              );
+            let parentInterviewReponseStatusElementIndex = submissionDocument.parentInterviewResponsesStatus.findIndex(
+              (parentInterviewStatus) =>
+                parentInterviewStatus.parentId.toString() === parentInterviewResponseStatus.parentId.toString(),
+            );
             if (parentInterviewReponseStatusElementIndex >= 0) {
-              submissionDocument.parentInterviewResponsesStatus[
-                parentInterviewReponseStatusElementIndex
-              ] = parentInterviewResponseStatus;
+              submissionDocument.parentInterviewResponsesStatus[parentInterviewReponseStatusElementIndex] =
+                parentInterviewResponseStatus;
             } else {
-              submissionDocument.parentInterviewResponsesStatus.push(
-                parentInterviewResponseStatus
-              );
+              submissionDocument.parentInterviewResponsesStatus.push(parentInterviewResponseStatus);
             }
           } else {
             submissionDocument.parentInterviewResponsesStatus = new Array();
-            submissionDocument.parentInterviewResponsesStatus.push(
-              parentInterviewResponseStatus
-            );
+            submissionDocument.parentInterviewResponsesStatus.push(parentInterviewResponseStatus);
           }
 
-          updateObject.$set.parentInterviewResponsesStatus =
-            submissionDocument.parentInterviewResponsesStatus;
+          updateObject.$set.parentInterviewResponsesStatus = submissionDocument.parentInterviewResponsesStatus;
 
-          await database.models.submissions
-            .findOneAndUpdate({ _id: submissionDocument._id }, updateObject)
-            .lean();
+          await database.models.submissions.findOneAndUpdate({ _id: submissionDocument._id }, updateObject).lean();
         }
 
         return resolve(parentInformation);
@@ -564,13 +505,7 @@ module.exports = class EntitiesHelper {
    * @returns {JSON} - uploaded entity information.
    */
 
-  static bulkCreate(
-    entityType,
-    programId,
-    solutionId,
-    userDetails,
-    entityCSVData
-  ) {
+  static bulkCreate(entityType, programId, solutionId, userDetails, entityCSVData) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionsDocument = new Array();
@@ -587,7 +522,7 @@ module.exports = class EntitiesHelper {
                 subType: 1,
                 entityType: 1,
                 entityTypeId: 1,
-              }
+              },
             )
             .lean();
         } else {
@@ -600,7 +535,7 @@ module.exports = class EntitiesHelper {
                 subType: 1,
                 entityType: 1,
                 entityTypeId: 1,
-              }
+              },
             )
             .lean();
         }
@@ -620,7 +555,7 @@ module.exports = class EntitiesHelper {
                 newEntities: new Array(),
               },
             }),
-            {}
+            {},
           );
         }
 
@@ -628,7 +563,7 @@ module.exports = class EntitiesHelper {
           {
             name: entityType,
           },
-          { _id: 1 }
+          { _id: 1 },
         );
 
         if (!entityTypeDocument) {
@@ -650,64 +585,43 @@ module.exports = class EntitiesHelper {
             };
 
             Object.keys(singleEntity).forEach(function (key) {
-              if (key.startsWith("registry-")) {
-                let newKey = key.replace("registry-", "");
+              if (key.startsWith('registry-')) {
+                let newKey = key.replace('registry-', '');
                 entityCreation.registryDetails[newKey] = singleEntity[key];
               }
             });
 
-            if (
-              entityCreation.registryDetails &&
-              Object.keys(entityCreation.registryDetails).length > 0
-            ) {
-              entityCreation.registryDetails["lastUpdatedAt"] = new Date();
+            if (entityCreation.registryDetails && Object.keys(entityCreation.registryDetails).length > 0) {
+              entityCreation.registryDetails['lastUpdatedAt'] = new Date();
             }
 
-            if (
-              singleEntity.allowedRoles &&
-              singleEntity.allowedRoles.length > 0
-            ) {
-              entityCreation["allowedRoles"] = await allowedRoles(
-                singleEntity.allowedRoles
-              );
+            if (singleEntity.allowedRoles && singleEntity.allowedRoles.length > 0) {
+              entityCreation['allowedRoles'] = await allowedRoles(singleEntity.allowedRoles);
               delete singleEntity.allowedRoles;
             }
 
-            entityCreation["metaInformation"] = _.omitBy(
-              singleEntity,
-              (value, key) => {
-                return _.startsWith(key, "_");
-              }
-            );
+            entityCreation['metaInformation'] = _.omitBy(singleEntity, (value, key) => {
+              return _.startsWith(key, '_');
+            });
 
-            if (
-              solutionsData &&
-              singleEntity._solutionId &&
-              singleEntity._solutionId != ""
-            )
-              singleEntity["createdByProgramId"] =
-                solutionsData[singleEntity._solutionId]["programId"];
+            if (solutionsData && singleEntity._solutionId && singleEntity._solutionId != '')
+              singleEntity['createdByProgramId'] = solutionsData[singleEntity._solutionId]['programId'];
 
-            let newEntity = await database.models.entities.create(
-              entityCreation
-            );
+            let newEntity = await database.models.entities.create(entityCreation);
 
             if (!newEntity._id) {
               return;
             }
 
-            singleEntity["_SYSTEM_ID"] = newEntity._id.toString();
+            singleEntity['_SYSTEM_ID'] = newEntity._id.toString();
 
             if (
               solutionsData &&
               singleEntity._solutionId &&
-              singleEntity._solutionId != "" &&
-              newEntity.entityType ==
-                solutionsData[singleEntity._solutionId]["entityType"]
+              singleEntity._solutionId != '' &&
+              newEntity.entityType == solutionsData[singleEntity._solutionId]['entityType']
             ) {
-              solutionsData[singleEntity._solutionId].newEntities.push(
-                newEntity._id
-              );
+              solutionsData[singleEntity._solutionId].newEntities.push(newEntity._id);
             }
 
             // await this.pushEntitiesToElasticSearch([
@@ -715,12 +629,10 @@ module.exports = class EntitiesHelper {
             // ]);
 
             return singleEntity;
-          })
+          }),
         );
 
-        if (
-          entityUploadedData.findIndex((entity) => entity === undefined) >= 0
-        ) {
+        if (entityUploadedData.findIndex((entity) => entity === undefined) >= 0) {
           throw messageConstants.apiResponses.SOMETHING_WRONG_INSERTED_UPDATED;
         }
 
@@ -736,10 +648,10 @@ module.exports = class EntitiesHelper {
                         $each: solutionsData[solutionExternalId].newEntities,
                       },
                     },
-                  }
+                  },
                 );
               }
-            })
+            }),
           ));
 
         return resolve(entityUploadedData);
@@ -766,11 +678,8 @@ module.exports = class EntitiesHelper {
             singleEntity = gen.utils.valueParser(singleEntity);
             addTagsInEntities(singleEntity);
 
-            if (
-              !singleEntity["_SYSTEM_ID"] ||
-              singleEntity["_SYSTEM_ID"] == ""
-            ) {
-              singleEntity["UPDATE_STATUS"] = "Invalid or missing _SYSTEM_ID";
+            if (!singleEntity['_SYSTEM_ID'] || singleEntity['_SYSTEM_ID'] == '') {
+              singleEntity['UPDATE_STATUS'] = 'Invalid or missing _SYSTEM_ID';
               return singleEntity;
             }
 
@@ -778,32 +687,27 @@ module.exports = class EntitiesHelper {
             updateData.registryDetails = {};
 
             Object.keys(singleEntity).forEach(function (key) {
-              if (key.startsWith("registry-")) {
-                let newKey = key.replace("registry-", "");
-                updateData["registryDetails"][newKey] = singleEntity[key];
+              if (key.startsWith('registry-')) {
+                let newKey = key.replace('registry-', '');
+                updateData['registryDetails'][newKey] = singleEntity[key];
               }
             });
 
-            if (
-              updateData.registryDetails &&
-              Object.keys(updateData.registryDetails).length > 0
-            ) {
-              updateData["registryDetails"]["lastUpdatedAt"] = new Date();
+            if (updateData.registryDetails && Object.keys(updateData.registryDetails).length > 0) {
+              updateData['registryDetails']['lastUpdatedAt'] = new Date();
             }
 
-            if (singleEntity.hasOwnProperty("allowedRoles")) {
-              updateData["allowedRoles"] = [];
+            if (singleEntity.hasOwnProperty('allowedRoles')) {
+              updateData['allowedRoles'] = [];
               if (singleEntity.allowedRoles.length > 0) {
-                updateData["allowedRoles"] = await allowedRoles(
-                  singleEntity.allowedRoles
-                );
+                updateData['allowedRoles'] = await allowedRoles(singleEntity.allowedRoles);
               }
 
               delete singleEntity.allowedRoles;
             }
 
             let columnsToUpdate = _.omitBy(singleEntity, (value, key) => {
-              return _.startsWith(key, "_");
+              return _.startsWith(key, '_');
             });
 
             Object.keys(columnsToUpdate).forEach((key) => {
@@ -811,20 +715,19 @@ module.exports = class EntitiesHelper {
             });
 
             if (Object.keys(updateData).length > 0) {
-              let updateEntity =
-                await database.models.entities.findOneAndUpdate(
-                  { _id: singleEntity["_SYSTEM_ID"] },
-                  { $set: updateData },
-                  { _id: 1 }
-                );
+              let updateEntity = await database.models.entities.findOneAndUpdate(
+                { _id: singleEntity['_SYSTEM_ID'] },
+                { $set: updateData },
+                { _id: 1 },
+              );
 
               if (!updateEntity || !updateEntity._id) {
-                singleEntity["UPDATE_STATUS"] = "Entity Not Updated";
+                singleEntity['UPDATE_STATUS'] = 'Entity Not Updated';
               } else {
-                singleEntity["UPDATE_STATUS"] = "Success";
+                singleEntity['UPDATE_STATUS'] = 'Success';
               }
             } else {
-              singleEntity["UPDATE_STATUS"] = "No information to update.";
+              singleEntity['UPDATE_STATUS'] = 'No information to update.';
             }
 
             // await this.pushEntitiesToElasticSearch([
@@ -832,12 +735,10 @@ module.exports = class EntitiesHelper {
             // ]);
 
             return singleEntity;
-          })
+          }),
         );
 
-        if (
-          entityUploadedData.findIndex((entity) => entity === undefined) >= 0
-        ) {
+        if (entityUploadedData.findIndex((entity) => entity === undefined) >= 0) {
           throw messageConstants.apiResponses.SOMETHING_WRONG_INSERTED_UPDATED;
         }
 
@@ -871,18 +772,14 @@ module.exports = class EntitiesHelper {
           entityToUpdate: {},
         };
 
-        for (
-          let indexToEntityMapData = 0;
-          indexToEntityMapData < mappingData.length;
-          indexToEntityMapData++
-        ) {
+        for (let indexToEntityMapData = 0; indexToEntityMapData < mappingData.length; indexToEntityMapData++) {
           if (
-            mappingData[indexToEntityMapData].parentEntiyId != "" &&
-            mappingData[indexToEntityMapData].childEntityId != ""
+            mappingData[indexToEntityMapData].parentEntiyId != '' &&
+            mappingData[indexToEntityMapData].childEntityId != ''
           ) {
             await this.addSubEntityToParent(
               mappingData[indexToEntityMapData].parentEntiyId,
-              mappingData[indexToEntityMapData].childEntityId
+              mappingData[indexToEntityMapData].childEntityId,
             );
             entities.push(mappingData[indexToEntityMapData].childEntityId);
           }
@@ -890,27 +787,17 @@ module.exports = class EntitiesHelper {
 
         if (Object.keys(this.entityMapProcessData.entityToUpdate).length > 0) {
           await Promise.all(
-            Object.keys(this.entityMapProcessData.entityToUpdate).map(
-              async (entityIdToUpdate) => {
-                let updateQuery = { $addToSet: {} };
+            Object.keys(this.entityMapProcessData.entityToUpdate).map(async (entityIdToUpdate) => {
+              let updateQuery = { $addToSet: {} };
 
-                Object.keys(
-                  this.entityMapProcessData.entityToUpdate[entityIdToUpdate]
-                ).forEach((groupToUpdate) => {
-                  updateQuery["$addToSet"][groupToUpdate] = {
-                    $each:
-                      this.entityMapProcessData.entityToUpdate[
-                        entityIdToUpdate
-                      ][groupToUpdate],
-                  };
-                });
+              Object.keys(this.entityMapProcessData.entityToUpdate[entityIdToUpdate]).forEach((groupToUpdate) => {
+                updateQuery['$addToSet'][groupToUpdate] = {
+                  $each: this.entityMapProcessData.entityToUpdate[entityIdToUpdate][groupToUpdate],
+                };
+              });
 
-                await database.models.entities.updateMany(
-                  { _id: ObjectId(entityIdToUpdate) },
-                  updateQuery
-                );
-              }
-            )
+              await database.models.entities.updateMany({ _id: ObjectId(entityIdToUpdate) }, updateQuery);
+            }),
           );
         }
 
@@ -938,11 +825,7 @@ module.exports = class EntitiesHelper {
    * @returns {JSON} - Success and message .
    */
 
-  static addSubEntityToParent(
-    parentEntityId,
-    childEntityId,
-    parentEntityProgramId = false
-  ) {
+  static addSubEntityToParent(parentEntityId, childEntityId, parentEntityProgramId = false) {
     return new Promise(async (resolve, reject) => {
       try {
         let childEntity = await database.models.entities
@@ -954,7 +837,7 @@ module.exports = class EntitiesHelper {
               entityType: 1,
               groups: 1,
               childHierarchyPath: 1,
-            }
+            },
           )
           .lean();
 
@@ -963,35 +846,27 @@ module.exports = class EntitiesHelper {
             _id: ObjectId(parentEntityId),
           };
           if (parentEntityProgramId) {
-            parentEntityQueryObject["metaInformation.createdByProgramId"] =
-              ObjectId(parentEntityProgramId);
+            parentEntityQueryObject['metaInformation.createdByProgramId'] = ObjectId(parentEntityProgramId);
           }
 
           let updateQuery = {};
-          updateQuery["$addToSet"] = {};
-          updateQuery["$addToSet"][`groups.${childEntity.entityType}`] =
-            childEntity._id;
+          updateQuery['$addToSet'] = {};
+          updateQuery['$addToSet'][`groups.${childEntity.entityType}`] = childEntity._id;
 
           if (!_.isEmpty(childEntity.groups)) {
             Object.keys(childEntity.groups).forEach((eachChildEntity) => {
               if (childEntity.groups[eachChildEntity].length > 0) {
-                updateQuery["$addToSet"][`groups.${eachChildEntity}`] = {};
-                updateQuery["$addToSet"][`groups.${eachChildEntity}`]["$each"] =
-                  childEntity.groups[eachChildEntity];
+                updateQuery['$addToSet'][`groups.${eachChildEntity}`] = {};
+                updateQuery['$addToSet'][`groups.${eachChildEntity}`]['$each'] = childEntity.groups[eachChildEntity];
               }
             });
           }
 
           let childHierarchyPathToUpdate = [childEntity.entityType];
-          if (
-            childEntity.childHierarchyPath &&
-            childEntity.childHierarchyPath.length > 0
-          ) {
-            childHierarchyPathToUpdate = childHierarchyPathToUpdate.concat(
-              childEntity.childHierarchyPath
-            );
+          if (childEntity.childHierarchyPath && childEntity.childHierarchyPath.length > 0) {
+            childHierarchyPathToUpdate = childHierarchyPathToUpdate.concat(childEntity.childHierarchyPath);
           }
-          updateQuery["$addToSet"][`childHierarchyPath`] = {
+          updateQuery['$addToSet'][`childHierarchyPath`] = {
             $each: childHierarchyPathToUpdate,
           };
 
@@ -1002,15 +877,14 @@ module.exports = class EntitiesHelper {
             childHierarchyPath: 1,
           };
 
-          let updatedParentEntity =
-            await database.models.entities.findOneAndUpdate(
-              parentEntityQueryObject,
-              updateQuery,
-              {
-                projection: projectedData,
-                new: true,
-              }
-            );
+          let updatedParentEntity = await database.models.entities.findOneAndUpdate(
+            parentEntityQueryObject,
+            updateQuery,
+            {
+              projection: projectedData,
+              new: true,
+            },
+          );
 
           await this.mappedParentEntities(updatedParentEntity, childEntity);
         }
@@ -1035,52 +909,45 @@ module.exports = class EntitiesHelper {
    * @returns {Array} searched entities
    */
 
-  static search(
-    entityTypeId,
-    searchText,
-    pageSize,
-    pageNo,
-    entityIds = false,
-    aclData = []
-  ) {
+  static search(entityTypeId, searchText, pageSize, pageNo, entityIds = false, aclData = []) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {};
 
-        queryObject["$match"] = {};
+        queryObject['$match'] = {};
 
         if (entityIds && entityIds.length > 0) {
-          queryObject["$match"]["_id"] = {};
-          queryObject["$match"]["_id"]["$in"] = entityIds;
+          queryObject['$match']['_id'] = {};
+          queryObject['$match']['_id']['$in'] = entityIds;
         }
 
         if (aclData.length > 0) {
-          queryObject["$match"]["metaInformation.tags"] = { $in: aclData };
+          queryObject['$match']['metaInformation.tags'] = { $in: aclData };
         }
 
-        queryObject["$match"]["entityTypeId"] = entityTypeId;
+        queryObject['$match']['entityTypeId'] = entityTypeId;
 
-        queryObject["$match"]["$or"] = [
-          { "metaInformation.name": new RegExp(searchText, "i") },
-          { "metaInformation.externalId": new RegExp("^" + searchText, "m") },
-          { "metaInformation.addressLine1": new RegExp(searchText, "i") },
-          { "metaInformation.addressLine2": new RegExp(searchText, "i") },
+        queryObject['$match']['$or'] = [
+          { 'metaInformation.name': new RegExp(searchText, 'i') },
+          { 'metaInformation.externalId': new RegExp('^' + searchText, 'm') },
+          { 'metaInformation.addressLine1': new RegExp(searchText, 'i') },
+          { 'metaInformation.addressLine2': new RegExp(searchText, 'i') },
         ];
 
         let entityDocuments = await database.models.entities.aggregate([
           queryObject,
           {
             $project: {
-              name: "$metaInformation.name",
-              externalId: "$metaInformation.externalId",
-              addressLine1: "$metaInformation.addressLine1",
-              addressLine2: "$metaInformation.addressLine2",
-              districtName: "$metaInformation.districtName",
+              name: '$metaInformation.name',
+              externalId: '$metaInformation.externalId',
+              addressLine1: '$metaInformation.addressLine1',
+              addressLine2: '$metaInformation.addressLine2',
+              districtName: '$metaInformation.districtName',
             },
           },
           {
             $facet: {
-              totalCount: [{ $count: "count" }],
+              totalCount: [{ $count: 'count' }],
               data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
             },
           },
@@ -1088,7 +955,7 @@ module.exports = class EntitiesHelper {
             $project: {
               data: 1,
               count: {
-                $arrayElemAt: ["$totalCount.count", 0],
+                $arrayElemAt: ['$totalCount.count', 0],
               },
             },
           },
@@ -1122,7 +989,7 @@ module.exports = class EntitiesHelper {
             },
             {
               _id: 1,
-            }
+            },
           )
           .lean();
 
@@ -1152,24 +1019,18 @@ module.exports = class EntitiesHelper {
    * @returns {Array} - returns an array of entities data.
    */
 
-  static entityDocuments(
-    findQuery = "all",
-    fields = "all",
-    limitingValue = "",
-    skippingValue = "",
-    sortedData = ""
-  ) {
+  static entityDocuments(findQuery = 'all', fields = 'all', limitingValue = '', skippingValue = '', sortedData = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {};
 
-        if (findQuery != "all") {
+        if (findQuery != 'all') {
           queryObject = findQuery;
         }
 
         let projectionObject = {};
 
-        if (fields != "all") {
+        if (fields != 'all') {
           fields.forEach((element) => {
             projectionObject[element] = 1;
           });
@@ -1177,7 +1038,7 @@ module.exports = class EntitiesHelper {
 
         let entitiesDocuments;
 
-        if (sortedData !== "") {
+        if (sortedData !== '') {
           entitiesDocuments = await database.models.entities
             .find(queryObject, projectionObject)
             .sort(sortedData)
@@ -1196,8 +1057,7 @@ module.exports = class EntitiesHelper {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1215,12 +1075,7 @@ module.exports = class EntitiesHelper {
    * @returns {Array} - returns an array of related entities data.
    */
 
-  static relatedEntities(
-    entityId,
-    entityTypeId,
-    entityType,
-    projection = "all"
-  ) {
+  static relatedEntities(entityId, entityTypeId, entityType, projection = 'all') {
     return new Promise(async (resolve, reject) => {
       try {
         if (
@@ -1228,48 +1083,34 @@ module.exports = class EntitiesHelper {
           this.entityMapProcessData.relatedEntities &&
           this.entityMapProcessData.relatedEntities[entityId.toString()]
         ) {
-          return resolve(
-            this.entityMapProcessData.relatedEntities[entityId.toString()]
-          );
+          return resolve(this.entityMapProcessData.relatedEntities[entityId.toString()]);
         }
 
         let relatedEntitiesQuery = {};
 
         if (entityTypeId && entityId && entityType) {
           relatedEntitiesQuery[`groups.${entityType}`] = entityId;
-          relatedEntitiesQuery["entityTypeId"] = {};
-          relatedEntitiesQuery["entityTypeId"]["$ne"] = entityTypeId;
+          relatedEntitiesQuery['entityTypeId'] = {};
+          relatedEntitiesQuery['entityTypeId']['$ne'] = entityTypeId;
         } else {
           throw {
             status: httpStatusCode.bad_request.status,
-            message:
-              messageConstants.apiResponses
-                .MISSING_ENTITYID_ENTITYTYPE_ENTITYTYPEID,
+            message: messageConstants.apiResponses.MISSING_ENTITYID_ENTITYTYPE_ENTITYTYPEID,
           };
         }
 
-        let relatedEntitiesDocument = await this.entityDocuments(
-          relatedEntitiesQuery,
-          projection
-        );
-        relatedEntitiesDocument = relatedEntitiesDocument
-          ? relatedEntitiesDocument
-          : [];
+        let relatedEntitiesDocument = await this.entityDocuments(relatedEntitiesQuery, projection);
+        relatedEntitiesDocument = relatedEntitiesDocument ? relatedEntitiesDocument : [];
 
-        if (
-          this.entityMapProcessData &&
-          this.entityMapProcessData.relatedEntities
-        ) {
-          this.entityMapProcessData.relatedEntities[entityId.toString()] =
-            relatedEntitiesDocument;
+        if (this.entityMapProcessData && this.entityMapProcessData.relatedEntities) {
+          this.entityMapProcessData.relatedEntities[entityId.toString()] = relatedEntitiesDocument;
         }
 
         return resolve(relatedEntitiesDocument);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
         });
       }
     });
@@ -1297,37 +1138,29 @@ module.exports = class EntitiesHelper {
             this.entityMapProcessData.entityTypeMap &&
             this.entityMapProcessData.entityTypeMap[parentEntity.entityType]
           ) {
-            if (
-              this.entityMapProcessData.entityTypeMap[parentEntity.entityType]
-                .updateParentHierarchy
-            ) {
+            if (this.entityMapProcessData.entityTypeMap[parentEntity.entityType].updateParentHierarchy) {
               updateParentHierarchy = true;
             }
           } else {
-            let checkParentEntitiesMappedValue =
-              await database.models.entityTypes
-                .findOne(
-                  {
-                    name: parentEntity.entityType,
-                  },
-                  {
-                    toBeMappedToParentEntities: 1,
-                  }
-                )
-                .lean();
+            let checkParentEntitiesMappedValue = await database.models.entityTypes
+              .findOne(
+                {
+                  name: parentEntity.entityType,
+                },
+                {
+                  toBeMappedToParentEntities: 1,
+                },
+              )
+              .lean();
 
             if (checkParentEntitiesMappedValue.toBeMappedToParentEntities) {
               updateParentHierarchy = true;
             }
 
             if (this.entityMapProcessData.entityTypeMap) {
-              this.entityMapProcessData.entityTypeMap[parentEntity.entityType] =
-                {
-                  updateParentHierarchy:
-                    checkParentEntitiesMappedValue.toBeMappedToParentEntities
-                      ? true
-                      : false,
-                };
+              this.entityMapProcessData.entityTypeMap[parentEntity.entityType] = {
+                updateParentHierarchy: checkParentEntitiesMappedValue.toBeMappedToParentEntities ? true : false,
+              };
             }
           }
         } else {
@@ -1338,7 +1171,7 @@ module.exports = class EntitiesHelper {
               },
               {
                 toBeMappedToParentEntities: 1,
-              }
+              },
             )
             .lean();
 
@@ -1352,55 +1185,39 @@ module.exports = class EntitiesHelper {
             parentEntity._id,
             parentEntity.entityTypeId,
             parentEntity.entityType,
-            ["_id"]
+            ['_id'],
           );
 
           let childHierarchyPathToUpdate = [parentEntity.entityType];
-          if (
-            parentEntity.childHierarchyPath &&
-            parentEntity.childHierarchyPath.length > 0
-          ) {
-            childHierarchyPathToUpdate = childHierarchyPathToUpdate.concat(
-              parentEntity.childHierarchyPath
-            );
+          if (parentEntity.childHierarchyPath && parentEntity.childHierarchyPath.length > 0) {
+            childHierarchyPathToUpdate = childHierarchyPathToUpdate.concat(parentEntity.childHierarchyPath);
           }
 
           if (relatedEntities.length > 0) {
-            if (
-              this.entityMapProcessData &&
-              this.entityMapProcessData.entityToUpdate
-            ) {
+            if (this.entityMapProcessData && this.entityMapProcessData.entityToUpdate) {
               relatedEntities.forEach((eachRelatedEntities) => {
+                if (!this.entityMapProcessData.entityToUpdate[eachRelatedEntities._id.toString()]) {
+                  this.entityMapProcessData.entityToUpdate[eachRelatedEntities._id.toString()] = {};
+                }
                 if (
-                  !this.entityMapProcessData.entityToUpdate[
-                    eachRelatedEntities._id.toString()
+                  !this.entityMapProcessData.entityToUpdate[eachRelatedEntities._id.toString()][
+                    `groups.${childEntity.entityType}`
                   ]
                 ) {
-                  this.entityMapProcessData.entityToUpdate[
-                    eachRelatedEntities._id.toString()
-                  ] = {};
+                  this.entityMapProcessData.entityToUpdate[eachRelatedEntities._id.toString()][
+                    `groups.${childEntity.entityType}`
+                  ] = new Array();
                 }
-                if (
-                  !this.entityMapProcessData.entityToUpdate[
-                    eachRelatedEntities._id.toString()
-                  ][`groups.${childEntity.entityType}`]
-                ) {
-                  this.entityMapProcessData.entityToUpdate[
-                    eachRelatedEntities._id.toString()
-                  ][`groups.${childEntity.entityType}`] = new Array();
-                }
-                this.entityMapProcessData.entityToUpdate[
-                  eachRelatedEntities._id.toString()
-                ][`groups.${childEntity.entityType}`].push(childEntity._id);
-                this.entityMapProcessData.entityToUpdate[
-                  eachRelatedEntities._id.toString()
-                ][`childHierarchyPath`] = childHierarchyPathToUpdate;
+                this.entityMapProcessData.entityToUpdate[eachRelatedEntities._id.toString()][
+                  `groups.${childEntity.entityType}`
+                ].push(childEntity._id);
+                this.entityMapProcessData.entityToUpdate[eachRelatedEntities._id.toString()][`childHierarchyPath`] =
+                  childHierarchyPathToUpdate;
               });
             } else {
               let updateQuery = {};
-              updateQuery["$addToSet"] = {};
-              updateQuery["$addToSet"][`groups.${childEntity.entityType}`] =
-                childEntity._id;
+              updateQuery['$addToSet'] = {};
+              updateQuery['$addToSet'][`groups.${childEntity.entityType}`] = childEntity._id;
 
               let allEntities = [];
 
@@ -1408,14 +1225,11 @@ module.exports = class EntitiesHelper {
                 allEntities.push(eachRelatedEntities._id);
               });
 
-              updateQuery["$addToSet"][`childHierarchyPath`] = {
+              updateQuery['$addToSet'][`childHierarchyPath`] = {
                 $each: childHierarchyPathToUpdate,
               };
 
-              await database.models.entities.updateMany(
-                { _id: { $in: allEntities } },
-                updateQuery
-              );
+              await database.models.entities.updateMany({ _id: { $in: allEntities } }, updateQuery);
             }
           }
         }
@@ -1424,8 +1238,7 @@ module.exports = class EntitiesHelper {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
         });
       }
     });
@@ -1444,26 +1257,21 @@ module.exports = class EntitiesHelper {
       try {
         const entityIndexes = await database.models.entities.listIndexes();
 
-        if (
-          _.findIndex(entityIndexes, { name: "groups." + entityType + "_1" }) >=
-          0
-        ) {
+        if (_.findIndex(entityIndexes, { name: 'groups.' + entityType + '_1' }) >= 0) {
           return resolve(messageConstants.apiResponses.CREATE_INDEX);
         }
 
-        const newIndexCreation = await database.models.entities.db
-          .collection("entities")
-          .createIndex(
-            { ["groups." + entityType]: 1 },
-            {
-              partialFilterExpression: {
-                ["groups." + entityType]: { $exists: true },
-              },
-              background: 1,
-            }
-          );
+        const newIndexCreation = await database.models.entities.db.collection('entities').createIndex(
+          { ['groups.' + entityType]: 1 },
+          {
+            partialFilterExpression: {
+              ['groups.' + entityType]: { $exists: true },
+            },
+            background: 1,
+          },
+        );
 
-        if (newIndexCreation == "groups." + entityType + "_1") {
+        if (newIndexCreation == 'groups.' + entityType + '_1') {
           return resolve(messageConstants.apiResponses.CREATE_INDEX);
         } else {
           throw messageConstants.apiResponses.INDEX_NOT_CREATED;
@@ -1483,13 +1291,13 @@ module.exports = class EntitiesHelper {
 
   static entitiesSchemaData() {
     return {
-      SCHEMA_ENTITY_OBJECT_ID: "_id",
-      SCHEMA_ENTITY_TYPE_ID: "entityTypeId",
-      SCHEMA_ENTITIES: "entities",
-      SCHEMA_ENTITY_TYPE: "entityType",
-      SCHEMA_ENTITY_GROUP: "groups",
-      SCHEMA_METAINFORMATION: "metaInformation",
-      SCHEMA_ENTITY_CREATED_BY: "createdBy",
+      SCHEMA_ENTITY_OBJECT_ID: '_id',
+      SCHEMA_ENTITY_TYPE_ID: 'entityTypeId',
+      SCHEMA_ENTITIES: 'entities',
+      SCHEMA_ENTITY_TYPE: 'entityType',
+      SCHEMA_ENTITY_GROUP: 'groups',
+      SCHEMA_METAINFORMATION: 'metaInformation',
+      SCHEMA_ENTITY_CREATED_BY: 'createdBy',
     };
   }
 
@@ -1512,15 +1320,15 @@ module.exports = class EntitiesHelper {
               },
             },
             [
-              "_id",
-              "metaInformation",
-              "entityType",
-              "entityTypeId",
-              "updatedAt",
-              "createdAt",
-              "allowedRoles",
-              "registryDetails",
-            ]
+              '_id',
+              'metaInformation',
+              'entityType',
+              'entityTypeId',
+              'updatedAt',
+              'createdAt',
+              'allowedRoles',
+              'registryDetails',
+            ],
           );
 
           for (let entity = 0; entity < entityDocuments.length; entity++) {
@@ -1537,11 +1345,8 @@ module.exports = class EntitiesHelper {
               registryDetails: entityDocument.registryDetails,
             };
 
-            if (
-              entityDocument.allowedRoles &&
-              entityDocument.allowedRoles.length > 0
-            ) {
-              entityObj["allowedRoles"] = entityDocument.allowedRoles;
+            if (entityDocument.allowedRoles && entityDocument.allowedRoles.length > 0) {
+              entityObj['allowedRoles'] = entityDocument.allowedRoles;
             }
 
             for (let metaData in entityDocument.metaInformation) {
@@ -1558,24 +1363,16 @@ module.exports = class EntitiesHelper {
               entityObj._id,
               entityObj.entityTypeId,
               entityObj.entityType,
-              [
-                "metaInformation.externalId",
-                "metaInformation.name",
-                "entityType",
-                "entityTypeId",
-                "_id",
-              ]
+              ['metaInformation.externalId', 'metaInformation.name', 'entityType', 'entityTypeId', '_id'],
             );
 
             if (relatedEntities.length > 0) {
               relatedEntities = relatedEntities.map((entity) => {
-                telemetryObj[`${entity.entityType}_name`] =
-                  entity.metaInformation.name;
+                telemetryObj[`${entity.entityType}_name`] = entity.metaInformation.name;
 
                 telemetryObj[`${entity.entityType}_id`] = entity._id;
 
-                telemetryObj[`${entity.entityType}_externalId`] =
-                  entity.metaInformation.externalId;
+                telemetryObj[`${entity.entityType}_externalId`] = entity.metaInformation.externalId;
 
                 return {
                   name: entity.metaInformation.name,
@@ -1586,20 +1383,16 @@ module.exports = class EntitiesHelper {
                 };
               });
 
-              entityObj["relatedEntities"] = relatedEntities;
+              entityObj['relatedEntities'] = relatedEntities;
             }
 
             telemetryEntities.push(telemetryObj);
 
-            entityObj["telemetry_entities"] = telemetryEntities;
+            entityObj['telemetry_entities'] = telemetryEntities;
 
-            await elasticSearch.createOrUpdate(
-              entityObj._id,
-              process.env.ELASTICSEARCH_ENTITIES_INDEX,
-              {
-                data: entityObj,
-              }
-            );
+            await elasticSearch.createOrUpdate(entityObj._id, process.env.ELASTICSEARCH_ENTITIES_INDEX, {
+              data: entityObj,
+            });
           }
         }
 
@@ -1620,20 +1413,17 @@ module.exports = class EntitiesHelper {
    * @name userId - user id
    * @returns {Object}
    */
-  static updateUserRolesInEntitiesElasticSearch(userRoles = [], userId = "") {
+  static updateUserRolesInEntitiesElasticSearch(userRoles = [], userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
         await Promise.all(
           userRoles.map(async (role) => {
             await Promise.all(
               role.entities.map(async (entity) => {
-                let entityDocument = await elasticSearch.get(
-                  entity,
-                  process.env.ELASTICSEARCH_ENTITIES_INDEX
-                );
+                let entityDocument = await elasticSearch.get(entity, process.env.ELASTICSEARCH_ENTITIES_INDEX);
 
                 if (entityDocument.statusCode == httpStatusCode.ok.status) {
-                  entityDocument = entityDocument.body["_source"].data;
+                  entityDocument = entityDocument.body['_source'].data;
 
                   if (!entityDocument.roles) {
                     entityDocument.roles = {};
@@ -1643,29 +1433,21 @@ module.exports = class EntitiesHelper {
                     if (!entityDocument.roles[role.code].includes(userId)) {
                       entityDocument.roles[role.code].push(userId);
 
-                      await elasticSearch.createOrUpdate(
-                        entity,
-                        process.env.ELASTICSEARCH_ENTITIES_INDEX,
-                        {
-                          data: entityDocument,
-                        }
-                      );
+                      await elasticSearch.createOrUpdate(entity, process.env.ELASTICSEARCH_ENTITIES_INDEX, {
+                        data: entityDocument,
+                      });
                     }
                   } else {
                     entityDocument.roles[role.code] = [userId];
 
-                    await elasticSearch.createOrUpdate(
-                      entity,
-                      process.env.ELASTICSEARCH_ENTITIES_INDEX,
-                      {
-                        data: entityDocument,
-                      }
-                    );
+                    await elasticSearch.createOrUpdate(entity, process.env.ELASTICSEARCH_ENTITIES_INDEX, {
+                      data: entityDocument,
+                    });
                   }
                 }
-              })
+              }),
             );
-          })
+          }),
         );
 
         return resolve({
@@ -1685,33 +1467,22 @@ module.exports = class EntitiesHelper {
    * @name role - role of user
    * @returns {Object}
    */
-  static deleteUserRoleFromEntitiesElasticSearch(
-    entityId = "",
-    role = "",
-    userId = ""
-  ) {
+  static deleteUserRoleFromEntitiesElasticSearch(entityId = '', role = '', userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        let entityDocument = await elasticSearch.get(
-          entityId,
-          process.env.ELASTICSEARCH_ENTITIES_INDEX
-        );
+        let entityDocument = await elasticSearch.get(entityId, process.env.ELASTICSEARCH_ENTITIES_INDEX);
 
         if (entityDocument.statusCode == httpStatusCode.ok.status) {
-          entityDocument = entityDocument.body["_source"].data;
+          entityDocument = entityDocument.body['_source'].data;
 
           if (entityDocument.roles && entityDocument.roles[role]) {
             let index = entityDocument.roles[role].indexOf(userId);
             if (index > -1) {
               entityDocument.roles[role].splice(index, 1);
 
-              await elasticSearch.createOrUpdate(
-                entityId,
-                process.env.ELASTICSEARCH_ENTITIES_INDEX,
-                {
-                  data: entityDocument,
-                }
-              );
+              await elasticSearch.createOrUpdate(entityId, process.env.ELASTICSEARCH_ENTITIES_INDEX, {
+                data: entityDocument,
+              });
             }
           }
         }
@@ -1763,11 +1534,11 @@ module.exports = class EntitiesHelper {
           if (entityType === messageConstants.common.SCHOOL) {
             entityExternalIds.push(entity.entityExternalId);
           } else {
-            let name = entity.entityName.replace(/[*+?^${}|()[\]\\]/g, "\\$&");
-            entityNames.push(new RegExp("^" + name + "$", "i"));
+            let name = entity.entityName.replace(/[*+?^${}|()[\]\\]/g, '\\$&');
+            entityNames.push(new RegExp('^' + name + '$', 'i'));
           }
 
-          if (entity.parentLocationId && entity.parentLocationId !== "") {
+          if (entity.parentLocationId && entity.parentLocationId !== '') {
             parentLocationIds.push(entity.parentLocationId);
           }
         });
@@ -1775,11 +1546,11 @@ module.exports = class EntitiesHelper {
         let filteredQuery = { entityType: entityType };
 
         if (entityNames.length > 0) {
-          filteredQuery["metaInformation.name"] = { $in: entityNames };
+          filteredQuery['metaInformation.name'] = { $in: entityNames };
         }
 
         if (entityExternalIds.length > 0) {
-          filteredQuery["metaInformation.externalId"] = {
+          filteredQuery['metaInformation.externalId'] = {
             $in: entityExternalIds,
           };
         }
@@ -1787,21 +1558,18 @@ module.exports = class EntitiesHelper {
         if (parentLocationIds && parentLocationIds.length > 0) {
           let parenEntities = await this.entityDocuments(
             {
-              "registryDetails.locationId": { $in: parentLocationIds },
+              'registryDetails.locationId': { $in: parentLocationIds },
             },
-            ["registryDetails.locationId"]
+            ['registryDetails.locationId'],
           );
 
-          parentEntityInformation = _.keyBy(
-            parenEntities,
-            "registryDetails.locationId"
-          );
+          parentEntityInformation = _.keyBy(parenEntities, 'registryDetails.locationId');
         }
 
         let entities = await this.entityDocuments(filteredQuery, [
-          "_id",
-          "metaInformation.name",
-          "metaInformation.externalId",
+          '_id',
+          'metaInformation.name',
+          'metaInformation.externalId',
         ]);
 
         if (!entities.length > 0) {
@@ -1813,28 +1581,22 @@ module.exports = class EntitiesHelper {
         let entityInformation = {};
 
         if (entityType == messageConstants.common.SCHOOL) {
-          entityInformation = _.keyBy(entities, "metaInformation.externalId");
+          entityInformation = _.keyBy(entities, 'metaInformation.externalId');
         } else {
           entities.forEach((entity) => {
-            entityInformation[entity.metaInformation.name.toLowerCase()] =
-              entity;
+            entityInformation[entity.metaInformation.name.toLowerCase()] = entity;
           });
         }
 
-        for (
-          let pointerToRegistry = 0;
-          pointerToRegistry < registryCSVData.length;
-          pointerToRegistry++
-        ) {
+        for (let pointerToRegistry = 0; pointerToRegistry < registryCSVData.length; pointerToRegistry++) {
           let singleCsvData = registryCSVData[pointerToRegistry];
           let parsedData = gen.utils.valueParser(singleCsvData);
-          let entityId = "";
+          let entityId = '';
 
           if (entityType == messageConstants.common.SCHOOL) {
             if (!entityInformation[parsedData.entityExternalId]) {
-              singleCsvData["_SYSTEM_ID"] = "";
-              singleCsvData["STATUS"] =
-                messageConstants.apiResponses.ENTITY_NOT_FOUND;
+              singleCsvData['_SYSTEM_ID'] = '';
+              singleCsvData['STATUS'] = messageConstants.apiResponses.ENTITY_NOT_FOUND;
               input.push(singleCsvData);
               continue;
             }
@@ -1842,25 +1604,19 @@ module.exports = class EntitiesHelper {
             entityId = entityInformation[parsedData.entityExternalId]._id;
           } else {
             if (!entityInformation[parsedData.entityName.toLowerCase()]) {
-              singleCsvData["_SYSTEM_ID"] = "";
-              singleCsvData["STATUS"] =
-                messageConstants.apiResponses.ENTITY_NOT_FOUND;
+              singleCsvData['_SYSTEM_ID'] = '';
+              singleCsvData['STATUS'] = messageConstants.apiResponses.ENTITY_NOT_FOUND;
               input.push(singleCsvData);
               continue;
             }
 
-            entityId =
-              entityInformation[parsedData.entityName.toLowerCase()]._id;
+            entityId = entityInformation[parsedData.entityName.toLowerCase()]._id;
           }
 
-          if (
-            parsedData.parentLocationId &&
-            parsedData.parentLocationId !== ""
-          ) {
+          if (parsedData.parentLocationId && parsedData.parentLocationId !== '') {
             if (!parentEntityInformation[parsedData.parentLocationId]) {
-              singleCsvData["_SYSTEM_ID"] = "";
-              singleCsvData["STATUS"] =
-                messageConstants.apiResponses.INVALID_PARENT_ENTITY;
+              singleCsvData['_SYSTEM_ID'] = '';
+              singleCsvData['STATUS'] = messageConstants.apiResponses.INVALID_PARENT_ENTITY;
               input.push(singleCsvData);
               continue;
             }
@@ -1870,13 +1626,12 @@ module.exports = class EntitiesHelper {
                 _id: parentEntityInformation[parsedData.parentLocationId]._id,
                 [`groups.${entityType}`]: entityId,
               },
-              ["_id"]
+              ['_id'],
             );
 
             if (!entityInParent.length > 0) {
-              singleCsvData["_SYSTEM_ID"] = "";
-              singleCsvData["STATUS"] =
-                messageConstants.apiResponses.ENTITY_NOT_FOUND_IN_PARENT_ENTITY_GROUP;
+              singleCsvData['_SYSTEM_ID'] = '';
+              singleCsvData['STATUS'] = messageConstants.apiResponses.ENTITY_NOT_FOUND_IN_PARENT_ENTITY_GROUP;
               input.push(singleCsvData);
               continue;
             }
@@ -1886,25 +1641,24 @@ module.exports = class EntitiesHelper {
             { _id: entityId },
             {
               $set: {
-                "registryDetails.locationId": parsedData.locationId,
-                "registryDetails.code": parsedData.entityExternalId,
-                "registryDetails.lastUpdatedAt": new Date(),
+                'registryDetails.locationId': parsedData.locationId,
+                'registryDetails.code': parsedData.entityExternalId,
+                'registryDetails.lastUpdatedAt': new Date(),
                 updatedBy: userId,
               },
             },
-            { _id: 1 }
+            { _id: 1 },
           );
 
           if (!entityUpdated._id) {
-            singleCsvData["_SYSTEM_ID"] = "";
-            singleCsvData["STATUS"] =
-              messageConstants.apiResponses.ENTITY_NOT_UPDATED;
+            singleCsvData['_SYSTEM_ID'] = '';
+            singleCsvData['STATUS'] = messageConstants.apiResponses.ENTITY_NOT_UPDATED;
             input.push(singleCsvData);
             continue;
           }
 
-          singleCsvData["_SYSTEM_ID"] = entityUpdated._id;
-          singleCsvData["STATUS"] = messageConstants.common.SUCCESS;
+          singleCsvData['_SYSTEM_ID'] = entityUpdated._id;
+          singleCsvData['STATUS'] = messageConstants.common.SUCCESS;
           //   this.pushEntitiesToElasticSearch([entityUpdated._id]);
           input.push(singleCsvData);
         }
@@ -1913,43 +1667,37 @@ module.exports = class EntitiesHelper {
           let entityTypeInGroups = `groups.${entityType}`;
           let parentEntities = await this.entityDocuments(
             {
-              "registryDetails.locationId": {
+              'registryDetails.locationId': {
                 $in: Object.keys(parentEntityInformation),
               },
               groups: { $exists: true },
             },
-            [entityTypeInGroups, "registryDetails.locationId"]
+            [entityTypeInGroups, 'registryDetails.locationId'],
           );
 
           if (parentEntities.length > 0) {
-            for (
-              let parentEntity = 0;
-              parentEntity < parentEntities.length;
-              parentEntity++
-            ) {
-              let parentLocationId =
-                parentEntities[parentEntity].registryDetails.locationId;
+            for (let parentEntity = 0; parentEntity < parentEntities.length; parentEntity++) {
+              let parentLocationId = parentEntities[parentEntity].registryDetails.locationId;
               let parentEntityGroups = parentEntities[parentEntity].groups;
               let entityIds = parentEntityGroups[entityType];
 
               let childsWithNolocation = await this.entityDocuments(
                 {
                   _id: { $in: entityIds },
-                  "registryDetails.locationId": { $exists: false },
+                  'registryDetails.locationId': { $exists: false },
                 },
-                ["metaInformation.externalId", "metaInformation.name"]
+                ['metaInformation.externalId', 'metaInformation.name'],
               );
 
               if (childsWithNolocation.length > 0) {
                 childsWithNolocation.forEach((entity) => {
                   let singleCsv = {
-                    locationId: "",
+                    locationId: '',
                     entityExternalId: entity.metaInformation.externalId,
                     entityName: entity.metaInformation.name,
                     parentLocationId: parentLocationId,
                     _SYSTEM_ID: entity._id.toString(),
-                    STATUS:
-                      messageConstants.apiResponses.REGISRY_NEED_TO_BE_ADD,
+                    STATUS: messageConstants.apiResponses.REGISRY_NEED_TO_BE_ADD,
                   };
 
                   input.push(singleCsv);
@@ -1979,23 +1727,22 @@ module.exports = class EntitiesHelper {
   static updateRegistry(filteredQuery, registryDetails, userId) {
     return new Promise(async (resolve, reject) => {
       try {
-        let updateEntityDocument =
-          await database.models.entities.findOneAndUpdate(
-            filteredQuery,
-            {
-              $set: {
-                "registryDetails.locationId": registryDetails.locationId,
-                "registryDetails.code": registryDetails.code,
-                "registryDetails.lastUpdatedAt": registryDetails.lastUpdatedAt,
-                updatedBy: userId,
-              },
+        let updateEntityDocument = await database.models.entities.findOneAndUpdate(
+          filteredQuery,
+          {
+            $set: {
+              'registryDetails.locationId': registryDetails.locationId,
+              'registryDetails.code': registryDetails.code,
+              'registryDetails.lastUpdatedAt': registryDetails.lastUpdatedAt,
+              updatedBy: userId,
             },
-            {
-              projection: {
-                _id: 1,
-              },
-            }
-          );
+          },
+          {
+            projection: {
+              _id: 1,
+            },
+          },
+        );
 
         return resolve(updateEntityDocument);
       } catch (error) {
@@ -2018,19 +1765,19 @@ module.exports = class EntitiesHelper {
         let filterQuery = {
           $or: [
             {
-              "registryDetails.code": { $in: locationIds },
+              'registryDetails.code': { $in: locationIds },
             },
             {
-              "registryDetails.locationId": { $in: locationIds },
+              'registryDetails.locationId': { $in: locationIds },
             },
           ],
         };
 
         let entities = await this.entityDocuments(filterQuery, [
-          "metaInformation",
-          "entityType",
-          "entityTypeId",
-          "registryDetails",
+          'metaInformation',
+          'entityType',
+          'entityTypeId',
+          'registryDetails',
         ]);
 
         if (!entities.length > 0) {
@@ -2066,24 +1813,19 @@ module.exports = class EntitiesHelper {
     let observationEntities = [];
 
     if (observationEntityIds && observationEntityIds.length > 0) {
-      observationEntities = observationEntityIds.map((entity) =>
-        entity.toString()
-      );
+      observationEntities = observationEntityIds.map((entity) => entity.toString());
     }
 
     if (entities.length > 0) {
       entities.forEach((eachMetaData) => {
         eachMetaData.selected =
-          observationEntities.length > 0 &&
-          observationEntities.includes(eachMetaData._id.toString())
-            ? true
-            : false;
-        if (eachMetaData.districtName && eachMetaData.districtName != "") {
-          eachMetaData.name += ", " + eachMetaData.districtName;
+          observationEntities.length > 0 && observationEntities.includes(eachMetaData._id.toString()) ? true : false;
+        if (eachMetaData.districtName && eachMetaData.districtName != '') {
+          eachMetaData.name += ', ' + eachMetaData.districtName;
         }
 
-        if (eachMetaData.externalId && eachMetaData.externalId !== "") {
-          eachMetaData.name += ", " + eachMetaData.externalId;
+        if (eachMetaData.externalId && eachMetaData.externalId !== '') {
+          eachMetaData.name += ', ' + eachMetaData.externalId;
         }
       });
     }
@@ -2103,23 +1845,18 @@ module.exports = class EntitiesHelper {
 
 function addTagsInEntities(entityMetaInformation) {
   if (entityMetaInformation.schoolTypes) {
-    entityMetaInformation.schoolTypes = entityMetaInformation.schoolTypes.map(
-      (schoolType) => schoolType.toLowerCase()
-    );
+    entityMetaInformation.schoolTypes = entityMetaInformation.schoolTypes.map((schoolType) => schoolType.toLowerCase());
 
-    entityMetaInformation["tags"] = [...entityMetaInformation.schoolTypes];
+    entityMetaInformation['tags'] = [...entityMetaInformation.schoolTypes];
   }
 
   if (entityMetaInformation.administrationTypes) {
-    entityMetaInformation.administrationTypes =
-      entityMetaInformation.administrationTypes.map((schoolType) =>
-        schoolType.toLowerCase()
-      );
+    entityMetaInformation.administrationTypes = entityMetaInformation.administrationTypes.map((schoolType) =>
+      schoolType.toLowerCase(),
+    );
 
     if (entityMetaInformation.tags) {
-      entityMetaInformation.tags = entityMetaInformation.tags.concat(
-        entityMetaInformation.administrationTypes
-      );
+      entityMetaInformation.tags = entityMetaInformation.tags.concat(entityMetaInformation.administrationTypes);
     } else {
       entityMetaInformation.tags = entityMetaInformation.administrationTypes;
     }
@@ -2144,7 +1881,7 @@ async function allowedRoles(roles) {
         },
         {
           code: 1,
-        }
+        },
       );
 
       if (userRoles.length > 0) {

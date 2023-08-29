@@ -5,10 +5,10 @@
  * Description : All frameworks related information.
  */
 
-const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
-const frameworksHelper = require(MODULES_BASE_PATH + "/frameworks/helper");
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
-const csv = require("csvtojson");
+const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const frameworksHelper = require(MODULES_BASE_PATH + '/frameworks/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
+const csv = require('csvtojson');
 
 /**
  * Frameworks
@@ -20,7 +20,7 @@ module.exports = class Frameworks extends Abstract {
   }
 
   static get name() {
-    return "frameworks";
+    return 'frameworks';
   }
 
   /**
@@ -73,15 +73,15 @@ module.exports = class Frameworks extends Abstract {
         let headerSequence;
         let themes = await csv()
           .fromString(req.files.themes.data.toString())
-          .on("header", (headers) => {
+          .on('header', (headers) => {
             headerSequence = headers;
           });
 
         let frameworkThemes = await solutionsHelper.uploadTheme(
-          "frameworks",
+          'frameworks',
           frameworkDocument._id,
           themes,
-          headerSequence
+          headerSequence,
         );
 
         for (
@@ -96,8 +96,7 @@ module.exports = class Frameworks extends Abstract {
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -142,8 +141,7 @@ module.exports = class Frameworks extends Abstract {
           throw messageConstants.apiResponses.REQUIRED_FRAMEWORK_DESCRIPTION;
         }
         if (!frameworkData.entityType) {
-          throw messageConstants.apiResponses
-            .REQUIRED_ENTITY_TYPE_FOR_FRAMEWORK;
+          throw messageConstants.apiResponses.REQUIRED_ENTITY_TYPE_FOR_FRAMEWORK;
         }
 
         // let entityDocument = await database.models.entityTypes.findOne({
@@ -159,9 +157,7 @@ module.exports = class Frameworks extends Abstract {
 
         let frameworkMandatoryFields = frameworksHelper.mandatoryField();
 
-        let frameworkDocument = await database.models.frameworks
-          .findOne(queryObject, { _id: 1 })
-          .lean();
+        let frameworkDocument = await database.models.frameworks.findOne(queryObject, { _id: 1 }).lean();
 
         if (frameworkDocument) {
           throw messageConstants.apiResponses.FRAMEWORK_EXISTS;
@@ -169,18 +165,15 @@ module.exports = class Frameworks extends Abstract {
 
         Object.keys(frameworkMandatoryFields).forEach((eachMandatoryField) => {
           if (frameworkData[eachMandatoryField] === undefined) {
-            frameworkData[eachMandatoryField] =
-              frameworkMandatoryFields[eachMandatoryField];
+            frameworkData[eachMandatoryField] = frameworkMandatoryFields[eachMandatoryField];
           }
         });
 
         // frameworkData["entityTypeId"] = entityDocument._id;
-        frameworkData["createdBy"] = req.userDetails.id;
+        frameworkData['createdBy'] = req.userDetails.id;
         frameworkData.isDeleted = false;
 
-        frameworkDocument = await database.models.frameworks.create(
-          frameworkData
-        );
+        frameworkDocument = await database.models.frameworks.create(frameworkData);
 
         return resolve({
           status: httpStatusCode.ok.status,
@@ -189,8 +182,7 @@ module.exports = class Frameworks extends Abstract {
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -227,9 +219,7 @@ module.exports = class Frameworks extends Abstract {
           externalId: req.query.frameworkExternalId,
         };
 
-        let frameworkDocument = await database.models.frameworks
-          .findOne(queryObject, { themes: 0 })
-          .lean();
+        let frameworkDocument = await database.models.frameworks.findOne(queryObject, { themes: 0 }).lean();
 
         if (!frameworkDocument) {
           return resolve({
@@ -238,17 +228,14 @@ module.exports = class Frameworks extends Abstract {
           });
         }
 
-        let updateObject = _.merge(
-          _.omit(frameworkDocument, "createdAt"),
-          frameworkData
-        );
+        let updateObject = _.merge(_.omit(frameworkDocument, 'createdAt'), frameworkData);
         updateObject.updatedBy = req.userDetails.id;
 
         frameworkDocument = await database.models.frameworks.findOneAndUpdate(
           {
             _id: frameworkDocument._id,
           },
-          updateObject
+          updateObject,
         );
 
         return resolve({
@@ -258,8 +245,7 @@ module.exports = class Frameworks extends Abstract {
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -297,8 +283,7 @@ module.exports = class Frameworks extends Abstract {
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -337,8 +322,7 @@ module.exports = class Frameworks extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }

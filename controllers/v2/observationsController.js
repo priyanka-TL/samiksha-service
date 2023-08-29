@@ -6,26 +6,24 @@
  */
 
 // Dependencies
-const userExtensionHelper = require(MODULES_BASE_PATH + "/userExtension/helper");
-const entitiesHelper = require(MODULES_BASE_PATH + "/entities/helper");
-const observationsHelper = require(MODULES_BASE_PATH + "/observations/helper");
-const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
-const v1Observation = require(ROOT_PATH + "/controllers/v1/observationsController");
-const assessmentsHelper = require(MODULES_BASE_PATH + "/assessments/helper");
-const programsHelper = require(MODULES_BASE_PATH + "/programs/helper");
-const userRolesHelper = require(MODULES_BASE_PATH + "/userRoles/helper");
+const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
+const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
+const observationsHelper = require(MODULES_BASE_PATH + '/observations/helper');
+const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const v1Observation = require(ROOT_PATH + '/controllers/v1/observationsController');
+const assessmentsHelper = require(MODULES_BASE_PATH + '/assessments/helper');
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 
 /**
-    * Observations
-    * @class
-*/
+ * Observations
+ * @class
+ */
 
 module.exports = class Observations extends v1Observation {
+  // TODO :: url string is too long.
 
-
-    // TODO :: url string is too long.
-    
-    /**
+  /**
      * @api {get} /assessment/api/v2/observations/searchEntities?solutionId=:solutionId&search=:searchText&limit=1&page=1&parentEntityId=:parentEntityId Search Entities based on observationId or solutionId
      * @apiVersion 2.0.0
      * @apiName Search Entities
@@ -51,207 +49,185 @@ module.exports = class Observations extends v1Observation {
      * @apiUse errorBody
      */
 
-       /**
-    * Search entities in observation.
-    * @method
-    * @name searchEntities
-    * @param {Object} req -request Data.
-    * @param {String} req.query.observationId -observation id. 
-    * @returns {JSON} List of entities in observations.
-    */
+  /**
+   * Search entities in observation.
+   * @method
+   * @name searchEntities
+   * @param {Object} req -request Data.
+   * @param {String} req.query.observationId -observation id.
+   * @returns {JSON} List of entities in observations.
+   */
 
-    async searchEntities(req) {
+  async searchEntities(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = {
+          result: {},
+        };
 
-        return new Promise(async (resolve, reject) => {
+        let userId = req.userDetails.userId;
+        let result;
 
-            try {
+        let projection = [];
 
-                let response = {
-                    result: {}
-                };
+        if (req.query.observationId) {
+          let findObject = {};
+          findObject[entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_OBJECT_ID] = req.query.observationId;
+          findObject[entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_CREATED_BY] = userId;
 
-                let userId = req.userDetails.userId;
-                let result;
+          projection.push(
+            entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE_ID,
+            entitiesHelper.entitiesSchemaData().SCHEMA_ENTITIES,
+            entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE,
+          );
 
-                let projection = [];
+          let observationDocument = await observationsHelper.observationDocuments(findObject, projection);
+          result = observationDocument[0];
+        }
 
-                if ( req.query.observationId ) {
-                    let findObject = {};
-                    findObject[entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_OBJECT_ID] = req.query.observationId;
-                    findObject[entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_CREATED_BY] = userId;
+        if (req.query.solutionId) {
+          let findQuery = {
+            _id: ObjectId(req.query.solutionId),
+          };
 
-                    projection.push(
-                        entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE_ID, 
-                        entitiesHelper.entitiesSchemaData().SCHEMA_ENTITIES, 
-                        entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE
-                    );
+          projection.push(
+            entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE_ID,
+            entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE,
+          );
 
-                    let observationDocument = 
-                    await observationsHelper.observationDocuments(findObject, projection);
-                    result = observationDocument[0];
+          let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projection);
+          result = _.merge(solutionDocument[0]);
+        }
+
+        let userAllowedEntities = new Array();
+
+        // try {
+        //     userAllowedEntities = await userExtensionHelper.getUserEntitiyUniverseByEntityType(userId, result.entityType);
+        // } catch (error) {
+        //     userAllowedEntities = [];
+        // }
+
+        let messageData = messageConstants.apiResponses.ENTITY_FETCHED;
+
+        if (!(userAllowedEntities.length > 0) && req.query.parentEntityId) {
+          let entityType = entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP + '.' + result.entityType;
+
+          let entitiesData = await entitiesHelper.entityDocuments(
+            {
+              _id: req.query.parentEntityId,
+            },
+            [
+              entityType,
+              'entityType',
+              'metaInformation.name',
+              'metaInformation.addressLine1',
+              'metaInformation.addressLine2',
+              'metaInformation.externalId',
+              'metaInformation.districtName',
+            ],
+          );
+
+          if (entitiesData.length > 0 && entitiesData[0].groups && entitiesData[0].groups[result.entityType]) {
+            userAllowedEntities =
+              entitiesData[0][entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP][result.entityType];
+          } else {
+            response.result = [];
+            if (entitiesData[0] && entitiesData[0].entityType === result.entityType) {
+              if (entitiesData[0].metaInformation) {
+                if (entitiesData[0].metaInformation.name) {
+                  entitiesData[0]['name'] = entitiesData[0].metaInformation.name;
                 }
 
-                if ( req.query.solutionId ) {
-                    let findQuery = {
-                        _id: ObjectId(req.query.solutionId)
-                    };
-
-                    projection.push(
-                        entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE_ID, 
-                        entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_TYPE
-                    );
-
-                    let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projection);
-                    result = _.merge(solutionDocument[0]);
+                if (entitiesData[0].metaInformation.externalId) {
+                  entitiesData[0]['externalId'] = entitiesData[0].metaInformation.externalId;
                 }
 
-                let userAllowedEntities = new Array;
-
-                // try {
-                //     userAllowedEntities = await userExtensionHelper.getUserEntitiyUniverseByEntityType(userId, result.entityType);
-                // } catch (error) {
-                //     userAllowedEntities = [];
-                // }
-
-                let messageData = messageConstants.apiResponses.ENTITY_FETCHED;
-
-                if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
-
-                    let entityType = entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP+"."+result.entityType;
-
-                    let entitiesData = await entitiesHelper.entityDocuments({
-                        _id:req.query.parentEntityId
-                      }, [
-                        entityType,
-                        "entityType",
-                        "metaInformation.name",
-                        "metaInformation.addressLine1",
-                        "metaInformation.addressLine2",
-                        "metaInformation.externalId",
-                        "metaInformation.districtName"
-                      ]);
-
-                    if( entitiesData.length > 0 && entitiesData[0].groups && entitiesData[0].groups[result.entityType]  ) {
-                        userAllowedEntities = 
-                        entitiesData[0][entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP][result.entityType];
-                    } else {
-
-                        response.result = [];
-                        if( entitiesData[0] && entitiesData[0].entityType === result.entityType ) {
-
-                            if( entitiesData[0].metaInformation ) {
-                                
-                                if( entitiesData[0].metaInformation.name ) {
-                                    entitiesData[0]["name"] = entitiesData[0].metaInformation.name;
-                                }
-
-                                if( entitiesData[0].metaInformation.externalId ) {
-                                    entitiesData[0]["externalId"] = entitiesData[0].metaInformation.externalId;
-                                }
-
-                                if( entitiesData[0].metaInformation.addressLine1 ) {
-                                    entitiesData[0]["addressLine1"] = entitiesData[0].metaInformation.addressLine1;
-                                }
-
-                                if( entitiesData[0].metaInformation.addressLine2 ) {
-                                    entitiesData[0]["addressLine2"] = entitiesData[0].metaInformation.addressLine2;
-                                }
-
-                                if( entitiesData[0].metaInformation.districtName ) {
-                                    entitiesData[0]["districtName"] = entitiesData[0].metaInformation.districtName;
-                                }
-
-                                entitiesData[0] = _.pick(
-                                    entitiesData[0],
-                                    ["_id","name","externalId","addressLine1","addressLine2","districtName"]
-                                )
-                            }
-
-                            let data = 
-                            await entitiesHelper.observationSearchEntitiesResponse(
-                                entitiesData,
-                                result.entities
-                            );
-
-                            response["message"] = messageData;
-
-                            response.result.push({
-                                "count" : 1,
-                                "data" : data
-                            });
-
-                        } else {
-                            response["message"] = 
-                            messageConstants.apiResponses.ENTITY_NOT_FOUND;
-                            
-                            response.result.push({
-                                "count":0,
-                                "data" : []
-                            });
-                        }  
-
-                        return resolve(response);
-                    }
+                if (entitiesData[0].metaInformation.addressLine1) {
+                  entitiesData[0]['addressLine1'] = entitiesData[0].metaInformation.addressLine1;
                 }
 
-                let userAclInformation = await userExtensionHelper.userAccessControlList(
-                    userId
-                );
-
-                let tags = [];
-                
-                if( 
-                    userAclInformation.success && 
-                    Object.keys(userAclInformation.acl).length > 0 
-                ) {
-                    Object.values(userAclInformation.acl).forEach(acl=>{
-                        tags = tags.concat(acl);
-                    })
+                if (entitiesData[0].metaInformation.addressLine2) {
+                  entitiesData[0]['addressLine2'] = entitiesData[0].metaInformation.addressLine2;
                 }
 
-                let entityDocuments = await entitiesHelper.search(
-                    result.entityTypeId, 
-                    req.searchText, 
-                    req.pageSize, 
-                    req.pageNo, 
-                    
-                    userAllowedEntities && userAllowedEntities.length > 0 ? 
-                    userAllowedEntities : 
-                    false,
-                    tags
-                );
-
-                let data = 
-                await entitiesHelper.observationSearchEntitiesResponse(
-                    entityDocuments[0].data,
-                    result.entities
-                )
-
-                entityDocuments[0].data = data;
-
-                if ( !(entityDocuments[0].count) ) {
-                    entityDocuments[0].count = 0;
-                    messageData = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+                if (entitiesData[0].metaInformation.districtName) {
+                  entitiesData[0]['districtName'] = entitiesData[0].metaInformation.districtName;
                 }
-                response.result = entityDocuments;
-                response["message"] = messageData;
 
-                return resolve(response);
+                entitiesData[0] = _.pick(entitiesData[0], [
+                  '_id',
+                  'name',
+                  'externalId',
+                  'addressLine1',
+                  'addressLine2',
+                  'districtName',
+                ]);
+              }
 
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
+              let data = await entitiesHelper.observationSearchEntitiesResponse(entitiesData, result.entities);
+
+              response['message'] = messageData;
+
+              response.result.push({
+                count: 1,
+                data: data,
+              });
+            } else {
+              response['message'] = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+
+              response.result.push({
+                count: 0,
+                data: [],
+              });
             }
 
+            return resolve(response);
+          }
+        }
+
+        let userAclInformation = await userExtensionHelper.userAccessControlList(userId);
+
+        let tags = [];
+
+        if (userAclInformation.success && Object.keys(userAclInformation.acl).length > 0) {
+          Object.values(userAclInformation.acl).forEach((acl) => {
+            tags = tags.concat(acl);
+          });
+        }
+
+        let entityDocuments = await entitiesHelper.search(
+          result.entityTypeId,
+          req.searchText,
+          req.pageSize,
+          req.pageNo,
+
+          userAllowedEntities && userAllowedEntities.length > 0 ? userAllowedEntities : false,
+          tags,
+        );
+
+        let data = await entitiesHelper.observationSearchEntitiesResponse(entityDocuments[0].data, result.entities);
+
+        entityDocuments[0].data = data;
+
+        if (!entityDocuments[0].count) {
+          entityDocuments[0].count = 0;
+          messageData = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+        }
+        response.result = entityDocuments;
+        response['message'] = messageData;
+
+        return resolve(response);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
         });
+      }
+    });
+  }
 
-    }
-
-
-    /**
+  /**
      * @api {get} /assessment/api/v2/observations/list Observations list
      * @apiVersion 2.0.0
      * @apiName Observations list
@@ -295,44 +271,38 @@ module.exports = class Observations extends v1Observation {
      * @apiUse errorBody
      */
 
-    /**
-    * List Observation.
-    * @method
-    * @name list
-    * @param {Object} req -request Data.
-    * @returns {JSON} - List observation data.
-    */
+  /**
+   * List Observation.
+   * @method
+   * @name list
+   * @param {Object} req -request Data.
+   * @returns {JSON} - List observation data.
+   */
 
-   async list(req) {
+  async list(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let observations = new Array();
 
-        return new Promise(async (resolve, reject) => {
+        observations = await observationsHelper.listV2(req.userDetails.userId);
 
-            try {
+        let responseMessage = messageConstants.apiResponses.OBSERVATION_LIST;
 
-                let observations = new Array;
-
-                observations = await observationsHelper.listV2(req.userDetails.userId);
-                
-                let responseMessage = messageConstants.apiResponses.OBSERVATION_LIST;
-
-                return resolve({
-                    message: responseMessage,
-                    result: observations
-                });
-
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-
+        return resolve({
+          message: responseMessage,
+          result: observations,
         });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-    }
-
-    /**
+  /**
      * @api {post} /assessment/api/v2/observations/assessment/:observationId?entityId=:entityId&submissionNumber=submissionNumber&ecmMethod=ecmMethod Assessments
      * @apiVersion 2.0.0
      * @apiName Assessments
@@ -526,390 +496,359 @@ module.exports = class Observations extends v1Observation {
     * @apiUse errorBody
     */
 
-        /**
-    * Assessment for observation.
-    * @method
-    * @name assessment
-    * @param {Object} req -request Data.
-    * @param {String} req.params._id -observation id. 
-    * @param {String} req.query.entityId - entity id.
-    * @param {String} req.query.submissionNumber - submission number
-    * @param {String} req.userDetails.allRoles -user roles.
-    * @returns {JSON} - Observation Assessment details.
-    */
+  /**
+   * Assessment for observation.
+   * @method
+   * @name assessment
+   * @param {Object} req -request Data.
+   * @param {String} req.params._id -observation id.
+   * @param {String} req.query.entityId - entity id.
+   * @param {String} req.query.submissionNumber - submission number
+   * @param {String} req.userDetails.allRoles -user roles.
+   * @returns {JSON} - Observation Assessment details.
+   */
 
-    async assessment(req) {
+  async assessment(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = {
+          message: messageConstants.apiResponses.ASSESSMENT_FETCHED,
+          result: {},
+        };
 
-        return new Promise(async (resolve, reject) => {
+        let observationDocument = await database.models.observations
+          .findOne({
+            _id: req.params._id,
+            createdBy: req.userDetails.userId,
+            status: { $ne: 'inactive' },
+            entities: ObjectId(req.query.entityId),
+          })
+          .lean();
 
-            try {
+        if (!observationDocument) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND,
+          });
+        }
 
-                let response = {
-                    message: messageConstants.apiResponses.ASSESSMENT_FETCHED,
-                    result: {}
-                };
+        let entityQueryObject = { _id: req.query.entityId, entityType: observationDocument.entityType };
+        let entityDocument = await database.models.entities
+          .findOne(entityQueryObject, {
+            metaInformation: 1,
+            entityTypeId: 1,
+            entityType: 1,
+            registryDetails: 1,
+          })
+          .lean();
 
-                let observationDocument = await database.models.observations.findOne({ 
-                    _id: req.params._id, 
-                     createdBy: req.userDetails.userId,
-                     status: {$ne:"inactive"}, 
-                     entities: ObjectId(req.query.entityId) }).lean();
+        if (!entityDocument) {
+          let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: responseMessage,
+          });
+        }
 
-                if (!observationDocument) {
-                    return resolve({ 
-                        status: httpStatusCode.bad_request.status, 
-                        message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND
-                    });
-                }
-               
-                let entityQueryObject = { _id: req.query.entityId, entityType: observationDocument.entityType };
-                let entityDocument = await database.models.entities.findOne(
-                    entityQueryObject,
-                    {
-                        metaInformation: 1,
-                        entityTypeId: 1,
-                        entityType: 1,
-                        registryDetails: 1
-                    }
-                ).lean();
+        if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {
+          entityDocument.metaInformation.registryDetails = entityDocument.registryDetails;
+        }
 
-                if (!entityDocument) {
-                    let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
-                    return resolve({ 
-                        status: httpStatusCode.bad_request.status, 
-                        message: responseMessage 
-                    });
-                }
+        const submissionNumber =
+          req.query.submissionNumber && req.query.submissionNumber > 1 ? parseInt(req.query.submissionNumber) : 1;
 
-                if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {
-                    entityDocument.metaInformation.registryDetails = entityDocument.registryDetails;
-                }
+        let solutionQueryObject = {
+          _id: observationDocument.solutionId,
+          status: 'active',
+        };
 
-                const submissionNumber = req.query.submissionNumber && req.query.submissionNumber > 1 ? parseInt(req.query.submissionNumber) : 1;
+        let solutionDocumentProjectionFields = await observationsHelper.solutionDocumentProjectionFieldsForDetailsAPI();
 
-                let solutionQueryObject = {
-                    _id: observationDocument.solutionId,
-                    status: "active",
-                };
+        let solutionDocument = await database.models.solutions
+          .findOne(solutionQueryObject, solutionDocumentProjectionFields)
+          .lean();
 
-                let solutionDocumentProjectionFields = await observationsHelper.solutionDocumentProjectionFieldsForDetailsAPI()
+        if (!solutionDocument) {
+          let responseMessage = messageConstants.apiResponses.SOLUTION_NOT_FOUND;
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: responseMessage,
+          });
+        }
 
-                let solutionDocument = await database.models.solutions.findOne(
-                    solutionQueryObject,
-                    solutionDocumentProjectionFields
-                ).lean();
+        if (req.query.ecmMethod && req.query.ecmMethod !== '') {
+          if (!solutionDocument.evidenceMethods[req.query.ecmMethod]) {
+            return resolve({
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.ECM_NOT_EXIST,
+            });
+          }
+        }
 
-                if (!solutionDocument) {
-                    let responseMessage = messageConstants.apiResponses.SOLUTION_NOT_FOUND;
-                    return resolve({ 
-                        status: httpStatusCode.bad_request.status, 
-                        message: responseMessage 
-                    });
-                }
+        let programQueryObject = {
+          _id: observationDocument.programId,
+          status: 'active',
+          components: { $in: [ObjectId(observationDocument.solutionId)] },
+        };
 
-                
-                if( req.query.ecmMethod && req.query.ecmMethod !== "" ) {
-                    if(!solutionDocument.evidenceMethods[req.query.ecmMethod] ) {
-                        return resolve({ 
-                            status: httpStatusCode.bad_request.status, 
-                            message: messageConstants.apiResponses.ECM_NOT_EXIST
-                        });
-                    }
-                }
+        let programDocument = await programsHelper.list(programQueryObject, [
+          'externalId',
+          'name',
+          'description',
+          'imageCompression',
+          'isAPrivateProgram',
+        ]);
 
-                let programQueryObject = {
-                    _id: observationDocument.programId,
-                    status: "active",
-                    components: { $in: [ObjectId(observationDocument.solutionId)] }
-                };
+        if (!programDocument[0]._id) {
+          throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+        }
 
-                let programDocument = await programsHelper.list(
-                    programQueryObject,[
-                        "externalId",
-                        "name",
-                        "description",
-                        "imageCompression",
-                        "isAPrivateProgram"
-                    ]
-                );
-
-                if ( !programDocument[0]._id ) {
-                    throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
-                }
-
-                /*
+        /*
                 <- Currently not required for bodh-2:10 as roles is not given in user 
                 */
 
-                // let currentUserAssessmentRole = await assessmentsHelper.getUserRole(req.userDetails.allRoles);
-                // let profileFieldAccessibility = (solutionDocument.roles && solutionDocument.roles[currentUserAssessmentRole] && solutionDocument.roles[currentUserAssessmentRole].acl && solutionDocument.roles[currentUserAssessmentRole].acl.entityProfile) ? solutionDocument.roles[currentUserAssessmentRole].acl.entityProfile : "";
+        // let currentUserAssessmentRole = await assessmentsHelper.getUserRole(req.userDetails.allRoles);
+        // let profileFieldAccessibility = (solutionDocument.roles && solutionDocument.roles[currentUserAssessmentRole] && solutionDocument.roles[currentUserAssessmentRole].acl && solutionDocument.roles[currentUserAssessmentRole].acl.entityProfile) ? solutionDocument.roles[currentUserAssessmentRole].acl.entityProfile : "";
 
-                // let entityProfileForm = await database.models.entityTypes.findOne(
-                //     solutionDocument.entityTypeId,
-                //     {
-                //         profileForm: 1
-                //     }
-                // ).lean();
+        // let entityProfileForm = await database.models.entityTypes.findOne(
+        //     solutionDocument.entityTypeId,
+        //     {
+        //         profileForm: 1
+        //     }
+        // ).lean();
 
-                // if (!entityProfileForm) {
-                //     let responseMessage = messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND;
-                //     return resolve({ 
-                //         status: httpStatusCode.bad_request.status, 
-                //         message: responseMessage 
-                //     });
-                // }
+        // if (!entityProfileForm) {
+        //     let responseMessage = messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND;
+        //     return resolve({
+        //         status: httpStatusCode.bad_request.status,
+        //         message: responseMessage
+        //     });
+        // }
 
-                // let form = [];
-                // let entityDocumentTypes = (entityDocument.metaInformation.types) ? entityDocument.metaInformation.types : ["A1"];
-                let entityDocumentQuestionGroup = (entityDocument.metaInformation.questionGroup) ? entityDocument.metaInformation.questionGroup : ["A1"];
-                // let entityProfileFieldsPerEntityTypes = solutionDocument.entityProfileFieldsPerEntityTypes;
-                // let filteredFieldsToBeShown = [];
+        // let form = [];
+        // let entityDocumentTypes = (entityDocument.metaInformation.types) ? entityDocument.metaInformation.types : ["A1"];
+        let entityDocumentQuestionGroup = entityDocument.metaInformation.questionGroup
+          ? entityDocument.metaInformation.questionGroup
+          : ['A1'];
+        // let entityProfileFieldsPerEntityTypes = solutionDocument.entityProfileFieldsPerEntityTypes;
+        // let filteredFieldsToBeShown = [];
 
-                // if (entityProfileFieldsPerEntityTypes) {
-                //     entityDocumentTypes.forEach(entityType => {
-                //         if (entityProfileFieldsPerEntityTypes[entityType]) {
-                //             filteredFieldsToBeShown.push(...entityProfileFieldsPerEntityTypes[entityType]);
-                //         }
-                //     })
-                // }
+        // if (entityProfileFieldsPerEntityTypes) {
+        //     entityDocumentTypes.forEach(entityType => {
+        //         if (entityProfileFieldsPerEntityTypes[entityType]) {
+        //             filteredFieldsToBeShown.push(...entityProfileFieldsPerEntityTypes[entityType]);
+        //         }
+        //     })
+        // }
 
-                // entityProfileForm.profileForm.forEach(profileFormField => {
-                //     if (filteredFieldsToBeShown.includes(profileFormField.field)) {
-                //         profileFormField.value = (entityDocument.metaInformation[profileFormField.field]) ? entityDocument.metaInformation[profileFormField.field] : "";
-                //         profileFormField.visible = profileFieldAccessibility ? (profileFieldAccessibility.visible.indexOf("all") > -1 || profileFieldAccessibility.visible.indexOf(profileFormField.field) > -1) : true;
-                //         profileFormField.editable = profileFieldAccessibility ? (profileFieldAccessibility.editable.indexOf("all") > -1 || profileFieldAccessibility.editable.indexOf(profileFormField.field) > -1) : true;
-                //         form.push(profileFormField);
-                //     }
-                // })
+        // entityProfileForm.profileForm.forEach(profileFormField => {
+        //     if (filteredFieldsToBeShown.includes(profileFormField.field)) {
+        //         profileFormField.value = (entityDocument.metaInformation[profileFormField.field]) ? entityDocument.metaInformation[profileFormField.field] : "";
+        //         profileFormField.visible = profileFieldAccessibility ? (profileFieldAccessibility.visible.indexOf("all") > -1 || profileFieldAccessibility.visible.indexOf(profileFormField.field) > -1) : true;
+        //         profileFormField.editable = profileFieldAccessibility ? (profileFieldAccessibility.editable.indexOf("all") > -1 || profileFieldAccessibility.editable.indexOf(profileFormField.field) > -1) : true;
+        //         form.push(profileFormField);
+        //     }
+        // })
 
-                response.result.entityProfile = {
-                    _id: entityDocument._id,
-                    entityTypeId: entityDocument.entityTypeId,
-                    entityType: entityDocument.entityType,
-                    // form: form
-                };
+        response.result.entityProfile = {
+          _id: entityDocument._id,
+          entityTypeId: entityDocument.entityTypeId,
+          entityType: entityDocument.entityType,
+          // form: form
+        };
 
+        let solutionDocumentFieldList = await observationsHelper.solutionDocumentFieldListInResponse();
 
-                let solutionDocumentFieldList = await observationsHelper.solutionDocumentFieldListInResponse()
+        response.result.solution = await _.pick(solutionDocument, solutionDocumentFieldList);
+        response.result.program = programDocument[0];
 
-                response.result.solution = await _.pick(solutionDocument, solutionDocumentFieldList);
-                response.result.program = programDocument[0];
+        let submissionDocument = {
+          entityId: entityDocument._id,
+          entityExternalId: entityDocument.metaInformation.externalId ? entityDocument.metaInformation.externalId : '',
+          entityInformation: entityDocument.metaInformation,
+          solutionId: solutionDocument._id,
+          solutionExternalId: solutionDocument.externalId,
+          programId: programDocument[0]._id,
+          programExternalId: programDocument[0].externalId,
+          isAPrivateProgram: programDocument[0].isAPrivateProgram,
+          programInformation: {
+            ..._.omit(programDocument[0], ['_id', 'components', 'isAPrivateProgram']),
+          },
+          frameworkId: solutionDocument.frameworkId,
+          frameworkExternalId: solutionDocument.frameworkExternalId,
+          entityTypeId: solutionDocument.entityTypeId,
+          entityType: solutionDocument.entityType,
+          scoringSystem: solutionDocument.scoringSystem,
+          isRubricDriven: solutionDocument.isRubricDriven,
+          observationId: observationDocument._id,
+          observationInformation: {
+            ..._.omit(observationDocument, ['_id', 'entities', 'deleted', '__v']),
+          },
+          createdBy: observationDocument.createdBy,
+          evidenceSubmissions: [],
+          entityProfile: {},
+          status: 'started',
+        };
 
-                let submissionDocument = {
-                    entityId: entityDocument._id,
-                    entityExternalId: (entityDocument.metaInformation.externalId) ? entityDocument.metaInformation.externalId : "",
-                    entityInformation: entityDocument.metaInformation,
-                    solutionId: solutionDocument._id,
-                    solutionExternalId: solutionDocument.externalId,
-                    programId : programDocument[0]._id,
-                    programExternalId : programDocument[0].externalId,
-                    isAPrivateProgram : programDocument[0].isAPrivateProgram,
-                    programInformation : {
-                        ..._.omit(programDocument[0], ["_id", "components","isAPrivateProgram"])
-                    },
-                    frameworkId: solutionDocument.frameworkId,
-                    frameworkExternalId: solutionDocument.frameworkExternalId,
-                    entityTypeId: solutionDocument.entityTypeId,
-                    entityType: solutionDocument.entityType,
-                    scoringSystem: solutionDocument.scoringSystem,
-                    isRubricDriven: solutionDocument.isRubricDriven,
-                    observationId: observationDocument._id,
-                    observationInformation: {
-                        ..._.omit(observationDocument, ["_id", "entities", "deleted", "__v"])
-                    },
-                    createdBy: observationDocument.createdBy,
-                    evidenceSubmissions: [],
-                    entityProfile: {},
-                    status: "started"
-                };
+        if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
+          submissionDocument['criteriaLevelReport'] = solutionDocument['criteriaLevelReport'];
+        }
 
-                if( solutionDocument.hasOwnProperty("criteriaLevelReport") ) {
-                    submissionDocument["criteriaLevelReport"] = solutionDocument["criteriaLevelReport"];
-                }
+        if (req.body && req.body.role) {
+          let roleDocument = await userRolesHelper.list({ code: req.body.role }, ['_id']);
 
-                if (req.body && req.body.role) {
-                    
-                    let roleDocument = await userRolesHelper.list
-                    ( { code : req.body.role },
-                      [ "_id"]
-                    )
+          if (roleDocument[0]._id) {
+            req.body.roleId = roleDocument[0]._id;
+          }
 
-                    if (roleDocument[0]._id) {
-                        req.body.roleId = roleDocument[0]._id; 
-                    }
+          submissionDocument.userRoleInformation = req.body;
+        }
 
-                    submissionDocument.userRoleInformation = req.body;
-                }
+        if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
+          submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
+          submissionDocument['project'] = solutionDocument.project;
+        }
 
-                if( solutionDocument.referenceFrom === messageConstants.common.PROJECT ) {
-                    submissionDocument["referenceFrom"] = messageConstants.common.PROJECT;
-                    submissionDocument["project"] = solutionDocument.project;
-                }
-                
-                let assessment = {};
+        let assessment = {};
 
-                assessment.name = solutionDocument.name;
-                assessment.description = solutionDocument.description;
-                assessment.externalId = solutionDocument.externalId;
-                assessment.pageHeading = solutionDocument.pageHeading;
+        assessment.name = solutionDocument.name;
+        assessment.description = solutionDocument.description;
+        assessment.externalId = solutionDocument.externalId;
+        assessment.pageHeading = solutionDocument.pageHeading;
 
-                let criteriaId = new Array;
-                let criteriaObject = {};
-                let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
+        let criteriaId = new Array();
+        let criteriaObject = {};
+        let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
 
-                criteriaIdArray.forEach(eachCriteriaId => {
-                    criteriaId.push(eachCriteriaId.criteriaId);
-                    criteriaObject[eachCriteriaId.criteriaId.toString()] = {
-                        weightage: eachCriteriaId.weightage
-                    };
-                })
-
-                let criteriaQuestionDocument = await database.models.criteriaQuestions.find(
-                    { _id: { $in: criteriaId } },
-                    {
-                        resourceType: 0,
-                        language: 0,
-                        keywords: 0,
-                        concepts: 0,
-                        createdFor: 0
-                    }
-                ).lean();
-
-                let evidenceMethodArray = {};
-                let submissionDocumentEvidences = {};
-                let submissionDocumentCriterias = [];
-                Object.keys(solutionDocument.evidenceMethods).forEach(solutionEcm => {
-                    solutionDocument.evidenceMethods[solutionEcm].startTime = "";
-                    solutionDocument.evidenceMethods[solutionEcm].endTime = "";
-                    solutionDocument.evidenceMethods[solutionEcm].isSubmitted = false;
-                    solutionDocument.evidenceMethods[solutionEcm].submissions = new Array;
-                })
-                submissionDocumentEvidences = solutionDocument.evidenceMethods;
-
-                criteriaQuestionDocument.forEach(criteria => {
-
-                    criteria.weightage = criteriaObject[criteria._id.toString()].weightage;
-
-                    submissionDocumentCriterias.push(
-                        _.omit(criteria, [
-                            "evidences"
-                        ])
-                    );
-
-                    criteria.evidences.forEach(evidenceMethod => {
-
-                        if (evidenceMethod.code) {
-
-                            if (!evidenceMethodArray[evidenceMethod.code]) {
-
-                                evidenceMethod.sections.forEach(ecmSection => {
-                                    ecmSection.name = solutionDocument.sections[ecmSection.code];
-                                })
-                                _.merge(evidenceMethod, submissionDocumentEvidences[evidenceMethod.code]);
-                                evidenceMethodArray[evidenceMethod.code] = evidenceMethod;
-
-                            } else {
-
-                                evidenceMethod.sections.forEach(evidenceMethodSection => {
-
-                                    let sectionExisitsInEvidenceMethod = 0;
-                                    let existingSectionQuestionsArrayInEvidenceMethod = [];
-
-                                    evidenceMethodArray[evidenceMethod.code].sections.forEach(exisitingSectionInEvidenceMethod => {
-
-                                        if (exisitingSectionInEvidenceMethod.code == evidenceMethodSection.code) {
-                                            sectionExisitsInEvidenceMethod = 1;
-                                            existingSectionQuestionsArrayInEvidenceMethod = exisitingSectionInEvidenceMethod.questions;
-                                        }
-
-                                    });
-
-                                    if (!sectionExisitsInEvidenceMethod) {
-                                        evidenceMethodSection.name = solutionDocument.sections[evidenceMethodSection.code];
-                                        evidenceMethodArray[evidenceMethod.code].sections.push(evidenceMethodSection);
-                                    } else {
-                                        evidenceMethodSection.questions.forEach(questionInEvidenceMethodSection => {
-                                            existingSectionQuestionsArrayInEvidenceMethod.push(
-                                                questionInEvidenceMethodSection
-                                            );
-                                        });
-                                    }
-
-                                });
-
-                            }
-
-                        }
-
-                    });
-
-                });
-
-                submissionDocument.evidences = submissionDocumentEvidences;
-                submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
-                submissionDocument.criteria = submissionDocumentCriterias;
-                submissionDocument.submissionNumber = submissionNumber;
-
-                submissionDocument["appInformation"] = {};
-  
-                if (req.headers["x-app-id"] || req.headers.appname ) {
-                    submissionDocument["appInformation"]["appName"] = 
-                    req.headers["x-app-id"] ? req.headers["x-app-id"] :
-                    req.headers.appname;
-                } 
-  
-                if (req.headers["x-app-ver"] || req.headers.appversion) {
-                    submissionDocument["appInformation"]["appVersion"] = 
-                    req.headers["x-app-ver"] ? req.headers["x-app-ver"] :
-                    req.headers.appversion;
-                }
-
-                let submissionDoc = await observationsHelper.findSubmission(
-                    submissionDocument
-                );
-
-                assessment.submissionId = submissionDoc.result._id;
-
-                if( req.query.ecmMethod && req.query.ecmMethod !== "" ) {
-                    if( evidenceMethodArray[req.query.ecmMethod] ) {
-                        evidenceMethodArray = {
-                            [req.query.ecmMethod] : evidenceMethodArray[req.query.ecmMethod]
-                        };
-                    }
-                }
-
-                const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
-                    Object.values(evidenceMethodArray),
-                    entityDocumentQuestionGroup,
-                    submissionDoc.result.evidences,
-                    (solutionDocument && solutionDocument.questionSequenceByEcm) ? solutionDocument.questionSequenceByEcm : false,
-                    entityDocument.metaInformation
-                );
-
-                assessment.evidences = parsedAssessment.evidences;
-                assessment.submissions = parsedAssessment.submissions;
-                if (parsedAssessment.generalQuestions && parsedAssessment.generalQuestions.length > 0) {
-                    assessment.generalQuestions = parsedAssessment.generalQuestions;
-                }
-
-                response.result.assessment = assessment;
-
-                return resolve(response);
-
-
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-
+        criteriaIdArray.forEach((eachCriteriaId) => {
+          criteriaId.push(eachCriteriaId.criteriaId);
+          criteriaObject[eachCriteriaId.criteriaId.toString()] = {
+            weightage: eachCriteriaId.weightage,
+          };
         });
 
-    }
+        let criteriaQuestionDocument = await database.models.criteriaQuestions
+          .find(
+            { _id: { $in: criteriaId } },
+            {
+              resourceType: 0,
+              language: 0,
+              keywords: 0,
+              concepts: 0,
+              createdFor: 0,
+            },
+          )
+          .lean();
 
-    /**
+        let evidenceMethodArray = {};
+        let submissionDocumentEvidences = {};
+        let submissionDocumentCriterias = [];
+        Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
+          solutionDocument.evidenceMethods[solutionEcm].startTime = '';
+          solutionDocument.evidenceMethods[solutionEcm].endTime = '';
+          solutionDocument.evidenceMethods[solutionEcm].isSubmitted = false;
+          solutionDocument.evidenceMethods[solutionEcm].submissions = new Array();
+        });
+        submissionDocumentEvidences = solutionDocument.evidenceMethods;
+
+        criteriaQuestionDocument.forEach((criteria) => {
+          criteria.weightage = criteriaObject[criteria._id.toString()].weightage;
+
+          submissionDocumentCriterias.push(_.omit(criteria, ['evidences']));
+
+          criteria.evidences.forEach((evidenceMethod) => {
+            if (evidenceMethod.code) {
+              if (!evidenceMethodArray[evidenceMethod.code]) {
+                evidenceMethod.sections.forEach((ecmSection) => {
+                  ecmSection.name = solutionDocument.sections[ecmSection.code];
+                });
+                _.merge(evidenceMethod, submissionDocumentEvidences[evidenceMethod.code]);
+                evidenceMethodArray[evidenceMethod.code] = evidenceMethod;
+              } else {
+                evidenceMethod.sections.forEach((evidenceMethodSection) => {
+                  let sectionExisitsInEvidenceMethod = 0;
+                  let existingSectionQuestionsArrayInEvidenceMethod = [];
+
+                  evidenceMethodArray[evidenceMethod.code].sections.forEach((exisitingSectionInEvidenceMethod) => {
+                    if (exisitingSectionInEvidenceMethod.code == evidenceMethodSection.code) {
+                      sectionExisitsInEvidenceMethod = 1;
+                      existingSectionQuestionsArrayInEvidenceMethod = exisitingSectionInEvidenceMethod.questions;
+                    }
+                  });
+
+                  if (!sectionExisitsInEvidenceMethod) {
+                    evidenceMethodSection.name = solutionDocument.sections[evidenceMethodSection.code];
+                    evidenceMethodArray[evidenceMethod.code].sections.push(evidenceMethodSection);
+                  } else {
+                    evidenceMethodSection.questions.forEach((questionInEvidenceMethodSection) => {
+                      existingSectionQuestionsArrayInEvidenceMethod.push(questionInEvidenceMethodSection);
+                    });
+                  }
+                });
+              }
+            }
+          });
+        });
+
+        submissionDocument.evidences = submissionDocumentEvidences;
+        submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
+        submissionDocument.criteria = submissionDocumentCriterias;
+        submissionDocument.submissionNumber = submissionNumber;
+
+        submissionDocument['appInformation'] = {};
+
+        if (req.headers['x-app-id'] || req.headers.appname) {
+          submissionDocument['appInformation']['appName'] = req.headers['x-app-id']
+            ? req.headers['x-app-id']
+            : req.headers.appname;
+        }
+
+        if (req.headers['x-app-ver'] || req.headers.appversion) {
+          submissionDocument['appInformation']['appVersion'] = req.headers['x-app-ver']
+            ? req.headers['x-app-ver']
+            : req.headers.appversion;
+        }
+
+        let submissionDoc = await observationsHelper.findSubmission(submissionDocument);
+
+        assessment.submissionId = submissionDoc.result._id;
+
+        if (req.query.ecmMethod && req.query.ecmMethod !== '') {
+          if (evidenceMethodArray[req.query.ecmMethod]) {
+            evidenceMethodArray = {
+              [req.query.ecmMethod]: evidenceMethodArray[req.query.ecmMethod],
+            };
+          }
+        }
+
+        const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
+          Object.values(evidenceMethodArray),
+          entityDocumentQuestionGroup,
+          submissionDoc.result.evidences,
+          solutionDocument && solutionDocument.questionSequenceByEcm ? solutionDocument.questionSequenceByEcm : false,
+          entityDocument.metaInformation,
+        );
+
+        assessment.evidences = parsedAssessment.evidences;
+        assessment.submissions = parsedAssessment.submissions;
+        if (parsedAssessment.generalQuestions && parsedAssessment.generalQuestions.length > 0) {
+          assessment.generalQuestions = parsedAssessment.generalQuestions;
+        }
+
+        response.result.assessment = assessment;
+
+        return resolve(response);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
      * @api {post} /assessment/api/v2/observation/create?solutionId=:solutionId Create observation
      * @apiVersion 2.0.0
      * @apiName Create observation
@@ -947,39 +886,33 @@ module.exports = class Observations extends v1Observation {
     }
     }
      */
-     
-    /**
-    * Create observation
-    * @method
-    * @name create
-    * @param {Object} req -request Data.
-    * @returns {Object} - created solution,programs and observation from given solution id. 
-    */
 
-   async create(req) {
+  /**
+   * Create observation
+   * @method
+   * @name create
+   * @param {Object} req -request Data.
+   * @returns {Object} - created solution,programs and observation from given solution id.
+   */
+
+  async create(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await observationsHelper.createV2(
+          req.query.solutionId,
+          req.userDetails.userId,
+          req.body,
+          req.rspObj.userToken,
+        );
 
-        try {
-
-            let solutionData = 
-            await observationsHelper.createV2(
-              req.query.solutionId,
-              req.userDetails.userId,
-              req.body,
-              req.rspObj.userToken 
-            );
-
-            return resolve(solutionData);
-
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-   }
-}
-
+        return resolve(solutionData);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+};

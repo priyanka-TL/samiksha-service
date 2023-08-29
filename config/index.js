@@ -16,11 +16,9 @@
  */
 
 let db_connect = function (configData) {
-  global.database = require("./dbConfig")(
-    configData.DB_Config.connection.mongodb
-  );
+  global.database = require('./dbConfig')(configData.DB_Config.connection.mongodb);
   global.ObjectId = database.ObjectId;
-  global.Abstract = require("../generics/abstract");
+  global.Abstract = require('../generics/abstract');
 };
 
 /**
@@ -31,11 +29,9 @@ let db_connect = function (configData) {
  */
 
 let cassandra_connect = function (cassandraConfigurationData) {
-  global.cassandraDatabase = require("./db/cassandra")(
-    cassandraConfigurationData
-  );
+  global.cassandraDatabase = require('./db/cassandra')(cassandraConfigurationData);
   if (!global.Abstract) {
-    global.Abstract = require("../generics/abstract");
+    global.Abstract = require('../generics/abstract');
   }
 };
 
@@ -47,9 +43,7 @@ let cassandra_connect = function (cassandraConfigurationData) {
  */
 
 let elasticsearch_connect = function (elasticSearchConfigurations) {
-  global.elasticsearch = require("./db/elasticSearch")(
-    elasticSearchConfigurations
-  );
+  global.elasticsearch = require('./db/elasticSearch')(elasticSearchConfigurations);
 };
 
 /**
@@ -60,24 +54,24 @@ let elasticsearch_connect = function (elasticSearchConfigurations) {
  */
 
 let kafka_connect = function (configData) {
-  global.kafkaClient = require("./kafkaConfig")(configData.Kafka_Config);
+  global.kafkaClient = require('./kafkaConfig')(configData.Kafka_Config);
 };
 
 const configuration = {
-  root: require("path").normalize(__dirname + "/.."),
+  root: require('path').normalize(__dirname + '/..'),
   app: {
-    name: "sl-assessment-api",
+    name: 'sl-assessment-api',
   },
-  host: process.env.HOST || "http://localhost",
+  host: process.env.HOST || 'http://localhost',
   port: process.env.PORT || 4201,
-  log: process.env.LOG || "debug",
+  log: process.env.LOG || 'debug',
   DB_Config: {
     connection: {
       mongodb: {
-        host: process.env.MONGODB_URL || "mongodb://localhost:27017",
-        user: "",
-        pass: "",
-        database: process.env.DB || "sl-assessment",
+        host: process.env.MONGODB_URL || 'mongodb://localhost:27017',
+        user: '',
+        pass: '',
+        database: process.env.DB || 'sl-assessment',
         options: {
           useNewUrlParser: true,
         },
@@ -97,22 +91,20 @@ const configuration = {
       softDelete: true,
       autoPopulate: false,
       timestamps_fields: {
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
       },
     },
   },
   Kafka_Config: {
-    host: process.env.KAFKA_URL || "10.160.0.8:9092",
+    host: process.env.KAFKA_URL || '10.160.0.8:9092',
     consumerTopics: {
-      submissionRatingQueueTopic:
-        process.env.SUBMISSION_RATING_QUEUE_TOPIC ||
-        "sl-submissions-rating-dev",
+      submissionRatingQueueTopic: process.env.SUBMISSION_RATING_QUEUE_TOPIC || 'sl-submissions-rating-dev',
     },
   },
-  version: "1.0.0",
-  URLPrefix: "/api/v1",
-  webUrl: "https://dev.shikshalokam.org",
+  version: '1.0.0',
+  URLPrefix: '/api/v1',
+  webUrl: 'https://dev.shikshalokam.org',
 };
 
 db_connect(configuration);

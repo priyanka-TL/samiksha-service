@@ -6,9 +6,9 @@
  */
 
 // Dependencies
-const csv = require("csvtojson");
-const entitiesHelper = require(MODULES_BASE_PATH + "/entities/helper");
-const FileStream = require(ROOT_PATH + "/generics/fileStream");
+const csv = require('csvtojson');
+const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
+const FileStream = require(ROOT_PATH + '/generics/fileStream');
 
 /**
  * Entities
@@ -20,7 +20,7 @@ module.exports = class Entities extends Abstract {
   }
 
   static get name() {
-    return "entities";
+    return 'entities';
   }
 
   /**
@@ -152,11 +152,7 @@ module.exports = class Entities extends Abstract {
           solutionId: req.query.solutionId,
           parentEntityId: req.query.parentEntityId,
         };
-        let result = await entitiesHelper.add(
-          queryParams,
-          req.body.data,
-          req.userDetails
-        );
+        let result = await entitiesHelper.add(queryParams, req.body.data, req.userDetails);
 
         return resolve({
           message: messageConstants.apiResponses.ENTITY_ADDED,
@@ -166,8 +162,7 @@ module.exports = class Entities extends Abstract {
         console.error(error);
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -248,15 +243,14 @@ module.exports = class Entities extends Abstract {
           req.pageSize,
           req.pageSize * (req.pageNo - 1),
           req.query.schoolTypes,
-          req.query.administrationTypes
+          req.query.administrationTypes,
         );
 
         return resolve(result);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -295,8 +289,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -336,8 +329,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -384,11 +376,7 @@ module.exports = class Entities extends Abstract {
   update(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await entitiesHelper.update(
-          req.query.type,
-          req.params._id,
-          req.body
-        );
+        let result = await entitiesHelper.update(req.query.type, req.params._id, req.body);
 
         return resolve({
           message: messageConstants.apiResponses.ENTITY_INFORMATION_UPDATE,
@@ -397,8 +385,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -431,16 +418,8 @@ module.exports = class Entities extends Abstract {
   bulkCreate(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let entityCSVData = await csv().fromString(
-          req.files.entities.data.toString()
-        );
-        let newEntityData = await entitiesHelper.bulkCreate(
-          req.query.type,
-          null,
-          null,
-          req.userDetails,
-          entityCSVData
-        );
+        let entityCSVData = await csv().fromString(req.files.entities.data.toString());
+        let newEntityData = await entitiesHelper.bulkCreate(req.query.type, null, null, req.userDetails, entityCSVData);
 
         if (newEntityData.length > 0) {
           const fileName = `Entity-Upload`;
@@ -458,7 +437,7 @@ module.exports = class Entities extends Abstract {
           await Promise.all(
             newEntityData.map(async (newEntity) => {
               input.push(newEntity);
-            })
+            }),
           );
 
           input.push(null);
@@ -468,8 +447,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -500,14 +478,9 @@ module.exports = class Entities extends Abstract {
   bulkUpdate(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let entityCSVData = await csv().fromString(
-          req.files.entities.data.toString()
-        );
+        let entityCSVData = await csv().fromString(req.files.entities.data.toString());
 
-        let newEntityData = await entitiesHelper.bulkUpdate(
-          req.userDetails,
-          entityCSVData
-        );
+        let newEntityData = await entitiesHelper.bulkUpdate(req.userDetails, entityCSVData);
 
         if (newEntityData.length > 0) {
           const fileName = `Entity-Upload`;
@@ -525,7 +498,7 @@ module.exports = class Entities extends Abstract {
           await Promise.all(
             newEntityData.map(async (newEntity) => {
               input.push(newEntity);
-            })
+            }),
           );
 
           input.push(null);
@@ -535,8 +508,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -567,12 +539,9 @@ module.exports = class Entities extends Abstract {
   mappingUpload(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let entityCSVData = await csv().fromString(
-          req.files.entityMap.data.toString()
-        );
+        let entityCSVData = await csv().fromString(req.files.entityMap.data.toString());
 
-        let entityMappingUploadResponse =
-          await entitiesHelper.processEntityMappingUploadData(entityCSVData);
+        let entityMappingUploadResponse = await entitiesHelper.processEntityMappingUploadData(entityCSVData);
         if (!entityMappingUploadResponse.success) {
           throw new Error(messageConstants.apiResponses.SOMETHING_WENT_WRONG);
         }
@@ -583,8 +552,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -613,16 +581,14 @@ module.exports = class Entities extends Abstract {
   uploadForPortal(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let entityCsvData = await csv().fromString(
-          req.files.entities.data.toString()
-        );
+        let entityCsvData = await csv().fromString(req.files.entities.data.toString());
 
         await entitiesHelper.bulkCreate(
           req.query.type,
           req.query.programId,
           req.query.solutionId,
           req.userDetails,
-          entityCsvData
+          entityCsvData,
         );
 
         return resolve({
@@ -631,8 +597,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -693,20 +658,17 @@ module.exports = class Entities extends Abstract {
       try {
         let result = {};
         let projection = [
-          "metaInformation.externalId",
-          "metaInformation.name",
-          "metaInformation.addressLine1",
-          "metaInformation.addressLine2",
-          "metaInformation.administration",
-          "metaInformation.city",
-          "metaInformation.country",
-          "entityTypeId",
-          "entityType",
+          'metaInformation.externalId',
+          'metaInformation.name',
+          'metaInformation.addressLine1',
+          'metaInformation.addressLine2',
+          'metaInformation.administration',
+          'metaInformation.city',
+          'metaInformation.country',
+          'entityTypeId',
+          'entityType',
         ];
-        let entityDocument = await entitiesHelper.entityDocuments(
-          { _id: req.params._id },
-          projection
-        );
+        let entityDocument = await entitiesHelper.entityDocuments({ _id: req.params._id }, projection);
 
         if (entityDocument.length < 1) {
           throw {
@@ -719,12 +681,11 @@ module.exports = class Entities extends Abstract {
           entityDocument[0]._id,
           entityDocument[0].entityTypeId,
           entityDocument[0].entityType,
-          projection
+          projection,
         );
 
         _.merge(result, entityDocument[0]);
-        result["relatedEntities"] =
-          relatedEntities.length > 0 ? relatedEntities : [];
+        result['relatedEntities'] = relatedEntities.length > 0 ? relatedEntities : [];
 
         return resolve({
           message: messageConstants.apiResponses.ENTITY_FETCHED,
@@ -733,8 +694,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -776,13 +736,12 @@ module.exports = class Entities extends Abstract {
   listByEntityType(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let schemaMetaInformation =
-          entitiesHelper.entitiesSchemaData().SCHEMA_METAINFORMATION;
+        let schemaMetaInformation = entitiesHelper.entitiesSchemaData().SCHEMA_METAINFORMATION;
 
         let projection = [
-          schemaMetaInformation + ".externalId",
-          schemaMetaInformation + ".name",
-          "registryDetails.locationId",
+          schemaMetaInformation + '.externalId',
+          schemaMetaInformation + '.name',
+          'registryDetails.locationId',
         ];
 
         let skippingValue = req.pageSize * (req.pageNo - 1);
@@ -795,8 +754,8 @@ module.exports = class Entities extends Abstract {
           req.pageSize,
           skippingValue,
           {
-            [schemaMetaInformation + ".name"]: 1,
-          }
+            [schemaMetaInformation + '.name']: 1,
+          },
         );
 
         if (entityDocuments.length < 1) {
@@ -811,10 +770,9 @@ module.exports = class Entities extends Abstract {
             externalId: entityDocument.metaInformation.externalId,
             name: entityDocument.metaInformation.name,
             locationId:
-              entityDocument.registryDetails &&
-              entityDocument.registryDetails.locationId
+              entityDocument.registryDetails && entityDocument.registryDetails.locationId
                 ? entityDocument.registryDetails.locationId
-                : "",
+                : '',
             _id: entityDocument._id,
           };
         });
@@ -826,8 +784,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -874,10 +831,7 @@ module.exports = class Entities extends Abstract {
   find(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let entityData = await entitiesHelper.entityDocuments(
-          req.body.query,
-          req.body.projection
-        );
+        let entityData = await entitiesHelper.entityDocuments(req.body.query, req.body.projection);
 
         return resolve({
           message: messageConstants.apiResponses.ENTITY_FETCHED,
@@ -886,8 +840,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -924,9 +877,7 @@ module.exports = class Entities extends Abstract {
           throw messageConstants.apiResponses.REGISTRY_FILE_NOT_FOUND;
         }
 
-        let registryCSVData = await csv().fromString(
-          req.files.registry.data.toString()
-        );
+        let registryCSVData = await csv().fromString(req.files.registry.data.toString());
 
         if (!registryCSVData || registryCSVData.length < 1) {
           throw messageConstants.apiResponses.FILE_DATA_MISSING;
@@ -935,15 +886,14 @@ module.exports = class Entities extends Abstract {
         let newRegistryData = await entitiesHelper.registryMappingUpload(
           registryCSVData,
           req.userDetails.userId,
-          req.query.entityType
+          req.query.entityType,
         );
 
         return resolve(newRegistryData);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }
@@ -1014,9 +964,7 @@ module.exports = class Entities extends Abstract {
   listByLocationIds(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let entitiesData = await entitiesHelper.listByLocationIds(
-          req.body.locationIds
-        );
+        let entitiesData = await entitiesHelper.listByLocationIds(req.body.locationIds);
 
         entitiesData.result = entitiesData.data;
 
@@ -1024,8 +972,7 @@ module.exports = class Entities extends Abstract {
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
-          message:
-            error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,
         });
       }

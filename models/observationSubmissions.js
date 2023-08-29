@@ -1,12 +1,12 @@
 module.exports = {
-  name: "observationSubmissions",
+  name: 'observationSubmissions',
   schema: {
     entityId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
     },
     observationId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
     },
     createdBy: {
@@ -37,7 +37,7 @@ module.exports = {
       index: true,
     },
     solutionId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
     },
     solutionExternalId: {
@@ -46,7 +46,7 @@ module.exports = {
     },
     submissionsUpdatedHistory: Array,
     entityTypeId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
     },
     entityType: {
@@ -72,9 +72,9 @@ module.exports = {
       type: String,
       default: function () {
         if (this.submissionNumber && this.submissionNumber > 0) {
-          return "Observation " + this.submissionNumber;
+          return 'Observation ' + this.submissionNumber;
         } else {
-          return "Observation";
+          return 'Observation';
         }
       },
     },

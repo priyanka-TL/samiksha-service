@@ -1,5 +1,5 @@
 module.exports = {
-  name: "entityTypes",
+  name: 'entityTypes',
   schema: {
     name: String,
     regsitryDetails: Object,
@@ -8,6 +8,6 @@ module.exports = {
     types: Array,
     callResponseTypes: Array,
     isObservable: Boolean,
-    toBeMappedToParentEntities: Boolean
-  }
+    toBeMappedToParentEntities: Boolean,
+  },
 };

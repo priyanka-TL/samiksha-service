@@ -8,9 +8,8 @@ describe('RubricComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ RubricComponent ]
-    })
-    .compileComponents();
+      declarations: [RubricComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

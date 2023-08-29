@@ -5,21 +5,20 @@
  * Description : Surveys library related information.
  */
 
-const librarySurveysHelper = require(MODULES_BASE_PATH + "/library/surveys/helper");
+const librarySurveysHelper = require(MODULES_BASE_PATH + '/library/surveys/helper');
 
- /**
-    * Surveys
-    * @class
-*/
+/**
+ * Surveys
+ * @class
+ */
 module.exports = class Surveys {
-    
-    constructor() {}
+  constructor() {}
 
-    static get name() {
-        return "Surveys";
-    }
+  static get name() {
+    return 'Surveys';
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/surveys/list?search=:searchText&page=:page&limit=:limit List of survey solutions
     * @apiVersion 1.0.0
     * @apiName List of survey solutions
@@ -45,43 +44,40 @@ module.exports = class Surveys {
       }
     */
 
-      /**
-      * List of survey solutions
-      * @method
-      * @name list
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns a list of survey solution.
-     */
+  /**
+   * List of survey solutions
+   * @method
+   * @name list
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns a list of survey solution.
+   */
 
-    async list(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let surveySolutions = 
-                await librarySurveysHelper.list( 
-                  req.searchText, 
-                  req.pageSize, 
-                  req.pageNo,
-                  req.userDetails.userId,
-                  req.rspObj.userToken  
-                );
+  async list(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let surveySolutions = await librarySurveysHelper.list(
+          req.searchText,
+          req.pageSize,
+          req.pageNo,
+          req.userDetails.userId,
+          req.rspObj.userToken,
+        );
 
-                return resolve({
-                    message: surveySolutions.message,
-                    result: surveySolutions.data
-                });
+        return resolve({
+          message: surveySolutions.message,
+          result: surveySolutions.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/surveys/details/:librarySolutionId Details of survey solution.
     * @apiVersion 1.0.0
     * @apiName Details of survey solution
@@ -108,36 +104,30 @@ module.exports = class Surveys {
     }}
     */
 
-      /**
-      * Details of library solution
-      * @method
-      * @name details
-      * @param {Object} req - All requested Data.
-      * @returns {JSON} returns creator,about and questions details.
-     */
+  /**
+   * Details of library solution
+   * @method
+   * @name details
+   * @param {Object} req - All requested Data.
+   * @returns {JSON} returns creator,about and questions details.
+   */
 
-    async details(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let surveySolution = 
-                await librarySurveysHelper.details( 
-                    req.params._id
-                );
+  async details(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let surveySolution = await librarySurveysHelper.details(req.params._id);
 
-                return resolve({
-                      message: surveySolution.message,
-                      result: surveySolution.data
-                });
-                
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
+        return resolve({
+          message: surveySolution.message,
+          result: surveySolution.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

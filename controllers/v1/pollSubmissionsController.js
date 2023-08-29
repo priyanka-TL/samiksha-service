@@ -6,24 +6,22 @@
  */
 
 // Dependencies
-const pollSubmissionsHelper = require(MODULES_BASE_PATH + "/pollSubmissions/helper");
-
+const pollSubmissionsHelper = require(MODULES_BASE_PATH + '/pollSubmissions/helper');
 
 /**
-    * PollSubmissions
-    * @class
-*/
+ * PollSubmissions
+ * @class
+ */
 module.exports = class PollSubmissions extends Abstract {
+  constructor() {
+    super(pollSubmissionsSchema);
+  }
 
-    constructor() {
-        super(pollSubmissionsSchema);
-    }
+  static get name() {
+    return 'pollSubmissions';
+  }
 
-    static get name() {
-        return "pollSubmissions";
-    }
-
-    /**
+  /**
      * @api {post} /assessment/api/v1/pollSubmissions/make/:pollId  Submit Poll
      * @apiVersion 1.0.0
      * @apiName Submit Poll
@@ -47,96 +45,79 @@ module.exports = class PollSubmissions extends Abstract {
      * @apiUse successBody
      * @apiUse errorBody
      */
-     
-    /**
-    * Poll Submission
-    * @method
-    * @name make
-    * @param {Object} req - request Data. 
-    * @param {String} req.params._id - pollId
-    * @param {Array} req.body - Questions and answers
-    * @returns {String} - message
-    */
 
-   make(req) {
+  /**
+   * Poll Submission
+   * @method
+   * @name make
+   * @param {Object} req - request Data.
+   * @param {String} req.params._id - pollId
+   * @param {Array} req.body - Questions and answers
+   * @returns {String} - message
+   */
+
+  make(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let pollSubmissionResult = await pollSubmissionsHelper.make(req.params._id, req.body, req.userDetails.userId);
 
-        try {
+        return resolve({
+          message: pollSubmissionResult.message,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 
-            let pollSubmissionResult = await pollSubmissionsHelper.make(
-                req.params._id,
-                req.body,
-                req.userDetails.userId
-            );
+  /**
+   * @api {get} /assessment/api/v1/pollSubmissions/list List polls
+   * @apiVersion 1.0.0
+   * @apiName List polls
+   * @apiGroup Polls
+   * @apiHeader {String} X-authenticated-user-token Authenticity token
+   * @apiSampleRequest /assessment/api/v1/polls/list
+   * @apiParamExample {json} Response:
+   * {
+   *  "status": 200,
+   *  "message": "Polls list fetched successfully",
+   *  "result": [{
+   *      "_id": "5f3a72359e156a44ee7565b8",
+   *      "name": "Feedback"
+   *     }]
+   * }
+   * @apiUse successBody
+   * @apiUse errorBody
+   */
 
-            return resolve({
-                message: pollSubmissionResult.message
-            });
+  /**
+   * List created and submitted polls.
+   * @method
+   * @name list
+   * @param {Object} req -request Data.
+   * @returns {JSON} - active polls list.
+   */
 
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-    
-
-     /**
-     * @api {get} /assessment/api/v1/pollSubmissions/list List polls
-     * @apiVersion 1.0.0
-     * @apiName List polls
-     * @apiGroup Polls
-     * @apiHeader {String} X-authenticated-user-token Authenticity token
-     * @apiSampleRequest /assessment/api/v1/polls/list
-     * @apiParamExample {json} Response:
-     * {
-     *  "status": 200,
-     *  "message": "Polls list fetched successfully",
-     *  "result": [{
-     *      "_id": "5f3a72359e156a44ee7565b8",
-     *      "name": "Feedback"
-     *     }]
-     * }
-     * @apiUse successBody
-     * @apiUse errorBody
-     */
-     
-    /**
-    * List created and submitted polls.
-    * @method
-    * @name list
-    * @param {Object} req -request Data. 
-    * @returns {JSON} - active polls list.
-    */
-
-   list(req) {
+  list(req) {
     return new Promise(async (resolve, reject) => {
+      try {
+        let pollsList = await pollSubmissionsHelper.list(req.userDetails.userId);
 
-        try {
-
-            let pollsList = await pollSubmissionsHelper.list(
-               req.userDetails.userId
-            );
-
-            return resolve({
-                message: pollsList.message,
-                result: pollsList.data
-            });
-
-        } catch (error) {
-
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-
-}
+        return resolve({
+          message: pollsList.message,
+          result: pollsList.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+};

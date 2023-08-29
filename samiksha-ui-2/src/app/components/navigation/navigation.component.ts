@@ -1,24 +1,20 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { AuthService } from "../../service/auth/auth.service";
-import {
-  BreakpointObserver,
-  Breakpoints,
-  BreakpointState
-} from "@angular/cdk/layout";
-import { Observable, Subject } from "rxjs";
-import { map } from "rxjs/operators";
-import { HeaderTextService } from "../../service/toolbar/header-text.service";
-import { environment } from "../../../environments/environment";
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AuthService } from '../../service/auth/auth.service';
+import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout';
+import { Observable, Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { HeaderTextService } from '../../service/toolbar/header-text.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: "sl-navigation",
-  templateUrl: "./navigation.component.html",
-  styleUrls: ["./navigation.component.css"]
+  selector: 'sl-navigation',
+  templateUrl: './navigation.component.html',
+  styleUrls: ['./navigation.component.css'],
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
-    .pipe(map(result => result.matches));
+    .pipe(map((result) => result.matches));
 
   public isAuthenticated: Boolean = false;
   public navMenu: any;
@@ -29,11 +25,11 @@ export class NavigationComponent implements OnInit, OnDestroy {
   constructor(
     private breakpointObserver: BreakpointObserver,
     private authService: AuthService,
-    private headerTextService: HeaderTextService
+    private headerTextService: HeaderTextService,
   ) {
     this.navMenu = [
-      { label: "Criteria Details", url: "criteria" },
-      { label: "Questions", url: "questions/new" }
+      { label: 'Criteria Details', url: 'criteria' },
+      { label: 'Questions', url: 'questions/new' },
     ];
   }
   ngOnDestroy() {
@@ -44,16 +40,16 @@ export class NavigationComponent implements OnInit, OnDestroy {
     let that = this;
     this.authService
       .validateApiToken()
-      .then(result => {
+      .then((result) => {
         that.isAuthenticated = result;
       })
       .catch(console.error);
 
     // throw new Error("Method not implemented.");
-    this.subscription = this.headerTextService.text.subscribe(value => {
+    this.subscription = this.headerTextService.text.subscribe((value) => {
       this.headerText = value;
     });
-    this.headerTextService.setHeader("Samiksha");
+    this.headerTextService.setHeader('Samiksha');
   }
 
   login() {

@@ -1,11 +1,11 @@
 module.exports = {
-  name: "frameworks",
+  name: 'frameworks',
   schema: {
     externalId: String,
     name: String,
     description: String,
     author: String,
-    parentId: "ObjectId",
+    parentId: 'ObjectId',
     resourceType: Array,
     language: Array,
     keywords: Array,
@@ -15,16 +15,16 @@ module.exports = {
     levelToScoreMapping: Object,
     themes: Array,
     noOfRatingLevels: Number,
-    isRubricDriven: { type : Boolean, default: false },
+    isRubricDriven: { type: Boolean, default: false },
     updatedBy: String,
     isDeleted: Boolean,
     createdBy: String,
-    entityTypeId: "ObjectId",
+    entityTypeId: 'ObjectId',
     entityType: String,
-    rootOrganisations : {
-      type : [String],
-      default : []
+    rootOrganisations: {
+      type: [String],
+      default: [],
     },
-    criteriaLevelReport : Boolean
-  }
+    criteriaLevelReport: Boolean,
+  },
 };

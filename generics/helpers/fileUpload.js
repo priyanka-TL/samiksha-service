@@ -1,8 +1,8 @@
-const crypto = require("crypto");
+const crypto = require('crypto');
 
-let File = function(path) {
+let File = function (path) {
   this.path = path;
-  File.prototype.save = function(files, filename = false, path = this.path) {
+  File.prototype.save = function (files, filename = false, path = this.path) {
     return new Promise((resolve, reject) => {
       let newname, ext;
       let names = Object.keys(files);
@@ -12,21 +12,21 @@ let File = function(path) {
 
       async.forEach(
         names,
-        function(name, callback) {
+        function (name, callback) {
           //create fileName
           let hash = crypto
-            .createHash("md5")
-            .update(new Date().getTime() + ++f + "")
-            .digest("hex");
+            .createHash('md5')
+            .update(new Date().getTime() + ++f + '')
+            .digest('hex');
 
-          if (!filename) newname = hash + "." + files[name].name.split(".")[1];
+          if (!filename) newname = hash + '.' + files[name].name.split('.')[1];
           else newname = files[name].name;
 
-          let fielUrl = path + "/" + newname;
+          let fielUrl = path + '/' + newname;
 
-          files[name].mv(fielUrl, function(err) {
+          files[name].mv(fielUrl, function (err) {
             if (err) {
-              console.error("Error in file upload ", err);
+              console.error('Error in file upload ', err);
               failedFiles.push({ tag: name });
             } else {
               savedfiles.push({ url: fielUrl, tag: name });
@@ -34,10 +34,10 @@ let File = function(path) {
             callback(null);
           });
         },
-        function(err) {
+        function (err) {
           if (err) reject(err);
           resolve({ uploads: savedfiles, failedDocs: failedFiles });
-        }
+        },
       );
     });
   };

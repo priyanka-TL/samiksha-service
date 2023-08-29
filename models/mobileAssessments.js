@@ -1,9 +1,9 @@
 module.exports = {
-  name: "mobile-assessments",
+  name: 'mobile-assessments',
   schema: {
     schoolId: String,
     schoolProfile: Object,
     program: Object,
-    assessments: Array
-  }
+    assessments: Array,
+  },
 };

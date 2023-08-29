@@ -7,7 +7,7 @@
 
 // Dependencies
 
-var ExpressCassandra = require("express-cassandra");
+var ExpressCassandra = require('express-cassandra');
 
 /**
  * Cassandra connection setup.
@@ -27,10 +27,10 @@ var DB = function (config) {
     },
     ormOptions: {
       defaultReplicationStrategy: {
-        class: "SimpleStrategy",
+        class: 'SimpleStrategy',
         replication_factor: 1,
       },
-      migration: "safe",
+      migration: 'safe',
     },
   });
 
@@ -38,7 +38,7 @@ var DB = function (config) {
     var MyModel = models.loadSchema(opts.name, opts.schema);
     MyModel.syncDB(function (err, result) {
       if (err) throw err;
-      log.debug("Connected to cassandra database!");
+      log.debug('Connected to cassandra database!');
     });
     return models.instance;
   };

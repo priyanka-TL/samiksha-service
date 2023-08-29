@@ -6,17 +6,15 @@
  */
 
 // Dependencies
-const surveysHelper = require(MODULES_BASE_PATH + "/surveys/helper");
-const v1Survey = require(ROOT_PATH + "/controllers/v1/surveysController");
+const surveysHelper = require(MODULES_BASE_PATH + '/surveys/helper');
+const v1Survey = require(ROOT_PATH + '/controllers/v1/surveysController');
 
 /**
-    * Surveys
-    * @class
-*/
-module.exports = class Surveys extends v1Survey{
-
-
-    /**
+ * Surveys
+ * @class
+ */
+module.exports = class Surveys extends v1Survey {
+  /**
     * @api {post} /assessment/api/v2/surveys/details/:(surveyId/Link)?solutionId=:solutionId Get the survey details by link or Survey Id
     * Survey details.
     * @apiVersion 2.0.0
@@ -205,63 +203,56 @@ module.exports = class Surveys extends v1Survey{
     }
     }
     */
-    /**
-    * Survey details.
-    * @method
-    * @name details
-    * @param  {Request} req request body.
-    * @param  {req.param._id} Either surveyId or link.
-    * @param  {req.query.solutionId} solutionId (not required in the case of passing link).
-    * @returns {Object} returns survey details information.
-    * Result will have the details of survey.
-    */
+  /**
+   * Survey details.
+   * @method
+   * @name details
+   * @param  {Request} req request body.
+   * @param  {req.param._id} Either surveyId or link.
+   * @param  {req.query.solutionId} solutionId (not required in the case of passing link).
+   * @returns {Object} returns survey details information.
+   * Result will have the details of survey.
+   */
 
-    async details(req) {
+  async details(req) {
     return new Promise(async (resolve, reject) => {
-        try {
+      try {
+        let validateSurveyId = gen.utils.isValidMongoId(req.params._id);
 
-            let validateSurveyId = gen.utils.isValidMongoId(req.params._id);
+        let surveyDetails = {};
 
-            let surveyDetails = {};
+        if (validateSurveyId || req.query.solutionId) {
+          let surveyId = req.params._id ? req.params._id : '';
 
-            if( validateSurveyId || req.query.solutionId ) {
+          surveyDetails = await surveysHelper.detailsV2(
+            req.body,
+            surveyId,
+            req.query.solutionId,
+            req.userDetails.userId,
+            req.rspObj.userToken,
+          );
+        } else {
+          let bodyData = req.body ? req.body : {};
 
-                let surveyId = req.params._id ? req.params._id : "";
-       
-                surveyDetails = await surveysHelper.detailsV2
-                (   
-                    req.body,
-                    surveyId,
-                    req.query.solutionId,
-                    req.userDetails.userId,
-                    req.rspObj.userToken
-                );
-                
-            } else {
-
-                let bodyData = req.body ? req.body : {};
-
-                surveyDetails = await surveysHelper.getDetailsByLink(
-                    req.params._id,
-                    req.userDetails.userId,
-                    req.rspObj.userToken,
-                    bodyData
-                );
-            }
-
-            return resolve({
-                message: surveyDetails.message,
-                result: surveyDetails.data
-            });
-
-        } catch (error) {
-            return reject({
-                status: error.status || httpStatusCode.internal_server_error.status,
-                message: error.message || httpStatusCode.internal_server_error.message,
-                errorObject: error
-            });
+          surveyDetails = await surveysHelper.getDetailsByLink(
+            req.params._id,
+            req.userDetails.userId,
+            req.rspObj.userToken,
+            bodyData,
+          );
         }
-    });
-   }
 
-}
+        return resolve({
+          message: surveyDetails.message,
+          result: surveyDetails.data,
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+};

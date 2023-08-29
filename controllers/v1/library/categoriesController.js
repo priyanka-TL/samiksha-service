@@ -7,24 +7,23 @@
 
 // Dependencies
 
-const libraryCategoriesHelper = require(MODULES_BASE_PATH + "/library/categories/helper");
+const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper');
 
- /**
-    * LibraryCategories
-    * @class
-*/
+/**
+ * LibraryCategories
+ * @class
+ */
 
 module.exports = class LibraryCategories extends Abstract {
-    
-    constructor() {
-        super(libraryCategoriesSchema)
-    }
+  constructor() {
+    super(libraryCategoriesSchema);
+  }
 
-    static get name() {
-        return "LibraryCategories";
-    }
+  static get name() {
+    return 'LibraryCategories';
+  }
 
-    /**
+  /**
     * @api {get} /assessment/api/v1/library/categories/list List of library categories.
     * @apiVersion 1.0.0
     * @apiName List of library categories
@@ -66,28 +65,25 @@ module.exports = class LibraryCategories extends Abstract {
     ]}
     */
 
-      /**
-      * List of library categories
-      * @method
-      * @name list
-      * @returns {JSON} returns a list of library categories.
-     */
+  /**
+   * List of library categories
+   * @method
+   * @name list
+   * @returns {JSON} returns a list of library categories.
+   */
 
-    async list() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let libraryCategories = await libraryCategoriesHelper.list();
-                return resolve(libraryCategories);
-
-            } catch (error) {
-                return reject({
-                    status: error.status || httpStatusCode.internal_server_error.status,
-                    message: error.message || httpStatusCode.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
+  async list() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let libraryCategories = await libraryCategoriesHelper.list();
+        return resolve(libraryCategories);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

@@ -1,37 +1,27 @@
-let improvementProjectService = require(ROOT_PATH +
-  "/generics/services/improvement-project");
-let criteriaQuestionsHelper = require(MODULES_BASE_PATH +
-  "/criteriaQuestions/helper");
-const questionsHelper = require(MODULES_BASE_PATH + "/questions/helper");
+let improvementProjectService = require(ROOT_PATH + '/generics/services/improvement-project');
+let criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
+const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 
 module.exports = class criteriaHelper {
-  static setCriteriaRubricExpressions(
-    criteriaId,
-    existingCriteria,
-    criteriaRubricData,
-    solutionLevelKeys
-  ) {
+  static setCriteriaRubricExpressions(criteriaId, existingCriteria, criteriaRubricData, solutionLevelKeys) {
     return new Promise(async (resolve, reject) => {
       try {
         let expressionVariables = {};
-        let expressionVariablesArray =
-          criteriaRubricData.expressionVariables.split("###");
+        let expressionVariablesArray = criteriaRubricData.expressionVariables.split('###');
 
         expressionVariablesArray.forEach((expressionVariable) => {
-          let tempExpressionVariableArray = expressionVariable.split("=");
+          let tempExpressionVariableArray = expressionVariable.split('=');
           let expressionVariableArray = new Array();
           expressionVariableArray.push(tempExpressionVariableArray.shift());
-          expressionVariableArray.push(tempExpressionVariableArray.join("="));
-          let defaultVariableArray = expressionVariableArray[0].split("-");
+          expressionVariableArray.push(tempExpressionVariableArray.join('='));
+          let defaultVariableArray = expressionVariableArray[0].split('-');
           if (defaultVariableArray.length > 1) {
             if (!expressionVariables.default) {
               expressionVariables.default = {};
             }
-            expressionVariables.default[defaultVariableArray[0]] =
-              expressionVariableArray[1];
+            expressionVariables.default[defaultVariableArray[0]] = expressionVariableArray[1];
           } else {
-            expressionVariables[expressionVariableArray[0]] =
-              expressionVariableArray[1];
+            expressionVariables[expressionVariableArray[0]] = expressionVariableArray[1];
           }
         });
 
@@ -48,19 +38,11 @@ module.exports = class criteriaHelper {
         if (Array.isArray(existingCriteria.rubric.levels)) {
           existingCriteriaRubricLevels = existingCriteria.rubric.levels;
         } else {
-          existingCriteriaRubricLevels = Object.values(
-            existingCriteria.rubric.levels
-          );
+          existingCriteriaRubricLevels = Object.values(existingCriteria.rubric.levels);
         }
 
         // To update the levels, which does not exists in the db
-        Object.keys(
-          _.omit(criteriaRubricData, [
-            "externalId",
-            "name",
-            "expressionVariables",
-          ])
-        ).map((level) => {
+        Object.keys(_.omit(criteriaRubricData, ['externalId', 'name', 'expressionVariables'])).map((level) => {
           let levelExists =
             existingCriteriaRubricLevels.filter(function (o) {
               return o.level === level;
@@ -69,8 +51,8 @@ module.exports = class criteriaHelper {
           if (!levelExists) {
             existingCriteriaRubricLevels.push({
               level: level,
-              label: "Level " + level.charAt(1),
-              description: "NA",
+              label: 'Level ' + level.charAt(1),
+              description: 'NA',
             });
           }
         });
@@ -83,8 +65,7 @@ module.exports = class criteriaHelper {
               rubric.levels[levelObject.level][level] = levelObject[level];
             });
 
-            rubric.levels[levelObject.level].expression =
-              criteriaRubricData[levelObject.level];
+            rubric.levels[levelObject.level].expression = criteriaRubricData[levelObject.level];
           }
         });
 
@@ -93,7 +74,7 @@ module.exports = class criteriaHelper {
           {
             rubric: rubric,
             criteriaType: messageConstants.common.AUTO_RATING,
-          }
+          },
         );
 
         await criteriaQuestionsHelper.createOrUpdate(criteriaId);
@@ -116,16 +97,16 @@ module.exports = class criteriaHelper {
    * @param {Array} [fieldsArray = "all"] -projected fields.
    * @returns {Array} criteria data.
    */
-  static criteriaDocument(criteriaFilter = "all", fieldsArray = "all") {
+  static criteriaDocument(criteriaFilter = 'all', fieldsArray = 'all') {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = criteriaFilter != "all" ? criteriaFilter : {};
+        let queryObject = criteriaFilter != 'all' ? criteriaFilter : {};
 
         let projectionObject = {};
 
-        if (fieldsArray != "all") {
+        if (fieldsArray != 'all') {
           fieldsArray.forEach((field) => {
-            if (typeof field === "string") {
+            if (typeof field === 'string') {
               projectionObject[field] = 1;
             } else {
               if (Object.keys(field).length > 0) {
@@ -137,9 +118,7 @@ module.exports = class criteriaHelper {
           });
         }
 
-        let criteriaDocuments = await database.models.criteria
-          .find(queryObject, projectionObject)
-          .lean();
+        let criteriaDocuments = await database.models.criteria.find(queryObject, projectionObject).lean();
 
         return resolve(criteriaDocuments);
       } catch (error) {
@@ -161,13 +140,9 @@ module.exports = class criteriaHelper {
       try {
         let criteriaDocuments;
         if (Array.isArray(criteriaData) && criteriaData.length > 0) {
-          criteriaDocuments = await database.models.criteria.insertMany(
-            criteriaData
-          );
+          criteriaDocuments = await database.models.criteria.insertMany(criteriaData);
         } else {
-          criteriaDocuments = await database.models.criteria.create(
-            criteriaData
-          );
+          criteriaDocuments = await database.models.criteria.create(criteriaData);
         }
 
         return resolve(criteriaDocuments);
@@ -199,37 +174,24 @@ module.exports = class criteriaHelper {
           let parsedCriteriaKeys = Object.keys(parsedCriteria);
 
           for (let key = 0; key < parsedCriteriaKeys.length; key++) {
-            let improvement = parsedCriteriaKeys[key].endsWith(
-              "-improvement-projects"
-            );
+            let improvement = parsedCriteriaKeys[key].endsWith('-improvement-projects');
 
             if (improvement) {
               if (!improvementObj[improvement]) {
                 improvementObj[parsedCriteria[parsedCriteriaKeys[key]]] = [];
               }
 
-              let improvements =
-                parsedCriteria[parsedCriteriaKeys[key]].split(",");
+              let improvements = parsedCriteria[parsedCriteriaKeys[key]].split(',');
 
-              improvementProjectIds = _.concat(
-                improvementProjectIds,
-                improvements
-              );
+              improvementProjectIds = _.concat(improvementProjectIds, improvements);
             }
           }
         }
 
         if (improvementProjectIds.length > 0) {
-          let improvementProjects =
-            await improvementProjectService.templateLists(
-              improvementProjectIds,
-              token
-            );
+          let improvementProjects = await improvementProjectService.templateLists(improvementProjectIds, token);
 
-          if (
-            improvementProjects.result &&
-            improvementProjects.result.length > 0
-          ) {
+          if (improvementProjects.result && improvementProjects.result.length > 0) {
             let improvements = {};
 
             improvementProjects.result.forEach((improvement) => {
@@ -244,23 +206,16 @@ module.exports = class criteriaHelper {
             });
 
             Object.keys(improvementObj).forEach((improvement) => {
-              let improvementsArr = improvement.split(",");
+              let improvementsArr = improvement.split(',');
 
               let result = [];
 
               if (improvementsArr.length > 0) {
                 improvementsArr.forEach((eachImprovement) => {
-                  result = _.concat(
-                    result,
-                    improvements[eachImprovement]
-                      ? improvements[eachImprovement]
-                      : []
-                  );
+                  result = _.concat(result, improvements[eachImprovement] ? improvements[eachImprovement] : []);
                 });
               } else {
-                result = improvements[improvementsArr[0]]
-                  ? improvements[improvementsArr[0]]
-                  : [];
+                result = improvements[improvementsArr[0]] ? improvements[improvementsArr[0]] : [];
               }
 
               improvementObj[improvement] = result;
@@ -285,30 +240,24 @@ module.exports = class criteriaHelper {
 
             Object.keys(parsedCriteria).forEach((eachCriteriaKey) => {
               let regExpForLevels = /^L+[0-9]/;
-              if (
-                regExpForLevels.test(eachCriteriaKey) &&
-                !eachCriteriaKey.includes("-improvement-projects")
-              ) {
-                let label = "Level " + countLabel++;
+              if (regExpForLevels.test(eachCriteriaKey) && !eachCriteriaKey.includes('-improvement-projects')) {
+                let label = 'Level ' + countLabel++;
 
-                let improvementProject =
-                  eachCriteriaKey + "-improvement-projects";
+                let improvementProject = eachCriteriaKey + '-improvement-projects';
 
                 rubric.levels[eachCriteriaKey] = {
                   level: eachCriteriaKey,
                   label: label,
                   description: parsedCriteria[eachCriteriaKey],
-                  expression: "",
+                  expression: '',
                 };
 
                 if (
                   parsedCriteria[improvementProject] &&
                   improvementObj[parsedCriteria[improvementProject]] &&
-                  Object.values(
-                    improvementObj[parsedCriteria[improvementProject]]
-                  ).length > 0
+                  Object.values(improvementObj[parsedCriteria[improvementProject]]).length > 0
                 ) {
-                  rubric.levels[eachCriteriaKey]["improvement-projects"] =
+                  rubric.levels[eachCriteriaKey]['improvement-projects'] =
                     improvementObj[parsedCriteria[improvementProject]];
                 }
               }
@@ -324,36 +273,29 @@ module.exports = class criteriaHelper {
             let criteriaDocuments;
 
             if (parsedCriteria._SYSTEM_ID) {
-              criteriaDocuments =
-                await database.models.criteria.findOneAndUpdate(
-                  {
-                    _id: parsedCriteria._SYSTEM_ID,
-                  },
-                  {
-                    $set: criteriaStructure,
-                  }
-                );
-
-              await criteriaQuestionsHelper.createOrUpdate(
-                parsedCriteria._SYSTEM_ID
+              criteriaDocuments = await database.models.criteria.findOneAndUpdate(
+                {
+                  _id: parsedCriteria._SYSTEM_ID,
+                },
+                {
+                  $set: criteriaStructure,
+                },
               );
+
+              await criteriaQuestionsHelper.createOrUpdate(parsedCriteria._SYSTEM_ID);
             } else {
-              criteriaStructure["resourceType"] = [
-                "Program",
-                "Framework",
-                "Criteria",
-              ];
+              criteriaStructure['resourceType'] = ['Program', 'Framework', 'Criteria'];
 
-              criteriaStructure["language"] = ["English"];
+              criteriaStructure['language'] = ['English'];
 
-              criteriaStructure["keywords"] = ["Keyword 1", "Keyword 2"];
+              criteriaStructure['keywords'] = ['Keyword 1', 'Keyword 2'];
 
-              criteriaStructure["concepts"] = [
+              criteriaStructure['concepts'] = [
                 {
-                  identifier: "LPD20100",
-                  name: "Teacher_Performance",
-                  objectType: "Concept",
-                  relation: "associatedTo",
+                  identifier: 'LPD20100',
+                  name: 'Teacher_Performance',
+                  objectType: 'Concept',
+                  relation: 'associatedTo',
                   description: null,
                   index: null,
                   status: null,
@@ -363,10 +305,10 @@ module.exports = class criteriaHelper {
                   compatibilityLevel: null,
                 },
                 {
-                  identifier: "LPD20400",
-                  name: "Instructional_Programme",
-                  objectType: "Concept",
-                  relation: "associatedTo",
+                  identifier: 'LPD20400',
+                  name: 'Instructional_Programme',
+                  objectType: 'Concept',
+                  relation: 'associatedTo',
                   description: null,
                   index: null,
                   status: null,
@@ -376,10 +318,10 @@ module.exports = class criteriaHelper {
                   compatibilityLevel: null,
                 },
                 {
-                  identifier: "LPD20200",
-                  name: "Teacher_Empowerment",
-                  objectType: "Concept",
-                  relation: "associatedTo",
+                  identifier: 'LPD20200',
+                  name: 'Teacher_Empowerment',
+                  objectType: 'Concept',
+                  relation: 'associatedTo',
                   description: null,
                   index: null,
                   status: null,
@@ -395,34 +337,32 @@ module.exports = class criteriaHelper {
               //   "0125748495625912324"
               // ];
 
-              criteriaStructure["evidences"] = [];
-              criteriaStructure["deleted"] = false;
-              criteriaStructure["owner"] = userId;
-              criteriaStructure["timesUsed"] = 12;
-              criteriaStructure["weightage"] = 20;
-              criteriaStructure["remarks"] = "";
-              criteriaStructure["criteriaType"] = parsedCriteria.criteriaType
+              criteriaStructure['evidences'] = [];
+              criteriaStructure['deleted'] = false;
+              criteriaStructure['owner'] = userId;
+              criteriaStructure['timesUsed'] = 12;
+              criteriaStructure['weightage'] = 20;
+              criteriaStructure['remarks'] = '';
+              criteriaStructure['criteriaType'] = parsedCriteria.criteriaType
                 ? parsedCriteria.criteriaType
                 : messageConstants.common.MANUAL_RATING;
-              criteriaStructure["score"] = "";
-              criteriaStructure["flag"] = "";
+              criteriaStructure['score'] = '';
+              criteriaStructure['flag'] = '';
 
-              criteriaDocuments = await database.models.criteria.create(
-                criteriaStructure
-              );
+              criteriaDocuments = await database.models.criteria.create(criteriaStructure);
             }
 
-            csvData["Criteria Name"] = parsedCriteria.criteriaName;
-            csvData["Criteria External Id"] = parsedCriteria.criteriaID;
+            csvData['Criteria Name'] = parsedCriteria.criteriaName;
+            csvData['Criteria External Id'] = parsedCriteria.criteriaID;
 
             if (criteriaDocuments._id) {
-              csvData["Criteria Internal Id"] = criteriaDocuments._id;
+              csvData['Criteria Internal Id'] = criteriaDocuments._id;
             } else {
-              csvData["Criteria Internal Id"] = "Not inserted";
+              csvData['Criteria Internal Id'] = 'Not inserted';
             }
 
             result.push(csvData);
-          })
+          }),
         );
 
         return resolve(result);
@@ -451,7 +391,7 @@ module.exports = class criteriaHelper {
         };
 
         if (frameworkIdExists) {
-          queryObject["frameworkCriteriaId"] = {
+          queryObject['frameworkCriteriaId'] = {
             $exists: true,
           };
         }
@@ -461,15 +401,12 @@ module.exports = class criteriaHelper {
         };
 
         Object.keys(bodyData).forEach((criteriaData) => {
-          updateObject["$set"][criteriaData] = bodyData[criteriaData];
+          updateObject['$set'][criteriaData] = bodyData[criteriaData];
         });
 
-        updateObject["$set"]["updatedBy"] = userId;
+        updateObject['$set']['updatedBy'] = userId;
 
-        let updatedCriteria = await database.models.criteria.findOneAndUpdate(
-          queryObject,
-          updateObject
-        );
+        let updatedCriteria = await database.models.criteria.findOneAndUpdate(queryObject, updateObject);
 
         if (frameworkIdExists) {
           await criteriaQuestionsHelper.createOrUpdate(updatedCriteria._id);
@@ -518,9 +455,7 @@ module.exports = class criteriaHelper {
         let questionIdMap = {};
         let questionExternalIdMap = {};
 
-        let duplicateQuestionsResponse = await questionsHelper.duplicate(
-          criteriaIds
-        );
+        let duplicateQuestionsResponse = await questionsHelper.duplicate(criteriaIds);
 
         if (
           duplicateQuestionsResponse.success &&
@@ -531,59 +466,36 @@ module.exports = class criteriaHelper {
 
         if (
           duplicateQuestionsResponse.success &&
-          Object.keys(duplicateQuestionsResponse.data.questionExternalIdMap)
-            .length > 0
+          Object.keys(duplicateQuestionsResponse.data.questionExternalIdMap).length > 0
         ) {
-          questionExternalIdMap =
-            duplicateQuestionsResponse.data.questionExternalIdMap;
+          questionExternalIdMap = duplicateQuestionsResponse.data.questionExternalIdMap;
         }
 
         await Promise.all(
           criteriaDocuments.map(async (criteria) => {
-            for (
-              let pointerToEvidence = 0;
-              pointerToEvidence < criteria.evidences.length;
-              pointerToEvidence++
-            ) {
+            for (let pointerToEvidence = 0; pointerToEvidence < criteria.evidences.length; pointerToEvidence++) {
               for (
                 let pointerToSection = 0;
-                pointerToSection <
-                criteria.evidences[pointerToEvidence].sections.length;
+                pointerToSection < criteria.evidences[pointerToEvidence].sections.length;
                 pointerToSection++
               ) {
                 let newQuestions = [];
-                let sectionQuestions =
-                  criteria.evidences[pointerToEvidence].sections[
-                    pointerToSection
-                  ].questions;
+                let sectionQuestions = criteria.evidences[pointerToEvidence].sections[pointerToSection].questions;
                 if (sectionQuestions.length > 0) {
-                  for (
-                    let pointerToQuestion = 0;
-                    pointerToQuestion < sectionQuestions.length;
-                    pointerToQuestion++
-                  ) {
-                    let newQuestionId = questionIdMap[
-                      sectionQuestions[pointerToQuestion].toString()
-                    ]
-                      ? questionIdMap[
-                          sectionQuestions[pointerToQuestion].toString()
-                        ]
+                  for (let pointerToQuestion = 0; pointerToQuestion < sectionQuestions.length; pointerToQuestion++) {
+                    let newQuestionId = questionIdMap[sectionQuestions[pointerToQuestion].toString()]
+                      ? questionIdMap[sectionQuestions[pointerToQuestion].toString()]
                       : sectionQuestions[pointerToQuestion];
                     newQuestions.push(newQuestionId);
                   }
-                  criteria.evidences[pointerToEvidence].sections[
-                    pointerToSection
-                  ].questions = newQuestions;
+                  criteria.evidences[pointerToEvidence].sections[pointerToSection].questions = newQuestions;
                 }
               }
             }
 
-            criteria.externalId =
-              criteria.externalId + "-" + gen.utils.epochTime();
+            criteria.externalId = criteria.externalId + '-' + gen.utils.epochTime();
             criteria.parentCriteriaId = criteria._id;
-            let newCriteriaId = await database.models.criteria.create(
-              _.omit(criteria, ["_id"])
-            );
+            let newCriteriaId = await database.models.criteria.create(_.omit(criteria, ['_id']));
 
             if (newCriteriaId._id) {
               criteriaIdMap[criteria._id.toString()] = newCriteriaId._id;
@@ -592,30 +504,21 @@ module.exports = class criteriaHelper {
                 criteria.rubric.expressionVariables &&
                 Object.keys(criteria.rubric.expressionVariables).length > 0
               ) {
-                Object.keys(criteria.rubric.expressionVariables).forEach(
-                  (expressionVariable) => {
-                    let oldId = criteria.rubric.expressionVariables[
-                      expressionVariable
-                    ]
-                      .split(".")
-                      .shift();
-                    let newId = "";
-                    if (questionIdMap[oldId]) {
-                      newId = questionIdMap[oldId];
-                    } else if (criteriaIdMap[oldId]) {
-                      newId = criteriaIdMap[oldId];
-                    }
-                    if (newId != "") {
-                      criteria.rubric.expressionVariables[expressionVariable] =
-                        newId +
-                        "." +
-                        criteria.rubric.expressionVariables[expressionVariable]
-                          .split(".")
-                          .slice(1)
-                          .join(".");
-                    }
+                Object.keys(criteria.rubric.expressionVariables).forEach((expressionVariable) => {
+                  let oldId = criteria.rubric.expressionVariables[expressionVariable].split('.').shift();
+                  let newId = '';
+                  if (questionIdMap[oldId]) {
+                    newId = questionIdMap[oldId];
+                  } else if (criteriaIdMap[oldId]) {
+                    newId = criteriaIdMap[oldId];
                   }
-                );
+                  if (newId != '') {
+                    criteria.rubric.expressionVariables[expressionVariable] =
+                      newId +
+                      '.' +
+                      criteria.rubric.expressionVariables[expressionVariable].split('.').slice(1).join('.');
+                  }
+                });
 
                 await database.models.criteria.updateOne(
                   { _id: newCriteriaId._id },
@@ -623,24 +526,20 @@ module.exports = class criteriaHelper {
                     $set: {
                       rubric: criteria.rubric,
                     },
-                  }
+                  },
                 );
               }
             }
-          })
+          }),
         );
 
         if (Object.keys(criteriaIdMap).length > 0) {
-          await criteriaQuestionsHelper.createOrUpdate(
-            Object.values(criteriaIdMap),
-            true
-          );
+          await criteriaQuestionsHelper.createOrUpdate(Object.values(criteriaIdMap), true);
         }
 
         return resolve({
           success: true,
-          message:
-            messageConstants.apiResponses.DUPLICATED_CRITERIA_SUCCESSFULLY,
+          message: messageConstants.apiResponses.DUPLICATED_CRITERIA_SUCCESSFULLY,
           data: {
             criteriaIdMap: criteriaIdMap,
             questionExternalIdMap: questionExternalIdMap,

@@ -6,16 +6,15 @@
  */
 
 // Dependencies
-let moment = require("moment");
-const filesHelper = require(MODULES_BASE_PATH + "/files/helper");
+let moment = require('moment');
+const filesHelper = require(MODULES_BASE_PATH + '/files/helper');
 
 /**
-    * ReportsHelper
-    * @class
-*/
+ * ReportsHelper
+ * @class
+ */
 module.exports = class ReportsHelper {
-
-    /**
+  /**
    * Convert gmt to ist.
    * @method
    * @name gmtToIst
@@ -23,24 +22,19 @@ module.exports = class ReportsHelper {
    * @returns {TimeRanges} - converted gmtTime to ist
    */
 
-    static gmtToIst(gmtTime) {
-        try {
+  static gmtToIst(gmtTime) {
+    try {
+      let istStart = moment(gmtTime).tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
 
-            let istStart = moment(gmtTime)
-                .tz("Asia/Kolkata")
-                .format("YYYY-MM-DD HH:mm:ss");
+      if (istStart == 'Invalid date') {
+        istStart = '-';
+      }
 
-            if (istStart == "Invalid date") {
-                istStart = "-";
-            }
-
-            return istStart;
-
-        } catch (error) {
-            return error;
-        }
-
+      return istStart;
+    } catch (error) {
+      return error;
     }
+  }
 
   /**
    * Convert gmt to ist.
@@ -49,18 +43,15 @@ module.exports = class ReportsHelper {
    * @returns {String} - public base url
    */
 
-    static getFilePublicBaseUrl() {
-        return new Promise(async (resolve, reject) => {
-            try {
+  static getFilePublicBaseUrl() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const url = filesHelper.getFilePublicBaseUrl();
 
-            const url = filesHelper.getFilePublicBaseUrl();
-
-            return resolve(url);
-
-            } catch (error) {
-                return reject(error);
-            }
-        })
-    }
-
+        return resolve(url);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 };

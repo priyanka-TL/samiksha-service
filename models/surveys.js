@@ -1,5 +1,5 @@
 module.exports = {
-  name: "surveys",
+  name: 'surveys',
   schema: {
     name: String,
     description: String,
@@ -9,12 +9,12 @@ module.exports = {
       required: true,
     },
     solutionId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
       required: true,
     },
     programId: {
-      type: "ObjectId",
+      type: 'ObjectId',
       index: true,
     },
     programExternalId: {

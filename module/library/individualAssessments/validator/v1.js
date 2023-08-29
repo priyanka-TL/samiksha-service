@@ -6,19 +6,18 @@
  */
 
 module.exports = (req) => {
+  let templateValidator = {
+    details: function () {
+      req
+        .checkParams('_id')
+        .exists()
+        .withMessage('required individual solution id')
+        .isMongoId()
+        .withMessage('Invalid individual solution id');
+    },
+  };
 
-    let templateValidator = {
-
-        details : function () {
-            req.checkParams('_id')
-            .exists()
-            .withMessage("required individual solution id")
-            .isMongoId().withMessage("Invalid individual solution id");
-        }
-    }
-
-    if (templateValidator[req.params.method]) {
-        templateValidator[req.params.method]();
-    }
-
+  if (templateValidator[req.params.method]) {
+    templateValidator[req.params.method]();
+  }
 };

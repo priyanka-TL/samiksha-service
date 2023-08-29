@@ -1,104 +1,101 @@
 module.exports = {
   async up(db) {
-    global.migrationMsg = "Add reports filter form to forms collections";
+    global.migrationMsg = 'Add reports filter form to forms collections';
 
     let reportsFilter = [
       {
-        field: "fromDate",
-        label: "start date",
-        value: "",
-        visible: true,//there is no date calculation right now
+        field: 'fromDate',
+        label: 'start date',
+        value: '',
+        visible: true, //there is no date calculation right now
         editable: true,
-        input: "date",
+        input: 'date',
         validation: {
-          required: true
+          required: true,
         },
-        min: "",
-        max: ""
+        min: '',
+        max: '',
       },
       {
-        field: "toDate",
-        label: "end date",
-        value: "",
-        visible: true,//there is no date calculation right now
+        field: 'toDate',
+        label: 'end date',
+        value: '',
+        visible: true, //there is no date calculation right now
         editable: true,
-        input: "date",
+        input: 'date',
         validation: {
-          required: true
+          required: true,
         },
-        min: "",
-        max: ""
+        min: '',
+        max: '',
       },
       {
-        field: "entityTypes",
-        label: "entity type",
-        value: "",
+        field: 'entityTypes',
+        label: 'entity type',
+        value: '',
         visible: true,
         editable: true,
-        input: "select",
-        options: "",
+        input: 'select',
+        options: '',
         validation: {
-          required: false
+          required: false,
         },
         autocomplete: false,
-        min: "",
-        max: ""
+        min: '',
+        max: '',
       },
       {
-        field: "area",
-        label: "entity area",
-        value: "",
+        field: 'area',
+        label: 'entity area',
+        value: '',
         visible: true,
         editable: true,
-        input: "text",
+        input: 'text',
         validation: {
-          required: false
+          required: false,
         },
         autocomplete: false,
-        min: "",
-        max: ""
+        min: '',
+        max: '',
       },
       {
-        field: "administration",
-        label: "entity administration",
-        value: "",
+        field: 'administration',
+        label: 'entity administration',
+        value: '',
         visible: true,
         editable: true,
-        input: "select",
+        input: 'select',
         showRemarks: true,
-        options: "",
+        options: '',
         validation: {
-          required: false
+          required: false,
         },
         autocomplete: false,
-        min: "",
-        max: ""
+        min: '',
+        max: '',
       },
       {
-        field: "externalId",
-        label: "entity Id",
-        value: "",
+        field: 'externalId',
+        label: 'entity Id',
+        value: '',
         visible: true,
         editable: true,
-        input: "text",
+        input: 'text',
         validation: {
-          required: false
+          required: false,
         },
         autocomplete: true,
         url: `programOperations/searchEntity/`,
-        min: "",
-        max: ""
-      }
+        min: '',
+        max: '',
+      },
     ];
 
     await db.collection('forms').insertOne({
-      name: "reportsFilter",
-      value: reportsFilter
+      name: 'reportsFilter',
+      value: reportsFilter,
     });
+  },
 
-},
-
-  async down(db) {
-
-  }
+  async down(db) {},
 };

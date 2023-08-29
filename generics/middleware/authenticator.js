@@ -1,9 +1,9 @@
 // const jwtDecode = require("jwt-decode");
 // let slackClient = require("../helpers/slackCommunications");
 // var ApiInterceptor = require("./lib/apiInterceptor");
-var messageUtil = require("./lib/messageUtil");
-var responseCode = require("../httpStatusCodes");
-const jwt = require("jsonwebtoken");
+var messageUtil = require('./lib/messageUtil');
+var responseCode = require('../httpStatusCodes');
+const jwt = require('jsonwebtoken');
 
 // var shikshalokam = require("../helpers/shikshalokam");
 
@@ -44,19 +44,19 @@ var respUtil = function (resp) {
 
 // var apiInterceptor = new ApiInterceptor(keyCloakConfig, cacheConfig);
 var removedHeaders = [
-  "host",
-  "origin",
-  "accept",
-  "referer",
-  "content-length",
-  "accept-encoding",
-  "accept-language",
-  "accept-charset",
-  "cookie",
-  "dnt",
-  "postman-token",
-  "cache-control",
-  "connection",
+  'host',
+  'origin',
+  'accept',
+  'referer',
+  'content-length',
+  'accept-encoding',
+  'accept-language',
+  'accept-charset',
+  'cookie',
+  'dnt',
+  'postman-token',
+  'cache-control',
+  'connection',
 ];
 
 async function getAllRoles(obj) {
@@ -68,7 +68,7 @@ async function getAllRoles(obj) {
 }
 
 module.exports = async function (req, res, next) {
-  if (req.path.includes("/sharedLinks/verify")) return next();
+  if (req.path.includes('/sharedLinks/verify')) return next();
 
   if (req.headers && req.headers.linkid) {
     let isShareable = await database.models.sharedLink.findOne({
@@ -76,21 +76,19 @@ module.exports = async function (req, res, next) {
       isActive: true,
     });
 
-    let requestURL = req.url.includes("?") ? req.url.split("?")[0] : req.url;
+    let requestURL = req.url.includes('?') ? req.url.split('?')[0] : req.url;
 
     if (isShareable && requestURL.includes(isShareable.reportName)) {
-      req.url = isShareable.queryParams
-        ? requestURL + "?" + isShareable.queryParams
-        : requestURL;
+      req.url = isShareable.queryParams ? requestURL + '?' + isShareable.queryParams : requestURL;
 
       req.userDetails = isShareable.userDetails;
 
       return next();
     } else {
-      let msg = "Bad request.";
+      let msg = 'Bad request.';
 
       const slackMessageForBadRequest = {
-        userIP: req.headers["x-real-ip"],
+        userIP: req.headers['x-real-ip'],
         method: req.method,
         url: req.url,
         headers: req.headers,
@@ -118,32 +116,32 @@ module.exports = async function (req, res, next) {
   });
 
   let paths = [
-    "reports",
-    "pendingAssessments",
-    "completedAssessments",
-    "pendingObservations",
-    "completedObservations",
-    "solutionDetails",
-    "/solutions/list",
-    "/programs/listByIds",
-    "frameworks/delete/",
-    "questions/delete/",
-    "observationSubmissions/disable/",
+    'reports',
+    'pendingAssessments',
+    'completedAssessments',
+    'pendingObservations',
+    'completedObservations',
+    'solutionDetails',
+    '/solutions/list',
+    '/programs/listByIds',
+    'frameworks/delete/',
+    'questions/delete/',
+    'observationSubmissions/disable/',
   ];
 
-  var token = req.headers["x-authenticated-user-token"];
+  var token = req.headers['x-authenticated-user-token'];
   if (!req.rspObj) req.rspObj = {};
   var rspObj = req.rspObj;
 
   let internalAccessApiPaths = [
-    "createGesture",
-    "createEmoji",
-    "solutionDetails",
-    "solutions/updateSolutions",
-    "solutions/addEntities",
-    "frameworks/delete/",
-    "questions/delete/",
-    "observationSubmissions/disable/",
+    'createGesture',
+    'createEmoji',
+    'solutionDetails',
+    'solutions/updateSolutions',
+    'solutions/addEntities',
+    'frameworks/delete/',
+    'questions/delete/',
+    'observationSubmissions/disable/',
   ];
 
   let performInternalAccessTokenCheck = false;
@@ -152,13 +150,11 @@ module.exports = async function (req, res, next) {
       if (req.path.includes(path)) {
         performInternalAccessTokenCheck = true;
       }
-    })
+    }),
   );
 
   if (performInternalAccessTokenCheck) {
-    if (
-      req.headers["internal-access-token"] !== process.env.INTERNAL_ACCESS_TOKEN
-    ) {
+    if (req.headers['internal-access-token'] !== process.env.INTERNAL_ACCESS_TOKEN) {
       rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
       rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
       rspObj.responseCode = responseCode.unauthorized.status;
@@ -167,22 +163,18 @@ module.exports = async function (req, res, next) {
   }
 
   //api need both internal access token and x-authenticated-user-token
-  const internalAccessAndTokenApiPaths = ["entityAssessors/create"];
+  const internalAccessAndTokenApiPaths = ['entityAssessors/create'];
   let performInternalAccessTokenAndTokenCheck = false;
   await Promise.all(
     internalAccessAndTokenApiPaths.map(async function (path) {
       if (req.path.includes(path)) {
         performInternalAccessTokenAndTokenCheck = true;
       }
-    })
+    }),
   );
 
   if (performInternalAccessTokenAndTokenCheck) {
-    if (
-      req.headers["internal-access-token"] !==
-        process.env.INTERNAL_ACCESS_TOKEN ||
-      !token
-    ) {
+    if (req.headers['internal-access-token'] !== process.env.INTERNAL_ACCESS_TOKEN || !token) {
       rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
       rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
       rspObj.responseCode = responseCode.unauthorized.status;
@@ -191,23 +183,18 @@ module.exports = async function (req, res, next) {
   }
 
   //api need either x-authenticated-user-token or internal access token
-  const insternalAccessTokenOrTokenPaths = [
-    "userExtension/getProfile/",
-    "entities/relatedEntities/",
-  ];
+  const insternalAccessTokenOrTokenPaths = ['userExtension/getProfile/', 'entities/relatedEntities/'];
   let performInternalAccessTokenOrTokenCheck = false;
   await Promise.all(
     insternalAccessTokenOrTokenPaths.map(async function (path) {
       if (req.path.includes(path)) {
         performInternalAccessTokenOrTokenCheck = true;
       }
-    })
+    }),
   );
 
   if (performInternalAccessTokenOrTokenCheck && !token) {
-    if (
-      req.headers["internal-access-token"] !== process.env.INTERNAL_ACCESS_TOKEN
-    ) {
+    if (req.headers['internal-access-token'] !== process.env.INTERNAL_ACCESS_TOKEN) {
       rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
       rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
       rspObj.responseCode = responseCode.unauthorized.status;
@@ -218,15 +205,10 @@ module.exports = async function (req, res, next) {
     }
   }
 
-  for (
-    let pointerToByPassPath = 0;
-    pointerToByPassPath < paths.length;
-    pointerToByPassPath++
-  ) {
+  for (let pointerToByPassPath = 0; pointerToByPassPath < paths.length; pointerToByPassPath++) {
     if (
-      (req.path.includes(paths[pointerToByPassPath]) ||
-        (req.query.csv && req.query.csv == true)) &&
-      req.headers["internal-access-token"] === process.env.INTERNAL_ACCESS_TOKEN
+      (req.path.includes(paths[pointerToByPassPath]) || (req.query.csv && req.query.csv == true)) &&
+      req.headers['internal-access-token'] === process.env.INTERNAL_ACCESS_TOKEN
     ) {
       req.setTimeout(parseInt(REQUEST_TIMEOUT_FOR_REPORTS));
       next();
@@ -284,14 +266,10 @@ module.exports = async function (req, res, next) {
     decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   } catch (err) {
     console.log(err);
-    return res
-      .status(responseCode["bad_request"].status)
-      .send(respUtil(rspObj));
+    return res.status(responseCode['bad_request'].status).send(respUtil(rspObj));
   }
   if (!decodedToken) {
-    return res
-      .status(responseCode["bad_request"].status)
-      .send(respUtil(rspObj));
+    return res.status(responseCode['bad_request'].status).send(respUtil(rspObj));
   }
   req.userDetails = {
     userToken: token,
@@ -300,7 +278,7 @@ module.exports = async function (req, res, next) {
     email: decodedToken.data.email,
     firstName: decodedToken.data.name,
   };
-  console.log(">>>>>", req.userDetails);
+  console.log('>>>>>', req.userDetails);
   next();
 
   // if (!token) {

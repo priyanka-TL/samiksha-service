@@ -6,7 +6,7 @@
  */
 
 //dependencies
-const { Client: esClient } = require("@elastic/elasticsearch");
+const { Client: esClient } = require('@elastic/elasticsearch');
 
 /**
  * Elastic search connection.
@@ -17,9 +17,9 @@ const { Client: esClient } = require("@elastic/elasticsearch");
  */
 
 var connect = function (config) {
-  if (process.env.ELASTICSEARCH_COMMUNICATIONS_ON_OFF === "ON") {
+  if (process.env.ELASTICSEARCH_COMMUNICATIONS_ON_OFF === 'ON') {
     const elasticSearchClient = new esClient({
-      node: "http://localhost:1000",
+      node: 'http://localhost:1000',
       maxRetries: process.env.ELASTIC_SEARCH_MAX_RETRIES,
       requestTimeout: process.env.ELASTIC_SEARCH_REQUEST_TIMEOUT,
       sniffOnStart: process.env.ELASTIC_SEARCH_SNIFF_ON_START,
@@ -28,9 +28,9 @@ var connect = function (config) {
     elasticSearchClient.ping({}, function (error) {
       if (error) {
         console.error(error);
-        log.error("Elasticsearch cluster is down!");
+        log.error('Elasticsearch cluster is down!');
       } else {
-        log.debug("Elasticsearch connection established.");
+        log.debug('Elasticsearch connection established.');
       }
     });
 

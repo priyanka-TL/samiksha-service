@@ -1,8 +1,8 @@
 module.exports = {
-  name: "feedback",
+  name: 'feedback',
   schema: {
     name: String,
     type: String,
-    feedback: String
-  }
+    feedback: String,
+  },
 };

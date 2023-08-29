@@ -1,5 +1,5 @@
 module.exports = {
-  name: "criteria",
+  name: 'criteria',
   schema: {
     externalId: String,
     owner: String,
@@ -13,14 +13,14 @@ module.exports = {
     resourceType: [String],
     language: [String],
     keywords: [String],
-    concepts: ["json"],
+    concepts: ['json'],
     createdFor: [String],
     createdFor: [String],
     rubric: Object,
-    evidences: ["json"],
+    evidences: ['json'],
     flag: Object,
-    criteriaType: { type : String, default: "manual" },
-    frameworkCriteriaId : "ObjectId",
-    parentCriteriaId: "ObjectId"
-  }
+    criteriaType: { type: String, default: 'manual' },
+    frameworkCriteriaId: 'ObjectId',
+    parentCriteriaId: 'ObjectId',
+  },
 };
