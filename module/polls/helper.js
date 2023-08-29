@@ -657,11 +657,11 @@ module.exports = class PollsHelper {
           throw new Error(messageConstants.apiResponses.APP_NAME_FIELD_REQUIRED);
         }
 
-        let appDetails = await kendraService.getAppDetails(appName);
+        // let appDetails = await kendraService.getAppDetails(appName);
 
-        if (appDetails.result == false) {
-          throw new Error(messageConstants.apiResponses.APP_NOT_FOUND);
-        }
+        // if (appDetails.result == false) {
+        //   throw new Error(messageConstants.apiResponses.APP_NOT_FOUND);
+        // }
 
         let pollLink = await this.pollDocuments({ _id: pollId, endDate: { $gt: new Date() } }, ['link']);
 
