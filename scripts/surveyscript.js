@@ -75,220 +75,220 @@ function loginAccount(userData) {
   });
 }
 
-function pollCreate(userAuthToken, pollData) {
-  return new Promise((resolve, reject) => {
-    try {
-      const pollCreateCallback = function (err, response) {
-        if (err) {
-          return reject({
-            status: 400,
-            message: 'samiksha  Down',
-          });
-        } else {
-          let pollCreateData = JSON.parse(response.body);
-          return resolve(pollCreateData);
-        }
-      };
+// function pollCreate(userAuthToken, pollData) {
+//   return new Promise((resolve, reject) => {
+//     try {
+//       const pollCreateCallback = function (err, response) {
+//         if (err) {
+//           return reject({
+//             status: 400,
+//             message: 'samiksha  Down',
+//           });
+//         } else {
+//           let pollCreateData = JSON.parse(response.body);
+//           return resolve(pollCreateData);
+//         }
+//       };
 
-      request.post(
-        'http://localhost:4301/assessment/api/v1/polls/create',
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-authenticated-user-token': userAuthToken,
-            appname: 'mentored',
-          },
-          body: JSON.stringify(pollData),
-        },
-        pollCreateCallback,
-      );
-    } catch (error) {
-      return reject(error);
-    }
-  });
-}
-function pollList(userAuthToken) {
-  return new Promise((resolve, reject) => {
-    try {
-      const pollListCallback = function (err, response) {
-        if (err) {
-          return reject({
-            status: 400,
-            message: 'samiksha  Down',
-          });
-        } else {
-          let pollCreateData = JSON.parse(response.body);
-          return resolve(pollCreateData);
-        }
-      };
+//       request.post(
+//         'http://localhost:4301/assessment/api/v1/polls/create',
+//         {
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'x-authenticated-user-token': userAuthToken,
+//             appname: 'mentored',
+//           },
+//           body: JSON.stringify(pollData),
+//         },
+//         pollCreateCallback,
+//       );
+//     } catch (error) {
+//       return reject(error);
+//     }
+//   });
+// }
+// function pollList(userAuthToken) {
+//   return new Promise((resolve, reject) => {
+//     try {
+//       const pollListCallback = function (err, response) {
+//         if (err) {
+//           return reject({
+//             status: 400,
+//             message: 'samiksha  Down',
+//           });
+//         } else {
+//           let pollCreateData = JSON.parse(response.body);
+//           return resolve(pollCreateData);
+//         }
+//       };
 
-      request.get(
-        'http://localhost:4301/assessment/api/v1/polls/list',
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-authenticated-user-token': userAuthToken,
-            appname: 'mentored',
-          },
-        },
-        pollListCallback,
-      );
-    } catch (error) {
-      return reject(error);
-    }
-  });
-}
-function pollGetQuestions(userAuthToken, pollId) {
-  return new Promise((resolve, reject) => {
-    try {
-      const pollQuestionCallback = function (err, response) {
-        if (err) {
-          return reject({
-            status: 400,
-            message: 'samiksha  Down',
-          });
-        } else {
-          let pollData = JSON.parse(response.body);
-          return resolve(pollData);
-        }
-      };
+//       request.get(
+//         'http://localhost:4301/assessment/api/v1/polls/list',
+//         {
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'x-authenticated-user-token': userAuthToken,
+//             appname: 'mentored',
+//           },
+//         },
+//         pollListCallback,
+//       );
+//     } catch (error) {
+//       return reject(error);
+//     }
+//   });
+// }
+// function pollGetQuestions(userAuthToken, pollId) {
+//   return new Promise((resolve, reject) => {
+//     try {
+//       const pollQuestionCallback = function (err, response) {
+//         if (err) {
+//           return reject({
+//             status: 400,
+//             message: 'samiksha  Down',
+//           });
+//         } else {
+//           let pollData = JSON.parse(response.body);
+//           return resolve(pollData);
+//         }
+//       };
 
-      request.get(
-        `http://localhost:4301/assessment/api/v1/polls/getPollQuestions/${pollId}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-authenticated-user-token': userAuthToken,
-            appname: 'mentored',
-          },
-        },
-        pollQuestionCallback,
-      );
-    } catch (error) {
-      return reject(error);
-    }
-  });
-}
+//       request.get(
+//         `http://localhost:4301/assessment/api/v1/polls/getPollQuestions/${pollId}`,
+//         {
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'x-authenticated-user-token': userAuthToken,
+//             appname: 'mentored',
+//           },
+//         },
+//         pollQuestionCallback,
+//       );
+//     } catch (error) {
+//       return reject(error);
+//     }
+//   });
+// }
 
-function pollSubmit(userAuthToken, pollId, questions) {
-  return new Promise((resolve, reject) => {
-    try {
-      const pollSubmitCallback = function (err, response) {
-        if (err) {
-          return reject({
-            status: 400,
-            message: 'samiksha  Down',
-          });
-        } else {
-          let pollData = JSON.parse(response.body);
-          return resolve(pollData);
-        }
-      };
-      let answers = ['R1', 'R2', 'R3'];
+// function pollSubmit(userAuthToken, pollId, questions) {
+//   return new Promise((resolve, reject) => {
+//     try {
+//       const pollSubmitCallback = function (err, response) {
+//         if (err) {
+//           return reject({
+//             status: 400,
+//             message: 'samiksha  Down',
+//           });
+//         } else {
+//           let pollData = JSON.parse(response.body);
+//           return resolve(pollData);
+//         }
+//       };
+//       let answers = ['R1', 'R2', 'R3'];
 
-      request.get(
-        `http://localhost:4301/assessment/api/v1/pollSubmissions/make/${pollId}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-authenticated-user-token': userAuthToken,
-            appname: 'mentored',
-          },
-          body: JSON.stringify({
-            [questions.qid]: {
-              qid: questions.qid,
-              question: questions.question,
-              responseType: questions.responseType,
-              value: answers[Math.floor(Math.random() * answers.length)],
-            },
-          }),
-        },
-        pollSubmitCallback,
-      );
-    } catch (error) {
-      return reject(error);
-    }
-  });
-}
+//       request.get(
+//         `http://localhost:4301/assessment/api/v1/pollSubmissions/make/${pollId}`,
+//         {
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'x-authenticated-user-token': userAuthToken,
+//             appname: 'mentored',
+//           },
+//           body: JSON.stringify({
+//             [questions.qid]: {
+//               qid: questions.qid,
+//               question: questions.question,
+//               responseType: questions.responseType,
+//               value: answers[Math.floor(Math.random() * answers.length)],
+//             },
+//           }),
+//         },
+//         pollSubmitCallback,
+//       );
+//     } catch (error) {
+//       return reject(error);
+//     }
+//   });
+// }
 
-function pollReport(userAuthToken, pollId) {
-  return new Promise((resolve, reject) => {
-    try {
-      const pollReportCallback = function (err, response) {
-        if (err) {
-          return reject({
-            status: 400,
-            message: 'samiksha  Down',
-          });
-        } else {
-          let pollData = JSON.parse(response.body);
-          return resolve(pollData);
-        }
-      };
+// function pollReport(userAuthToken, pollId) {
+//   return new Promise((resolve, reject) => {
+//     try {
+//       const pollReportCallback = function (err, response) {
+//         if (err) {
+//           return reject({
+//             status: 400,
+//             message: 'samiksha  Down',
+//           });
+//         } else {
+//           let pollData = JSON.parse(response.body);
+//           return resolve(pollData);
+//         }
+//       };
 
-      request.get(
-        `http://localhost:4301/assessment/api/v1/polls/report/${pollId}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-authenticated-user-token': userAuthToken,
-            appname: 'mentored',
-          },
-        },
-        pollReportCallback,
-      );
-    } catch (error) {
-      return reject(error);
-    }
-  });
-}
-async function polls() {
-  try {
-    let Reports = [];
-    let accountCreate = [];
-    for (let users = 0; users < scriptData.users.length; users++) {
-      accountCreate.push(createAccount(scriptData.users[users]));
-    }
-    let accountcreatedData = await Promise.all(accountCreate);
-    let pollDataCreate = [];
-    for (let poll = 0; poll < scriptData.polls.length; poll++) {
-      pollDataCreate.push(pollCreate(accountcreatedData[0].access_token, scriptData.polls[poll]));
-    }
-    await Promise.all(pollDataCreate);
-    let pollReports = [];
-    let listPolls = await pollList(accountcreatedData[0].access_token);
-    for (let poll = 0; poll < listPolls.result.length; poll++) {
-      for (let user = 0; user < accountcreatedData.length; user++) {
-        let getPollQuestions = await pollGetQuestions(
-          accountcreatedData[user].access_token,
-          listPolls.result[poll]._id,
-        );
-        console.log(JSON.stringify(getPollQuestions.result.questions[0]));
-        let submitPoll = await pollSubmit(
-          accountcreatedData[user].access_token,
-          listPolls.result[poll]._id,
-          getPollQuestions.result.questions[0],
-        );
-      }
-      let pollReportData = await pollReport(accountcreatedData[0].access_token, listPolls.result[poll]._id);
-      pollReports.push(pollReportData);
-    }
-    fs.writeFile(
-      'pollsreports.json',
+//       request.get(
+//         `http://localhost:4301/assessment/api/v1/polls/report/${pollId}`,
+//         {
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'x-authenticated-user-token': userAuthToken,
+//             appname: 'mentored',
+//           },
+//         },
+//         pollReportCallback,
+//       );
+//     } catch (error) {
+//       return reject(error);
+//     }
+//   });
+// }
+// async function polls() {
+//   try {
+//     let Reports = [];
+//     let accountCreate = [];
+//     for (let users = 0; users < scriptData.users.length; users++) {
+//       accountCreate.push(createAccount(scriptData.users[users]));
+//     }
+//     let accountcreatedData = await Promise.all(accountCreate);
+//     let pollDataCreate = [];
+//     for (let poll = 0; poll < scriptData.polls.length; poll++) {
+//       pollDataCreate.push(pollCreate(accountcreatedData[0].access_token, scriptData.polls[poll]));
+//     }
+//     await Promise.all(pollDataCreate);
+//     let pollReports = [];
+//     let listPolls = await pollList(accountcreatedData[0].access_token);
+//     for (let poll = 0; poll < listPolls.result.length; poll++) {
+//       for (let user = 0; user < accountcreatedData.length; user++) {
+//         let getPollQuestions = await pollGetQuestions(
+//           accountcreatedData[user].access_token,
+//           listPolls.result[poll]._id,
+//         );
+//         console.log(JSON.stringify(getPollQuestions.result.questions[0]));
+//         let submitPoll = await pollSubmit(
+//           accountcreatedData[user].access_token,
+//           listPolls.result[poll]._id,
+//           getPollQuestions.result.questions[0],
+//         );
+//       }
+//       let pollReportData = await pollReport(accountcreatedData[0].access_token, listPolls.result[poll]._id);
+//       pollReports.push(pollReportData);
+//     }
+//     fs.writeFile(
+//       'pollsreports.json',
 
-      JSON.stringify(pollReports),
+//       JSON.stringify(pollReports),
 
-      function (err) {
-        if (err) {
-          console.error('Crap happens');
-        }
-      },
-    );
-  } catch (err) {
-    console.error(err);
-  }
-}
-polls();
+//       function (err) {
+//         if (err) {
+//           console.error('Crap happens');
+//         }
+//       },
+//     );
+//   } catch (err) {
+//     console.error(err);
+//   }
+// }
+// polls();
 
 function createSurveyTemplateSolution(surveySolutionData, userAuthToken) {
   return new Promise((resolve, reject) => {
@@ -424,8 +424,8 @@ function solutionDetails(solutionId, userAuthToken) {
 }
 async function survey() {
   try {
-    let accountLogin = await loginAccount(scriptData.users[0]);
-    accountLogin = accountLogin.result;
+    let accountLogin = await createAccount(scriptData.users[0]);
+
     let surveyTemplate = await createSurveyTemplateSolution(scriptData.survey, accountLogin.access_token);
     console.log(surveyTemplate);
     let questionUploads = await questionUpload(accountLogin.access_token);
