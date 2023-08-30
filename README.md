@@ -34,7 +34,7 @@ command to clone
 
 Create a file named `.env` and copy the environment-specific data corresponding to that service into the `.env` file.
 
-# ML Survey Service Config
+# Samiksha Service Config
 
     # Service Config
     HOST = localhost
@@ -60,19 +60,19 @@ Create a file named `.env` and copy the environment-specific data corresponding 
     PUBLIC_FOLDER_PATH = "public"
     DB = "Samiksha20"
 
-# For reports generation.
+    # For reports generation.
 
-INTERNAL_ACCESS_TOKEN = "8c3a94f0931e01a4940a"
+    INTERNAL_ACCESS_TOKEN = "8c3a94f0931e01a4940a"
 
-# CSV Config
+    # CSV Config
 
-# Create the respective directory as provided in the path below.
+    # Create the respective directory as provided in the path below.
 
-CSV_REPORTS_PATH = "reports"
+    CSV_REPORTS_PATH = "reports"
 
-# IMPROVEMENT PROJECT SERVICE
+    # IMPROVEMENT PROJECT SERVICE
 
-ACCESS_TOKEN_SECRET = "bsj82AHBxahusub12yexlashsbxAXADHBlaj"
+    ACCESS_TOKEN_SECRET = "bsj82AHBxahusub12yexlashsbxAXADHBlaj"
 
 ### Install Dependencies
 
