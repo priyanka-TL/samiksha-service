@@ -58,7 +58,7 @@ Create a file named `.env` and copy the environment-specific data corresponding 
     GCP_BUCKET_NAME = "gcp bucket name"
     MONGODB_URL = mongodb://localhost:27017
     PUBLIC_FOLDER_PATH = "public"
-    DB = "Samiksha20"
+    DB = "samiksha-service"
 
     # For reports generation.
 
@@ -69,9 +69,7 @@ Create a file named `.env` and copy the environment-specific data corresponding 
     # Create the respective directory as provided in the path below.
 
     CSV_REPORTS_PATH = "reports"
-
-    # IMPROVEMENT PROJECT SERVICE
-
+    # Access token is same as user service AccessToken for validating JWT token
     ACCESS_TOKEN_SECRET = "bsj82AHBxahusub12yexlashsbxAXADHBlaj"
 
 ### Install Dependencies
