@@ -1,0 +1,100 @@
+{
+  "users": [
+    { "name": "userone", "email": "user1@example.com", "password": "testing1" },
+    { "name": "usertwo", "email": "user2@example.com", "password": "testing2" },
+    { "name": "userthree", "email": "user3@example.com", "password": "testing3" },
+    { "name": "userfour", "email": "user4@example.com", "password": "testing4" },
+    { "name": "userfive", "email": "user5@example.com", "password": "testing5" }
+  ],
+  "polls": [
+    {
+      "name": "Opinion",
+      "creator": "deepa",
+      "questions": [
+        {
+          "question": "Which app do you use the most ?",
+          "responseType": "radio",
+          "options": [
+            {
+              "value": "",
+              "label": "samiksha"
+            },
+            {
+              "value": "",
+              "label": "unnati"
+            },
+            {
+              "value": "",
+              "label": "bodh"
+            }
+          ]
+        }
+      ],
+      "endDate": 2,
+      "metaInformation": {}
+    },
+    {
+      "name": "Feature",
+      "creator": "deepa",
+      "questions": [
+        {
+          "question": "Which feature you like most?",
+          "responseType": "radio",
+          "options": [
+            {
+              "value": "",
+              "label": "observation"
+            },
+            {
+              "value": "",
+              "label": "survey"
+            },
+            {
+              "value": "",
+              "label": "project"
+            }
+          ]
+        }
+      ],
+      "endDate": 2,
+      "metaInformation": {}
+    },
+    {
+      "name": "feedback",
+      "creator": "deepa",
+      "questions": [
+        {
+          "question": "Rate our services",
+          "responseType": "radio",
+          "options": [
+            {
+              "value": "",
+              "label": "1"
+            },
+            {
+              "value": "",
+              "label": "2"
+            },
+            {
+              "value": "",
+              "label": "3"
+            }
+          ]
+        }
+      ],
+      "endDate": 2,
+      "metaInformation": {}
+    }
+  ],
+  "survey": {
+    "name": "survey support test",
+    "description": "This is Testing for survey upload",
+    "externalId": "a383af8d-7e4e-4c3b-a79d-ccf2bd14de50",
+    "author": "",
+    "startDate": "2022-04-29T13:57:28.259Z",
+    "endDate": "2022-05-02T12:00:00.259Z",
+    "linkTitle": "",
+    "linkUrl": "",
+    "status": "active"
+  }
+}
