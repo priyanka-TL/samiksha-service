@@ -1,126 +1,97 @@
-# Shikshalokam School Assessment APIs version: 0.0.1
+# samiksha-service
 
-## Environment variables:
+# Setup Guide
 
-### Hostname
+## Pre-Requisite
 
-```
-HOST = localhost
-```
+- Install any IDE in your system(eg: VScode etc..)
+- Install nodejs from : https://nodejs.org/en/download/
+- Install mongoDB: https://docs.mongodb.com/manual/installation/
+- Install Robo 3T: ​​https://robomongo.org/
 
-### Port number
+Basic understanding of git and github is recommended.
 
-```
-POST = 3000
-```
+- https://www.youtube.com/watch?v=RGOj5yH7evk&t=2s
+- https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F
 
-### Mongo DB connecting string
+## Setup samiksha-services
 
-```
-MONGODB_URL = mongodb://localhost:27017
-```
+### Clone the service repository onto your system
 
-### Database name
+- Create a new folder where you want to clone the repository.
+- Navigate to that directory using the terminal.
+- Execute the git commands to clone the repository using the provided link from the code tab.
 
-```
-DB = dbname
-```
+Git link
 
-### Log level
+    https://github.com/ELEVATE-Project/samiksha-service.git
 
-- 0 EMERGENCY system is unusable
-- 1 ALERT action must be taken immediately
-- 2 CRITICAL the system is in critical condition
-- 3 ERROR error condition
-- 4 WARNING warning condition
-- 5 NOTICE a normal but significant condition
-- 6 INFO a purely informational message
-- 7 DEBUG messages to debug an application
+command to clone
 
-```
-LOG = debug
-```
+    git clone https://github.com/ELEVATE-Project/samiksha-service.git
 
-### port Define environment
+### Create .env file
 
-```
-NODE_ENV = development
-```
+Create a file named `.env` and copy the environment-specific data corresponding to that service into the `.env` file.
 
-## Environment:
+# Samiksha Service Config
 
-### production
+    # Service Config
+    HOST = localhost
+    PORT = 4301
+    LOG = debug
+    NODE_ENV = 'local'
+    # Setting to turn on/off debug
+    ENABLE_DEBUG_LOGGING = "OFF"
+    # Setting to turn on/off bunyan logger service
+    ENABLE_BUNYAN_LOGGING = "OFF"
+    # Setting for custom request timeout for reports
+    REQUEST_TIMEOUT_FOR_REPORTS = 600000
+    APPLICATION_BASE_URL = "/assessment/"
+    MOBILE_APPLICATION_APP_TYPE = "assessment"
+    APPLICATION_BASE_HOST = "http://localhost"
 
-```
-NODE_ENV=production node app.js
-```
+    #Cloud Storage Configuration
+    CLOUD_STORAGE = "GC"
+    # Google Cloud Configuration
+    GCP_PATH = "./generics/helpers/credentials/sl-dev-storage.json"
+    GCP_BUCKET_NAME = "gcp bucket name"
+    MONGODB_URL = mongodb://localhost:27017
+    PUBLIC_FOLDER_PATH = "public"
+    DB = "samiksha-service"
 
-### stage
+    # For reports generation.
 
-```
-NODE_ENV=stage node app.js
-```
+    INTERNAL_ACCESS_TOKEN = "8c3a94f0931e01a4940a"
 
-### qa
+    # CSV Config
 
-```
-NODE_ENV=qa node app.js
-```
+    # Create the respective directory as provided in the path below.
 
-### development
+    CSV_REPORTS_PATH = "reports"
+    # Access token is same as user service AccessToken for validating JWT token
+    ACCESS_TOKEN_SECRET = "bsj82AHBxahusub12yexlashsbxAXADHBlaj"
 
-```
-NODE_ENV=development node app.js
-```
+### Install Dependencies
 
-"mongoose": "^5.13.20",
-"mongoose-autopopulate": "^0.6.1",
-"mongoose-delete": "^0.4.0",
-"mongoose-timestamp": "^0.6.0",
-"mongoose-ttl": "0.0.3",
+To install dependencies from a `package.json` file in Visual Studio Code, you can use the integrated terminal. Here are the steps:
 
-"@azure/storage-blob": "^12.0.2",
-"@elastic/elasticsearch": "^7.7.1",
-"@google-cloud/storage": "^2.0.3",
-"aws-sdk": "^2.580.0",
-"body-parser": "^1.18.2",
-"bunyan": "^1.8.12",
-"cache-manager": "^2.9.0",
-"cli-table": "^0.3.1",
-"commander": "^2.20.0",
-"cookie-parser": "^1.4.3",
-"cors": "^2.8.4",
-"csvtojson": "^2.0.8",
-"dotenv": "^6.1.0",
-"express": "^4.16.3",
-"express-cassandra": "^2.3.2",
-"express-fileupload": "^0.4.0",
-"express-validator": "^5.3.1",
-"extendify": "^1.0.0",
-"fn-args": "^4.0.0",
-"form-urlencoded": "^3.0.0",
-"fs": "0.0.1-security",
-"fs-extra": "^7.0.1",
-"glob": "^6.0.4",
-"json2csv": "^4.3.1",
-"jsonwebtoken": "^8.5.1",
-"jwt-decode": "^2.2.0",
-"kafka-node": "^4.1.3",
-"keycloak-auth-utils": "^3.3.0",
-"log": "^1.4.0",
-"mathjs": "^5.2.3",
-"mkdir": "0.0.2",
-"moment-timezone": "^0.5.23",
-"mongodb": "^3.2.3",
-"mongoose": "^7.4.5",
-"mongoose-autopopulate": "^1.0.1",
-"mongoose-delete": "^1.0.1",
-"mongoose-timestamp": "^0.6.0",
-"mongoose-ttl": "^0.0.3",
-"morgan": "^1.9.0",
-"p-each-series": "^2.1.0",
-"path": "^0.12.7",
-"request": "^2.88.0",
-"require-all": "^2.2.0",
-"uuid": "^3.3.2",
-"yaml-js": "^0.1.3"
+- Open the integrated terminal by going to View > Terminal or using the shortcut Ctrl+` (backtick).
+- In the terminal, navigate to the directory where the package.json file is located.
+- Run the command `npm install` or `yarn install`, depending on your preferred package manager.
+- The package manager will read the package.json file and install all the dependencies specified in it.
+- Wait for the installation process to complete. You should see progress indicators or a success message for each installed dependency.
+- Once the installation is finished, the dependencies listed in the package.json file will be installed in a node_modules directory in your project.
+
+### Postman Collection
+
+[Click here](https://documenter.getpostman.com/view/7997930/2s9Y5ZwMpH)
+
+## IMPORTANT:
+
+Always work on branches. **Never make changes to master**.
+
+Creating a branch from master.
+
+For more information on git you can use :  
+ https://education.github.com/git-cheat-sheet-education.pdf
