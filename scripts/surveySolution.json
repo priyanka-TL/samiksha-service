@@ -3,7 +3,7 @@
   "status": 200,
   "result": {
     "solution": {
-      "_id": "64ef295ae8046888eb29dc1e",
+      "_id": "64f054c308efe64dc31d8b59",
       "externalId": "a383af8d-7e4e-4c3b-a79d-ccf2bd14de50-SURVEY-TEMPLATE",
       "name": "survey support test",
       "description": "This is Testing for survey upload",
@@ -14,7 +14,7 @@
       "name": "survey support test",
       "description": "This is Testing for survey upload",
       "externalId": "a383af8d-7e4e-4c3b-a79d-ccf2bd14de50-SURVEY-TEMPLATE",
-      "submissionId": "64ef295ae8046888eb29dc6a",
+      "submissionId": "64f054c408efe64dc31d8ba5",
       "evidences": [
         {
           "code": "SF",
@@ -69,7 +69,7 @@
                   "file": "",
                   "pageQuestions": [
                     {
-                      "_id": "64ef295ae8046888eb29dc24",
+                      "_id": "64f054c308efe64dc31d8b5f",
                       "externalId": "SUR_TEST_001_1655907882210",
                       "question": ["Please Enter your name.", ""],
                       "tip": "",
@@ -104,12 +104,12 @@
                       "isEditable": true,
                       "showQuestionInPreview": false,
                       "deleted": false,
-                      "updatedAt": "2023-08-30T11:34:50.534Z",
-                      "createdAt": "2023-08-30T11:34:50.534Z",
+                      "updatedAt": "2023-08-31T08:52:19.766Z",
+                      "createdAt": "2023-08-31T08:52:19.766Z",
                       "__v": 0,
                       "evidenceMethod": "SF",
                       "payload": {
-                        "criteriaId": "64ef295ae8046888eb29dc1c",
+                        "criteriaId": "64f054c308efe64dc31d8b57",
                         "responseType": "text",
                         "evidenceMethod": "SF",
                         "rubricLevel": ""
@@ -120,7 +120,7 @@
                       "file": ""
                     },
                     {
-                      "_id": "64ef295ae8046888eb29dc2a",
+                      "_id": "64f054c308efe64dc31d8b65",
                       "externalId": "SUR_TEST_002_1655907882210",
                       "question": ["How did you arrive to Slovenia?", ""],
                       "tip": "",
@@ -167,12 +167,12 @@
                       "isEditable": true,
                       "showQuestionInPreview": false,
                       "deleted": false,
-                      "updatedAt": "2023-08-30T11:34:50.547Z",
-                      "createdAt": "2023-08-30T11:34:50.547Z",
+                      "updatedAt": "2023-08-31T08:52:19.843Z",
+                      "createdAt": "2023-08-31T08:52:19.843Z",
                       "__v": 0,
                       "evidenceMethod": "SF",
                       "payload": {
-                        "criteriaId": "64ef295ae8046888eb29dc1c",
+                        "criteriaId": "64f054c308efe64dc31d8b57",
                         "responseType": "radio",
                         "evidenceMethod": "SF",
                         "rubricLevel": ""
@@ -182,7 +182,7 @@
                       "gpsLocation": ""
                     },
                     {
-                      "_id": "64ef295ae8046888eb29dc30",
+                      "_id": "64f054c308efe64dc31d8b6b",
                       "externalId": "SUR_TEST_003_1655907882210",
                       "question": ["What are the main reasons for your visit to this tourist destination?", ""],
                       "tip": "",
@@ -223,12 +223,12 @@
                       "isEditable": true,
                       "showQuestionInPreview": false,
                       "deleted": false,
-                      "updatedAt": "2023-08-30T11:34:50.556Z",
-                      "createdAt": "2023-08-30T11:34:50.556Z",
+                      "updatedAt": "2023-08-31T08:52:19.891Z",
+                      "createdAt": "2023-08-31T08:52:19.891Z",
                       "__v": 0,
                       "evidenceMethod": "SF",
                       "payload": {
-                        "criteriaId": "64ef295ae8046888eb29dc1c",
+                        "criteriaId": "64f054c308efe64dc31d8b57",
                         "responseType": "multiselect",
                         "evidenceMethod": "SF",
                         "rubricLevel": ""
@@ -239,7 +239,7 @@
                       "file": ""
                     },
                     {
-                      "_id": "64ef295ae8046888eb29dc36",
+                      "_id": "64f054c308efe64dc31d8b71",
                       "externalId": "SUR_TEST_004_1655907882210",
                       "question": ["When are you departing for this destination?", ""],
                       "tip": "",
@@ -275,12 +275,12 @@
                       "isEditable": true,
                       "showQuestionInPreview": false,
                       "deleted": false,
-                      "updatedAt": "2023-08-30T11:34:50.566Z",
-                      "createdAt": "2023-08-30T11:34:50.566Z",
+                      "updatedAt": "2023-08-31T08:52:19.936Z",
+                      "createdAt": "2023-08-31T08:52:19.936Z",
                       "__v": 0,
                       "evidenceMethod": "SF",
                       "payload": {
-                        "criteriaId": "64ef295ae8046888eb29dc1c",
+                        "criteriaId": "64f054c308efe64dc31d8b57",
                         "responseType": "date",
                         "evidenceMethod": "SF",
                         "rubricLevel": ""
@@ -291,7 +291,7 @@
                       "file": ""
                     },
                     {
-                      "_id": "64ef295ae8046888eb29dc3c",
+                      "_id": "64f054c308efe64dc31d8b77",
                       "externalId": "SUR_TEST_006_1655907882210",
                       "question": ["How often do you go on holidays lasting at least 5 days?", ""],
                       "tip": "",
@@ -323,7 +323,7 @@
                       "canBeNotApplicable": "false",
                       "instanceQuestions": [
                         {
-                          "_id": "64ef295ae8046888eb29dc42",
+                          "_id": "64f054c408efe64dc31d8b7d",
                           "externalId": "SUR_TEST_007_1655907882210",
                           "question": [
                             "How much do you plan to spend per person during your visit to this tourist destination on the following items?",
@@ -368,12 +368,12 @@
                           "isEditable": true,
                           "showQuestionInPreview": false,
                           "deleted": false,
-                          "updatedAt": "2023-08-30T11:34:50.591Z",
-                          "createdAt": "2023-08-30T11:34:50.591Z",
+                          "updatedAt": "2023-08-31T08:52:20.077Z",
+                          "createdAt": "2023-08-31T08:52:20.077Z",
                           "__v": 0,
                           "evidenceMethod": "SF",
                           "payload": {
-                            "criteriaId": "64ef295ae8046888eb29dc1c",
+                            "criteriaId": "64f054c308efe64dc31d8b57",
                             "responseType": "slider",
                             "evidenceMethod": "SF",
                             "rubricLevel": ""
@@ -395,12 +395,12 @@
                       "isEditable": true,
                       "showQuestionInPreview": false,
                       "deleted": false,
-                      "updatedAt": "2023-08-30T11:34:50.592Z",
-                      "createdAt": "2023-08-30T11:34:50.577Z",
+                      "updatedAt": "2023-08-31T08:52:20.085Z",
+                      "createdAt": "2023-08-31T08:52:19.996Z",
                       "__v": 0,
                       "evidenceMethod": "SF",
                       "payload": {
-                        "criteriaId": "64ef295ae8046888eb29dc1c",
+                        "criteriaId": "64f054c308efe64dc31d8b57",
                         "responseType": "matrix",
                         "evidenceMethod": "SF",
                         "rubricLevel": ""
