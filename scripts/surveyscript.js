@@ -1,6 +1,8 @@
 const request = require('request');
 let scriptData = require('./Data.json');
 const fs = require('fs');
+
+//This function will be used to create user accounts saved in Data.json
 function createAccount(userData) {
   return new Promise((resolve, reject) => {
     try {
@@ -12,6 +14,7 @@ function createAccount(userData) {
           });
         } else {
           let userDetails = JSON.parse(response.body);
+          //it create account if user already exists then it will perform login action
           if (userDetails.responseCode == 'OK') {
             return resolve(userDetails.result);
           } else {
@@ -40,7 +43,7 @@ function createAccount(userData) {
     }
   });
 }
-
+//This function will be used to do login
 function loginAccount(userData) {
   return new Promise((resolve, reject) => {
     try {
@@ -290,6 +293,7 @@ function loginAccount(userData) {
 // }
 // polls();
 
+//this function will be used to create survey solution template
 function createSurveyTemplateSolution(surveySolutionData, userAuthToken) {
   return new Promise((resolve, reject) => {
     try {
@@ -321,7 +325,7 @@ function createSurveyTemplateSolution(surveySolutionData, userAuthToken) {
     }
   });
 }
-
+//this function will be used to upload question saved in SurveyQuestions.csv file
 function questionUpload(userAuthToken) {
   return new Promise((resolve, reject) => {
     try {
@@ -361,6 +365,7 @@ function questionUpload(userAuthToken) {
     }
   });
 }
+// this function iswill be used to create a new survey solution from survey solution template
 function createChildSolution(solutionId, userAuthToken) {
   return new Promise((resolve, reject) => {
     try {
@@ -392,6 +397,7 @@ function createChildSolution(solutionId, userAuthToken) {
     }
   });
 }
+//this function is used to get survey details from survey solution
 function solutionDetails(solutionId, userAuthToken) {
   return new Promise((resolve, reject) => {
     try {
@@ -422,6 +428,7 @@ function solutionDetails(solutionId, userAuthToken) {
     }
   });
 }
+// this function will be responsible for creating the solution step by step and get survey details
 async function survey() {
   try {
     let accountLogin = await createAccount(scriptData.users[0]);
@@ -451,4 +458,5 @@ async function survey() {
     console.log(err);
   }
 }
+
 survey();
