@@ -148,7 +148,7 @@ module.exports = class Entities extends Abstract {
       try {
         let queryParams = {
           type: req.query.type,
-          programId: req.query.programId,
+          // programId: req.query.programId,
           solutionId: req.query.solutionId,
           parentEntityId: req.query.parentEntityId,
         };

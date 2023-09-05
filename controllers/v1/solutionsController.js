@@ -340,7 +340,7 @@ module.exports = class Solutions extends Abstract {
       try {
         let entityIdsFromCSV = await csv().fromString(req.files.entities.data.toString());
 
-        entityIdsFromCSV = entityIdsFromCSV.map((entity) => ObjectId(entity.entityIds));
+        entityIdsFromCSV = entityIdsFromCSV.map((entity) => new ObjectId(entity.entityIds));
 
         let entityData = await solutionsHelper.addEntityToSolution(req.params._id, entityIdsFromCSV);
 
@@ -1216,9 +1216,8 @@ module.exports = class Solutions extends Abstract {
 
         let duplicateSolution = await solutionsHelper.importFromSolution(
           req.query.solutionId,
-          req.body.programExternalId,
-          req.userDetails.id,
-          _.omit(req.body, ['programExternalId']),
+          req.userDetails.userId,
+          req.body,
         );
 
         return resolve({
@@ -1708,7 +1707,7 @@ module.exports = class Solutions extends Abstract {
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        // let solutionData = await solutionsHelper.list(req.body.solutionIds);
+        // let solutionData = await      .list(req.body.solutionIds);
         let solutionData = await solutionsHelper.list();
         solutionData.result = solutionData.data;
 

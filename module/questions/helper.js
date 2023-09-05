@@ -329,6 +329,7 @@ module.exports = class QuestionsHelper {
           result: resultQuestion,
         });
       } catch (error) {
+        console.log(error);
         return reject(error);
       }
     });

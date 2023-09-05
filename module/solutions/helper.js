@@ -266,7 +266,7 @@ module.exports = class SolutionsHelper {
               } else {
                 if (criteriaArray.includes(themesSplittedArray[0])) {
                   result[themeKey] = {
-                    criteriaId: ObjectId(themesSplittedArray[0]),
+                    criteriaId: new ObjectId(themesSplittedArray[0]),
                     weightage: themesSplittedArray[1] ? parseInt(themesSplittedArray[1]) : 0,
                   };
                 } else {
@@ -345,6 +345,7 @@ module.exports = class SolutionsHelper {
 
         return resolve(csvArray);
       } catch (error) {
+        console.log(error);
         return reject(error);
       }
     });
@@ -488,7 +489,7 @@ module.exports = class SolutionsHelper {
                 const checkIfCriteriaIsToBeUpdated = getCriteriaWeightElement(eachCriteria.criteriaId);
                 if (checkIfCriteriaIsToBeUpdated) {
                   theme.criteria[pointerToCriteriaArray] = {
-                    criteriaId: ObjectId(checkIfCriteriaIsToBeUpdated.criteriaId),
+                    criteriaId: new ObjectId(checkIfCriteriaIsToBeUpdated.criteriaId),
                     weightage: Number(Number.parseFloat(checkIfCriteriaIsToBeUpdated.weightage).toFixed(2)),
                   };
                   criteriaWeightageUpdatedCount += 1;
@@ -1035,7 +1036,7 @@ module.exports = class SolutionsHelper {
         newSolutionDocument.endDate = endDate;
         newSolutionDocument.createdAt = startDate;
         newSolutionDocument.updatedAt = startDate;
-        newSolutionDocument.isAPrivateProgram = programDocument[0].isAPrivateProgram;
+        newSolutionDocument.isAPrivateProgram = false;
         newSolutionDocument.isReusable = false;
 
         if (data.project) {
@@ -1047,9 +1048,9 @@ module.exports = class SolutionsHelper {
           newSolutionDocument.createdFor = createdFor;
         }
 
-        if (rootOrganisations !== '') {
-          newSolutionDocument.rootOrganisations = rootOrganisations;
-        }
+        // if (rootOrganisations !== '') {
+        //   newSolutionDocument.rootOrganisations = rootOrganisations;
+        // }
 
         let duplicateSolutionDocument = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 
