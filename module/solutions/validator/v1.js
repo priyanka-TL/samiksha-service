@@ -4,7 +4,7 @@ module.exports = (req) => {
       req.checkParams('_id').exists().withMessage('required solution id');
     },
     update: function () {
-      req.checkQuery('solutionExternalId').exists().withMessage('required solution externalId');
+      // req.checkQuery('solutionExternalId').exists().withMessage('required solution externalId');
     },
     questionList: function () {
       req.checkParams('_id').exists().withMessage('required solution id');

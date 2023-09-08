@@ -459,56 +459,122 @@ module.exports = class Solutions extends Abstract {
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = JSON.parse(req.files.solution.data.toString());
-
+        let solutionData = req.body;
         let queryObject = {
-          externalId: req.query.solutionExternalId,
+          _id: req.params._id,
         };
 
-        let solutionDocument = await database.models.solutions.findOne(queryObject, { themes: 0 }).lean();
+        let solutionDocument = await solutionsHelper.solutionDocuments(queryObject, ['_id']);
 
-        if (!solutionDocument) {
+        if (!solutionDocument.length > 0) {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
 
-        let solutionMandatoryField = solutionsHelper.mandatoryField();
+        let updateObject = {
+          $set: {},
+        };
 
-        Object.keys(solutionMandatoryField).forEach((eachSolutionMandatoryField) => {
-          if (
-            solutionDocument[eachSolutionMandatoryField] === undefined &&
-            solutionData[eachSolutionMandatoryField] === undefined
-          ) {
-            solutionData[eachSolutionMandatoryField] = solutionMandatoryField[eachSolutionMandatoryField];
+        if (
+          solutionData.minNoOfSubmissionsRequired &&
+          solutionData.minNoOfSubmissionsRequired > messageConstants.common.DEFAULT_SUBMISSION_REQUIRED
+        ) {
+          if (!solutionData.allowMultipleAssessemts) {
+            solutionData.minNoOfSubmissionsRequired = messageConstants.common.DEFAULT_SUBMISSION_REQUIRED;
           }
+        }
+
+        let solutionUpdateData = solutionData;
+
+        Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
+          updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
+        updateObject['$set']['updatedBy'] = req.userDetails.userId;
 
-        let updateObject = _.merge(_.omit(solutionDocument, 'createdAt'), solutionData);
+        let solutionUpdatedData = await database.models.solutions
+          .findOneAndUpdate(
+            {
+              _id: solutionDocument[0]._id,
+            },
+            updateObject,
+            { new: true },
+          )
+          .lean();
 
-        updateObject.updatedBy = req.userDetails.id;
-
-        await database.models.solutions.findOneAndUpdate(
-          {
-            _id: solutionDocument._id,
-          },
-          updateObject,
-        );
-
+        if (!solutionUpdatedData._id) {
+          throw {
+            message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
+          };
+        }
         return resolve({
-          status: httpStatusCode.ok.status,
+          success: true,
           message: messageConstants.apiResponses.SOLUTION_UPDATED,
+          data: solutionData,
         });
       } catch (error) {
-        reject({
-          status: error.status || httpStatusCode.internal_server_error.status,
-          message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error,
+        return resolve({
+          success: false,
+          message: error.message,
+          data: {},
         });
       }
     });
   }
+  // async update(req) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let solutionData = JSON.parse(req.files.solution.data.toString());
+
+  //       let queryObject = {
+  //         externalId: req.query.solutionExternalId,
+  //       };
+
+  //       let solutionDocument = await database.models.solutions.findOne(queryObject, { themes: 0 }).lean();
+
+  //       if (!solutionDocument) {
+  //         return resolve({
+  //           status: httpStatusCode.bad_request.status,
+  //           message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+  //         });
+  //       }
+
+  //       let solutionMandatoryField = solutionsHelper.mandatoryField();
+
+  //       Object.keys(solutionMandatoryField).forEach((eachSolutionMandatoryField) => {
+  //         if (
+  //           solutionDocument[eachSolutionMandatoryField] === undefined &&
+  //           solutionData[eachSolutionMandatoryField] === undefined
+  //         ) {
+  //           solutionData[eachSolutionMandatoryField] = solutionMandatoryField[eachSolutionMandatoryField];
+  //         }
+  //       });
+
+  //       let updateObject = _.merge(_.omit(solutionDocument, 'createdAt'), solutionData);
+
+  //       updateObject.updatedBy = req.userDetails.id;
+
+  //       await database.models.solutions.findOneAndUpdate(
+  //         {
+  //           _id: solutionDocument._id,
+  //         },
+  //         updateObject,
+  //       );
+
+  //       return resolve({
+  //         status: httpStatusCode.ok.status,
+  //         message: messageConstants.apiResponses.SOLUTION_UPDATED,
+  //       });
+  //     } catch (error) {
+  //       reject({
+  //         status: error.status || httpStatusCode.internal_server_error.status,
+  //         message: error.message || httpStatusCode.internal_server_error.message,
+  //         errorObject: error,
+  //       });
+  //     }
+  //   });
+  // }
 
   /**
    * @api {post} /assessment/api/v1/solutions/updateSolutions?solutionExternalId={solutionExternalId} Update Solutions
@@ -1704,16 +1770,40 @@ module.exports = class Solutions extends Abstract {
    * @returns {Array} List of solutions.
    */
 
+  // async list(req) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       // let solutionData = await      .list(req.body.solutionIds);
+  //       let solutionData = await solutionsHelper.list();
+  //       solutionData.result = solutionData.data;
+
+  //       return resolve(solutionData);
+  //     } catch (error) {
+  //       return reject({
+  //         status: error.status || httpStatusCode.internal_server_error.status,
+  //         message: error.message || httpStatusCode.internal_server_error.message,
+  //         errorObject: error,
+  //       });
+  //     }
+  //   });
+  // }
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        // let solutionData = await      .list(req.body.solutionIds);
-        let solutionData = await solutionsHelper.list();
-        solutionData.result = solutionData.data;
+        let solutionData = await solutionsHelper.list(
+          req.query.type,
+          req.query.subType ? req.query.subType : '',
+          req.body,
+          req.pageNo,
+          req.pageSize,
+          req.searchText,
+        );
+
+        solutionData['result'] = solutionData.data;
 
         return resolve(solutionData);
       } catch (error) {
-        return reject({
+        reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,

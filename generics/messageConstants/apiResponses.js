@@ -365,4 +365,5 @@ module.exports = {
   SUBMISSION_ALLOWED: 'Submission is allowed',
   INVALID_PROGRAM_OPERATION: 'Invalid program operation.',
   ATTACHMENTS_URL_NOT_FOUND: 'Not found attachment url',
+  SOLUTIONS_LIST: 'Solution Fetched successfully',
 };

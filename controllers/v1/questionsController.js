@@ -271,6 +271,9 @@ module.exports = class Questions extends Abstract {
             parsedQuestion.criteriaExternalId = defaultSurveyCriteriaExternalId;
             parsedQuestion.section = defaultSurveySectionCode;
           }
+          console.log(ecm);
+
+          console.log(parsedQuestion['evidenceMethod']);
 
           ecm[parsedQuestion['evidenceMethod']] = {
             code: solutionDocument.evidenceMethods[parsedQuestion['evidenceMethod']].externalId,
