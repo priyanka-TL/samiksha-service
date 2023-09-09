@@ -750,6 +750,133 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
+    * @api {get} /assessment/api/v1/solutions/getDetails/:solutionId Solution details
+    * @apiVersion 1.0.0
+    * @apiName Details of the solution.
+    * @apiGroup Solutions
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /assessment/api/v1/solutions/getDetails/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+    "message": "Solution details fetched successfully",
+    "status": 200,
+    "result": {
+        "_id": "601bc17489149727d7d70bbd",
+        "resourceType": [
+            "Observations Framework"
+        ],
+        "language": [
+            "English"
+        ],
+        "keywords": [
+            "Framework",
+            "Observation",
+            "Challenges",
+            " Enrollment",
+            " Parents",
+            " Courses "
+        ],
+        "concepts": [],
+        "themes": [
+            {
+                "type": "theme",
+                "label": "theme",
+                "name": "Observation Theme",
+                "externalId": "OB",
+                "weightage": 100,
+                "criteria": [
+                    {
+                        "criteriaId": "601bc17489149727d7d70bbb",
+                        "weightage": 50
+                    },
+                    {
+                        "criteriaId": "601bc17489149727d7d70bbc",
+                        "weightage": 50
+                    }
+                ]
+            }
+        ],
+        "flattenedThemes": [],
+        "entities": [],
+        "registry": [],
+        "isRubricDriven": false,
+        "enableQuestionReadOut": false,
+        "captureGpsLocationAtQuestionLevel": false,
+        "isAPrivateProgram": false,
+        "allowMultipleAssessemts": false,
+        "isDeleted": false,
+        "deleted": false,
+        "externalId": "99199aec-66b8-11eb-b81d-a08cfd79f8b7-OBSERVATION-TEMPLATE",
+        "name": "Enrollment challenges in DIKSHA Courses",
+        "description": "Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses ",
+        "author": "",
+        "levelToScoreMapping": {
+            "L1": {
+                "points": 100,
+                "label": "Good"
+            }
+        },
+        "scoringSystem": null,
+        "noOfRatingLevels": 1,
+        "entityTypeId": "5f32d8228e0dc83124040567",
+        "entityType": "school",
+        "updatedBy": "INITIALIZE",
+        "createdAt": "2021-02-04T07:14:19.353Z",
+        "updatedAt": "2021-02-04T09:42:12.853Z",
+        "__v": 0,
+        "type": "observation",
+        "subType": "school",
+        "frameworkId": "601bbed689149727d7d70bba",
+        "frameworkExternalId": "99199aec-66b8-11eb-b81d-a08cfd79f8b7",
+        "isReusable": true,
+        "evidenceMethods": {
+            "OB": {
+                "externalId": "OB",
+                "tip": "",
+                "name": "Observation",
+                "description": "",
+                "modeOfCollection": "onfield",
+                "canBeNotApplicable": 0,
+                "notApplicable": 0,
+                "canBeNotAllowed": 0,
+                "remarks": ""
+            }
+        },
+        "sections": {
+            "S1": "Start Survey"
+        }
+    }}
+    */
+
+  /**
+   * Details of the solution.
+   * @method
+   * @name getDetails
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id.
+   * @returns {Object} Solution details
+   */
+
+  async getDetails(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await solutionsHelper.getDetails(req.params._id);
+
+        solutionData['result'] = solutionData.data;
+
+        return resolve(solutionData);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+  /**
    * @api {post} /assessment/api/v1/solutions/uploadCriteriaRubricExpressions/{{solutionsExternalID}} Upload Rubric For Criteria Of Solutions
    * @apiVersion 1.0.0
    * @apiName Upload Rubric For Criteria Of Solutions
@@ -1290,6 +1417,124 @@ module.exports = class Solutions extends Abstract {
           message: messageConstants.apiResponses.DUPLICATE_SOLUTION,
           result: _.pick(duplicateSolution, ['_id']),
         });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+  * @api {get} /assessment/api/v1/solutions/fetchLink/:solutionId
+  * @apiVersion 1.0.0
+  * @apiName Get link by solution id
+  * @apiGroup Solutions
+  * @apiSampleRequest /assessment/api/v1/solutions/5fa28620b6bd9b757dc4e932
+  * @apiHeader {String} X-authenticated-user-token Authenticity token  
+  * @apiUse successBody
+  * @apiUse errorBody
+  * @apiParamExample {json} Response:
+  * {
+    "message": "Solution Link generated successfully",
+    "status": 200,
+    "result": "https://dev.sunbirded.org/manage-learn/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
+    }
+  */
+  /**
+   * Get link by solution id
+   * @method
+   * @name fetchLink
+   * @param {String} solutionId - solution Id.
+   * @param {String} appName - app Name.
+   * @param {String} userId - user Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static fetchLink(solutionId, userId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments(
+          {
+            _id: solutionId,
+            isReusable: false,
+            isAPrivateProgram: false,
+          },
+          ['link', 'type', 'author'],
+        );
+
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          return resolve({
+            message: constants.apiResponses.SOLUTION_NOT_FOUND,
+            result: {},
+          });
+        }
+
+        let prefix = constants.common.PREFIX_FOR_SOLUTION_LINK;
+
+        let solutionLink, link;
+
+        if (!solutionData[0].link) {
+          let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
+
+          let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
+
+          solutionLink = updateLink;
+        } else {
+          solutionLink = solutionData[0].link;
+        }
+
+        link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+
+        return resolve({
+          success: true,
+          message: constants.apiResponses.LINK_GENERATED,
+          result: link,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+  * @api {get} /assessment/api/v1/solutions/fetchLink/:solutionId
+  * @apiVersion 1.0.0
+  * @apiName Get link by solution id
+  * @apiGroup Solutions
+  * @apiSampleRequest /assessment/api/v1/solutions/5fa28620b6bd9b757dc4e932
+  * @apiHeader {String} X-authenticated-user-token Authenticity token  
+  * @apiUse successBody
+  * @apiUse errorBody
+  * @apiParamExample {json} Response:
+  * {
+    "message": "Solution Link generated successfully",
+    "status": 200,
+    "result": "https://dev.sunbirded.org/manage-learn/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
+    }
+  */
+
+  /**
+   * Get link by solution id.
+   * @method
+   * @name fetchLink
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution Id
+   * @returns {Array}
+   */
+
+  async fetchLink(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await solutionsHelper.fetchLink(req.params._id, req.userDetails.userId);
+
+        return resolve(solutionData);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,

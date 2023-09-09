@@ -6,13 +6,12 @@
  */
 
 //Dependencies
-const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
 const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 const entityTypesHelper = require(MODULES_BASE_PATH + '/entityTypes/helper');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
-
+const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + '/';
 /**
  * SolutionsHelper
  * @class
@@ -175,6 +174,43 @@ module.exports = class SolutionsHelper {
         return resolve(solutionDocuments);
       } catch (error) {
         return reject(error);
+      }
+    });
+  }
+  /**
+   * Solution details.
+   * @method
+   * @name details
+   * @param {String} solutionId - Solution Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static getDetails(solutionId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments({
+          _id: solutionId,
+          isDeleted: false,
+        });
+
+        if (!solutionData.length > 0) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.SOLUTION_DETAILS_FETCHED,
+          success: true,
+          data: solutionData[0],
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
       }
     });
   }
@@ -1113,6 +1149,65 @@ module.exports = class SolutionsHelper {
       }
     });
   }
+  /**
+   * Get link by solution id
+   * @method
+   * @name fetchLink
+   * @param {String} solutionId - solution Id.
+   * @param {String} appName - app Name.
+   * @param {String} userId - user Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static fetchLink(solutionId, userId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments(
+          {
+            _id: solutionId,
+            isReusable: false,
+            isAPrivateProgram: false,
+          },
+          ['link', 'type', 'author'],
+        );
+
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          return resolve({
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+            result: {},
+          });
+        }
+
+        let prefix = messageConstants.common.PREFIX_FOR_SOLUTION_LINK;
+
+        let solutionLink, link;
+
+        if (!solutionData[0].link) {
+          let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
+
+          let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
+
+          solutionLink = updateLink;
+        } else {
+          solutionLink = solutionData[0].link;
+        }
+
+        link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.LINK_GENERATED,
+          result: link,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
 
   /**
    * Add default acl.
@@ -1966,3 +2061,27 @@ module.exports = class SolutionsHelper {
     });
   }
 };
+
+/**
+ * Generate sharing Link.
+ * @method
+ * @name _targetedSolutionTypes
+ * @returns {Array} - Targeted solution types
+ */
+
+function _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
+  let link;
+
+  switch (solutionType) {
+    case messageConstants.common.OBSERVATION:
+      link = appsPortalBaseUrl + prefix + messageConstants.common.CREATE_OBSERVATION + solutionLink;
+      break;
+    case messageConstants.common.IMPROVEMENT_PROJECT:
+      link = appsPortalBaseUrl + prefix + messageConstants.common.CREATE_PROJECT + solutionLink;
+      break;
+    default:
+      link = appsPortalBaseUrl + prefix + messageConstants.common.CREATE_SURVEY + solutionLink;
+  }
+
+  return link;
+}

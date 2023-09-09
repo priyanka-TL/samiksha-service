@@ -109,8 +109,8 @@ solutionEndDate = ""
 projectCreator = ""
 orgIds = []
 OrgName = []
-ccRootOrgName = None
-ccRootOrgId  = None
+# ccRootOrgName = None
+# ccRootOrgId  = None
 certificatetemplateid = None
 question_sequence_arr = []
 
@@ -592,7 +592,7 @@ def fetchScopeRole(solutionName_for_folder_path, accessToken, roleNameList):
 
 
 def validateSheets(filePathAddObs, accessToken, parentFolder):
-    global criteriaLevelsReport, scopeRoles, criteriaLevels, scopeEntityType , ccRootOrgName , ccRootOrgId
+    global criteriaLevelsReport, scopeRoles, criteriaLevels, scopeEntityType, startDateOfResource, endDateOfResource
     criteriaLevels = list()
     criteriaExternalIds = list()
     ecmIds = list()
@@ -642,15 +642,17 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         if set(detailsCols) == set(dictDetailsEnv.keys()):
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                             dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
-                            ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
-                            if not "CONTENT_CREATOR" in ccUserDetails[3]:
-                                terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)
-                            ccRootOrgName = ccUserDetails[4]
-                            ccRootOrgId = ccUserDetails[5]
+                            # ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+                            # if not "CONTENT_CREATOR" in ccUserDetails[3]:
+                            #     terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)
+                            # ccRootOrgName = ccUserDetails[4]
+                            # ccRootOrgId = ccUserDetails[5]
                             solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8')
                             pointBasedValue = str(dictDetailsEnv['scoring_system']).encode('utf-8').decode('utf-8') if dictDetailsEnv['scoring_system'] else terminatingMessage("\"scoring_system\" must not be Empty in \"details\" sheet")
                             entityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
-
+                            # scopeRoles = dictDetailsEnv['roles'].encode('utf-8').decode('utf-8') if dictDetailsEnv['roles'] else terminatingMessage("\"roles\" must not be Empty in \"details\" sheet")
+                            # startDateOfResource = str(dictDetailsEnv['start_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['start_date']) else terminatingMessage("\"start_date\" must not be Empty in \"details\" sheet")
+                            # endDateOfResource = str(dictDetailsEnv['end_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['end_date']) else terminatingMessage("\"end_date\" must not be Empty in \"details\" sheet")
                             solutionLanguage = dictDetailsEnv['language'].split(",") if dictDetailsEnv['language'] else [""]
                             keyWords = dictDetailsEnv['keywords'].encode('utf-8').decode('utf-8')
                             creator = dictDetailsEnv['Name_of_the_creator']  if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
@@ -662,12 +664,12 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
 
                             scopeEntityType = scopeEntityType
 
-                            isProgramnamePresent = False
-                            if programName == "":
-                                isProgramnamePresent = False
-                            else:
-                                isProgramnamePresent = True
-                                getProgramInfo(accessToken, parentFolder, programName)
+                            # isProgramnamePresent = False
+                            # if programName == "":
+                            #     isProgramnamePresent = False
+                            # else:
+                            #     isProgramnamePresent = True
+                            #     getProgramInfo(accessToken, parentFolder, programName)
                         else:
                             terminatingMessage("--->Columns Mismatch in Details Sheet.")
                 if sheetEnv.strip().lower() == 'framework':
@@ -1233,8 +1235,8 @@ def frameWorkUpload(solutionName_for_folder_path, wbObservation, millisAddObs, a
     else:
         frameworkDocInsertObj['keywords'] = ['Framework', 'Observation']
     frameworkDocInsertObj['concepts'] = []
-    frameworkDocInsertObj['createdFor'] = [ccRootOrgId]  # createdForArr
-    frameworkDocInsertObj['rootOrg'] = [ccRootOrgId]  # rootOrgArr
+    # frameworkDocInsertObj['createdFor'] = [ccRootOrgId]  # createdForArr
+    # frameworkDocInsertObj['rootOrg'] = [ccRootOrgId]  # rootOrgArr
     criteriaFrameworkArr = []
     with open(solutionName_for_folder_path + '/criteriaUpload/uploadInternalIdsSheet.csv', 'r') as criteriaInternalFile:
         criteriaInternalReader = csv.DictReader(criteriaInternalFile)
@@ -1327,13 +1329,13 @@ def frameWorkUpload(solutionName_for_folder_path, wbObservation, millisAddObs, a
     frameworkDocInsertObj['license'] = {}
     frameworkDocInsertObj['license']['author'] = str(creator)
     frameworkDocInsertObj['license']['creator'] = str(creator)
-    frameworkDocInsertObj['license']['copyright'] = str(ccRootOrgName)
+    # frameworkDocInsertObj['license']['copyright'] = str(ccRootOrgName)
     frameworkDocInsertObj['license']['copyrightYear'] = int(dateTime.strftime("%Y"))
     frameworkDocInsertObj['license']['contentType'] = "Observation"
-    frameworkDocInsertObj['license']['organisation'] = [ccRootOrgName]
+    # frameworkDocInsertObj['license']['organisation'] = [ccRootOrgName]
     frameworkDocInsertObj['license']['orgDetails'] = {}
     frameworkDocInsertObj['license']['orgDetails']['email'] = None
-    frameworkDocInsertObj['license']['orgDetails']['orgName'] = ccRootOrgName
+    # frameworkDocInsertObj['license']['orgDetails']['orgName'] = ccRootOrgName
     frameworkDocInsertObj['license']['licenseDetails'] = {}
     frameworkDocInsertObj['license']['licenseDetails']['name'] = "CC BY 4.0"
     frameworkDocInsertObj['license']['licenseDetails']['url'] = "https://creativecommons.org/licenses/by/4.0/legalcode"
@@ -2305,9 +2307,9 @@ def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAdd
 
     urlCriteriaRubricUploadApi = config.get(environment, 'samikshahost') + config.get(environment,'criteriaRubricUploadApiUrl') + frameworkExternalId + "-OBSERVATION-TEMPLATE"
     headerCriteriaRubricUploadApi = {
-        'Authorization': config.get(environment, 'Authorization'),
+        # 'Authorization': config.get(environment, 'Authorization'),
         'X-authenticated-user-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id')
+        # 'X-Channel-id': config.get(environment, 'X-Channel-id')
     }
     filesCriteriaRubric = {
         'criteria': open(solutionName_for_folder_path + '/criteriaRubrics/uploadSheet.csv', 'rb')
@@ -2408,9 +2410,9 @@ def uploadThemeRubrics(solutionName_for_folder_path, wbObservation, accessToken,
             writerThemeRubricsUpload.writerow(themeRubricUpload)
     urlThemeRubricUploadApi = config.get(environment, 'samikshahost') + config.get(environment,'themeRubricUploadApiUrl') + frameworkExternalId + "-OBSERVATION-TEMPLATE"
     headerThemeRubricUploadApi = {
-        'Authorization': config.get(environment, 'Authorization'),
+        # 'Authorization': config.get(environment, 'Authorization'),
         'X-authenticated-user-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id')
+        # 'X-Channel-id': config.get(environment, 'X-Channel-id')
     }
     filesThemeRubric = {
         'themes': open(solutionName_for_folder_path + '/themeRubrics/uploadSheet.csv', 'rb')
@@ -2431,54 +2433,50 @@ def uploadThemeRubrics(solutionName_for_folder_path, wbObservation, accessToken,
                 responseThemeRubricUploadApi.status_code))
 
 
-def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFile, solutionId, accessToken):
-    global solutionRolesArray, solutionStartDate, solutionEndDate
-    urlFetchSolutionApi = config.get(environment, 'samikshahost') + config.get(environment, 'fetchSolutionDoc') + solutionId
-    headerFetchSolutionApi = {
-        'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id'),
-        'internal-access-token': config.get(environment, 'internal-access-token')
-    }
-    payloadFetchSolutionApi = {}
+# def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, solutionId, accessToken):
+#     global solutionRolesArray, solutionStartDate, solutionEndDate
+#     urlFetchSolutionApi = config.get(environment, 'samikshahost') + config.get(environment, 'fetchSolutionDoc') + solutionId
+#     headerFetchSolutionApi = {
+#         'X-authenticated-user-token': accessToken,
+#         'internal-access-token': config.get(environment, 'internal-access-token')
+#     }
+#     payloadFetchSolutionApi = {}
 
-    responseFetchSolutionApi = requests.post(url=urlFetchSolutionApi, headers=headerFetchSolutionApi,
-                                             data=payloadFetchSolutionApi)
-    responseFetchSolutionJson = responseFetchSolutionApi.json()
-    messageArr = ["Solution Fetch Link.",
-                  "solution name : " + responseFetchSolutionJson["result"]["name"],
-                  "solution ExternalId : " + responseFetchSolutionJson["result"]["externalId"]]
-    messageArr.append("Upload status code : " + str(responseFetchSolutionApi.status_code))
-    createAPILog(solutionName_for_folder_path, messageArr)
+#     responseFetchSolutionApi = requests.post(url=urlFetchSolutionApi, headers=headerFetchSolutionApi,
+#                                              data=payloadFetchSolutionApi)
+#     responseFetchSolutionJson = responseFetchSolutionApi.json()
+#     messageArr = ["Solution Fetch Link.",
+#                   "solution name : " + responseFetchSolutionJson["result"]["name"],
+#                   "solution ExternalId : " + responseFetchSolutionJson["result"]["externalId"]]
+#     messageArr.append("Upload status code : " + str(responseFetchSolutionApi.status_code))
+#     createAPILog(solutionName_for_folder_path, messageArr)
 
-    if responseFetchSolutionApi.status_code == 200:
-        print('Fetch solution Api Success')
+#     if responseFetchSolutionApi.status_code == 200:
+#         print('Fetch solution Api Success')
         
-        solutionName = responseFetchSolutionJson["result"]["name"]
+#         solutionName = responseFetchSolutionJson["result"]["name"]
 
-        xfile = openpyxl.load_workbook(programFile)
+        # xfile = openpyxl.load_workbook(programFile)
 
-        resourceDetailsSheet = xfile.get_sheet_by_name('Resource Details')
-        rowCountRD = resourceDetailsSheet.max_row
-        columnCountRD = resourceDetailsSheet.max_column
-        for row in range(3, rowCountRD + 1):
-            if resourceDetailsSheet["A" + str(row)].value == solutionName:
-                solutionMainRole = str(resourceDetailsSheet["E" + str(row)].value).strip()
-                solutionRolesArray = str(resourceDetailsSheet["F" + str(row)].value).split(",") if str(
-                    resourceDetailsSheet["E" + str(row)].value).split(",") else []
-                if "teacher" in solutionMainRole.strip().lower():
-                    solutionRolesArray.append("TEACHER")
-                solutionStartDate = resourceDetailsSheet["G" + str(row)].value
-                solutionEndDate = resourceDetailsSheet["H" + str(row)].value
-    return [solutionRolesArray, solutionStartDate, solutionEndDate]
+        # resourceDetailsSheet = xfile.get_sheet_by_name('Resource Details')
+        # rowCountRD = resourceDetailsSheet.max_row
+        # columnCountRD = resourceDetailsSheet.max_column
+        # for row in range(3, rowCountRD + 1):
+        #     if resourceDetailsSheet["A" + str(row)].value == solutionName:
+        #         solutionMainRole = str(resourceDetailsSheet["E" + str(row)].value).strip()
+        #         solutionRolesArray = str(resourceDetailsSheet["F" + str(row)].value).split(",") if str(
+        #             resourceDetailsSheet["E" + str(row)].value).split(",") else []
+        #         if "teacher" in solutionMainRole.strip().lower():
+        #             solutionRolesArray.append("TEACHER")
+        #         solutionStartDate = resourceDetailsSheet["G" + str(row)].value
+        #         solutionEndDate = resourceDetailsSheet["H" + str(row)].value
+    # return [solutionRolesArray, solutionStartDate, solutionEndDate]
 
 
-def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, programFile, solutionExternalId, solutionId,accessToken):
+def prepareSolutionSuccessSheet(MainFilePath, solutionName_for_folder_path, solutionExternalId, solutionId,accessToken):
     urlFetchSolutionApi = config.get(environment, 'samikshahost') + config.get(environment, 'fetchSolutionDoc') + solutionId
     headerFetchSolutionApi = {
-        'Authorization': config.get(environment, 'Authorization'),
         'X-authenticated-user-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
     payloadFetchSolutionApi = {}
@@ -2497,9 +2495,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
         solutionName = responseFetchSolutionJson["result"]["name"]
     urlFetchSolutionLinkApi = config.get(environment, 'samikshahost') + config.get(environment, 'fetchLink') + solutionId
     headerFetchSolutionLinkApi = {
-        'Authorization': config.get(environment, 'Authorization'),
         'X-authenticated-user-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
     payloadFetchSolutionLinkApi = {}
@@ -2517,46 +2513,46 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
         messageArr.append("Response : " + str(responseFetchSolutionLinkApi.text))
         createAPILog(solutionName_for_folder_path, messageArr)
 
-        if os.path.exists(MainFilePath + "/" + str(programFile).replace(".xlsx", "") + '-SuccessSheet.xlsx'):
-            xfile = openpyxl.load_workbook(
-                MainFilePath + "/" + str(programFile).replace(".xlsx", "") + '-SuccessSheet.xlsx')
-        else:
-            xfile = openpyxl.load_workbook(programFile)
+        # if os.path.exists(MainFilePath + "/" + str(solutionName_for_folder_path).replace(".xlsx", "") + '-SuccessSheet.xlsx'):
+        #     xfile = openpyxl.load_workbook(
+        #         MainFilePath + "/" + str(solutionName_for_folder_path).replace(".xlsx", "") + '-SuccessSheet.xlsx')
+        # else:
+        #     xfile = openpyxl.load_workbook(solutionName_for_folder_path)
 
-        resourceDetailsSheet = xfile.get_sheet_by_name('Resource Details')
+        # resourceDetailsSheet = xfile.get_sheet_by_name('Resource Details')
 
-        greenFill = PatternFill(start_color='0000FF00',
-                                end_color='0000FF00',
-                                fill_type='solid')
-        rowCountRD = resourceDetailsSheet.max_row
-        columnCountRD = resourceDetailsSheet.max_column
-        for row in range(3, rowCountRD + 1):
-            if str(resourceDetailsSheet["B" + str(row)].value).rstrip().lstrip().lower() == "course":
-                resourceDetailsSheet["D1"] = ""
-                resourceDetailsSheet["E1"] = ""
-                resourceDetailsSheet['I2'] = "External id of the resource"
-                resourceDetailsSheet['J2'] = "link to access the resource/Response"
-                resourceDetailsSheet['I2'].fill = greenFill
-                resourceDetailsSheet['J2'].fill = greenFill
-                resourceDetailsSheet['I' + str(row)] = solutionExternalId
-                resourceDetailsSheet['J' + str(row)] = "The course has been successfully mapped to the program"
-                resourceDetailsSheet['I' + str(row)].fill = greenFill
-                resourceDetailsSheet['J' + str(row)].fill = greenFill
-            elif str(resourceDetailsSheet["A" + str(row)].value).strip() == solutionName:
-                resourceDetailsSheet["D1"] = ""
-                resourceDetailsSheet["E1"] = ""
-                resourceDetailsSheet['I2'] = "External id of the resource"
-                resourceDetailsSheet['J2'] = "link to access the resource/Response"
-                resourceDetailsSheet['I2'].fill = greenFill
-                resourceDetailsSheet['J2'].fill = greenFill
-                resourceDetailsSheet['I' + str(row)] = solutionExternalId
-                resourceDetailsSheet['J' + str(row)] = solutionLink
-                resourceDetailsSheet['I' + str(row)].fill = greenFill
-                resourceDetailsSheet['J' + str(row)].fill = greenFill
+        # greenFill = PatternFill(start_color='0000FF00',
+        #                         end_color='0000FF00',
+        #                         fill_type='solid')
+        # rowCountRD = resourceDetailsSheet.max_row
+        # columnCountRD = resourceDetailsSheet.max_column
+        # for row in range(3, rowCountRD + 1):
+        #     if str(resourceDetailsSheet["B" + str(row)].value).rstrip().lstrip().lower() == "course":
+        #         resourceDetailsSheet["D1"] = ""
+        #         resourceDetailsSheet["E1"] = ""
+        #         resourceDetailsSheet['I2'] = "External id of the resource"
+        #         resourceDetailsSheet['J2'] = "link to access the resource/Response"
+        #         resourceDetailsSheet['I2'].fill = greenFill
+        #         resourceDetailsSheet['J2'].fill = greenFill
+        #         resourceDetailsSheet['I' + str(row)] = solutionExternalId
+        #         resourceDetailsSheet['J' + str(row)] = "The course has been successfully mapped to the program"
+        #         resourceDetailsSheet['I' + str(row)].fill = greenFill
+        #         resourceDetailsSheet['J' + str(row)].fill = greenFill
+        #     elif str(resourceDetailsSheet["A" + str(row)].value).strip() == solutionName:
+        #         resourceDetailsSheet["D1"] = ""
+        #         resourceDetailsSheet["E1"] = ""
+        #         resourceDetailsSheet['I2'] = "External id of the resource"
+        #         resourceDetailsSheet['J2'] = "link to access the resource/Response"
+        #         resourceDetailsSheet['I2'].fill = greenFill
+        #         resourceDetailsSheet['J2'].fill = greenFill
+        #         resourceDetailsSheet['I' + str(row)] = solutionExternalId
+        #         resourceDetailsSheet['J' + str(row)] = solutionLink
+        #         resourceDetailsSheet['I' + str(row)].fill = greenFill
+        #         resourceDetailsSheet['J' + str(row)].fill = greenFill
 
-        programFile = str(programFile).replace(".xlsx", "")
-        xfile.save(MainFilePath + "/" + programFile + '-SuccessSheet.xlsx')
-        print("Program success sheet is created")
+        # programFile = str(programFile).replace(".xlsx", "")
+        # xfile.save(MainFilePath + "/" + programFile + '-SuccessSheet.xlsx')
+        print("solution created")
 
     else:
         print("Fetch solution link API Failed")
@@ -2686,16 +2682,14 @@ def prepareSuccessSheet(solutionName_for_folder_path, filePathAddObs, observatio
 
 def createChild(solutionName_for_folder_path, observationExternalId, accessToken):
     childObservationExternalId = str(observationExternalId + "_CHILD")
-    urlSol_prog_mapping = config.get(environment, 'samikshahost') + config.get(environment,'solutionToprogramMAppingApiUrl') + "?solutionId=" + observationExternalId + "&entityType=" + entityType
+    urlSol_prog_mapping = config.get(environment, 'samikshahost') + config.get(environment,'childsolutionforobservation') + "?solutionId=" + observationExternalId + "&entityType=" + entityType
     
     payloadSol_prog_mapping = {
         "externalId": childObservationExternalId,
         "name": solutionName.lstrip().rstrip(),
-        "description": solutionDescription.lstrip().rstrip(),
-        "programExternalId": programExternalId
+        "description": solutionDescription.lstrip().rstrip()
     }
-    headersSol_prog_mapping = {'Authorization': config.get(environment, 'Authorization'),
-                               'X-authenticated-user-token': accessToken,
+    headersSol_prog_mapping = {'X-authenticated-user-token': accessToken,
                                'Content-Type': config.get(environment, 'Content-Type')}
     responseSol_prog_mapping = requests.request("POST", urlSol_prog_mapping, headers=headersSol_prog_mapping,
                                                 data=json.dumps(payloadSol_prog_mapping))
@@ -2703,7 +2697,6 @@ def createChild(solutionName_for_folder_path, observationExternalId, accessToken
                   "Status code : " + str(responseSol_prog_mapping.status_code),
                   "Response : " + responseSol_prog_mapping.text, "body : " + str(payloadSol_prog_mapping)]
     if responseSol_prog_mapping.status_code == 200:
-        print("Solution mapped to program : " + programName)
         print("Child solution : " + childObservationExternalId)
 
         responseSol_prog_mapping = responseSol_prog_mapping.json()
@@ -4466,21 +4459,18 @@ def downloadlogosign(filePathAddProject,projectName_for_folder_path):
                     print("--->Logos and signature downlading are failed(check if drive link are  Anyone with the link or not)<---")
 
 def mainFunc(mainFilePath,addObservationSolution, millisecond):
-
+    # global scopeRoles, startDateOfResource,endDateOfResource
     parentFolder = createFileStruct(mainFilePath,addObservationSolution)
     accessToken = generateAccessToken(parentFolder)
     typeofSolution = validateSheets(addObservationSolution,accessToken, parentFolder)
     # sys.exit()
     wbObservation = xlrd.open_workbook(addObservationSolution, on_demand=True)
-    if typeofSolution == 1 or typeofSolution == 5:
-        if typeofSolution == 5:
-            impLedObsFlag = True
-        else:
-            impLedObsFlag = False
+    if typeofSolution == 1:
+        impLedObsFlag = False
         criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "framework", impLedObsFlag)
         
-        userDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
-        matchedShikshalokamLoginId = userDetails[0]
+        # userDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+        # matchedShikshalokamLoginId = userDetails[0]
         
         frameworkExternalId = frameWorkUpload(parentFolder, wbObservation, millisecond, accessToken)
         observationExternalId = frameworkExternalId + "-OBSERVATION-TEMPLATE"
@@ -4535,42 +4525,43 @@ def mainFunc(mainFilePath,addObservationSolution, millisecond):
             print("Observation with scoring system : null.")
         bodySolutionUpdate = {'allowMultipleAssessemts': allow_multiple_submissions, "creator": creator}
         solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-        solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, solutionId, accessToken)
-        if solutionDetails[1]:
-            startDateArr = str(solutionDetails[1]).split("-")
-            bodySolutionUpdate = {
-                "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + "T00:00:00.000Z"}
-            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-        if solutionDetails[2]:
-            endDateArr = str(solutionDetails[2]).split("-")
-            bodySolutionUpdate = {
-                "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
-            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-        if isProgramnamePresent:
-            childId = createChild(parentFolder, observationExternalId, accessToken)
-            if childId[0]:
-                solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
-                                                                        accessToken)
-                scopeEntities = entitiesPGMID
-                scopeRoles = solutionDetails[0]
-                bodySolutionUpdate = {
-                    "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-                if solutionDetails[1]:
-                    startDateArr = str(solutionDetails[1]).split("-")
-                    bodySolutionUpdate = {
-                        "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
-                            0] + "T00:00:00.000Z"}
-                    solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-                if solutionDetails[2]:
-                    endDateArr = str(solutionDetails[2]).split("-")
-                    bodySolutionUpdate = {
-                        "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
-                    solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-                prepareProgramSuccessSheet(MainFilePath, parentFolder, programFile, childId[1], childId[0],
-                                            accessToken)
-        else:
-            print("No program name detected.")
+        # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, solutionId, accessToken)
+        # if solutionDetails[1]:
+        #     startDateArr = str(solutionDetails[1]).split("-")
+        #     bodySolutionUpdate = {
+        #         "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + "T00:00:00.000Z"}
+        #     solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+        # if solutionDetails[2]:
+        #     endDateArr = str(solutionDetails[2]).split("-")
+        #     bodySolutionUpdate = {
+        #         "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
+        #     solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+        # if isProgramnamePresent:
+        childId = createChild(parentFolder, observationExternalId, accessToken)
+        if childId[0]:
+            # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
+            #                                                         accessToken)
+            # scopeEntities = entitiesPGMID
+            # scopeRoles = str(scopeRoles).split(",") if str(scopeRoles).split(",") else []
+            # "entityType": scopeEntityType, "entities": scopeEntities,
+            # bodySolutionUpdate = {
+            #     "scope": { "roles": scopeRoles,"entities": scopeEntities}}
+            # solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            # if startDateOfResource:
+            #     startDateArr = str(startDateOfResource).split("-")
+            #     bodySolutionUpdate = {
+            #         "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
+            #             0] + "T00:00:00.000Z"}
+            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            # if endDateOfResource:
+            #     endDateArr = str(endDateOfResource).split("-")
+            #     bodySolutionUpdate = {
+            #         "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
+            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            prepareSolutionSuccessSheet(MainFilePath, parentFolder, childId[1], childId[0],
+                                        accessToken)
+    # else:
+    #     print("No program name detected.")
     elif typeofSolution == 2:
         criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "criteria", False)
     
@@ -4597,43 +4588,41 @@ def mainFunc(mainFilePath,addObservationSolution, millisecond):
         bodySolutionUpdate = {"status": "active", "isDeleted": False, "allowMultipleAssessemts": True,
                                 "creator": creator}
         solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-
-        solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, solutionId, accessToken)
-        if solutionDetails[1]:
-            startDateArr = str(solutionDetails[1]).split("-")
-            bodySolutionUpdate = {
-                "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + "T00:00:00.000Z"}
-            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-        if solutionDetails[2]:
-            endDateArr = str(solutionDetails[2]).split("-")
-            bodySolutionUpdate = {
-                "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
-            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-        if isProgramnamePresent:
-            childId = createChild(parentFolder, observationExternalId, accessToken)
-            if childId[0]:
-                solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
-                                                                        accessToken)
-                scopeEntities = entitiesPGMID
-                scopeRoles = solutionDetails[0]
-                bodySolutionUpdate = {
-                    "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-                if solutionDetails[1]:
-                    startDateArr = str(solutionDetails[1]).split("-")
-                    bodySolutionUpdate = {
-                        "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
-                            0] + "T00:00:00.000Z"}
-                    solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-                if solutionDetails[2]:
-                    endDateArr = str(solutionDetails[2]).split("-")
-                    bodySolutionUpdate = {
-                        "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
-                    solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-                prepareProgramSuccessSheet(MainFilePath, parentFolder, programFile, childId[1], childId[0],
-                                            accessToken)
-        else:
-            print("No program name detected.")
+        # If solution Start and end Date are required
+        # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, solutionId, accessToken)
+        # if solutionDetails[1]:
+        #     startDateArr = str(solutionDetails[1]).split("-")
+        #     bodySolutionUpdate = {
+        #         "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + "T00:00:00.000Z"}
+        #     solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+        # if solutionDetails[2]:
+        #     endDateArr = str(solutionDetails[2]).split("-")
+        #     bodySolutionUpdate = {
+        #         "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
+        #     solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+        childId = createChild(parentFolder, observationExternalId, accessToken)
+        if childId[0]:
+            # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
+                                                                    # accessToken)
+            # scopeEntities = entitiesPGMID
+            # scopeRoles = solutionDetails[0]
+            # bodySolutionUpdate = {
+            #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
+            # solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            # if solutionDetails[1]:
+            #     startDateArr = str(solutionDetails[1]).split("-")
+            #     bodySolutionUpdate = {
+            #         "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
+            #             0] + "T00:00:00.000Z"}
+            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            # if solutionDetails[2]:
+            #     endDateArr = str(solutionDetails[2]).split("-")
+            #     bodySolutionUpdate = {
+            #         "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
+            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            prepareSolutionSuccessSheet(MainFilePath, parentFolder, childId[1], childId[0],
+                                        accessToken)
+   
 
     elif typeofSolution == 3:
         surveyResp = createSurveySolution(parentFolder, wbObservation, accessToken)
@@ -4796,7 +4785,7 @@ parser.add_argument('--env', '--env')
 argument = parser.parse_args()
 environment = "local"
 millisecond = int(time.time() * 1000)
-resourceLinkOrExtPGM = "https://docs.google.com/spreadsheets/d/1735mU-qqqTSsygcVhhIKuoqPYguPp5kHD4CrjGWdEwg/edit#gid=2134498639"
+resourceLinkOrExtPGM = "https://docs.google.com/spreadsheets/d/1SuVYi4jmTMKAxR3uK-OA5SmkagCBmZZpaazBAylyxuI/edit#gid=2105966740"
 
 if envCheck():
     print("=================== Environment set to " + str(environment) + "=====================")

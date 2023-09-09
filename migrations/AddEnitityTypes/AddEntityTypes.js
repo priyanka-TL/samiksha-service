@@ -748,6 +748,272 @@ var fs = require('fs');
       ],
     };
 
+    let studentEntity = {
+      name: 'student',
+      regsitryDetails: {
+        name: 'studentRegsitry',
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: 'SYSTEM',
+      updatedBy: 'SYSTEM',
+      isDeleted: false,
+      profileFields: [
+        'studentName',
+        'grade',
+        'name',
+        'gender',
+        'type',
+        'phone1',
+        'phone2',
+        'address',
+        'schoolId',
+        'schoolName',
+        'programId',
+        'callResponse',
+        'callResponseUpdatedTime',
+      ],
+      profileForm: [
+        {
+          field: 'studentName',
+          label: 'Student Name',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'text',
+          validation: {
+            required: true,
+          },
+        },
+        {
+          field: 'grade',
+          label: 'Grade',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'radio',
+          options: [
+            {
+              value: 'nursery',
+              label: 'Nursery',
+            },
+            {
+              value: 'lowerKG',
+              label: 'Lower KG',
+            },
+            {
+              value: 'upperKG',
+              label: 'Upper KG',
+            },
+            {
+              value: 'kindergarten',
+              label: 'Kindergarten',
+            },
+            {
+              value: '1',
+              label: 1,
+            },
+            {
+              value: '2',
+              label: 2,
+            },
+            {
+              value: '3',
+              label: 3,
+            },
+            {
+              value: '4',
+              label: 4,
+            },
+            {
+              value: '5',
+              label: 5,
+            },
+            {
+              value: '6',
+              label: 6,
+            },
+            {
+              value: '7',
+              label: 7,
+            },
+            {
+              value: '8',
+              label: 8,
+            },
+            {
+              value: '9',
+              label: 9,
+            },
+            {
+              value: '10',
+              label: 10,
+            },
+            {
+              value: '11',
+              label: 11,
+            },
+            {
+              value: '12',
+              label: 12,
+            },
+          ],
+          validation: {
+            required: true,
+          },
+        },
+        {
+          field: 'section',
+          label: 'Section',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'text',
+          validation: {
+            required: false,
+            regex: '^[a-zA-Z]+$',
+          },
+        },
+        {
+          field: 'name',
+          label: 'Parent Name',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'text',
+          validation: {
+            required: false,
+          },
+        },
+        {
+          field: 'gender',
+          label: 'Parent Gender',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'radio',
+          options: [
+            {
+              value: 'M',
+              label: 'Male',
+            },
+            {
+              value: 'F',
+              label: 'Female',
+            },
+          ],
+          validation: {
+            required: false,
+          },
+        },
+        {
+          field: 'type',
+          label: 'Student Type',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'multiselect',
+          options: [
+            {
+              value: 'P1',
+              label: 'Student only',
+            },
+            {
+              value: 'P2',
+              label: 'SMC Student Member',
+            },
+            {
+              value: 'P3',
+              label: 'Safety Committee Member',
+            },
+            {
+              value: 'P4',
+              label: 'EWS-DG Parent',
+            },
+            {
+              value: 'P5',
+              label: 'Social Worker',
+            },
+            {
+              value: 'P6',
+              label: 'Elected Representative Nominee',
+            },
+          ],
+          validation: {
+            required: false,
+          },
+        },
+        {
+          field: 'phone1',
+          label: 'Phone Number',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'number',
+          validation: {
+            required: true,
+            regex: '^[0-9]{10}+$',
+          },
+        },
+        {
+          field: 'phone2',
+          label: 'Additional Phone Number',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'number',
+          validation: {
+            required: false,
+            regex: '^[0-9]{10}+$',
+          },
+        },
+        {
+          field: 'address',
+          label: 'Residential Address',
+          value: '',
+          visible: true,
+          editable: true,
+          input: 'textarea',
+          validation: {
+            required: true,
+          },
+        },
+        {
+          field: 'schoolId',
+          label: 'School ID',
+          value: '',
+          visible: false,
+          editable: false,
+          input: 'text',
+          validation: {
+            required: true,
+          },
+        },
+        {
+          field: 'schoolName',
+          label: 'School Name',
+          value: '',
+          visible: false,
+          editable: false,
+          input: 'text',
+          validation: {
+            required: true,
+          },
+        },
+        {
+          field: 'programId',
+          label: 'Program ID',
+          value: '',
+          visible: false,
+          editable: false,
+          input: 'text',
+          validation: {
+            required: true,
+          },
+        },
+      ],
+    };
+
     let parentEntity = {
       name: 'parent',
       regsitryDetails: {
@@ -1629,6 +1895,7 @@ var fs = require('fs');
         regionEntity,
         mandalEntity,
         complexEntity,
+        studentEntity,
       ]);
 
     console.log('Inserted EntityTypes : ', entityType);
