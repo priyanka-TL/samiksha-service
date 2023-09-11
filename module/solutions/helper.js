@@ -6,13 +6,12 @@
  */
 
 //Dependencies
-const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
 const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 const entityTypesHelper = require(MODULES_BASE_PATH + '/entityTypes/helper');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
-
+const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + '/';
 /**
  * SolutionsHelper
  * @class
@@ -151,6 +150,71 @@ module.exports = class SolutionsHelper {
     return entityFieldArray;
   }
 
+  static solutionDocuments(filterQuery = 'all', fieldsArray = 'all', skipFields = 'none') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let queryObject = filterQuery != 'all' ? filterQuery : {};
+
+        let projection = {};
+
+        if (fieldsArray != 'all') {
+          fieldsArray.forEach((field) => {
+            projection[field] = 1;
+          });
+        }
+
+        if (skipFields !== 'none') {
+          skipFields.forEach((field) => {
+            projection[field] = 0;
+          });
+        }
+
+        let solutionDocuments = await database.models.solutions.find(queryObject, projection).lean();
+
+        return resolve(solutionDocuments);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+  /**
+   * Solution details.
+   * @method
+   * @name details
+   * @param {String} solutionId - Solution Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static getDetails(solutionId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments({
+          _id: solutionId,
+          isDeleted: false,
+        });
+
+        if (!solutionData.length > 0) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.SOLUTION_DETAILS_FETCHED,
+          success: true,
+          data: solutionData[0],
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
   /**
    * Get all sub entity that exists in single parent entity.
    * @method
@@ -266,7 +330,7 @@ module.exports = class SolutionsHelper {
               } else {
                 if (criteriaArray.includes(themesSplittedArray[0])) {
                   result[themeKey] = {
-                    criteriaId: ObjectId(themesSplittedArray[0]),
+                    criteriaId: new ObjectId(themesSplittedArray[0]),
                     weightage: themesSplittedArray[1] ? parseInt(themesSplittedArray[1]) : 0,
                   };
                 } else {
@@ -345,6 +409,7 @@ module.exports = class SolutionsHelper {
 
         return resolve(csvArray);
       } catch (error) {
+        console.log(error);
         return reject(error);
       }
     });
@@ -488,7 +553,7 @@ module.exports = class SolutionsHelper {
                 const checkIfCriteriaIsToBeUpdated = getCriteriaWeightElement(eachCriteria.criteriaId);
                 if (checkIfCriteriaIsToBeUpdated) {
                   theme.criteria[pointerToCriteriaArray] = {
-                    criteriaId: ObjectId(checkIfCriteriaIsToBeUpdated.criteriaId),
+                    criteriaId: new ObjectId(checkIfCriteriaIsToBeUpdated.criteriaId),
                     weightage: Number(Number.parseFloat(checkIfCriteriaIsToBeUpdated.weightage).toFixed(2)),
                   };
                   criteriaWeightageUpdatedCount += 1;
@@ -1035,7 +1100,7 @@ module.exports = class SolutionsHelper {
         newSolutionDocument.endDate = endDate;
         newSolutionDocument.createdAt = startDate;
         newSolutionDocument.updatedAt = startDate;
-        newSolutionDocument.isAPrivateProgram = programDocument[0].isAPrivateProgram;
+        newSolutionDocument.isAPrivateProgram = false;
         newSolutionDocument.isReusable = false;
 
         if (data.project) {
@@ -1047,9 +1112,9 @@ module.exports = class SolutionsHelper {
           newSolutionDocument.createdFor = createdFor;
         }
 
-        if (rootOrganisations !== '') {
-          newSolutionDocument.rootOrganisations = rootOrganisations;
-        }
+        // if (rootOrganisations !== '') {
+        //   newSolutionDocument.rootOrganisations = rootOrganisations;
+        // }
 
         let duplicateSolutionDocument = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 
@@ -1081,6 +1146,65 @@ module.exports = class SolutionsHelper {
         }
       } catch (error) {
         return reject(error);
+      }
+    });
+  }
+  /**
+   * Get link by solution id
+   * @method
+   * @name fetchLink
+   * @param {String} solutionId - solution Id.
+   * @param {String} appName - app Name.
+   * @param {String} userId - user Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static fetchLink(solutionId, userId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments(
+          {
+            _id: solutionId,
+            isReusable: false,
+            isAPrivateProgram: false,
+          },
+          ['link', 'type', 'author'],
+        );
+
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          return resolve({
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+            result: {},
+          });
+        }
+
+        let prefix = messageConstants.common.PREFIX_FOR_SOLUTION_LINK;
+
+        let solutionLink, link;
+
+        if (!solutionData[0].link) {
+          let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
+
+          let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
+
+          solutionLink = updateLink;
+        } else {
+          solutionLink = solutionData[0].link;
+        }
+
+        link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.LINK_GENERATED,
+          result: link,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
       }
     });
   }
@@ -1492,55 +1616,159 @@ module.exports = class SolutionsHelper {
    * @returns {String} - message.
    */
 
-  static list() {
+  static list(type, subType, filter = {}, pageNo, pageSize, searchText, projection) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await this.solutionDocuments(
-          {
-            // externalId : { $in : solutionIds },
-            status: messageConstants.common.ACTIVE_STATUS,
-          },
-          'all',
-          [
-            'levelToScoreMapping',
-            'scoringSystem',
-            'themes',
-            'flattenedThemes',
-            'questionSequenceByEcm',
-            'entityProfileFieldsPerEntityTypes',
-            'evidenceMethods',
-            'sections',
-            'noOfRatingLevels',
-            'roles',
-            'captureGpsLocationAtQuestionLevel',
-            'enableQuestionReadOut',
-            'entities',
-            'criteriaLevelReport',
-          ],
-        );
+        let matchQuery = {
+          isDeleted: false,
+        };
 
-        if (!solutionData.length > 0) {
-          throw {
-            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-            status: httpStatusCode['bad_request'].status,
+        if (type == messageConstants.common.SURVEY) {
+          matchQuery['status'] = {
+            $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
+          };
+        } else {
+          matchQuery.status = messageConstants.common.ACTIVE_STATUS;
+        }
+
+        if (type !== '') {
+          matchQuery['type'] = type;
+        }
+
+        if (subType !== '') {
+          matchQuery['subType'] = subType;
+        }
+
+        if (Object.keys(filter).length > 0) {
+          matchQuery = _.merge(matchQuery, filter);
+        }
+
+        let searchData = [
+          {
+            name: new RegExp(searchText, 'i'),
+          },
+          {
+            externalId: new RegExp(searchText, 'i'),
+          },
+          {
+            description: new RegExp(searchText, 'i'),
+          },
+        ];
+
+        if (searchText !== '') {
+          if (matchQuery['$or']) {
+            matchQuery['$and'] = [{ $or: matchQuery.$or }, { $or: searchData }];
+
+            delete matchQuery.$or;
+          } else {
+            matchQuery['$or'] = searchData;
+          }
+        }
+
+        let projection1 = {};
+
+        if (projection) {
+          projection.forEach((projectedData) => {
+            projection1[projectedData] = 1;
+          });
+        } else {
+          projection1 = {
+            description: 1,
+            externalId: 1,
+            name: 1,
           };
         }
 
+        let facetQuery = {};
+        facetQuery['$facet'] = {};
+
+        facetQuery['$facet']['totalCount'] = [{ $count: 'count' }];
+
+        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }];
+
+        let projection2 = {};
+
+        projection2['$project'] = {
+          data: 1,
+          count: {
+            $arrayElemAt: ['$totalCount.count', 0],
+          },
+        };
+
+        let solutionDocuments = await database.models.solutions.aggregate([
+          { $match: matchQuery },
+          {
+            $sort: { updatedAt: -1 },
+          },
+          { $project: projection1 },
+          facetQuery,
+          projection2,
+        ]);
+
         return resolve({
           success: true,
-          message: messageConstants.apiResponses.SOLUTION_FETCHED,
-          data: solutionData,
+          message: messageConstants.apiResponses.SOLUTIONS_LIST,
+          data: solutionDocuments[0],
         });
       } catch (error) {
         return resolve({
-          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
           success: false,
           message: error.message,
-          data: [],
+          data: {},
         });
       }
     });
   }
+
+  // static list() {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let solutionData = await this.solutionDocuments(
+  //         {
+  //           // externalId : { $in : solutionIds },
+  //           status: messageConstants.common.ACTIVE_STATUS,
+  //         },
+  //         'all',
+  //         [
+  //           'levelToScoreMapping',
+  //           'scoringSystem',
+  //           'themes',
+  //           'flattenedThemes',
+  //           'questionSequenceByEcm',
+  //           'entityProfileFieldsPerEntityTypes',
+  //           'evidenceMethods',
+  //           'sections',
+  //           'noOfRatingLevels',
+  //           'roles',
+  //           'captureGpsLocationAtQuestionLevel',
+  //           'enableQuestionReadOut',
+  //           'entities',
+  //           'criteriaLevelReport',
+  //         ],
+  //       );
+
+  //       if (!solutionData.length > 0) {
+  //         throw {
+  //           message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+  //           status: httpStatusCode['bad_request'].status,
+  //         };
+  //       }
+
+  //       return resolve({
+  //         success: true,
+  //         message: messageConstants.apiResponses.SOLUTION_FETCHED,
+  //         data: solutionData,
+  //       });
+  //     } catch (error) {
+  //       return resolve({
+  //         status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+  //         success: false,
+  //         message: error.message,
+  //         data: [],
+  //       });
+  //     }
+  //   });
+  // }
 
   /**
    * Remove entity from solution.
@@ -1833,3 +2061,27 @@ module.exports = class SolutionsHelper {
     });
   }
 };
+
+/**
+ * Generate sharing Link.
+ * @method
+ * @name _targetedSolutionTypes
+ * @returns {Array} - Targeted solution types
+ */
+
+function _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
+  let link;
+
+  switch (solutionType) {
+    case messageConstants.common.OBSERVATION:
+      link = appsPortalBaseUrl + prefix + messageConstants.common.CREATE_OBSERVATION + solutionLink;
+      break;
+    case messageConstants.common.IMPROVEMENT_PROJECT:
+      link = appsPortalBaseUrl + prefix + messageConstants.common.CREATE_PROJECT + solutionLink;
+      break;
+    default:
+      link = appsPortalBaseUrl + prefix + messageConstants.common.CREATE_SURVEY + solutionLink;
+  }
+
+  return link;
+}

@@ -4,7 +4,7 @@ module.exports = (req) => {
       req.checkParams('_id').exists().withMessage('required solution id');
     },
     update: function () {
-      req.checkQuery('solutionExternalId').exists().withMessage('required solution externalId');
+      // req.checkQuery('solutionExternalId').exists().withMessage('required solution externalId');
     },
     questionList: function () {
       req.checkParams('_id').exists().withMessage('required solution id');
@@ -17,7 +17,6 @@ module.exports = (req) => {
       req.checkBody('externalId').exists().withMessage('required new solution externalId');
       req.checkBody('name').exists().withMessage('required new solution name');
       req.checkBody('description').exists().withMessage('required new solution description');
-      req.checkBody('programExternalId').exists().withMessage('required programExternalId');
     },
     getObservationSolutionLink: function () {
       req.checkParams('_id').exists().withMessage('required observation solution id');

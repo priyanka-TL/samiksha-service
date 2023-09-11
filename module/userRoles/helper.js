@@ -81,8 +81,8 @@ module.exports = class UserRolesHelper {
                 _.merge(
                   {
                     status: 'active',
-                    updatedBy: userDetails.id,
-                    createdBy: userDetails.id,
+                    updatedBy: userDetails.userId,
+                    createdBy: userDetails.userId,
                   },
                   userRole,
                 ),

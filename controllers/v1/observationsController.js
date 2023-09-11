@@ -643,7 +643,7 @@ module.exports = class Observations extends Abstract {
             _id: req.params._id,
             createdBy: req.userDetails.userId,
             status: { $ne: 'inactive' },
-            entities: ObjectId(req.query.entityId),
+            entities: new ObjectId(req.query.entityId),
           })
           .lean();
 
