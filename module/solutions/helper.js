@@ -18,6 +18,264 @@ const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + '/';
  */
 module.exports = class SolutionsHelper {
   /**
+   * List of solutions and targeted ones.
+   * @method
+   * @name targetedSolutions
+   * @param {String} solutionId - Program Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static targetedSolutions(
+    requestedData,
+    solutionType,
+    userToken,
+    pageSize,
+    pageNo,
+    search,
+    filter,
+    surveyReportPage = '',
+  ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let totalCount = 0;
+        let mergedData = [];
+        let solutionIds = [];
+
+        requestedData['filter'] = {};
+        if (solutionIds.length > 0) {
+          requestedData['filter']['skipSolutions'] = solutionIds;
+        }
+
+        if (filter && filter !== '') {
+          if (filter === messageConstants.common.CREATED_BY_ME) {
+            requestedData['filter']['isAPrivateProgram'] = {
+              $ne: false,
+            };
+          } else if (filter === messageConstants.common.ASSIGN_TO_ME) {
+            requestedData['filter']['isAPrivateProgram'] = false;
+          }
+        }
+
+        let targetedSolutions = {
+          success: false,
+        };
+
+        let getTargetedSolution = true;
+
+        if (filter === messageConstants.common.DISCOVERED_BY_ME) {
+          getTargetedSolution = false;
+        }
+
+        if (getTargetedSolution) {
+          targetedSolutions = await this.forUserRoleAndLocation(
+            requestedData,
+            solutionType,
+            '',
+            messageConstants.common.DEFAULT_PAGE_SIZE,
+            messageConstants.common.DEFAULT_PAGE_NO,
+            search,
+          );
+        }
+
+        if (targetedSolutions.success) {
+          if (targetedSolutions.success && targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
+            totalCount += targetedSolutions.data.count;
+            targetedSolutions.data.data.forEach((targetedSolution) => {
+              targetedSolution.solutionId = targetedSolution._id;
+              targetedSolution._id = '';
+
+              if (solutionType !== messageConstants.common.COURSE) {
+                targetedSolution['creator'] = targetedSolution.creator ? targetedSolution.creator : '';
+              }
+
+              if (solutionType === messageConstants.common.SURVEY) {
+                targetedSolution.isCreator = false;
+              }
+
+              mergedData.push(targetedSolution);
+              delete targetedSolution.type;
+              delete targetedSolution.externalId;
+            });
+          }
+        }
+
+        if (mergedData.length > 0) {
+          let startIndex = pageSize * (pageNo - 1);
+          let endIndex = startIndex + pageSize;
+          mergedData = mergedData.slice(startIndex, endIndex);
+        }
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+          data: {
+            data: mergedData,
+            count: totalCount,
+          },
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * Auto targeted query field.
+   * @method
+   * @name queryBasedOnRoleAndLocation
+   * @param {String} data - Requested body data.
+   * @returns {JSON} - Auto targeted solutions query.
+   */
+
+  static queryBasedOnRoleAndLocation(data, type = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let registryIds = [];
+        let entityTypes = [];
+
+        Object.keys(_.omit(data, ['filter', 'role'])).forEach((requestedDataKey) => {
+          registryIds.push(data[requestedDataKey]);
+          entityTypes.push(requestedDataKey);
+        });
+        if (!registryIds.length > 0) {
+          throw {
+            message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
+          };
+        }
+
+        let filterQuery = {
+          'scope.roles.code': { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
+          'scope.entities': { $in: registryIds },
+          'scope.entityType': { $in: entityTypes },
+          isReusable: false,
+          isDeleted: false,
+        };
+
+        if (type === messageConstants.common.SURVEY) {
+          filterQuery['status'] = {
+            $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
+          };
+          let validDate = new Date();
+          validDate.setDate(validDate.getDate() - messageConstants.common.DEFAULT_SURVEY_REMOVED_DAY);
+          filterQuery['endDate'] = { $gte: validDate };
+        } else {
+          filterQuery.status = messageConstants.common.ACTIVE_STATUS;
+        }
+
+        if (data.filter && Object.keys(data.filter).length > 0) {
+          let solutionsSkipped = [];
+
+          if (data.filter.skipSolutions) {
+            data.filter.skipSolutions.forEach((solution) => {
+              solutionsSkipped.push(new ObjectId(solution.toString()));
+            });
+
+            data.filter['_id'] = {
+              $nin: solutionsSkipped,
+            };
+
+            delete data.filter.skipSolutions;
+          }
+
+          filterQuery = _.merge(filterQuery, data.filter);
+        }
+
+        return resolve({
+          success: true,
+          data: filterQuery,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+          data: {},
+        });
+      }
+    });
+  }
+
+  /**
+   * List of solutions based on role and location.
+   * @method
+   * @name forUserRoleAndLocation
+   * @param {String} bodyData - Requested body data.
+   * @param {String} type - solution type.
+   * @param {String} subType - solution sub type.
+   * @param {String} programId - program Id
+   * @param {String} pageSize - Page size.
+   * @param {String} pageNo - Page no.
+   * @param {String} searchText - search text.
+   * @returns {JSON} - List of solutions based on role and location.
+   */
+
+  static forUserRoleAndLocation(bodyData, type, subType = '', pageSize, pageNo, searchText = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType);
+
+        if (!queryData.success) {
+          return resolve(queryData);
+        }
+
+        let matchQuery = queryData.data;
+
+        if (type === '' && subType === '') {
+          let targetedTypes = _targetedSolutionTypes();
+
+          matchQuery['$or'] = [];
+
+          targetedTypes.forEach((type) => {
+            let singleType = {
+              type: type,
+            };
+            matchQuery['$or'].push(singleType);
+          });
+        } else {
+          if (type !== '') {
+            matchQuery['type'] = type;
+          }
+
+          if (subType !== '') {
+            matchQuery['subType'] = subType;
+          }
+        }
+
+        let targetedSolutions = await this.list(type, subType, matchQuery, pageNo, pageSize, searchText, [
+          'name',
+          'description',
+          'externalId',
+          'projectTemplateId',
+          'type',
+          'language',
+          'creator',
+          'endDate',
+          'link',
+          'referenceFrom',
+          'entityType',
+          'certificateTemplateId',
+        ]);
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+          data: targetedSolutions.data,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          message: error.message,
+          data: {},
+        });
+      }
+    });
+  }
+
+  /**
    * find solutions
    * @method
    * @name solutionDocuments
@@ -113,7 +371,7 @@ module.exports = class SolutionsHelper {
             if (!entityIds.length > 0) {
               return resolve({
                 status: httpStatusCode.bad_request.status,
-                message: constants.apiResponses.ENTITIES_NOT_FOUND,
+                message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
               });
             }
 
@@ -132,7 +390,7 @@ module.exports = class SolutionsHelper {
             if (!entitiesData.length > 0) {
               return resolve({
                 status: httpStatusCode.bad_request.status,
-                message: constants.apiResponses.SCOPE_ENTITY_INVALID,
+                message: messageConstants.apiResponses.SCOPE_ENTITY_INVALID,
               });
             }
 
@@ -151,16 +409,16 @@ module.exports = class SolutionsHelper {
               if (!userRoles.length > 0) {
                 return resolve({
                   status: httpStatusCode.bad_request.status,
-                  message: constants.apiResponses.INVALID_ROLE_CODE,
+                  message: messageConstants.apiResponses.INVALID_ROLE_CODE,
                 });
               }
 
               currentSolutionScope['roles'] = userRoles;
             } else {
-              if (scopeData.roles === constants.common.ALL_ROLES) {
+              if (scopeData.roles === messageConstants.common.ALL_ROLES) {
                 currentSolutionScope['roles'] = [
                   {
-                    code: constants.common.ALL_ROLES,
+                    code: messageConstants.common.ALL_ROLES,
                   },
                 ];
               }
@@ -2156,4 +2414,15 @@ function _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
   }
 
   return link;
+}
+
+/**
+ * Targeted solutions types.
+ * @method
+ * @name _targetedSolutionTypes
+ * @returns {Array} - Targeted solution types
+ */
+
+function _targetedSolutionTypes() {
+  return [messageConstants.common.OBSERVATION, messageConstants.common.SURVEY];
 }

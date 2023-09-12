@@ -132,7 +132,7 @@ module.exports = class EntitiesHelper {
   ) {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = { _id: ObjectId(entityId) };
+        let queryObject = { _id: new ObjectId(entityId) };
         let projectObject = { [`groups.${entityType}`]: 1 };
 
         let result = await database.models.entities.findOne(queryObject, projectObject).lean();
