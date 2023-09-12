@@ -133,7 +133,7 @@ module.exports = class Assessments {
         let programQueryObject = {
           _id: req.params._id,
           status: 'active',
-          components: { $in: [ObjectId(req.query.solutionId)] },
+          components: { $in: [new ObjectId(req.query.solutionId)] },
         };
         let programDocument = await database.models.programs.findOne(programQueryObject).lean();
 
@@ -149,7 +149,7 @@ module.exports = class Assessments {
           userId: req.userDetails.userId,
           programId: req.params._id,
           solutionId: req.query.solutionId,
-          entities: { $in: [ObjectId(req.query.entityId)] },
+          entities: { $in: [new ObjectId(req.query.entityId)] },
         };
         let entityAssessorDocument = await database.models.entityAssessors.findOne(entityAssessorObject).lean();
 
@@ -189,7 +189,7 @@ module.exports = class Assessments {
           _id: req.query.solutionId,
           programId: req.params._id,
           status: 'active',
-          entities: { $in: [ObjectId(req.query.entityId)] },
+          entities: { $in: [new ObjectId(req.query.entityId)] },
         };
 
         let solutionDocumentProjectionFields = await assessmentsHelper.solutionDocumentProjectionFieldsForDetailsAPI();

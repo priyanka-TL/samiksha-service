@@ -77,7 +77,7 @@ module.exports = class Observations extends Abstract {
         matchQuery['$match'] = {};
 
         if (req.params._id) {
-          matchQuery['$match']['entityTypeId'] = ObjectId(req.params._id);
+          matchQuery['$match']['entityTypeId'] = new ObjectId(req.params._id);
         }
 
         matchQuery['$match']['type'] = 'observation';
@@ -995,7 +995,7 @@ module.exports = class Observations extends Abstract {
       try {
         await database.models.observations.updateOne(
           {
-            _id: ObjectId(req.params._id),
+            _id: new ObjectId(req.params._id),
             status: { $ne: 'completed' },
             createdBy: req.userDetails.id,
           },
@@ -1219,7 +1219,7 @@ module.exports = class Observations extends Abstract {
           }
           solutionExternalIds.push(eachObservationData.solutionExternalId);
           if (eachObservationData.entityId && eachObservationData.entityId != '') {
-            entityIds.push(ObjectId(eachObservationData.entityId));
+            entityIds.push(new ObjectId(eachObservationData.entityId));
           }
         });
 
