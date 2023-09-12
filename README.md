@@ -87,6 +87,10 @@ To install dependencies from a `package.json` file in Visual Studio Code, you ca
 
 [Click here](https://documenter.getpostman.com/view/7997930/2s9Y5ZwMpH)
 
+## Implementation Script
+
+Please Check out the documentation and cration of solution scripts here: https://github.com/ELEVATE-Project/samiksha-service/tree/main/implementation-script#readme
+
 ## IMPORTANT:
 
 Always work on branches. **Never make changes to master**.
