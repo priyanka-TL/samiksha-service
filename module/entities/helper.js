@@ -796,7 +796,7 @@ module.exports = class EntitiesHelper {
                 };
               });
 
-              await database.models.entities.updateMany({ _id: ObjectId(entityIdToUpdate) }, updateQuery);
+              await database.models.entities.updateMany({ _id: new ObjectId(entityIdToUpdate) }, updateQuery);
             }),
           );
         }
@@ -831,7 +831,7 @@ module.exports = class EntitiesHelper {
         let childEntity = await database.models.entities
           .findOne(
             {
-              _id: ObjectId(childEntityId),
+              _id: new ObjectId(childEntityId),
             },
             {
               entityType: 1,
@@ -843,10 +843,10 @@ module.exports = class EntitiesHelper {
 
         if (childEntity.entityType) {
           let parentEntityQueryObject = {
-            _id: ObjectId(parentEntityId),
+            _id: new ObjectId(parentEntityId),
           };
           if (parentEntityProgramId) {
-            parentEntityQueryObject['metaInformation.createdByProgramId'] = ObjectId(parentEntityProgramId);
+            parentEntityQueryObject['metaInformation.createdByProgramId'] = new ObjectId(parentEntityProgramId);
           }
 
           let updateQuery = {};
