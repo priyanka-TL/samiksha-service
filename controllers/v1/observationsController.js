@@ -1465,7 +1465,7 @@ module.exports = class Observations extends Abstract {
       try {
         await database.models.observations.updateOne(
           {
-            _id: ObjectId(req.params._id),
+            _id: new ObjectId(req.params._id),
             createdBy: req.userDetails.id,
           },
           {

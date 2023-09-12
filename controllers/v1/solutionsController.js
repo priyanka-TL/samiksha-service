@@ -27,6 +27,78 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
+    * @api {post} /assessment/api/v1/solutions/targetedSolutions?type=:solutionType&page=:page&limit=:limit&search=:search&filter=:filter
+    * List of assigned solutions and targetted ones.
+    * @apiVersion 1.0.0
+    * @apiGroup Solutions
+    * @apiSampleRequest /assessment/api/v1/solutions/targetedSolutions?type=observation&page=1&limit=10&search=a&filter=assignedToMe
+    * @apiParamExample {json} Request:
+    * {
+    *   "role" : "HM,DEO",
+   		  "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
+        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+    }
+    * @apiParamExample {json} Response:
+    {
+    "message": "Solutions fetched successfully",
+    "status": 200,
+    "result": {
+        "data": [
+            {
+                "_id": "5f9288fd5e25636ce6dcad66",
+                "name": "obs1",
+                "description": "observation1",
+                "solutionId": "5f9288fd5e25636ce6dcad65",
+            },
+            {
+                "_id": "5fc7aa9e73434430731f6a10",
+                "solutionId": "5fb4fce4c7439a3412ff013b",
+                "name": "My Solution",
+                "description": "My Solution Description"
+            }
+        ],
+        "count": 2
+    }}
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+  /**
+   * List of solutions and targetted ones.
+   * @method
+   * @name targetedSolutions
+   * @param {Object} req - request data.
+   * @returns {JSON} List of solutions with targetted ones.
+   */
+
+  async targetedSolutions(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let observations = await solutionsHelper.targetedSolutions(
+          req.body,
+          req.query.type,
+          req.userDetails.userToken,
+          req.pageSize,
+          req.pageNo,
+          req.searchText,
+          req.query.filter,
+          // req.query.surveyReportPage ? req.query.surveyReportPage : '',
+        );
+
+        observations['result'] = observations.data;
+
+        return resolve(observations);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
    * @api {get} /assessment/api/v1/solutions/details/:solutionInternalId Framework & Rubric Details
    * @apiVersion 1.0.0
    * @apiName Framework & Rubric Details of a Solution
