@@ -746,7 +746,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             keysEnv[col_index_env]: detailsEnvSheet.cell(row_index_env, col_index_env).value for
                             col_index_env in range(detailsEnvSheet.ncols)}
                         quesExtIds.append(dictDetailsEnv['question_id'].encode('utf-8').decode('utf-8').lower())
-
+                        response_required = dictDetailsEnv['response_required'] if str(dictDetailsEnv['response_required']) else terminatingMessage("\"response_required\" must not be Empty in \"questions\" sheet")
                         if not dictDetailsEnv['criteria_id']:
                             terminatingMessage("criteria_id cannot be empty in questions sheet.")
                         if not dictDetailsEnv['criteria_id'].lower() in criteriaExternalIds:
@@ -892,7 +892,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         page = dictDetailsEnv['page'].encode('utf-8').decode('utf-8') if dictDetailsEnv['page'] else terminatingMessage("\"page\" must not be Empty in \"questions\" sheet")
                         question_number = dictDetailsEnv['question_number'] if dictDetailsEnv['question_number'] else terminatingMessage("\"question_number\" must not be Empty in \"questions\" sheet")
                         question_primary_language = dictDetailsEnv['question_primary_language'].encode('utf-8').decode('utf-8') if dictDetailsEnv['question_primary_language'] else terminatingMessage("\"question_primary_language\" must not be Empty in \"questions\" sheet")
-                        response_required = dictDetailsEnv['response_required'] if dictDetailsEnv['response_required'] else terminatingMessage("\"response_required\" must not be Empty in \"questions\" sheet")
+                        response_required = dictDetailsEnv['response_required'] if str(dictDetailsEnv['response_required']) else terminatingMessage("\"response_required\" must not be Empty in \"questions\" sheet")
                         question_id = dictDetailsEnv['question_id'] if dictDetailsEnv['question_id'] else terminatingMessage("\"question_id\" must not be Empty in \"questions\" sheet")
                         ques_id_arr.append(question_id)
                         parent_question_id = dictDetailsEnv['question_id'].encode('utf-8').decode('utf-8')
@@ -1765,7 +1765,7 @@ def questionUpload(filePathAddObs, solutionName_for_folder_path, frameworkExtern
             if ques['response_required']:
                 if ques['response_required'] == 1 or str(ques['response_required']).lower() == "true":
                     questionFileObj['validation'] = 'TRUE'
-                else:
+                elif ques['response_required'] == 0 or str(ques['response_required']).lower() == "false":
                     questionFileObj['validation'] = 'FALSE'
             else:
                 questionFileObj['validation'] = 'FALSE'
@@ -2697,15 +2697,14 @@ def createChild(solutionName_for_folder_path, observationExternalId, accessToken
                   "Status code : " + str(responseSol_prog_mapping.status_code),
                   "Response : " + responseSol_prog_mapping.text, "body : " + str(payloadSol_prog_mapping)]
     if responseSol_prog_mapping.status_code == 200:
-        print("Child solution : " + childObservationExternalId)
-
         responseSol_prog_mapping = responseSol_prog_mapping.json()
         child_id = responseSol_prog_mapping['result']['_id']
+        print("Child solution : " + childObservationExternalId)
+        print("child_id : " + child_id)
         createAPILog(solutionName_for_folder_path, messageArr)
         return [child_id, childObservationExternalId]
     else:
         print("Unable to create child solution")
-
         messageArr.append("Unable to create child solution")
         createAPILog(solutionName_for_folder_path, messageArr)
         return False
@@ -4782,16 +4781,16 @@ start_time = time.time()
 parser = argparse.ArgumentParser()
 parser.add_argument('--programFile', '--programFile', type=valid_file)
 parser.add_argument('--env', '--env')
+parser.add_argument('--resourceLinkOrExtPGM', required=True, help='The resource link or external PGM URL')
 argument = parser.parse_args()
-environment = "local"
+environment = argument.env
 millisecond = int(time.time() * 1000)
-resourceLinkOrExtPGM = "https://docs.google.com/spreadsheets/d/1SuVYi4jmTMKAxR3uK-OA5SmkagCBmZZpaazBAylyxuI/edit#gid=2105966740"
 
 if envCheck():
     print("=================== Environment set to " + str(environment) + "=====================")
 else:
     terminatingMessage(str(environment) + " is an invalid environment")
-resourceLinkOrExtPGM = str(resourceLinkOrExtPGM).split('/')[5]
+resourceLinkOrExtPGM = str(argument.resourceLinkOrExtPGM).split('/')[5]
 file_url = 'https://docs.google.com/spreadsheets/d/' + resourceLinkOrExtPGM + '/export?format=xlsx'
 if not os.path.isdir('InputFiles'):
     os.mkdir('InputFiles')

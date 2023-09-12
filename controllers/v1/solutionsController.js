@@ -459,65 +459,14 @@ module.exports = class Solutions extends Abstract {
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = req.body;
-        let queryObject = {
-          _id: req.params._id,
-        };
+        let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId);
 
-        let solutionDocument = await solutionsHelper.solutionDocuments(queryObject, ['_id']);
-
-        if (!solutionDocument.length > 0) {
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-          });
-        }
-
-        let updateObject = {
-          $set: {},
-        };
-
-        if (
-          solutionData.minNoOfSubmissionsRequired &&
-          solutionData.minNoOfSubmissionsRequired > messageConstants.common.DEFAULT_SUBMISSION_REQUIRED
-        ) {
-          if (!solutionData.allowMultipleAssessemts) {
-            solutionData.minNoOfSubmissionsRequired = messageConstants.common.DEFAULT_SUBMISSION_REQUIRED;
-          }
-        }
-
-        let solutionUpdateData = solutionData;
-
-        Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
-          updateObject['$set'][updationData] = solutionUpdateData[updationData];
-        });
-        updateObject['$set']['updatedBy'] = req.userDetails.userId;
-
-        let solutionUpdatedData = await database.models.solutions
-          .findOneAndUpdate(
-            {
-              _id: solutionDocument[0]._id,
-            },
-            updateObject,
-            { new: true },
-          )
-          .lean();
-
-        if (!solutionUpdatedData._id) {
-          throw {
-            message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
-          };
-        }
-        return resolve({
-          success: true,
-          message: messageConstants.apiResponses.SOLUTION_UPDATED,
-          data: solutionData,
-        });
+        return resolve(solutionData);
       } catch (error) {
-        return resolve({
-          success: false,
-          message: error.message,
-          data: {},
+        reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
         });
       }
     });

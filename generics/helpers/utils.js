@@ -167,6 +167,29 @@ function valueParser(dataToBeParsed) {
   return parsedData;
 }
 
+/**
+ * filter out location id and code
+ * @function
+ * @name filterLocationIdandCode
+ * @returns {Object} - Object contain locationid and location code array.
+ */
+
+function filterLocationIdandCode(dataArray) {
+  let entityId = [];
+  let locationCodes = [];
+  dataArray.forEach((element) => {
+    if (this.isValidMongoId(element)) {
+      entityId.push(element);
+    } else {
+      locationCodes.push(element);
+    }
+  });
+  return {
+    ids: entityId,
+    codes: locationCodes,
+  };
+}
+
 function arrayIdsTobjectIds(ids) {
   return ids.map((id) => ObjectId(id));
 }
@@ -282,4 +305,5 @@ module.exports = {
   md5Hash: md5Hash,
   removeDuplicatesFromArray: removeDuplicatesFromArray,
   convertStringToBoolean: convertStringToBoolean,
+  filterLocationIdandCode: filterLocationIdandCode,
 };

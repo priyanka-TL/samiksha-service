@@ -56,6 +56,224 @@ module.exports = class SolutionsHelper {
   }
 
   /**
+   * Set scope in solution
+   * @method
+   * @name setScope
+   * @param {String} solutionId - solution id.
+   * @param {Object} scopeData - scope data.
+   * @param {String} scopeData.entityType - scope entity type
+   * @param {Array} scopeData.entities - scope entities
+   * @param {Array} scopeData.roles - roles in scope
+   * @returns {JSON} - scope in solution.
+   */
+
+  static setScope(solutionId, scopeData) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments({ _id: solutionId }, ['_id', 'scope']);
+
+        if (!solutionData.length > 0) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+
+        let currentSolutionScope = JSON.parse(JSON.stringify(solutionData[0].scope));
+
+        if (Object.keys(scopeData).length > 0) {
+          if (scopeData.entityType) {
+            let bodyData = { name: scopeData.entityType };
+            let entityTypeData = await entityTypesHelper.list(bodyData);
+            if (entityTypeData.length > 0) {
+              currentSolutionScope.entityType = entityTypeData[0].name;
+            }
+          }
+
+          if (scopeData.entities && scopeData.entities.length > 0) {
+            //call learners api for search
+            let entityIds = [];
+            let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
+
+            if (locationData.codes.length > 0) {
+              let filterData = {
+                'registryDetails.code': locationData.codes,
+                entityType: currentSolutionScope.entityType,
+              };
+              let entityDetails = await entitiesHelper.entitiesDocument(filterData);
+
+              if (entityDetails.success) {
+                entityDetails.data.forEach((entity) => {
+                  entityIds.push(entity.id);
+                });
+              }
+            }
+            entityIds = [...entityIds, ...locationData.ids];
+
+            if (!entityIds.length > 0) {
+              return resolve({
+                status: httpStatusCode.bad_request.status,
+                message: constants.apiResponses.ENTITIES_NOT_FOUND,
+              });
+            }
+
+            let entitiesData = [];
+
+            // if( currentSolutionScope.entityType !== programData[0].scope.entityType ) {
+            //   let result = [];
+            //   let childEntities = await userService.getSubEntitiesBasedOnEntityType(currentSolutionScope.entities, currentSolutionScope.entityType, result);
+            //   if( childEntities.length > 0 ) {
+            //     entitiesData = entityIds.filter(element => childEntities.includes(element));
+            //   }
+            // } else {
+            entitiesData = entityIds;
+            // }
+
+            if (!entitiesData.length > 0) {
+              return resolve({
+                status: httpStatusCode.bad_request.status,
+                message: constants.apiResponses.SCOPE_ENTITY_INVALID,
+              });
+            }
+
+            currentSolutionScope.entities = entitiesData;
+          }
+
+          if (scopeData.roles) {
+            if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
+              let userRoles = await userRolesHelper.list(
+                {
+                  code: { $in: scopeData.roles },
+                },
+                ['_id', 'code'],
+              );
+
+              if (!userRoles.length > 0) {
+                return resolve({
+                  status: httpStatusCode.bad_request.status,
+                  message: constants.apiResponses.INVALID_ROLE_CODE,
+                });
+              }
+
+              currentSolutionScope['roles'] = userRoles;
+            } else {
+              if (scopeData.roles === constants.common.ALL_ROLES) {
+                currentSolutionScope['roles'] = [
+                  {
+                    code: constants.common.ALL_ROLES,
+                  },
+                ];
+              }
+            }
+          }
+        }
+
+        let updateSolution = await database.models.solutions
+          .findOneAndUpdate(
+            {
+              _id: solutionId,
+            },
+            { $set: { scope: currentSolutionScope } },
+            { new: true },
+          )
+          .lean();
+
+        if (!updateSolution._id) {
+          throw {
+            status: messageConstants.apiResponses.SOLUTION_SCOPE_NOT_ADDED,
+          };
+        }
+        solutionData = updateSolution;
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.SOLUTION_UPDATED,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+        });
+      }
+    });
+  }
+
+  static update(SolutionId, bodyData, userId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = bodyData;
+        let queryObject = {
+          _id: SolutionId,
+        };
+
+        let solutionDocument = await this.solutionDocuments(queryObject, ['_id']);
+
+        if (!solutionDocument.length > 0) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+
+        let updateObject = {
+          $set: {},
+        };
+
+        if (
+          solutionData.minNoOfSubmissionsRequired &&
+          solutionData.minNoOfSubmissionsRequired > messageConstants.common.DEFAULT_SUBMISSION_REQUIRED
+        ) {
+          if (!solutionData.allowMultipleAssessemts) {
+            solutionData.minNoOfSubmissionsRequired = messageConstants.common.DEFAULT_SUBMISSION_REQUIRED;
+          }
+        }
+
+        let solutionUpdateData = solutionData;
+
+        Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
+          updateObject['$set'][updationData] = solutionUpdateData[updationData];
+        });
+        updateObject['$set']['updatedBy'] = userId;
+
+        let solutionUpdatedData = await database.models.solutions
+          .findOneAndUpdate(
+            {
+              _id: solutionDocument[0]._id,
+            },
+            updateObject,
+            { new: true },
+          )
+          .lean();
+
+        if (!solutionUpdatedData._id) {
+          throw {
+            message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
+          };
+        }
+
+        if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
+          let solutionScope = await this.setScope(solutionUpdatedData._id, solutionData.scope);
+
+          if (!solutionScope.success) {
+            throw {
+              message: messageConstants.apiResponses.COULD_NOT_UPDATE_SCOPE,
+            };
+          }
+        }
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.SOLUTION_UPDATED,
+          data: solutionData,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          message: error.message,
+          data: {},
+        });
+      }
+    });
+  }
+  /**
    * find solutions
    * @method
    * @name solutionDocumentsByAggregateQuery
@@ -1818,152 +2036,6 @@ module.exports = class SolutionsHelper {
           success: false,
           message: error.message,
           data: false,
-        });
-      }
-    });
-  }
-
-  /**
-   * Set scope in solution
-   * @method
-   * @name setScope
-   * @param {String} programId - program id.
-   * @param {String} solutionId - solution id.
-   * @param {Object} scopeData - scope data.
-   * @returns {JSON} - scope in solution.
-   */
-
-  static setScope(programId, solutionId, scopeData) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // let programData = await programsHelper.programDocument(
-        //   { _id: programId },
-        //   ["_id", "scope"]
-        // );
-
-        // if (!programData.length > 0) {
-        //   return resolve({
-        //     status: httpStatusCode.bad_request.status,
-        //     message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
-        //   });
-        // }
-
-        let solutionData = await this.solutionDocuments({ _id: solutionId }, ['_id']);
-
-        if (!solutionData.length > 0) {
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-          });
-        }
-
-        if (programData[0].scope) {
-          let currentSolutionScope = programData[0].scope;
-
-          if (Object.keys(scopeData).length > 0) {
-            if (scopeData.entityType) {
-              let entityType = await entityTypesHelper.list(
-                {
-                  name: scopeData.entityType,
-                },
-                {
-                  name: 1,
-                  _id: 1,
-                },
-              );
-
-              currentSolutionScope.entityType = entityType[0].name;
-              currentSolutionScope.entityTypeId = entityType[0]._id;
-            }
-
-            if (scopeData.entities && scopeData.entities.length > 0) {
-              let entities = await entitiesHelper.entityDocuments(
-                {
-                  _id: { $in: scopeData.entities },
-                  entityTypeId: currentSolutionScope.entityTypeId,
-                },
-                ['_id'],
-              );
-
-              if (!entities.length > 0) {
-                return resolve({
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-                });
-              }
-
-              let entityIds = [];
-
-              for (let entity = 0; entity < entities.length; entity++) {
-                let entityQuery = {
-                  _id: { $in: currentSolutionScope.entities },
-                  [`groups.${currentSolutionScope.entityType}`]: entities[entity]._id,
-                };
-
-                let entityInParent = await entitiesHelper.entityDocuments(entityQuery);
-
-                if (entityInParent.length > 0) {
-                  entityIds.push(ObjectId(entities[entity]._id));
-                }
-              }
-
-              if (!entityIds.length > 0) {
-                return resolve({
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.SCOPE_ENTITY_INVALID,
-                });
-              }
-
-              currentSolutionScope.entities = entityIds;
-            }
-
-            if (scopeData.roles.length > 0) {
-              let userRoles = await userRolesHelper.list(
-                {
-                  code: { $in: scopeData.roles },
-                },
-                {
-                  _id: 1,
-                  code: 1,
-                },
-              );
-
-              if (!userRoles.length > 0) {
-                return resolve({
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.INVALID_ROLE_CODE,
-                });
-              }
-
-              currentSolutionScope['roles'] = userRoles;
-            }
-          }
-
-          let updateSolution = await database.models.solutions
-            .findOneAndUpdate(
-              {
-                _id: solutionId,
-              },
-              { $set: { scope: currentSolutionScope } },
-              { new: true },
-            )
-            .lean();
-
-          if (!updateSolution._id) {
-            throw {
-              status: messageConstants.apiResponses.SOLUTION_SCOPE_NOT_ADDED,
-            };
-          }
-          solutionData = updateSolution;
-        }
-
-        return resolve({
-          success: true,
-          message: messageConstants.apiResponses.SOLUTION_UPDATED,
-        });
-      } catch (error) {
-        return resolve({
-          success: false,
         });
       }
     });
