@@ -83,15 +83,10 @@ module.exports = function (app) {
             failed: result.failed,
           });
         }
-        if (ENABLE_BUNYAN_LOGGING === 'ON') {
-          // loggerObj.info({ resp: result });
-        }
 
-        if (ENABLE_DEBUG_LOGGING === 'ON') {
-          log.info('-------------------Response log starts here-------------------');
-          log.info('%j', result);
-          log.info('-------------------Response log ends here-------------------');
-        }
+        console.info('-------------------Response log starts here-------------------');
+        console.info('%j', result);
+        console.info('-------------------Response log ends here-------------------');
       } catch (error) {
         res.status(error.status ? error.status : httpStatusCode.bad_request.status).json({
           status: error.status ? error.status : httpStatusCode.bad_request.status,
