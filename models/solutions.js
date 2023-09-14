@@ -105,6 +105,10 @@ module.exports = {
           },
         },
       ],
+      recommededFor: {
+        type: Array,
+        index: true,
+      },
     },
     pageHeading: {
       default: 'Domains',
