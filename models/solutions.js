@@ -105,7 +105,7 @@ module.exports = {
           },
         },
       ],
-      recommededFor: {
+      recommendedFor: {
         type: Array,
         index: true,
       },
