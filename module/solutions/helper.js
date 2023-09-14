@@ -345,9 +345,9 @@ module.exports = class SolutionsHelper {
           if (scopeData.entityType) {
             let bodyData = { name: scopeData.entityType };
             let entityTypeData = await entityTypesHelper.list(bodyData);
-            // if (entityTypeData.length > 0) {
-            //   currentSolutionScope.entityType = entityTypeData[0].name;
-            // }
+            if (entityTypeData.length > 0) {
+              currentSolutionScope.entityType = entityTypeData[0].name;
+            }
           }
 
           if (scopeData.entities && scopeData.entities.length > 0) {
@@ -355,19 +355,19 @@ module.exports = class SolutionsHelper {
             let entityIds = [];
             let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
 
-            // if (locationData.codes.length > 0) {
-            //   let filterData = {
-            //     'registryDetails.code': locationData.codes,
-            //     // entityType: currentSolutionScope.entityType,
-            //   };
-            //   let entityDetails = await entitiesHelper.entitiesDocument(filterData);
+            if (locationData.codes.length > 0) {
+              let filterData = {
+                'registryDetails.code': locationData.codes,
+                entityType: currentSolutionScope.entityType,
+              };
+              let entityDetails = await entitiesHelper.entitiesDocument(filterData);
 
-            //   if (entityDetails.success) {
-            //     entityDetails.data.forEach((entity) => {
-            //       entityIds.push(entity.id);
-            //     });
-            //   }
-            // }
+              if (entityDetails.success) {
+                entityDetails.data.forEach((entity) => {
+                  entityIds.push(entity.id);
+                });
+              }
+            }
             entityIds = [...locationData.ids, ...locationData.codes];
 
             if (!entityIds.length > 0) {
@@ -398,6 +398,8 @@ module.exports = class SolutionsHelper {
 
             currentSolutionScope.entities = entitiesData;
           }
+
+          currentSolutionScope.recommendedFor = scopeData.recommendedFor;
 
           if (scopeData.roles) {
             if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
