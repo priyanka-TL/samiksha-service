@@ -29,8 +29,8 @@ module.exports = function () {
 
   global.httpStatusCode = require(ROOT_PATH + '/generics/httpStatusCodes');
 
-  global.ENABLE_DEBUG_LOGGING = process.env.ENABLE_DEBUG_LOGGING || 'ON';
-  global.ENABLE_BUNYAN_LOGGING = process.env.ENABLE_BUNYAN_LOGGING || 'ON';
+  // global.ENABLE_DEBUG_LOGGING = process.env.ENABLE_DEBUG_LOGGING || 'ON';
+  // global.ENABLE_BUNYAN_LOGGING = process.env.ENABLE_BUNYAN_LOGGING || 'ON';
 
   global.REQUEST_TIMEOUT_FOR_REPORTS = process.env.REQUEST_TIMEOUT_FOR_REPORTS || 120000;
 

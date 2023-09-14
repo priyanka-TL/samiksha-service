@@ -137,7 +137,7 @@ module.exports = class SolutionsHelper {
         let registryIds = [];
         let entityTypes = [];
 
-        Object.keys(_.omit(data, ['filter', 'role'])).forEach((requestedDataKey) => {
+        Object.keys(_.omit(data, ['filter', 'role', 'recommendedFor'])).forEach((requestedDataKey) => {
           registryIds.push(data[requestedDataKey]);
           entityTypes.push(requestedDataKey);
         });
@@ -147,10 +147,12 @@ module.exports = class SolutionsHelper {
           };
         }
 
+        let recommendedFor = data.recommendedFor.split(',');
+
         let filterQuery = {
           'scope.roles.code': { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
-          'scope.entities': { $in: registryIds },
-          'scope.entityType': { $in: entityTypes },
+          'scope.entities': { $in: [...registryIds, ...data.recommendedFor.split(',')] },
+          // 'scope.entityType': { $in: entityTypes },
           isReusable: false,
           isDeleted: false,
         };
@@ -343,9 +345,9 @@ module.exports = class SolutionsHelper {
           if (scopeData.entityType) {
             let bodyData = { name: scopeData.entityType };
             let entityTypeData = await entityTypesHelper.list(bodyData);
-            if (entityTypeData.length > 0) {
-              currentSolutionScope.entityType = entityTypeData[0].name;
-            }
+            // if (entityTypeData.length > 0) {
+            //   currentSolutionScope.entityType = entityTypeData[0].name;
+            // }
           }
 
           if (scopeData.entities && scopeData.entities.length > 0) {
@@ -353,20 +355,20 @@ module.exports = class SolutionsHelper {
             let entityIds = [];
             let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
 
-            if (locationData.codes.length > 0) {
-              let filterData = {
-                'registryDetails.code': locationData.codes,
-                entityType: currentSolutionScope.entityType,
-              };
-              let entityDetails = await entitiesHelper.entitiesDocument(filterData);
+            // if (locationData.codes.length > 0) {
+            //   let filterData = {
+            //     'registryDetails.code': locationData.codes,
+            //     // entityType: currentSolutionScope.entityType,
+            //   };
+            //   let entityDetails = await entitiesHelper.entitiesDocument(filterData);
 
-              if (entityDetails.success) {
-                entityDetails.data.forEach((entity) => {
-                  entityIds.push(entity.id);
-                });
-              }
-            }
-            entityIds = [...entityIds, ...locationData.ids];
+            //   if (entityDetails.success) {
+            //     entityDetails.data.forEach((entity) => {
+            //       entityIds.push(entity.id);
+            //     });
+            //   }
+            // }
+            entityIds = [...locationData.ids, ...locationData.codes];
 
             if (!entityIds.length > 0) {
               return resolve({

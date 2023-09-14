@@ -86,6 +86,7 @@ module.exports = class FilesHelper {
   static getFilePublicBaseUrl() {
     return new Promise(async (resolve, reject) => {
       try {
+        return;
         if (cloudStorage == '') {
           throw new Error(messageConstants.apiResponses.MISSING_CLOUD_STORAGE_PROVIDER);
         }

@@ -134,12 +134,11 @@ module.exports = class Questions extends Abstract {
             solutionDocument.evidenceMethods[Object.keys(solutionDocument.evidenceMethods)[0]].externalId;
           defaultSurveyCriteriaExternalId = solutionDocument.externalId + '-SF';
           defaultSurveySectionCode = Object.keys(solutionDocument.sections)[0];
-
-          if (!entityTypeDocument) {
-            entityTypeDocument = {
-              profileFields: [],
-            };
-          }
+        }
+        if (!entityTypeDocument) {
+          entityTypeDocument = {
+            profileFields: [],
+          };
         }
 
         let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
