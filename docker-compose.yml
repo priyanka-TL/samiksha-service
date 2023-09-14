@@ -99,7 +99,7 @@ services:
     image: shikshalokamqa/elevate-samiksha-service:0.0.1
     ports:
       - '4301:4301'
-    command: ['nodemon', 'app.js']
+    command: ['nodemon', 'dev']
     environment:
       - MONGODB_URL=mongodb://mongo:27017
     env_file:
