@@ -147,12 +147,10 @@ module.exports = class SolutionsHelper {
           };
         }
 
-        let recommendedFor = data.recommendedFor.split(',');
-
         let filterQuery = {
           'scope.roles.code': { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
-          'scope.entities': { $in: [...registryIds, ...data.recommendedFor.split(',')] },
-          // 'scope.entityType': { $in: entityTypes },
+          'scope.entities': { $in: [...registryIds] },
+          'scope.recommendedFor': { $in: data.recommendedFor.split(',') },
           isReusable: false,
           isDeleted: false,
         };
