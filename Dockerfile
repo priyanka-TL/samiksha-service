@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 4301
 
 #start the application
-CMD ["node", "app.js"]
+CMD ["nodemon", "dev"]
