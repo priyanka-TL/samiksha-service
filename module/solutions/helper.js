@@ -148,9 +148,11 @@ module.exports = class SolutionsHelper {
         }
 
         let filterQuery = {
-          'scope.roles.code': { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
-          'scope.entities': { $in: [...registryIds] },
-          'scope.recommendedFor': { $in: data.recommendedFor.split(',') },
+          $or: [
+            { 'scope.roles.code': { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] } },
+            { 'scope.entities': { $in: [...registryIds] } },
+            { 'scope.recommendedFor': { $in: data.recommendedFor.split(',') } },
+          ],
           isReusable: false,
           isDeleted: false,
         };
