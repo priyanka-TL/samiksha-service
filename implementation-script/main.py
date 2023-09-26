@@ -58,11 +58,12 @@ environment = None
 observationId = None
 solutionName = None
 pointBasedValue = None
-entityType = None
 allow_multiple_submissions = None
 scopeEntityType = ""
 programName = None
+entityType = None
 userEntity = None
+recommendedFor = None
 roles = ""
 mainRole = ""
 dictCritLookUp = {}
@@ -604,34 +605,34 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
     project_sheet_names = ['Instructions', 'Project upload', 'Tasks upload','Certificate details']
 
     # 1-with rubrics , 2 - with out rubrics , 3 - survey , 4 - Project
-    typeofSolutin = 0
+    typeofSolution = 0
 
-    global environment, observationId, solutionName, pointBasedValue, entityType, allow_multiple_submissions, programName, userEntity, roles, isProgramnamePresent, solutionLanguage, keyWords, entityTypeId, solutionDescription, creator, dikshaLoginId
+    global environment, observationId, solutionName, pointBasedValue, scopeEntityType, scopeEntities, allow_multiple_submissions, programName, userEntity, roles, isProgramnamePresent, solutionLanguage, keyWords, entityTypeId, solutionDescription, creator, dikshaLoginId, recommendedFor
 
     if (len(rubrics_sheet_names) == len(sheetNames1)) and ((set(rubrics_sheet_names) == set(sheetNames1))):
         print("--->Observation with rubrics file detected.<---")
-        typeofSolutin = 1
+        typeofSolution = 1
     elif (len(observation_sheet_names) == len(sheetNames1)) and ((set(observation_sheet_names) == set(sheetNames1))):
         print("--->Observation without rubrics file detected.<---")
-        typeofSolutin = 2
+        typeofSolution = 2
     elif (len(survey_sheet_names) == len(sheetNames1)) and ((set(survey_sheet_names) == set(sheetNames1))):
         print("--->Survey file detected.<---")
-        typeofSolutin = 3
+        typeofSolution = 3
     elif (len(project_sheet_names) == len(sheetNames1)) and ((set(project_sheet_names) == set(sheetNames1))):
         print("--->Project file detected.<---")
-        typeofSolutin = 4
+        typeofSolution = 4
     else:
-        typeofSolutin = 0
-        print(typeofSolutin)
+        typeofSolution = 0
+        print(typeofSolution)
         terminatingMessage("Please check the Input sheet.")
-    if typeofSolutin == 1:
+    if typeofSolution == 1:
         for sheetEnv in sheetNames1:
             if sheetEnv == "Instructions":
                 pass
             else:
                 if sheetEnv.strip().lower() == 'details':
                     print("--->Checking details sheet...")
-                    detailsCols = ["observation_solution_name", "observation_solution_description", "Diksha_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type"]
+                    detailsColNames = ["observation_solution_name", "observation_solution_description", "Diksha_loginId", "Name_of_the_creator", "language", "allow_multiple_submissions", "keywords", "scoring_system", "entity_type", "entities",	"roles", "start_date",	"end_date", "recommendedFor"]
                     detailsEnvSheet = wbObservation1.sheet_by_name(sheetEnv)
                     keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
                                range(detailsEnvSheet.ncols)]
@@ -639,7 +640,8 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         dictDetailsEnv = {
                             keysEnv[col_index_env]: detailsEnvSheet.cell(row_index_env, col_index_env).value for
                             col_index_env in range(detailsEnvSheet.ncols)}
-                        if set(detailsCols) == set(dictDetailsEnv.keys()):
+                        if set(detailsColNames) == set(dictDetailsEnv.keys()):
+                            recommendedFor = dictDetailsEnv['recommendedFor'].encode('utf-8').decode('utf-8') if dictDetailsEnv['recommendedFor'] else terminatingMessage("\"recommendedFor\" must not be Empty in \"details\" sheet")
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                             dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
                             # ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
@@ -649,10 +651,11 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             # ccRootOrgId = ccUserDetails[5]
                             solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8')
                             pointBasedValue = str(dictDetailsEnv['scoring_system']).encode('utf-8').decode('utf-8') if dictDetailsEnv['scoring_system'] else terminatingMessage("\"scoring_system\" must not be Empty in \"details\" sheet")
-                            entityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
-                            # scopeRoles = dictDetailsEnv['roles'].encode('utf-8').decode('utf-8') if dictDetailsEnv['roles'] else terminatingMessage("\"roles\" must not be Empty in \"details\" sheet")
-                            # startDateOfResource = str(dictDetailsEnv['start_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['start_date']) else terminatingMessage("\"start_date\" must not be Empty in \"details\" sheet")
-                            # endDateOfResource = str(dictDetailsEnv['end_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['end_date']) else terminatingMessage("\"end_date\" must not be Empty in \"details\" sheet")
+                            scopeEntityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
+                            scopeEntities = dictDetailsEnv['entities'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entities'] else terminatingMessage("\"entities\" must not be Empty in \"details\" sheet")
+                            scopeRoles = dictDetailsEnv['roles'].encode('utf-8').decode('utf-8') if dictDetailsEnv['roles'] else terminatingMessage("\"roles\" must not be Empty in \"details\" sheet")
+                            startDateOfResource = str(dictDetailsEnv['start_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['start_date']) else terminatingMessage("\"start_date\" must not be Empty in \"details\" sheet")
+                            endDateOfResource = str(dictDetailsEnv['end_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['end_date']) else terminatingMessage("\"end_date\" must not be Empty in \"details\" sheet")
                             solutionLanguage = dictDetailsEnv['language'].split(",") if dictDetailsEnv['language'] else [""]
                             keyWords = dictDetailsEnv['keywords'].encode('utf-8').decode('utf-8')
                             creator = dictDetailsEnv['Name_of_the_creator']  if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
@@ -812,19 +815,20 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                                 terminatingMessage("domain_name cannot be empty in theme_rubric sheet.")
                             if not dictDetailsEnv['weightage']:
                                 terminatingMessage("weightage cannot be empty in theme_rubric sheet.")
-    elif typeofSolutin == 2:
+    elif typeofSolution == 2:
         # Point based value set as null by default for observation without rubrics
         pointBasedValue = "null"
         criteria_id_arr = []
-        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'Diksha_loginId','language', 'keywords', 'entity_type', "scope_entity"]
+        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'Name_of_the_creator', 'Diksha_loginId', 'language', 'keywords', "entity_type", "entities",	"roles", "start_date",	"end_date", "recommendedFor"]
         criteriaColNames = ['criteria_id', 'criteria_name']
         questionsColNames = ["criteria_id","question_sequence","question_id","instance_parent_question_id","parent_question_id","show_when_parent_question_value_is","parent_question_value","page","question_number","question_primary_language","question_secondory_language","question_tip","question_hint","instance_identifier","question_response_type","date_auto_capture","response_required","min_number_value","max_number_value","file_upload","show_remarks","response(R1)","response(R1)_hint","response(R2)","response(R2)_hint","response(R3)","response(R3)_hint","response(R4)","response(R4)_hint","response(R5)","response(R5)_hint","response(R6)","response(R6)_hint","response(R7)","response(R7)_hint","response(R8)","response(R8)_hint","response(R9)","response(R9)_hint","response(R10)","response(R10)_hint","response(R11)","response(R11)_hint","response(R12)","response(R12)_hint","response(R13)","response(R13)_hint","response(R14)","response(R14)_hint","response(R15)","response(R15)_hint","response(R16)","response(R16)_hint","response(R17)","response(R17)_hint","response(R18)","response(R18)_hint","response(R19)","response(R19)_hint","response(R20)","response(R20)_hint","question_weightage","section_header"]
         for sheetColCheck in sheetNames1:
             if sheetColCheck.strip().lower() == 'details':
                 detailsColCheck = wbObservation1.sheet_by_name(sheetColCheck)
-                keysColCheckDetai = [detailsColCheck.cell(0, col_index_check).value for col_index_check in
+                keysColCheckDetai = [detailsColCheck.cell(1, col_index_check).value for col_index_check in
                                      range(detailsColCheck.ncols)]
                 if len(keysColCheckDetai) != len(detailsColNames):
+                    print(keysColCheckDetai + "!=" + detailsColNames)
                     terminatingMessage('Columns is missing in details sheet')
             if sheetColCheck.strip().lower() == 'criteria':
                 criteriaColCheck = wbObservation1.sheet_by_name(sheetColCheck)
@@ -854,8 +858,13 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                         solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_description'] else terminatingMessage("\"observation_solution_description\" must not be Empty in \"details\" sheet")
                         dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
+                        recommendedFor = dictDetailsEnv['recommendedFor'].encode('utf-8').decode('utf-8') if dictDetailsEnv['recommendedFor'] else terminatingMessage("\"recommendedFor\" must not be Empty in \"details\" sheet")
                         creator = dictDetailsEnv['Name_of_the_creator'] if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
-                      
+                        scopeEntityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
+                        scopeEntities = dictDetailsEnv['entities'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entities'] else terminatingMessage("\"entities\" must not be Empty in \"details\" sheet")
+                        scopeRoles = dictDetailsEnv['roles'].encode('utf-8').decode('utf-8') if dictDetailsEnv['roles'] else terminatingMessage("\"roles\" must not be Empty in \"details\" sheet")
+                        startDateOfResource = str(dictDetailsEnv['start_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['start_date']) else terminatingMessage("\"start_date\" must not be Empty in \"details\" sheet")
+                        endDateOfResource = str(dictDetailsEnv['end_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['end_date']) else terminatingMessage("\"end_date\" must not be Empty in \"details\" sheet")
                             
                         entityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
                         solutionLanguage = dictDetailsEnv['language'].encode('utf-8').decode('utf-8').split(",") if dictDetailsEnv['language'] else [""]
@@ -904,14 +913,14 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                     if not len(question_sequence_arr) == len(set(question_sequence_arr)):
                             terminatingMessage("\"question_sequence\" must be Unique in \"questions\" sheet")
                     if not check_sequence(question_sequence_arr): terminatingMessage("\"question_sequence\" must be in sequence in \"questions\" sheet")
-    elif typeofSolutin == 3:
-        for sheetEnvCheck in sheetNames1:
-            if sheetEnvCheck.strip().lower() == 'instructions' or sheetEnvCheck.strip().lower() == 'details' or sheetEnvCheck.strip().lower() == 'questions':
+    elif typeofSolution == 3:
+        for sheetEnv in sheetNames1:
+            if sheetEnv.strip().lower() == 'instructions' or sheetEnv.strip().lower() == 'details' or sheetEnv.strip().lower() == 'questions':
                 pass
             else:
                 terminatingMessage('Sheet Names in excel file is wrong , Sheet Names are details,questions')
 
-        detailsColNames = ["survey_solution_name", "survey_solution_description", "Name_of_the_creator","survey_creator_username", "survey_start_date", "survey_end_date"]
+        detailsColNames = ["survey_solution_name", "survey_solution_description", "Name_of_the_creator", "survey_creator_username", "entity_type", "entities",	"roles", "start_date",	"end_date", "recommendedFor" ]
         questionsColNames = ["question_sequence", "question_id", "section_header", "instance_parent_question_id",
                              "parent_question_id", "show_when_parent_question_value_is", "parent_question_value",
                              "page", "question_number", "question_language1", "question_language2", "question_tip",
@@ -929,12 +938,26 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
 
         for sheetColCheck in sheetNames1:
             if sheetColCheck.strip().lower() == 'details':
-                detailsColCheck = wbObservation1.sheet_by_name(sheetColCheck)
-                keysColCheckDetai = [detailsColCheck.cell(0, col_index_check).value for col_index_check in
-                                     range(detailsColCheck.ncols)]
-                if len(keysColCheckDetai) != len(detailsColNames):
-                    terminatingMessage('Some Columns are missing in details sheet')
+                print("--->Checking details sheet...")
+                detailsEnvSheet = wbObservation1.sheet_by_name(sheetColCheck)
+                keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
+                           range(detailsEnvSheet.ncols)]
+                for row_index_env in range(2, detailsEnvSheet.nrows):
+                    dictDetailsEnv = {
+                        keysEnv[col_index_env]: detailsEnvSheet.cell(row_index_env, col_index_env).value for
+                        col_index_env in range(detailsEnvSheet.ncols)}
+                    if set(detailsColNames) == set(dictDetailsEnv.keys()):
+                        recommendedFor = dictDetailsEnv['recommendedFor'].encode('utf-8').decode('utf-8') if dictDetailsEnv['recommendedFor'] else terminatingMessage("\"recommendedFor\" must not be Empty in \"details\" sheet")
+                        scopeEntityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
+                        scopeEntities = dictDetailsEnv['entities'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entities'] else terminatingMessage("\"entities\" must not be Empty in \"details\" sheet")
+                        scopeRoles = dictDetailsEnv['roles'].encode('utf-8').decode('utf-8') if dictDetailsEnv['roles'] else terminatingMessage("\"roles\" must not be Empty in \"details\" sheet")
+                        startDateOfResource = str(dictDetailsEnv['start_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['start_date']) else terminatingMessage("\"start_date\" must not be Empty in \"details\" sheet")
+                        endDateOfResource = str(dictDetailsEnv['end_date']).encode('utf-8').decode('utf-8') if str(dictDetailsEnv['end_date']) else terminatingMessage("\"end_date\" must not be Empty in \"details\" sheet")
+                    else:
+                        terminatingMessage("--->Columns Mismatch in Details Sheet.")
+
             if sheetColCheck.strip().lower() == 'questions':
+                print("--->Checking questions sheet...")
                 questionsColCheck = wbObservation1.sheet_by_name(sheetColCheck)
                 keysColCheckQues = [questionsColCheck.cell(1, col_index_check2).value for col_index_check2 in
                                     range(questionsColCheck.ncols)]
@@ -962,7 +985,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                     response_requiredSUR = dictDetailsEnv['response_required'] if dictDetailsEnv[
                         'response_required'] else terminatingMessage(
                         "\"response_required\" must not be Empty in \"details\" sheet")
-    elif typeofSolutin == 4:
+    elif typeofSolution == 4:
         criteria_id_arr = list()
         projectDetailsCols = ["title", "projectId", "is a SSO user?", "Diksha_loginId", "categories",
                               "objective","duration","recommendedFor","keywords",
@@ -977,7 +1000,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
         for sheetColCheck in sheetNames1:
             if sheetColCheck.strip().lower() == 'Project upload'.lower():
                 print("--->Checking Project Upload sheet...")
-                print("somthing")
                 detailsColCheck = wbObservation1.sheet_by_name(sheetColCheck)
                 keysColCheckDetai = [detailsColCheck.cell(0, col_index_check).value for col_index_check in
                                      range(detailsColCheck.ncols)]
@@ -1077,7 +1099,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                     Authorisedsignname1 = dictDetailsEnv['Authorised Signature Name - 1'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Authorised Signature Name - 1'] else terminatingMessage("\"Authorised Signature Name - 1\" must not be Empty in \"Certificate details\" sheet")
                     Authoriseddesifnation1 = dictDetailsEnv['Authorised Designation - 1'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Authorised Designation - 1'] else terminatingMessage("\"Authorised Designation - 1\" must not be Empty in \"Certificate details\" sheet")
 
-    return typeofSolutin
+    return typeofSolution
 
 # function to upload criteria 
 def criteriaUpload(solutionName_for_folder_path, wbObservation, millisAddObs, accessToken, tabName, projectDrivenFlag):
@@ -1313,9 +1335,9 @@ def frameWorkUpload(solutionName_for_folder_path, wbObservation, millisAddObs, a
         frameworkDocInsertObj['isRubricDriven'] = False
 
     frameworkDocInsertObj['entityTypeId'] = entityTypeId
-    frameworkDocInsertObj['entityType'] = entityType
+    frameworkDocInsertObj['entityType'] = scopeEntityType
     frameworkDocInsertObj['type'] = 'observation'
-    frameworkDocInsertObj['subType'] = entityType
+    frameworkDocInsertObj['subType'] = scopeEntityType
     frameworkDocInsertObj['status'] = "active"
     frameworkDocInsertObj['updatedBy'] = 'INITIALIZE'
     frameworkDocInsertObj['createdBy'] = 'INITIALIZE'
@@ -1451,7 +1473,7 @@ def createSolutionFromFramework(solutionName_for_folder_path, accessToken, frame
         'Content-Type': config.get(environment, 'Content-Type'),
         'X-authenticated-user-token': accessToken,
     }
-    queryparamsCreateSolutionApi = '?frameworkId=' + str(frameworkExternalId) + '&entityType=' + entityType
+    queryparamsCreateSolutionApi = '?frameworkId=' + str(frameworkExternalId) + '&entityType=' + scopeEntityType
     responseCreateSolutionApi = requests.post(url=urlCreateSolutionApi + queryparamsCreateSolutionApi,
                                               headers=headerCreateSolutionApi)
 
@@ -2307,10 +2329,7 @@ def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAdd
 
     urlCriteriaRubricUploadApi = config.get(environment, 'samikshahost') + config.get(environment,'criteriaRubricUploadApiUrl') + frameworkExternalId + "-OBSERVATION-TEMPLATE"
     headerCriteriaRubricUploadApi = {
-        # 'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
-        # 'X-Channel-id': config.get(environment, 'X-Channel-id')
-    }
+        'X-authenticated-user-token': accessToken,    }
     filesCriteriaRubric = {
         'criteria': open(solutionName_for_folder_path + '/criteriaRubrics/uploadSheet.csv', 'rb')
     }
@@ -2324,6 +2343,7 @@ def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAdd
         with open(solutionName_for_folder_path + '/criteriaRubrics/uploadInternalIdsSheet.csv',
                   'w+') as criteriaRubricRes:
             criteriaRubricRes.write(responseCriteriaRubricUploadApi.text)
+        print("Criteria Rubric Upload Success")
     else:
         messageArr = ["Criteria Rubric upload Failed.", "Response : " + str(responseCriteriaRubricUploadApi.text)]
         createAPILog(solutionName_for_folder_path, messageArr)
@@ -2682,7 +2702,7 @@ def prepareSuccessSheet(solutionName_for_folder_path, filePathAddObs, observatio
 
 def createChild(solutionName_for_folder_path, observationExternalId, accessToken):
     childObservationExternalId = str(observationExternalId + "_CHILD")
-    urlSol_prog_mapping = config.get(environment, 'samikshahost') + config.get(environment,'childsolutionforobservation') + "?solutionId=" + observationExternalId + "&entityType=" + entityType
+    urlSol_prog_mapping = config.get(environment, 'samikshahost') + config.get(environment,'childsolutionforobservation') + "?solutionId=" + observationExternalId + "&entityType=" + scopeEntityType
     
     payloadSol_prog_mapping = {
         "externalId": childObservationExternalId,
@@ -2699,8 +2719,9 @@ def createChild(solutionName_for_folder_path, observationExternalId, accessToken
     if responseSol_prog_mapping.status_code == 200:
         responseSol_prog_mapping = responseSol_prog_mapping.json()
         child_id = responseSol_prog_mapping['result']['_id']
-        print("Child solution : " + childObservationExternalId)
-        print("child_id : " + child_id)
+        print("Observation Solution Child created")
+        print("child_solutionId : " + child_id)
+        print("Child solutionExternalId : " + childObservationExternalId)
         createAPILog(solutionName_for_folder_path, messageArr)
         return [child_id, childObservationExternalId]
     else:
@@ -2715,6 +2736,7 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
     for sheetEnv in sheetNames1:
         if sheetEnv.strip().lower() == 'details':
             surveySolutionCreationReqBody = {}
+            surveySolutionCreationReqBody1 = {}
             detailsEnvSheet = wbSurvey.sheet_by_name(sheetEnv)
             keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
                        range(detailsEnvSheet.ncols)]
@@ -2737,32 +2759,38 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
 
                 # userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['survey_creator_username'])
                 # surveySolutionCreationReqBody['author'] = userDetails[0]
-                if dictDetailsEnv["survey_start_date"]:
-                    if type(dictDetailsEnv["survey_start_date"]) == str:
+                if dictDetailsEnv["start_date"]:
+                    if type(dictDetailsEnv["start_date"]) == str:
                         startDateArr = None
-                        startDateArr = (dictDetailsEnv["survey_start_date"]).split("-")
+                        startDateArr = (dictDetailsEnv["start_date"]).split("-")
                         surveySolutionCreationReqBody["startDate"] = startDateArr[2] + "-" + startDateArr[1] + "-" + \
                                                                      startDateArr[0] + "T00:00:00.000Z"
-                    elif type(dictDetailsEnv["survey_start_date"]) == float:
+                    elif type(dictDetailsEnv["start_date"]) == float:
                         surveySolutionCreationReqBody["startDate"] = (
-                            xlrd.xldate.xldate_as_datetime(dictDetailsEnv["survey_start_date"],
+                            xlrd.xldate.xldate_as_datetime(dictDetailsEnv["start_date"],
                                                            wbSurvey.datemode)).strftime("%Y/%m/%d")
                     else:
                         surveySolutionCreationReqBody["startDate"] = ""
-                    if dictDetailsEnv["survey_end_date"]:
-                        if type(dictDetailsEnv["survey_end_date"]) == str:
+                    if dictDetailsEnv["end_date"]:
+                        if type(dictDetailsEnv["end_date"]) == str:
                             endDateArr = None
-                            endDateArr = (dictDetailsEnv["survey_end_date"]).split("-")
+                            endDateArr = (dictDetailsEnv["end_date"]).split("-")
                             surveySolutionCreationReqBody["endDate"] = endDateArr[2] + "-" + endDateArr[1] + "-" + \
                                                                        endDateArr[0] + "T23:59:59.000Z"
-                        elif type(dictDetailsEnv["survey_end_date"]) == float:
+                        elif type(dictDetailsEnv["end_date"]) == float:
                             surveySolutionCreationReqBody["endDate"] = (
-                                xlrd.xldate.xldate_as_datetime(dictDetailsEnv["survey_end_date"],
+                                xlrd.xldate.xldate_as_datetime(dictDetailsEnv["end_date"],
                                                                wbSurvey.datemode)).strftime("%Y/%m/%d")
+                            
                         else:
                             surveySolutionCreationReqBody["endDate"] = ""
                         enDt = surveySolutionCreationReqBody["endDate"]
-                        
+
+                        recommendedForArr = str(recommendedFor).split(",") if str(recommendedFor).split(",") else []
+                        scopeEntitiesArr = str(scopeEntities).split(",") if str(scopeEntities).split(",") else []
+                        scopeRolesArr = str(scopeRoles).split(",") if str(scopeRoles).split(",") else []
+                        surveySolutionCreationReqBody1["scope"] = {"entityType": scopeEntityType, "entities": scopeEntitiesArr, "roles": scopeRolesArr, "recommendedFor": recommendedForArr}
+
                         urlCreateSolutionApi = config.get(environment, 'samikshahost')+ config.get(environment, 'surveySolutionCreationApiUrl')
                         headerCreateSolutionApi = {
                             'Content-Type': config.get(environment, 'Content-Type'),
@@ -2804,6 +2832,9 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
                             solutionId = responseCreateSolutionApi["result"]["solutionId"]
                             bodySolutionUpdate = {"creator": dictDetailsEnv['Name_of_the_creator'].encode('utf-8').decode('utf-8')}
                             solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+                            solutionUpdate(parentFolder, accessToken, solutionId, surveySolutionCreationReqBody1)
+
+                            
 
                             return [solutionId, surveySolutionExternalId]
                         else:
@@ -3093,7 +3124,10 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                                   "Status code : " + str(responseImportSoluTemplateApi.status_code),
                                   "Response : " + responseImportSoluTemplateApi.text]
                     createAPILog(parentFolder, messageArr)
-                    responseImportSoluTemplateApi = responseImportSoluTemplateApi.json()                  
+                    responseImportSoluTemplateApi = responseImportSoluTemplateApi.json()
+                    print("child_solutionId : " + responseImportSoluTemplateApi['result']['solutionId'])
+                    print("Child solutionExternalId : " + responseImportSoluTemplateApi['result']['solutionExternalId'])
+                    
                 else:
                     print('Creating Child API Failed')
                     messageArr = ["********* Program mapping api *********", "URL : " + urlImportSoluTemplate,
@@ -3705,7 +3739,6 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
 
                 taskMinNooEvide = dictDetailsEnv["Minimum No. of Evidence"]
                 tasksLevelEvidance = dictDetailsEnv["Task Level Evidence"]
-                print(tasksLevelEvidance)
                 
 
 
@@ -4004,7 +4037,6 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
     responseDownloadsvgApi = requests.request("POST",url=urluploadcertificatepi, headers=headeruploadcertificateApi,
                                            data=task_payload,
                                            files=task_file)
-    print(responseDownloadsvgApi)
     if responseDownloadsvgApi.status_code == 200:
         responseeditsvg = responseDownloadsvgApi.json()
         svgid = responseeditsvg['result']['data']['templateId']
@@ -4167,7 +4199,6 @@ def editsvg(accessToken,filePathAddProject,projectName_for_folder_path,baseTempl
 
                 }
                 responseeditsvg = requests.request("POST",url=urleditnigsvgApi, headers=headereditingsvgApi,data=payload, files=downloadedfiles)
-                print(responseeditsvg)
 
                 if responseeditsvg.status_code == 200:
                     responseeditsvg = responseeditsvg.json()
@@ -4458,13 +4489,14 @@ def downloadlogosign(filePathAddProject,projectName_for_folder_path):
                     print("--->Logos and signature downlading are failed(check if drive link are  Anyone with the link or not)<---")
 
 def mainFunc(mainFilePath,addObservationSolution, millisecond):
-    # global scopeRoles, startDateOfResource,endDateOfResource
+    global scopeRoles, startDateOfResource,endDateOfResource, scopeEntities, scopeEntityType, recommendedFor
     parentFolder = createFileStruct(mainFilePath,addObservationSolution)
     accessToken = generateAccessToken(parentFolder)
     typeofSolution = validateSheets(addObservationSolution,accessToken, parentFolder)
     # sys.exit()
     wbObservation = xlrd.open_workbook(addObservationSolution, on_demand=True)
     if typeofSolution == 1:
+        ObservationSolutionCreationReqBody = {}
         impLedObsFlag = False
         criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "framework", impLedObsFlag)
         
@@ -4486,6 +4518,7 @@ def mainFunc(mainFilePath,addObservationSolution, millisecond):
             dictECMs = {keys[col_index]: ecmsSheet.cell(row_index, col_index).value for col_index in
                         range(ecmsSheet.ncols)}
             EMC_ID = dictECMs['ECM Id/Domian ID'].encode('utf-8').decode('utf-8').strip() + '_' + str(millisecond)
+            
             ECM_NAME = dictECMs['ECM Name/Domain Name'].encode('utf-8').decode('utf-8').strip()
             section.update({dictECMs['section_id']: dictECMs['section_name']})
             ecm_sections[EMC_ID] = dictECMs['section_id']
@@ -4540,28 +4573,24 @@ def mainFunc(mainFilePath,addObservationSolution, millisecond):
         if childId[0]:
             # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
             #                                                         accessToken)
-            # scopeEntities = entitiesPGMID
-            # scopeRoles = str(scopeRoles).split(",") if str(scopeRoles).split(",") else []
-            # "entityType": scopeEntityType, "entities": scopeEntities,
-            # bodySolutionUpdate = {
-            #     "scope": { "roles": scopeRoles,"entities": scopeEntities}}
-            # solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-            # if startDateOfResource:
-            #     startDateArr = str(startDateOfResource).split("-")
-            #     bodySolutionUpdate = {
-            #         "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
-            #             0] + "T00:00:00.000Z"}
-            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-            # if endDateOfResource:
-            #     endDateArr = str(endDateOfResource).split("-")
-            #     bodySolutionUpdate = {
-            #         "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
-            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            recommendedForArr = str(recommendedFor).split(",") if str(recommendedFor).split(",") else []
+            scopeEntitiesArr = str(scopeEntities).split(",") if str(scopeEntities).split(",") else []
+            scopeRolesArr = str(scopeRoles).split(",") if str(scopeRoles).split(",") else []
+            ObservationSolutionCreationReqBody["scope"] = {"entityType": scopeEntityType, "entities": scopeEntitiesArr, "roles": scopeRolesArr, "recommendedFor": recommendedForArr}
+            if startDateOfResource:
+                startDateArr = str(startDateOfResource).split("-")
+                ObservationSolutionCreationReqBody["startDate"] = startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + "T00:00:00.000Z"
+            if endDateOfResource:
+                endDateArr = str(endDateOfResource).split("-")
+                ObservationSolutionCreationReqBody["endDate"] = endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"
+                bodySolutionUpdate = {"startDate": ObservationSolutionCreationReqBody["startDate"], "endDate" : ObservationSolutionCreationReqBody["endDate"], "scope" : ObservationSolutionCreationReqBody["scope"] }
+                solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
             prepareSolutionSuccessSheet(MainFilePath, parentFolder, childId[1], childId[0],
                                         accessToken)
     # else:
     #     print("No program name detected.")
     elif typeofSolution == 2:
+        ObservationSolutionCreationReqBody = {}
         criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "criteria", False)
     
         
@@ -4603,22 +4632,18 @@ def mainFunc(mainFilePath,addObservationSolution, millisecond):
         if childId[0]:
             # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
                                                                     # accessToken)
-            # scopeEntities = entitiesPGMID
-            # scopeRoles = solutionDetails[0]
-            # bodySolutionUpdate = {
-            #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-            # solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-            # if solutionDetails[1]:
-            #     startDateArr = str(solutionDetails[1]).split("-")
-            #     bodySolutionUpdate = {
-            #         "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
-            #             0] + "T00:00:00.000Z"}
-            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
-            # if solutionDetails[2]:
-            #     endDateArr = str(solutionDetails[2]).split("-")
-            #     bodySolutionUpdate = {
-            #         "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"}
-            #     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+            recommendedForArr = str(recommendedFor).split(",") if str(recommendedFor).split(",") else []
+            scopeEntitiesArr = str(scopeEntities).split(",") if str(scopeEntities).split(",") else []
+            scopeRolesArr = str(scopeRoles).split(",") if str(scopeRoles).split(",") else []
+            ObservationSolutionCreationReqBody["scope"] = {"entityType": scopeEntityType, "entities": scopeEntitiesArr, "roles": scopeRolesArr, "recommendedFor": recommendedForArr}
+            if startDateOfResource:
+                startDateArr = str(startDateOfResource).split("-")
+                ObservationSolutionCreationReqBody["startDate"] = startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + "T00:00:00.000Z"
+            if endDateOfResource:
+                endDateArr = str(endDateOfResource).split("-")
+                ObservationSolutionCreationReqBody["endDate"] = endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + "T23:59:59.000Z"
+                bodySolutionUpdate = {"startDate": ObservationSolutionCreationReqBody["startDate"], "endDate" : ObservationSolutionCreationReqBody["endDate"], "scope" : ObservationSolutionCreationReqBody["scope"]}
+                solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
             prepareSolutionSuccessSheet(MainFilePath, parentFolder, childId[1], childId[0],
                                         accessToken)
    
@@ -4628,6 +4653,7 @@ def mainFunc(mainFilePath,addObservationSolution, millisecond):
         surTempExtID = surveyResp[1]
         bodySolutionUpdate = {"status": "active", "isDeleted": False}
         solutionUpdate(parentFolder, accessToken, surveyResp[0], bodySolutionUpdate)
+
         uploadSurveyQuestions(parentFolder, wbObservation, addObservationSolution, accessToken, surTempExtID,
                                 surveyResp[0], millisecond)
     elif typeofSolution == 4:
@@ -4728,12 +4754,8 @@ def mainFunc(mainFilePath,addObservationSolution, millisecond):
                                                             ProjectSolutionExternalId,
                                                             ProjectSolutionId, accessToken)
                             elif str(dictDetailsEnv['has certificate']).lower()== 'Yes'.lower():
-                                print(str(dictDetailsEnv['has certificate']).lower()== 'Yes'.lower())
-                                print(str(dictDetailsEnv['has certificate']))
                                 print("---->this is certificate with project<---")
                                 baseTemplate_id=fetchCertificateBaseTemplate(filePathAddProject,accessToken,projectName_for_folder_path)
-                                print(baseTemplate_id)
-                                # sys.exit()
                                 downloadlogosign(filePathAddProject,projectName_for_folder_path)
                                 editsvg(accessToken,filePathAddProject,projectName_for_folder_path,baseTemplate_id)
                                 prepareProjectAndTasksSheets(addObservationSolution, projectName_for_folder_path,accessToken)
@@ -4781,7 +4803,7 @@ start_time = time.time()
 parser = argparse.ArgumentParser()
 parser.add_argument('--programFile', '--programFile', type=valid_file)
 parser.add_argument('--env', '--env')
-parser.add_argument('--resourceLinkOrExtPGM', required=True, help='The resource link or external PGM URL')
+parser.add_argument('--resourceLinkOrExtPGM', required=True, help='The resource link')
 argument = parser.parse_args()
 environment = argument.env
 millisecond = int(time.time() * 1000)
