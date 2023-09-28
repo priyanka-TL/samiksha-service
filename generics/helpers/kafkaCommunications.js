@@ -3,39 +3,39 @@ const kafkaCommunicationsOnOff =
 const completedObservationSubmissionKafkaTopic =
   process.env.COMPLETED_OBSERVATION_SUBMISSION_TOPIC && process.env.COMPLETED_OBSERVATION_SUBMISSION_TOPIC != 'OFF'
     ? process.env.COMPLETED_OBSERVATION_SUBMISSION_TOPIC
-    : 'sl-observations-dev';
+    : 'elevate_observations_dev';
 const completedSubmissionKafkaTopic =
   process.env.COMPLETED_SUBMISSION_TOPIC && process.env.COMPLETED_SUBMISSION_TOPIC != 'OFF'
     ? process.env.COMPLETED_SUBMISSION_TOPIC
-    : 'sl-submissions-dev';
+    : 'elevate_submissions_dev';
 const inCompleteObservationSubmissionKafkaTopic =
   process.env.INCOMPLETE_OBSERVATION_SUBMISSION_TOPIC && process.env.INCOMPLETE_OBSERVATION_SUBMISSION_TOPIC != 'OFF'
     ? process.env.INCOMPLETE_OBSERVATION_SUBMISSION_TOPIC
-    : 'sl-incomplete-observations-dev';
+    : 'elevate_incomplete_observations_dev';
 const inCompleteSubmissionKafkaTopic =
   process.env.INCOMPLETE_SUBMISSION_TOPIC && process.env.INCOMPLETE_SUBMISSION_TOPIC != 'OFF'
     ? process.env.INCOMPLETE_SUBMISSION_TOPIC
-    : 'sl-incomplete-submissions-dev';
+    : 'elevate_incomplete_submissions_dev';
 const submissionRatingQueueKafkaTopic =
   process.env.SUBMISSION_RATING_QUEUE_TOPIC && process.env.SUBMISSION_RATING_QUEUE_TOPIC != 'OFF'
     ? process.env.SUBMISSION_RATING_QUEUE_TOPIC
-    : 'sl-submissions-rating-dev';
+    : 'elevate_submissions_rating_dev';
 const notificationsKafkaTopic =
   process.env.NOTIFICATIONS_TOPIC && process.env.NOTIFICATIONS_TOPIC != 'OFF'
     ? process.env.NOTIFICATIONS_TOPIC
-    : 'sl-notifications-dev';
+    : 'elevate_notifications_dev';
 const completedSurveySubmissionKafkaTopic =
   process.env.COMPLETED_SURVEY_SUBMISSION_TOPIC && process.env.COMPLETED_SURVEY_SUBMISSION_TOPIC != 'OFF'
     ? process.env.COMPLETED_SURVEY_SUBMISSION_TOPIC
-    : 'sl_surveys_raw';
+    : 'elevate_surveys_raw';
 const inCompleteSurveySubmissionKafkaTopic =
   process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC && process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC != 'OFF'
     ? process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC
-    : 'sl_incomplete_surveys_raw';
-const improvementProjectSubmissionTopic =
-  process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC != 'OFF'
-    ? process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
-    : 'sl-improvement-project-submission-dev';
+    : 'elevate_incomplete_surveys_raw';
+// const improvementProjectSubmissionTopic =
+//   process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC != 'OFF'
+//     ? process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
+//     : 'sl-improvement-project-submission-dev';
 
 const pushCompletedObservationSubmissionToKafka = function (message) {
   return new Promise(async (resolve, reject) => {
@@ -190,22 +190,22 @@ const pushInCompleteSurveySubmissionToKafka = function (message) {
   });
 };
 
-const pushSubmissionToImprovementService = function (message) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let kafkaPushStatus = await pushMessageToKafka([
-        {
-          topic: improvementProjectSubmissionTopic,
-          messages: JSON.stringify(message),
-        },
-      ]);
+// const pushSubmissionToImprovementService = function (message) {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       let kafkaPushStatus = await pushMessageToKafka([
+//         {
+//           topic: improvementProjectSubmissionTopic,
+//           messages: JSON.stringify(message),
+//         },
+//       ]);
 
-      return resolve(kafkaPushStatus);
-    } catch (error) {
-      return reject(error);
-    }
-  });
-};
+//       return resolve(kafkaPushStatus);
+//     } catch (error) {
+//       return reject(error);
+//     }
+//   });
+// };
 
 const pushMessageToKafka = function (payload) {
   return new Promise((resolve, reject) => {
@@ -248,5 +248,5 @@ module.exports = {
   pushInCompleteObservationSubmissionToKafka: pushInCompleteObservationSubmissionToKafka,
   pushCompletedSurveySubmissionToKafka: pushCompletedSurveySubmissionToKafka,
   pushInCompleteSurveySubmissionToKafka: pushInCompleteSurveySubmissionToKafka,
-  pushSubmissionToImprovementService: pushSubmissionToImprovementService,
+  // pushSubmissionToImprovementService: pushSubmissionToImprovementService,
 };

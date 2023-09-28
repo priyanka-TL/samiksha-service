@@ -111,11 +111,11 @@ module.exports = class ObservationSubmissionsHelper {
           );
         }
 
-        if (observationSubmissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
-          await this.pushSubmissionToImprovementService(
-            _.pick(observationSubmissionsDocument, ['project', 'status', '_id', 'completedDate']),
-          );
-        }
+        // if (observationSubmissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
+        //   await this.pushSubmissionToImprovementService(
+        //     _.pick(observationSubmissionsDocument, ['project', 'status', '_id', 'completedDate']),
+        //   );
+        // }
 
         const kafkaMessage =
           await kafkaClient.pushCompletedObservationSubmissionToKafka(observationSubmissionsDocument);
@@ -674,38 +674,38 @@ module.exports = class ObservationSubmissionsHelper {
    * or not.
    */
 
-  static pushSubmissionToImprovementService(observationSubmissionDocument) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let observationSubmissionData = {
-          taskId: observationSubmissionDocument.project.taskId,
-          projectId: observationSubmissionDocument.project._id,
-          _id: observationSubmissionDocument._id,
-          status: observationSubmissionDocument.status,
-        };
+  // static pushSubmissionToImprovementService(observationSubmissionDocument) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let observationSubmissionData = {
+  //         taskId: observationSubmissionDocument.project.taskId,
+  //         projectId: observationSubmissionDocument.project._id,
+  //         _id: observationSubmissionDocument._id,
+  //         status: observationSubmissionDocument.status,
+  //       };
 
-        if (observationSubmissionDocument.completedDate) {
-          observationSubmissionData['submissionDate'] = observationSubmissionDocument.completedDate;
-        }
+  //       if (observationSubmissionDocument.completedDate) {
+  //         observationSubmissionData['submissionDate'] = observationSubmissionDocument.completedDate;
+  //       }
 
-        const kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(observationSubmissionData);
+  //       const kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(observationSubmissionData);
 
-        if (kafkaMessage.status != 'success') {
-          let errorObject = {
-            formData: {
-              submissionId: observationSubmissionDocument._id.toString(),
-              message: kafkaMessage.message,
-            },
-          };
-          slackClient.kafkaErrorAlert(errorObject);
-        }
+  //       if (kafkaMessage.status != 'success') {
+  //         let errorObject = {
+  //           formData: {
+  //             submissionId: observationSubmissionDocument._id.toString(),
+  //             message: kafkaMessage.message,
+  //           },
+  //         };
+  //         slackClient.kafkaErrorAlert(errorObject);
+  //       }
 
-        return resolve(kafkaMessage);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
+  //       return resolve(kafkaMessage);
+  //     } catch (error) {
+  //       return reject(error);
+  //     }
+  //   });
+  // }
 
   /**
    * Disable Observation Submission Based on Solution Id

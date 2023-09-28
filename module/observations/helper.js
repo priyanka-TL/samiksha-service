@@ -954,8 +954,8 @@ module.exports = class ObservationsHelper {
       return resolve({
         name: 1,
         externalId: 1,
-        programId: 1,
-        programExternalId: 1,
+        // programId: 1,
+        // programExternalId: 1,
         description: 1,
         themes: 1,
         entityProfileFieldsPerEntityTypes: 1,

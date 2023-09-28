@@ -366,4 +366,6 @@ module.exports = {
   INVALID_PROGRAM_OPERATION: 'Invalid program operation.',
   ATTACHMENTS_URL_NOT_FOUND: 'Not found attachment url',
   SOLUTIONS_LIST: 'Solution Fetched successfully',
+  KEYS_INDEXED_SUCCESSFULL: 'Keys indexed successfully',
+  KEYS_ALREADY_INDEXED_SUCCESSFULL: 'Keys already indexed',
 };

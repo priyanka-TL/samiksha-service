@@ -180,42 +180,42 @@ let enviromentVariables = {
   //   message: 'Disable learner service',
   //   optional: false,
   // },
-  // KAFKA_COMMUNICATIONS_ON_OFF: {
-  //   message: 'Enable/Disable kafka communications',
-  //   optional: false,
-  // },
-  // KAFKA_URL: {
-  //   message: 'Required kafka url',
-  //   optional: false,
-  // },
-  // KAFKA_GROUP_ID: {
-  //   message: 'Required kafka group id',
-  //   optional: false,
-  // },
-  // COMPLETED_SUBMISSION_TOPIC: {
-  //   message: 'OFF/TOPIC_NAME',
-  //   optional: false,
-  // },
-  // INCOMPLETE_SUBMISSION_TOPIC: {
-  //   message: 'OFF/TOPIC_NAME',
-  //   optional: false,
-  // },
-  // SUBMISSION_RATING_QUEUE_TOPIC: {
-  //   message: 'OFF/TOPIC_NAME',
-  //   optional: false,
-  // },
-  // COMPLETED_OBSERVATION_SUBMISSION_TOPIC: {
-  //   message: 'OFF/TOPIC_NAME',
-  //   optional: false,
-  // },
-  // INCOMPLETE_OBSERVATION_SUBMISSION_TOPIC: {
-  //   message: 'OFF/TOPIC_NAME',
-  //   optional: false,
-  // },
-  // NOTIFICATIONS_TOPIC: {
-  //   message: 'OFF/TOPIC_NAME',
-  //   optional: false,
-  // },
+  KAFKA_COMMUNICATIONS_ON_OFF: {
+    message: 'Enable/Disable kafka communications',
+    optional: false,
+  },
+  KAFKA_URL: {
+    message: 'Required kafka url',
+    optional: false,
+  },
+  KAFKA_GROUP_ID: {
+    message: 'Required kafka group id',
+    optional: false,
+  },
+  COMPLETED_SUBMISSION_TOPIC: {
+    message: 'Completed Submission Topics',
+    optional: false,
+  },
+  INCOMPLETE_SUBMISSION_TOPIC: {
+    message: 'Incomplete Submission Topics',
+    optional: false,
+  },
+  SUBMISSION_RATING_QUEUE_TOPIC: {
+    message: 'Submission Rating Topic',
+    optional: false,
+  },
+  COMPLETED_OBSERVATION_SUBMISSION_TOPIC: {
+    message: 'Completed Observation Topic',
+    optional: false,
+  },
+  INCOMPLETE_OBSERVATION_SUBMISSION_TOPIC: {
+    message: 'Incomplete Observation Topic',
+    optional: false,
+  },
+  NOTIFICATIONS_TOPIC: {
+    message: 'Notification Topic',
+    optional: false,
+  },
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
   //   message: 'ON/OFF',
   //   optional: false,

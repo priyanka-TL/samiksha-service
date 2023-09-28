@@ -283,6 +283,22 @@ function convertStringToBoolean(stringData) {
   return stringToBoolean;
 }
 
+/**
+ * Convert string to mongodb object id.
+ * @method
+ * @name convertStringToObjectId
+ * @param id - string id
+ * @returns {ObjectId} - returns objectId
+ */
+
+function convertStringToObjectId(id) {
+  let checkWhetherIdIsValidMongoId = gen.utils.isValidMongoId(id);
+  if (checkWhetherIdIsValidMongoId) {
+    id = new ObjectId(id);
+  }
+
+  return id;
+}
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
   lowerCase: lowerCase,
@@ -306,4 +322,5 @@ module.exports = {
   removeDuplicatesFromArray: removeDuplicatesFromArray,
   convertStringToBoolean: convertStringToBoolean,
   filterLocationIdandCode: filterLocationIdandCode,
+  convertStringToObjectId: convertStringToObjectId,
 };

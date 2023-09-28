@@ -197,8 +197,8 @@ module.exports = class ObservationSubmissions extends Abstract {
           entityInformation: entityDocument.metaInformation,
           solutionId: solutionDocument._id,
           solutionExternalId: solutionDocument.externalId,
-          programId: solutionDocument.programId,
-          programExternalId: solutionDocument.programExternalId,
+          // programId: solutionDocument.programId,
+          // programExternalId: solutionDocument.programExternalId,
           isAPrivateProgram: solutionDocument.isAPrivateProgram,
           frameworkId: solutionDocument.frameworkId,
           frameworkExternalId: solutionDocument.frameworkExternalId,
@@ -299,14 +299,16 @@ module.exports = class ObservationSubmissions extends Abstract {
 
         let newObservationSubmissionDocument = await database.models.observationSubmissions.create(submissionDocument);
 
-        if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-          await observationSubmissionsHelper.pushSubmissionToImprovementService(
-            _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
-          );
-        }
+        // if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
+        //   await observationSubmissionsHelper.pushSubmissionToImprovementService(
+        //     _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
+        //   );
+        // }
 
         // Push new observation submission to kafka for reporting/tracking.
-        // observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(newObservationSubmissionDocument._id);
+        observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(
+          newObservationSubmissionDocument._id,
+        );
 
         let observations = new Array();
 

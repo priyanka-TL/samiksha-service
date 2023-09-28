@@ -90,25 +90,8 @@ module.exports = {
     },
     referenceFrom: String,
     scope: {
-      entityType: String,
-      entityTypeId: 'ObjectId',
-      entities: {
-        type: Array,
-        index: true,
-      },
-      roles: [
-        {
-          _id: 'ObjectId',
-          code: {
-            type: String,
-            index: true,
-          },
-        },
-      ],
-      recommendedFor: {
-        type: Array,
-        index: true,
-      },
+      type: Object,
+      default: {},
     },
     pageHeading: {
       default: 'Domains',
