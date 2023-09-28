@@ -16,7 +16,7 @@ const csv = require('csvtojson');
 const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const assessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
-
+const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 /**
  * Observations
  * @class
@@ -643,7 +643,7 @@ module.exports = class Observations extends Abstract {
             _id: req.params._id,
             createdBy: req.userDetails.userId,
             status: { $ne: 'inactive' },
-            entities: new ObjectId(req.query.entityId),
+            entities: req.query.entityId,
           })
           .lean();
 
@@ -654,25 +654,28 @@ module.exports = class Observations extends Abstract {
           });
         }
 
-        let entityQueryObject = {
-          _id: req.query.entityId,
-          entityType: observationDocument.entityType,
-        };
-        let entityDocument = await database.models.entities
-          .findOne(entityQueryObject, {
-            metaInformation: 1,
-            entityTypeId: 1,
-            entityType: 1,
-            registryDetails: 1,
-          })
-          .lean();
+        let entityDocument = { metaInformation: {} };
+        if (validateEntities == 'ON') {
+          let entityQueryObject = {
+            _id: req.query.entityId,
+            entityType: observationDocument.entityType,
+          };
+          entityDocument = await database.models.entities
+            .findOne(entityQueryObject, {
+              metaInformation: 1,
+              entityTypeId: 1,
+              entityType: 1,
+              registryDetails: 1,
+            })
+            .lean();
 
-        if (!entityDocument) {
-          let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: responseMessage,
-          });
+          if (!entityDocument) {
+            let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+            return resolve({
+              status: httpStatusCode.bad_request.status,
+              message: responseMessage,
+            });
+          }
         }
 
         if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {
@@ -776,9 +779,9 @@ module.exports = class Observations extends Abstract {
         // })
 
         response.result.entityProfile = {
-          _id: entityDocument._id,
+          _id: entityDocument._id ? entityDocument._id : req.query.entityId,
           entityTypeId: entityDocument.entityTypeId,
-          entityType: entityDocument.entityType,
+          entityType: entityDocument.entityType ? entityDocument.entityType : observationDocument.entityType,
           // form: form
         };
 

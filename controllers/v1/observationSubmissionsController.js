@@ -15,7 +15,7 @@ const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
 const scoringHelper = require(MODULES_BASE_PATH + '/scoring/helper');
-
+const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 /**
  * ObservationSubmissions
  * @class
@@ -99,7 +99,7 @@ module.exports = class ObservationSubmissions extends Abstract {
           _id: req.params._id,
           createdBy: req.userDetails.userId,
           status: { $ne: 'inactive' },
-          entities: new ObjectId(req.query.entityId),
+          entities: req.query.entityId,
         });
 
         if (!observationDocument[0]) {
@@ -111,22 +111,29 @@ module.exports = class ObservationSubmissions extends Abstract {
 
         observationDocument = observationDocument[0];
 
-        let entityDocument = await entitiesHelper.entityDocuments(
-          {
+        let entityDocument = { metaInformation: {} };
+        if (validateEntities == 'ON') {
+          let entityQueryObject = {
             _id: req.query.entityId,
             entityType: observationDocument.entityType,
-          },
-          ['metaInformation', 'entityTypeId', 'entityType', 'registryDetails'],
-        );
+          };
+          entityDocument = await database.models.entities
+            .findOne(entityQueryObject, {
+              metaInformation: 1,
+              entityTypeId: 1,
+              entityType: 1,
+              registryDetails: 1,
+            })
+            .lean();
 
-        if (!entityDocument[0]) {
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.ENTITY_NOT_FOUND,
-          });
+          if (!entityDocument) {
+            let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+            return resolve({
+              status: httpStatusCode.bad_request.status,
+              message: responseMessage,
+            });
+          }
         }
-
-        entityDocument = entityDocument[0];
 
         if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {
           entityDocument.metaInformation.registryDetails = entityDocument.registryDetails;
@@ -164,18 +171,19 @@ module.exports = class ObservationSubmissions extends Abstract {
         }
 
         solutionDocument = solutionDocument[0];
+        if (validateEntities == 'ON') {
+          let entityProfileForm = await database.models.entityTypes
+            .findOne(solutionDocument.entityTypeId, {
+              profileForm: 1,
+            })
+            .lean();
 
-        let entityProfileForm = await database.models.entityTypes
-          .findOne(solutionDocument.entityTypeId, {
-            profileForm: 1,
-          })
-          .lean();
-
-        if (!entityProfileForm) {
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND,
-          });
+          if (!entityProfileForm) {
+            return resolve({
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND,
+            });
+          }
         }
 
         let lastSubmissionNumber = 0;
