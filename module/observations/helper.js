@@ -21,6 +21,7 @@ const appsPortalBaseUrl =
   process.env.APP_PORTAL_BASE_URL && process.env.APP_PORTAL_BASE_URL !== ''
     ? process.env.APP_PORTAL_BASE_URL + '/'
     : 'https://apps.shikshalokam.org/';
+const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
@@ -164,9 +165,11 @@ module.exports = class ObservationsHelper {
   static createObservation(data, userId, solution) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (data.entities) {
-          let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solution.entityTypeId);
-          data.entities = entitiesToAdd.entityIds;
+        if (validateEntities == 'ON') {
+          if (data.entities) {
+            let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solution.entityTypeId);
+            data.entities = entitiesToAdd.entityIds;
+          }
         }
 
         if (data.project) {
@@ -1810,15 +1813,18 @@ module.exports = class ObservationsHelper {
             solutionData.data['status'] = messageConstants.common.PUBLISHED;
 
             let entityTypes = Object.keys(_.omit(bodyData, ['role']));
+            if (validateEntities == 'ON') {
+              if (entityTypes.includes(solutionData.data.entityType)) {
+                let entityData = await entitiesHelper.listByLocationIds([bodyData[solutionData.data.entityType]]);
 
-            if (entityTypes.includes(solutionData.data.entityType)) {
-              let entityData = await entitiesHelper.listByLocationIds([bodyData[solutionData.data.entityType]]);
+                if (!entityData.success) {
+                  return resolve(entityData);
+                }
 
-              if (!entityData.success) {
-                return resolve(entityData);
+                solutionData.data['entities'] = [entityData.data[0]._id];
               }
-
-              solutionData.data['entities'] = [entityData.data[0]._id];
+            } else {
+              solutionData.data['entities'] = [bodyData[solutionData.data.entityType]];
             }
 
             delete solutionData.data._id;
