@@ -34,9 +34,10 @@ module.exports = class Solutions extends Abstract {
     * @apiSampleRequest /assessment/api/v1/solutions/targetedSolutions?type=observation&page=1&limit=10&search=a&filter=assignedToMe
     * @apiParamExample {json} Request:
     * {
-    *   "role" : "HM,DEO",
-   		  "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
-        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+    *   "roles" : ["HM","DEO"],
+   		  "entities" : ["236f5cff-c9af-4366-b0b6-253a1789766a"],
+        "recommendedFor" : ["Teacher"],
+        "factors" : ["roles"],
     }
     * @apiParamExample {json} Response:
     {

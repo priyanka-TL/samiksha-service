@@ -95,4 +95,39 @@ module.exports = class Admin {
       }
     });
   }
+
+  async createIndex(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let collection = req.params._id;
+        let keys = req.body.keys;
+
+        let presentIndex = await database.models[collection].listIndexes({}, { key: 1 });
+        let indexes = presentIndex.map((indexedKeys) => {
+          return Object.keys(indexedKeys.key)[0];
+        });
+        let indexNotPresent = _.differenceWith(keys, indexes);
+        if (indexNotPresent.length > 0) {
+          indexNotPresent.forEach(async (key) => {
+            await database.models.solutions.db.collection(collection).createIndex({ [key]: 1 });
+          });
+          return resolve({
+            message: messageConstants.apiResponses.KEYS_INDEXED_SUCCESSFULL,
+            success: true,
+          });
+        } else {
+          return resolve({
+            message: messageConstants.apiResponses.KEYS_ALREADY_INDEXED_SUCCESSFULL,
+            success: true,
+          });
+        }
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

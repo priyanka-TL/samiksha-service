@@ -96,7 +96,7 @@ services:
     networks:
       - elevate_net
   samiksha:
-    image: shikshalokamqa/elevate-samiksha-service:0.0.1
+    image: shikshalokamqa/elevate-samiksha-service:0.0.3
     ports:
       - '4301:4301'
     command: ['nodemon', 'dev']

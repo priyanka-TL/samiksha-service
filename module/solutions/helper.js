@@ -134,28 +134,44 @@ module.exports = class SolutionsHelper {
   static queryBasedOnRoleAndLocation(data, type = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        let registryIds = [];
-        let entityTypes = [];
-
-        Object.keys(_.omit(data, ['filter', 'role', 'recommendedFor'])).forEach((requestedDataKey) => {
-          registryIds.push(data[requestedDataKey]);
-          entityTypes.push(requestedDataKey);
-        });
-        if (!registryIds.length > 0) {
-          throw {
-            message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
+        let userRole = _.omit(data, ['factors', 'filter']);
+        let userRoleKeys = Object.keys(userRole);
+        let filterQuery = {};
+        let queryFilter = [];
+        if (data.hasOwnProperty('factors')) {
+          let factors = data.factors;
+          if (factors.length > 0) {
+            factors.forEach((factor) => {
+              let scope = 'scope.' + factor;
+              queryFilter.push({ [scope]: { $in: [...userRole[factor]] } });
+            });
+            filterQuery = {
+              $or: queryFilter,
+              isReusable: false,
+              isDeleted: false,
+            };
+          } else {
+            userRoleKeys.forEach((key) => {
+              let scope = 'scope.' + key;
+              queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
+            });
+            filterQuery = {
+              $and: queryFilter,
+              isReusable: false,
+              isDeleted: false,
+            };
+          }
+        } else {
+          userRoleKeys.forEach((key) => {
+            let scope = 'scope.' + key;
+            queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
+          });
+          filterQuery = {
+            $and: queryFilter,
+            isReusable: false,
+            isDeleted: false,
           };
         }
-
-        let filterQuery = {
-          $or: [
-            { 'scope.roles.code': { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] } },
-            { 'scope.entities': { $in: [...registryIds] } },
-            { 'scope.recommendedFor': { $in: data.recommendedFor.split(',') } },
-          ],
-          isReusable: false,
-          isDeleted: false,
-        };
 
         if (type === messageConstants.common.SURVEY) {
           filterQuery['status'] = {
@@ -246,6 +262,7 @@ module.exports = class SolutionsHelper {
             matchQuery['subType'] = subType;
           }
         }
+        console.log(JSON.stringify(matchQuery));
 
         let targetedSolutions = await this.list(type, subType, matchQuery, pageNo, pageSize, searchText, [
           'name',
@@ -330,7 +347,7 @@ module.exports = class SolutionsHelper {
   static setScope(solutionId, scopeData) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await this.solutionDocuments({ _id: solutionId }, ['_id', 'scope']);
+        let solutionData = await this.solutionDocuments({ _id: solutionId }, ['_id']);
 
         if (!solutionData.length > 0) {
           return resolve({
@@ -339,95 +356,110 @@ module.exports = class SolutionsHelper {
           });
         }
 
-        let currentSolutionScope = JSON.parse(JSON.stringify(solutionData[0].scope));
+        // let currentSolutionScope = {};
+        let scopeDatas = Object.keys(scopeData);
+        let scopeDataIndex = scopeDatas.map((index) => {
+          return `scope.${index}`;
+        });
 
-        if (Object.keys(scopeData).length > 0) {
-          if (scopeData.entityType) {
-            let bodyData = { name: scopeData.entityType };
-            let entityTypeData = await entityTypesHelper.list(bodyData);
-            if (entityTypeData.length > 0) {
-              currentSolutionScope.entityType = entityTypeData[0].name;
-            }
-          }
+        let solutionIndex = await database.models.solutions.listIndexes({}, { key: 1 });
+        let indexes = solutionIndex.map((indexedKeys) => {
+          return Object.keys(indexedKeys.key)[0];
+        });
+        let keysNotIndexed = _.differenceWith(scopeDataIndex, indexes);
+        // if (Object.keys(scopeData).length > 0) {
+        //   if (scopeData.entityType) {
+        //     let bodyData = { name: scopeData.entityType };
+        //     let entityTypeData = await entityTypesHelper.list(bodyData);
+        //     if (entityTypeData.length > 0) {
+        //       currentSolutionScope.entityType = entityTypeData[0].name;
+        //     }
+        //   }
 
-          if (scopeData.entities && scopeData.entities.length > 0) {
-            //call learners api for search
-            let entityIds = [];
-            let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
+        //   if (scopeData.entities && scopeData.entities.length > 0) {
+        //     //call learners api for search
+        //     let entityIds = [];
+        //     let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
 
-            if (locationData.codes.length > 0) {
-              let filterData = {
-                'registryDetails.code': locationData.codes,
-                entityType: currentSolutionScope.entityType,
-              };
-              let entityDetails = await entitiesHelper.entitiesDocument(filterData);
+        //     if (locationData.codes.length > 0) {
+        //       let filterData = {
+        //         'registryDetails.code': locationData.codes,
+        //         entityType: currentSolutionScope.entityType,
+        //       };
+        //       let entityDetails = await entitiesHelper.entitiesDocument(filterData);
 
-              if (entityDetails.success) {
-                entityDetails.data.forEach((entity) => {
-                  entityIds.push(entity.id);
-                });
-              }
-            }
-            entityIds = [...locationData.ids, ...locationData.codes];
+        //       if (entityDetails.success) {
+        //         entityDetails.data.forEach((entity) => {
+        //           entityIds.push(entity.id);
+        //         });
+        //       }
+        //     }
+        //     entityIds = [...locationData.ids, ...locationData.codes];
 
-            if (!entityIds.length > 0) {
-              return resolve({
-                status: httpStatusCode.bad_request.status,
-                message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-              });
-            }
+        //     if (!entityIds.length > 0) {
+        //       return resolve({
+        //         status: httpStatusCode.bad_request.status,
+        //         message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+        //       });
+        //     }
 
-            let entitiesData = [];
+        //     let entitiesData = [];
 
-            // if( currentSolutionScope.entityType !== programData[0].scope.entityType ) {
-            //   let result = [];
-            //   let childEntities = await userService.getSubEntitiesBasedOnEntityType(currentSolutionScope.entities, currentSolutionScope.entityType, result);
-            //   if( childEntities.length > 0 ) {
-            //     entitiesData = entityIds.filter(element => childEntities.includes(element));
-            //   }
-            // } else {
-            entitiesData = entityIds;
-            // }
+        //     // if( currentSolutionScope.entityType !== programData[0].scope.entityType ) {
+        //     //   let result = [];
+        //     //   let childEntities = await userService.getSubEntitiesBasedOnEntityType(currentSolutionScope.entities, currentSolutionScope.entityType, result);
+        //     //   if( childEntities.length > 0 ) {
+        //     //     entitiesData = entityIds.filter(element => childEntities.includes(element));
+        //     //   }
+        //     // } else {
+        //     entitiesData = entityIds;
+        //     // }
 
-            if (!entitiesData.length > 0) {
-              return resolve({
-                status: httpStatusCode.bad_request.status,
-                message: messageConstants.apiResponses.SCOPE_ENTITY_INVALID,
-              });
-            }
+        //     if (!entitiesData.length > 0) {
+        //       return resolve({
+        //         status: httpStatusCode.bad_request.status,
+        //         message: messageConstants.apiResponses.SCOPE_ENTITY_INVALID,
+        //       });
+        //     }
 
-            currentSolutionScope.entities = entitiesData;
-          }
+        //     currentSolutionScope.entities = entitiesData;
+        //   }
 
-          currentSolutionScope.recommendedFor = scopeData.recommendedFor;
+        //   // currentSolutionScope.recommendedFor = scopeData.recommendedFor;
 
-          if (scopeData.roles) {
-            if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
-              let userRoles = await userRolesHelper.list(
-                {
-                  code: { $in: scopeData.roles },
-                },
-                ['_id', 'code'],
-              );
+        //   // if (scopeData.roles) {
+        //   //   if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
+        //   //     let userRoles = await userRolesHelper.list(
+        //   //       {
+        //   //         code: { $in: scopeData.roles },
+        //   //       },
+        //   //       ['_id', 'code'],
+        //   //     );
 
-              if (!userRoles.length > 0) {
-                return resolve({
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.INVALID_ROLE_CODE,
-                });
-              }
+        //   //     if (!userRoles.length > 0) {
+        //   //       return resolve({
+        //   //         status: httpStatusCode.bad_request.status,
+        //   //         message: messageConstants.apiResponses.INVALID_ROLE_CODE,
+        //   //       });
+        //   //     }
 
-              currentSolutionScope['roles'] = userRoles;
-            } else {
-              if (scopeData.roles === messageConstants.common.ALL_ROLES) {
-                currentSolutionScope['roles'] = [
-                  {
-                    code: messageConstants.common.ALL_ROLES,
-                  },
-                ];
-              }
-            }
-          }
+        //   //     currentSolutionScope['roles'] = userRoles;
+        //   //   } else {
+        //   //     if (scopeData.roles === messageConstants.common.ALL_ROLES) {
+        //   //       currentSolutionScope['roles'] = [
+        //   //         {
+        //   //           code: messageConstants.common.ALL_ROLES,
+        //   //         },
+        //   //       ];
+        //   //     }
+        //   //   }
+        //   // }
+        // }
+        if (keysNotIndexed.length > 0) {
+          let keysCannotBeAdded = keysNotIndexed.map((keys) => {
+            return keys.split('.')[1];
+          });
+          scopeData = _.omit(scopeData, keysCannotBeAdded);
         }
 
         let updateSolution = await database.models.solutions
@@ -435,8 +467,8 @@ module.exports = class SolutionsHelper {
             {
               _id: solutionId,
             },
-            { $set: { scope: currentSolutionScope } },
-            { new: true },
+            { $set: { scope: scopeData } },
+            // { new: true },
           )
           .lean();
 
@@ -446,13 +478,16 @@ module.exports = class SolutionsHelper {
           };
         }
         solutionData = updateSolution;
-
+        let result = { _id: solutionId, scope: updateSolution.scope };
         return resolve({
           success: true,
           message: messageConstants.apiResponses.SOLUTION_UPDATED,
+          result: result,
         });
       } catch (error) {
+        console.log(error);
         return resolve({
+          message: error.message,
           success: false,
         });
       }
@@ -520,10 +555,13 @@ module.exports = class SolutionsHelper {
               message: messageConstants.apiResponses.COULD_NOT_UPDATE_SCOPE,
             };
           }
+          solutionData = solutionScope.result;
         }
+
         return resolve({
           success: true,
           message: messageConstants.apiResponses.SOLUTION_UPDATED,
+          result: solutionData,
           data: solutionData,
         });
       } catch (error) {

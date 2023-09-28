@@ -22,7 +22,7 @@ module.exports = (req) => {
     },
     assessment: function () {
       req.checkParams('_id').exists().withMessage('required observation id');
-      req.checkQuery('entityId').exists().withMessage('required entity id');
+      // req.checkQuery('entityId').exists().withMessage('required entity id');
     },
     complete: function () {
       req.checkParams('_id').exists().withMessage('required observation id');
