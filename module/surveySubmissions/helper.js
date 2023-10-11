@@ -211,9 +211,9 @@ module.exports = class SurveySubmissionsHelper {
         let submissionDocument = await this.surveySubmissionDocuments(
           {
             _id: submissionId,
-            evidencesStatus: { $elemMatch: { externalId: evidenceId } },
+            'evidencesStatus.externalId': evidenceId,
           },
-          ['evidencesStatus.$', 'status', 'createdBy'],
+          ['evidencesStatus', 'status', 'createdBy'],
         );
 
         if (!submissionDocument.length) {

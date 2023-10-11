@@ -12,10 +12,15 @@ var DB = function (config) {
   // mongoose.set('useFindAndModify', false)
   // mongoose.set('useUnifiedTopology', true)
 
-  var db = mongoose.createConnection(config.host + '/' + config.database, config.options);
+  var db = mongoose.createConnection(
+    'mongodb://postgres:postgres@localhost:27017/samiksha?authMechanism=PLAIN',
+    // config.host + '/' + config.database,
+    config.options,
+  );
   db.on('error', console.error.bind(console, 'connection error:'));
   db.once('open', function () {
     log.debug('Connected to DB');
+    console.log('Connected to DB');
   });
 
   var createModel = function (opts) {

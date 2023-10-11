@@ -18,7 +18,7 @@ module.exports = {
     evidencesStatus: Array,
     evidences: Object,
     criteria: Array,
-    answers: Object,
+    answers: String,
     completedDate: Date,
     solutionId: {
       type: 'ObjectId',
@@ -30,14 +30,14 @@ module.exports = {
       index: true,
       required: true,
     },
-    programId: {
-      type: 'ObjectId',
-      index: true,
-    },
-    programExternalId: {
-      type: String,
-      index: true,
-    },
+    // programId: {
+    //   type: 'ObjectId',
+    //   index: true,
+    // },
+    // programExternalId: {
+    //   type: String,
+    //   index: true,
+    // },
     isAPrivateProgram: {
       default: false,
       type: Boolean,

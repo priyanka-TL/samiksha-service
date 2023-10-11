@@ -2066,8 +2066,6 @@ module.exports = class Solutions extends Abstract {
           req.searchText,
         );
 
-        solutionData['result'] = solutionData.data;
-
         return resolve(solutionData);
       } catch (error) {
         reject({

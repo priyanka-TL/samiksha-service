@@ -13,14 +13,14 @@ module.exports = {
       index: true,
       required: true,
     },
-    programId: {
-      type: 'ObjectId',
-      index: true,
-    },
-    programExternalId: {
-      type: String,
-      index: true,
-    },
+    // programId: {
+    //   type: 'ObjectId',
+    //   index: true,
+    // },
+    // programExternalId: {
+    //   type: String,
+    //   index: true,
+    // },
     solutionExternalId: {
       type: String,
       index: true,

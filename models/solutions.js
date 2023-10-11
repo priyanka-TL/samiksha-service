@@ -91,7 +91,9 @@ module.exports = {
     referenceFrom: String,
     scope: {
       type: Object,
-      default: {},
+      default: {
+        falg: true,
+      },
     },
     pageHeading: {
       default: 'Domains',

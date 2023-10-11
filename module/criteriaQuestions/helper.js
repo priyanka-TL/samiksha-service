@@ -165,82 +165,112 @@ function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion) {
         },
       };
 
-      let unwindEvidences = {
-        $unwind: '$evidences',
-      };
+      // let unwindEvidences = {
+      //   $unwind: '$evidences',
+      // };
 
-      let unwindSections = {
-        $unwind: '$evidences.sections',
-      };
+      // let unwindSections = {
+      //   $unwind: '$evidences.sections',
+      // };
+      // let groupData1 = {
+      //   $group: {
+      //     _id: {
+      //       _id: '$_id',
+      //       evidences_code: '$evidences.code',
+      //     },
+      //   },
+      // };
 
-      let lookupQuestions = {
-        $lookup: {
-          from: 'questions',
-          localField: 'evidences.sections.questions',
-          foreignField: '_id',
-          as: 'evidences.sections.questions',
-        },
-      };
+      // criteriaModel.forEach((criteria) => {
+      //   if (['evidences'].indexOf(criteria) == -1) {
+      //     groupData1['$group'][criteria] = {
+      //       $addToSet: `$${criteria}`,
+      //     };
+      //   }
+      // });
 
-      let addCriteriaIdInQuestion = {
-        $addFields: {
-          'evidences.sections.questions.criteriaId': '$_id',
-        },
-      };
+      // let groupData2 = _.cloneDeep(groupData1);
+      // groupData2['$group']['_id'] = '$_id._id';
 
-      let groupData1 = {
-        $group: {
-          _id: {
-            _id: '$_id',
-            evidences_code: '$evidences.code',
-          },
-        },
-      };
+      // if (updateQuestion) {
+      //   groupData1['$group']['evidenceCode'] = {
+      //     $first: '$evidences.code',
+      //   };
 
-      criteriaModel.forEach((criteria) => {
-        if (['evidences'].indexOf(criteria) == -1) {
-          groupData1['$group'][criteria] = {
-            $first: `$${criteria}`,
-          };
-        }
-      });
+      //   groupData1['$group']['sections'] = {
+      //     $push: '$evidences.sections',
+      //   };
 
-      let groupData2 = _.cloneDeep(groupData1);
-      groupData2['$group']['_id'] = '$_id._id';
+      //   groupData2['$group']['evidences'] = {
+      //     $push: {
+      //       code: '$evidenceCode',
+      //       sections: '$sections',
+      //     },
+      //   };
+      // }
 
-      if (updateQuestion) {
-        groupData1['$group']['evidenceCode'] = {
-          $first: '$evidences.code',
-        };
-
-        groupData1['$group']['sections'] = {
-          $push: '$evidences.sections',
-        };
-
-        groupData2['$group']['evidences'] = {
-          $push: {
-            code: '$evidenceCode',
-            sections: '$sections',
-          },
-        };
-      }
-
+      console.log(
+        JSON.stringify([
+          findQuery,
+          // unwindEvidences,
+          // unwindSections,
+          // lookupQuestions,
+          // addCriteriaIdInQuestion,
+          // groupData1,
+          // groupData2,
+        ]),
+      );
       let criteriaData = await database.models.criteria.aggregate([
         findQuery,
-        unwindEvidences,
-        unwindSections,
-        lookupQuestions,
-        addCriteriaIdInQuestion,
-        groupData1,
-        groupData2,
+        // unwindEvidences,
+        // unwindSections,
+        // lookupQuestions,
+        // addCriteriaIdInQuestion,
+        // groupData1,
+        // groupData2,
       ]);
 
+      console.log(JSON.stringify(criteriaData));
       if (!criteriaData[0]) {
         return resolve({
           success: false,
         });
       }
 
+      let quetsionIds = [];
+
+      criteriaData[0].evidences.forEach((evidence) => {
+        evidence.sections.forEach((section) => {
+          quetsionIds.push(...section.questions);
+        });
+      });
+      console.log(quetsionIds);
+
+      const allQuestions = await database.models.questions.find({
+        _id: { $in: quetsionIds },
+      });
+      const questions = JSON.parse(JSON.stringify(allQuestions));
+
+      console.log('Quetsions', JSON.stringify(questions));
+
+      criteriaData[0].evidences.forEach((evidence) => {
+        evidence.sections.forEach((section) => {
+          let quetsionPresetInCriteria = section.questions;
+          delete section.questions;
+          section.questions = [];
+          quetsionPresetInCriteria.forEach((quetsionId) => {
+            const quest = questions.find((q) => (q._id = quetsionId));
+
+            quest['criteriaId'] = criteriaId;
+            console.log(quest);
+            section.questions.push(quest);
+          });
+        });
+      });
+      delete criteriaData[0].updatedAt;
+      delete criteriaData[0].createdAt;
+
+      console.log('cri', JSON.stringify(criteriaId));
       await database.models.criteriaQuestions.findOneAndUpdate(
         {
           _id: criteriaId,
@@ -257,6 +287,7 @@ function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion) {
         success: true,
       });
     } catch (error) {
+      console.log(JSON.stringify(error.message));
       return reject(error);
     }
   });

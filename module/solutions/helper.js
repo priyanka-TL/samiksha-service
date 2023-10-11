@@ -178,8 +178,8 @@ module.exports = class SolutionsHelper {
             $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
           };
           let validDate = new Date();
-          validDate.setDate(validDate.getDate() - messageConstants.common.DEFAULT_SURVEY_REMOVED_DAY);
-          filterQuery['endDate'] = { $gte: validDate };
+          // validDate.setDate(validDate.getDate() - messageConstants.common.DEFAULT_SURVEY_REMOVED_DAY);
+          // filterQuery['endDate'] = { $gte: validDate };
         } else {
           filterQuery.status = messageConstants.common.ACTIVE_STATUS;
         }
@@ -282,7 +282,7 @@ module.exports = class SolutionsHelper {
         return resolve({
           success: true,
           message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
-          data: targetedSolutions.data,
+          data: targetedSolutions.result,
         });
       } catch (error) {
         return resolve({
@@ -2190,43 +2190,48 @@ module.exports = class SolutionsHelper {
             projection1[projectedData] = 1;
           });
         } else {
-          projection1 = {
-            description: 1,
-            externalId: 1,
-            name: 1,
-          };
+          projection1 = ['description', 'externalId', 'name'];
         }
 
-        let facetQuery = {};
-        facetQuery['$facet'] = {};
-
-        facetQuery['$facet']['totalCount'] = [{ $count: 'count' }];
-
-        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }];
-
-        let projection2 = {};
-
-        projection2['$project'] = {
-          data: 1,
-          count: {
-            $arrayElemAt: ['$totalCount.count', 0],
-          },
-        };
-
-        let solutionDocuments = await database.models.solutions.aggregate([
-          { $match: matchQuery },
+        let facetQuery = [
           {
-            $sort: { updatedAt: -1 },
+            $facet: {
+              totalCount: [{ $count: 'count' }],
+              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+            },
           },
-          { $project: projection1 },
-          facetQuery,
-          projection2,
-        ]);
+          {
+            $project: {
+              data: 1,
+              count: {
+                $arrayElemAt: ['$totalCount.count', 0],
+              },
+            },
+          },
+        ];
+        let solutionDocuments = await database.models.solutions
+          .find(matchQuery, projection1)
+          .sort({ updatedAt: -1 })
+          .skip(pageSize * (pageNo - 1))
+          .limit(pageSize)
+          .exec();
 
+        let count = await database.models.solutions.countDocuments(matchQuery).exec();
+
+        // let solutionDocuments = await database.models.solutions.aggregate([
+        //   { $match: matchQuery },
+        //   {
+        //     $sort: { updatedAt: -1 },
+        //   },
+        //   { $project: projection1 },
+        //   ...facetQuery,
+        // ]);
+
+        let result = { data: solutionDocuments, count: count };
         return resolve({
           success: true,
           message: messageConstants.apiResponses.SOLUTIONS_LIST,
-          data: solutionDocuments[0],
+          result: result,
         });
       } catch (error) {
         return resolve({

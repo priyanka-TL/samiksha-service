@@ -368,12 +368,12 @@ module.exports = class SubmissionsHelper {
 
         let queryOptions = {
           new: true,
-          projection: {
-            _id: 1,
-            solutionId: 1,
-            evidencesStatus: 1,
-            status: 1,
-          },
+          // projection: {
+          //   _id: 1,
+          //   solutionId: 1,
+          //   evidencesStatus: 1,
+          //   status: 1,
+          // },
         };
 
         let submissionDocument = await database.models[modelName].findOne(queryObject).lean();
@@ -440,14 +440,17 @@ module.exports = class SubmissionsHelper {
             if (answerArray.isAGeneralQuestionResponse) {
               delete answerArray.isAGeneralQuestionResponse;
             }
+            let evidences = { [req.body.evidence.externalId]: {} };
+
+            evidences[req.body.evidence.externalId].isSubmitted = true;
+            evidences[req.body.evidence.externalId].notApplicable = req.body.evidence.notApplicable;
+            evidences[req.body.evidence.externalId].startTime = req.body.evidence.startTime;
+            evidences[req.body.evidence.externalId].endTime = req.body.evidence.endTime;
+            evidences[req.body.evidence.externalId].hasConflicts = false;
 
             updateObject.$set = {
               answers: _.assignIn(submissionDocument.answers, answerArray),
-              ['evidences.' + req.body.evidence.externalId + '.isSubmitted']: true,
-              ['evidences.' + req.body.evidence.externalId + '.notApplicable']: req.body.evidence.notApplicable,
-              ['evidences.' + req.body.evidence.externalId + '.startTime']: req.body.evidence.startTime,
-              ['evidences.' + req.body.evidence.externalId + '.endTime']: req.body.evidence.endTime,
-              ['evidences.' + req.body.evidence.externalId + '.hasConflicts']: false,
+              evidences: evidences,
               status:
                 submissionDocument.status === 'started' || submissionDocument.status === 'draft'
                   ? 'inprogress'
@@ -456,11 +459,9 @@ module.exports = class SubmissionsHelper {
 
             if (!evidencesStatusToBeChanged.isSubmitted) {
               evidencesStatusToBeChanged['submissions'] = [];
-              updateObject['$set']['evidences.' + req.body.evidence.externalId + '.submissions'] = [req.body.evidence];
+              updateObject['$set'].evidences[req.body.evidence.externalId].submissions = [req.body.evidence];
             } else {
-              updateObject.$push = {
-                ['evidences.' + req.body.evidence.externalId + '.submissions']: req.body.evidence,
-              };
+              updateObject['$set'].evidences[req.body.evidence.externalId].submissions = req.body.evidence;
             }
 
             evidencesStatusToBeChanged['isSubmitted'] = true;
@@ -477,7 +478,7 @@ module.exports = class SubmissionsHelper {
             if (req.body.evidence.status && req.body.evidence.status === messageConstants.common.DRAFT) {
               updateObject['$set']['status'] = 'draft';
               evidencesStatusToBeChanged['isSubmitted'] = false;
-              updateObject['$set']['evidences.' + req.body.evidence.externalId + '.isSubmitted'] = false;
+              updateObject['$set'].evidences[req.body.evidence.externalId].isSubmitted = false;
               delete req.body.evidence.status;
             }
 
@@ -490,11 +491,14 @@ module.exports = class SubmissionsHelper {
         }
 
         if (runUpdateQuery) {
+          updateObject['$set'].answers = JSON.stringify(updateObject['$set'].answers);
+          // updateObject['$set'].evidences = JSON.stringify(updateObject['$set'].evidences);
           let updatedSubmissionDocument = await database.models[modelName].findOneAndUpdate(
             queryObject,
             updateObject,
             queryOptions,
           );
+          console.log();
 
           if (modelName == messageConstants.common.SUBMISSIONS) {
             // Push update submission to kafka for reporting/tracking.
@@ -529,7 +533,7 @@ module.exports = class SubmissionsHelper {
             updatedSubmissionDocument = await database.models[modelName].findOneAndUpdate(
               queryObject,
               updateStatusObject,
-              queryOptions,
+              // queryOptions,
             );
           }
 

@@ -16,6 +16,10 @@ module.exports = function (app) {
 
   var router = async function (req, res, next) {
     //req.params.controller = (req.params.controller).toLowerCase();
+    console.log('-------Request log starts here------------------');
+    console.log('%s %s on %s from ', req.method, req.url, new Date(), req.headers['user-agent']);
+
+    console.log('-------Request log ends here------------------');
     if (req.params.file) {
       req.params.file += 'Controller';
     } else {
