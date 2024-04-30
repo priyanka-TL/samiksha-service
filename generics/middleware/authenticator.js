@@ -4,6 +4,7 @@
 var messageUtil = require('./lib/messageUtil');
 var responseCode = require('../httpStatusCodes');
 const jwt = require('jsonwebtoken');
+const instance = require("./Instance.json")
 
 // var shikshalokam = require("../helpers/shikshalokam");
 
@@ -59,13 +60,18 @@ var removedHeaders = [
   'connection',
 ];
 
-async function getAllRoles(obj) {
-  let roles = await obj.roles;
-  await _.forEach(obj.organisations, async (value) => {
-    roles = await roles.concat(value.roles);
-  });
-  return roles;
-}
+// async function getUserDetails(decodedToken){
+//   let result = {}
+//   let instanceData = instance[process.env.Instance]
+//   Object.keys(instanceData).forEach((key)=>{
+//     if(instanceData[key] !== "NA"){
+//       let values = instanceData[key]
+//       result[key] = decodedToken[values]
+//       console.log(decodedToken[values])
+//     }
+//   })
+//   return result
+// } 
 
 module.exports = async function (req, res, next) {
   if (req.path.includes('/sharedLinks/verify')) return next();
@@ -265,20 +271,22 @@ module.exports = async function (req, res, next) {
   try {
     decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   } catch (err) {
-    console.log(err);
+    rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
+    rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
+    rspObj.responseCode = responseCode.unauthorized.status;
     return res.status(responseCode['bad_request'].status).send(respUtil(rspObj));
   }
   if (!decodedToken) {
     return res.status(responseCode['bad_request'].status).send(respUtil(rspObj));
   }
+  // let userDetails = await getUserDetails(decodedToken)
   req.userDetails = {
     userToken: token,
-    userId: decodedToken.data._id,
+    userId: decodedToken.data.id,
     userName: decodedToken.data.name,
-    email: decodedToken.data.email,
+    // email: decodedToken.data.email,
     firstName: decodedToken.data.name,
   };
-  console.log('>>>>>', req.userDetails);
   next();
 
   // if (!token) {
