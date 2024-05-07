@@ -59,10 +59,10 @@
        # state=link
     
     - name: set permission
-      shell: chmod 744 {{ current_path }}/scripts/json2env.sh  
+      shell: chmod 744 {{ current_path }}/script/json2env.sh  
       
     - name: generate .env 
-      shell: cat {{ project_path }}/data2.json | {{ current_path }}/scripts/json2env.sh > {{ current_path }}/.env
+      shell: cat {{ project_path }}/data2.json | {{ current_path }}/script/json2env.sh > {{ current_path }}/.env
       register: envConfig 
     - debug: msg=" cred {{ envConfig }} "
 
