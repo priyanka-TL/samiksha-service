@@ -78,12 +78,12 @@ module.exports = class Solutions extends Abstract {
         let observations = await solutionsHelper.targetedSolutions(
           req.body,
           req.query.type,
-          req.userDetails.userToken,
+          JSON.stringify(req.userDetails.userId),
           req.pageSize,
           req.pageNo,
           req.searchText,
           req.query.filter,
-          // req.query.surveyReportPage ? req.query.surveyReportPage : '',
+          req.query.surveyReportPage ? req.query.surveyReportPage : '',
         );
 
         observations['result'] = observations.data;
@@ -139,114 +139,144 @@ module.exports = class Solutions extends Abstract {
    * @returns {JSON} consists of criteriaName and rubric levels.
    */
 
+  // async details(req) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let findQuery = {
+  //         _id: req.params._id,
+  //       };
+
+  //       let solutionDocument = await database.models.solutions
+  //         .findOne(findQuery, { themes: 1, levelToScoreMapping: 1, name: 1 })
+  //         .lean();
+
+  //       let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
+  //       let criteriaDocument = await database.models.criteria
+  //         .find({ _id: { $in: criteriasIdArray } }, { name: 1, 'rubric.levels': 1 })
+  //         .lean();
+
+  //       let criteriaObject = {};
+
+  //       criteriaDocument.forEach((eachCriteria) => {
+  //         let levelsDescription = {};
+
+  //         for (let k in eachCriteria.rubric.levels) {
+  //           levelsDescription[k] = eachCriteria.rubric.levels[k].description;
+  //         }
+
+  //         criteriaObject[eachCriteria._id.toString()] = _.merge(
+  //           {
+  //             name: eachCriteria.name,
+  //           },
+  //           levelsDescription,
+  //         );
+  //       });
+
+  //       let responseObject = {};
+  //       responseObject.heading = 'Solution Framework + rubric for - ' + solutionDocument.name;
+
+  //       responseObject.sections = new Array();
+
+  //       let levelValue = {};
+
+  //       let sectionHeaders = new Array();
+
+  //       sectionHeaders.push({
+  //         name: 'criteriaName',
+  //         value: 'Domain',
+  //       });
+
+  //       for (let k in solutionDocument.levelToScoreMapping) {
+  //         levelValue[k] = '';
+  //         sectionHeaders.push({
+  //           name: k,
+  //           value: solutionDocument.levelToScoreMapping[k].label,
+  //         });
+  //       }
+
+  //       let generateCriteriaThemes = function (themes, parentData = []) {
+  //         themes.forEach((theme) => {
+  //           if (theme.children) {
+  //             let hierarchyTrackToUpdate = [...parentData];
+  //             hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
+
+  //             generateCriteriaThemes(theme.children, hierarchyTrackToUpdate);
+  //           } else {
+  //             let tableData = new Array();
+  //             let levelObjectFromCriteria = {};
+
+  //             let hierarchyTrackToUpdate = [...parentData];
+  //             hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
+
+  //             theme.criteria.forEach((criteria) => {
+  //               if (criteriaObject[criteria.criteriaId.toString()]) {
+  //                 Object.keys(levelValue).forEach((eachLevel) => {
+  //                   levelObjectFromCriteria[eachLevel] = criteriaObject[criteria.criteriaId.toString()][eachLevel];
+  //                 });
+
+  //                 tableData.push(
+  //                   _.merge(
+  //                     {
+  //                       criteriaName: criteriaObject[criteria.criteriaId.toString()].name,
+  //                     },
+  //                     levelObjectFromCriteria,
+  //                   ),
+  //                 );
+  //               }
+  //             });
+
+  //             let eachSection = {
+  //               table: true,
+  //               data: tableData,
+  //               tabularData: {
+  //                 headers: sectionHeaders,
+  //               },
+  //               summary: hierarchyTrackToUpdate,
+  //             };
+
+  //             responseObject.sections.push(eachSection);
+  //           }
+  //         });
+  //       };
+
+  //       generateCriteriaThemes(solutionDocument.themes);
+
+  //       let response = {
+  //         message: 'Solution framework + rubric fetched successfully.',
+  //         result: responseObject,
+  //       };
+
+  //       return resolve(response);
+  //     } catch (error) {
+  //       return reject({
+  //         status: error.status || httpStatusCode.internal_server_error.status,
+  //         message: error.message || httpStatusCode.internal_server_error.message,
+  //         errorObject: error,
+  //       });
+  //     }
+  //   });
+  // }
+
+  /**
+   * get solution details
+   * @method
+   * @name details
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution Id
+   * @returns {Array}
+   */
+
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let findQuery = {
-          _id: req.params._id,
-        };
+        let solutionData = await solutionsHelper.details(
+          req.params._id,
+          req.body,
+          req.userDetails.userId,
+          req.userDetails.userToken,
+        );
 
-        let solutionDocument = await database.models.solutions
-          .findOne(findQuery, { themes: 1, levelToScoreMapping: 1, name: 1 })
-          .lean();
-
-        let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
-        let criteriaDocument = await database.models.criteria
-          .find({ _id: { $in: criteriasIdArray } }, { name: 1, 'rubric.levels': 1 })
-          .lean();
-
-        let criteriaObject = {};
-
-        criteriaDocument.forEach((eachCriteria) => {
-          let levelsDescription = {};
-
-          for (let k in eachCriteria.rubric.levels) {
-            levelsDescription[k] = eachCriteria.rubric.levels[k].description;
-          }
-
-          criteriaObject[eachCriteria._id.toString()] = _.merge(
-            {
-              name: eachCriteria.name,
-            },
-            levelsDescription,
-          );
-        });
-
-        let responseObject = {};
-        responseObject.heading = 'Solution Framework + rubric for - ' + solutionDocument.name;
-
-        responseObject.sections = new Array();
-
-        let levelValue = {};
-
-        let sectionHeaders = new Array();
-
-        sectionHeaders.push({
-          name: 'criteriaName',
-          value: 'Domain',
-        });
-
-        for (let k in solutionDocument.levelToScoreMapping) {
-          levelValue[k] = '';
-          sectionHeaders.push({
-            name: k,
-            value: solutionDocument.levelToScoreMapping[k].label,
-          });
-        }
-
-        let generateCriteriaThemes = function (themes, parentData = []) {
-          themes.forEach((theme) => {
-            if (theme.children) {
-              let hierarchyTrackToUpdate = [...parentData];
-              hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
-
-              generateCriteriaThemes(theme.children, hierarchyTrackToUpdate);
-            } else {
-              let tableData = new Array();
-              let levelObjectFromCriteria = {};
-
-              let hierarchyTrackToUpdate = [...parentData];
-              hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
-
-              theme.criteria.forEach((criteria) => {
-                if (criteriaObject[criteria.criteriaId.toString()]) {
-                  Object.keys(levelValue).forEach((eachLevel) => {
-                    levelObjectFromCriteria[eachLevel] = criteriaObject[criteria.criteriaId.toString()][eachLevel];
-                  });
-
-                  tableData.push(
-                    _.merge(
-                      {
-                        criteriaName: criteriaObject[criteria.criteriaId.toString()].name,
-                      },
-                      levelObjectFromCriteria,
-                    ),
-                  );
-                }
-              });
-
-              let eachSection = {
-                table: true,
-                data: tableData,
-                tabularData: {
-                  headers: sectionHeaders,
-                },
-                summary: hierarchyTrackToUpdate,
-              };
-
-              responseObject.sections.push(eachSection);
-            }
-          });
-        };
-
-        generateCriteriaThemes(solutionDocument.themes);
-
-        let response = {
-          message: 'Solution framework + rubric fetched successfully.',
-          result: responseObject,
-        };
-
-        return resolve(response);
+        return resolve(solutionData);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
@@ -256,7 +286,6 @@ module.exports = class Solutions extends Abstract {
       }
     });
   }
-
   /**
    * @api {get} /assessment/api/v1/solutions/importFromFramework/?frameworkId:frameworkExternalId&entityType:entityType Create solution from framework.
    * @apiVersion 1.0.0
@@ -529,21 +558,21 @@ module.exports = class Solutions extends Abstract {
    * @returns {JSON}
    */
 
-  async update(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId);
+  // async update(req) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId);
 
-        return resolve(solutionData);
-      } catch (error) {
-        reject({
-          status: error.status || httpStatusCode.internal_server_error.status,
-          message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error,
-        });
-      }
-    });
-  }
+  //       return resolve(solutionData);
+  //     } catch (error) {
+  //       reject({
+  //         status: error.status || httpStatusCode.internal_server_error.status,
+  //         message: error.message || httpStatusCode.internal_server_error.message,
+  //         errorObject: error,
+  //       });
+  //     }
+  //   });
+  // }
   // async update(req) {
   //   return new Promise(async (resolve, reject) => {
   //     try {
@@ -618,45 +647,11 @@ module.exports = class Solutions extends Abstract {
    * @returns {JSON}
    */
 
-  async updateSolutions(req) {
+  async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = {
-          externalId: req.query.solutionExternalId,
-        };
-
-        let solutionDocument = await database.models.solutions.findOne(queryObject, { _id: 1 }).lean();
-
-        if (!solutionDocument) {
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-          });
-        }
-
-        let updateObject = {
-          $set: {},
-        };
-
-        let solutionUpdateData = req.body;
-
-        Object.keys(solutionUpdateData).forEach((solutionData) => {
-          updateObject['$set'][solutionData] = solutionUpdateData[solutionData];
-        });
-
-        updateObject['$set']['updatedBy'] = req.userDetails.id;
-
-        await database.models.solutions.findOneAndUpdate(
-          {
-            _id: solutionDocument._id,
-          },
-          updateObject,
-        );
-
-        return resolve({
-          status: httpStatusCode.ok.status,
-          message: messageConstants.apiResponses.SOLUTION_UPDATED,
-        });
+        let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId, true);
+        return resolve(solutionData);
       } catch (error) {
         reject({
           status: error.status || httpStatusCode.internal_server_error.status,
@@ -1475,51 +1470,76 @@ module.exports = class Solutions extends Abstract {
    * @returns {Object} - Details of the solution.
    */
 
-  static fetchLink(solutionId, userId) {
+  // static fetchLink(solutionId, userId) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let solutionData = await this.solutionDocuments(
+  //         {
+  //           _id: solutionId,
+  //           isReusable: false,
+  //           isAPrivateProgram: false,
+  //         },
+  //         ['link', 'type', 'author'],
+  //       );
+
+  //       if (!Array.isArray(solutionData) || solutionData.length < 1) {
+  //         return resolve({
+  //           message: constants.apiResponses.SOLUTION_NOT_FOUND,
+  //           result: {},
+  //         });
+  //       }
+
+  //       let prefix = constants.common.PREFIX_FOR_SOLUTION_LINK;
+
+  //       let solutionLink, link;
+
+  //       if (!solutionData[0].link) {
+  //         let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
+
+  //         let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
+
+  //         solutionLink = updateLink;
+  //       } else {
+  //         solutionLink = solutionData[0].link;
+  //       }
+
+  //       link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+
+  //       return resolve({
+  //         success: true,
+  //         message: constants.apiResponses.LINK_GENERATED,
+  //         result: link,
+  //       });
+  //     } catch (error) {
+  //       return resolve({
+  //         success: false,
+  //         status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+  //         message: error.message,
+  //       });
+  //     }
+  //   });
+  // }
+
+  /**
+   * Get link by solution id.
+   * @method
+   * @name fetchLink
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution Id
+   * @returns {Array}
+   */
+
+  async fetchLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await this.solutionDocuments(
-          {
-            _id: solutionId,
-            isReusable: false,
-            isAPrivateProgram: false,
-          },
-          ['link', 'type', 'author'],
-        );
+        let solutionData = await solutionsHelper.fetchLink(req.params._id, req.userDetails.userId);
 
-        if (!Array.isArray(solutionData) || solutionData.length < 1) {
-          return resolve({
-            message: constants.apiResponses.SOLUTION_NOT_FOUND,
-            result: {},
-          });
-        }
-
-        let prefix = constants.common.PREFIX_FOR_SOLUTION_LINK;
-
-        let solutionLink, link;
-
-        if (!solutionData[0].link) {
-          let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
-
-          let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
-
-          solutionLink = updateLink;
-        } else {
-          solutionLink = solutionData[0].link;
-        }
-
-        link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
-
-        return resolve({
-          success: true,
-          message: constants.apiResponses.LINK_GENERATED,
-          result: link,
-        });
+        return resolve(solutionData);
       } catch (error) {
-        return resolve({
-          success: false,
-          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
-          message: error.message,
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
         });
       }
     });
@@ -1889,17 +1909,73 @@ module.exports = class Solutions extends Abstract {
    * @returns {JSON} observation data.
    */
 
+  // async verifyLink(req) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let result = await observationsHelper.verifyLink(
+  //         req.params._id,
+  //         req.rspObj.userToken,
+  //         req.userDetails.userId,
+  //         req.body,
+  //       );
+
+  //       return resolve(result);
+  //     } catch (error) {
+  //       return reject({
+  //         status: error.status || httpStatusCode.internal_server_error.status,
+  //         message: error.message || httpStatusCode.internal_server_error.message,
+  //         errorObject: error,
+  //       });
+  //     }
+  //   });
+  // }
+
+  /**
+   * verify Link
+   * @method
+   * @name verifyLink
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution link
+   * @returns {Array}
+   */
+
   async verifyLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await observationsHelper.verifyLink(
+        let solutionData = await solutionsHelper.verifyLink(
           req.params._id,
-          req.rspObj.userToken,
-          req.userDetails.userId,
           req.body,
+          req.userDetails.userId,
+          req.userDetails.userToken,
+          req.query.hasOwnProperty('createProject') ? gen.utils.convertStringToBoolean(req.query.createProject) : true,
         );
 
-        return resolve(result);
+        return resolve(solutionData);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * verify Solution
+   * @method
+   * @name verifySolution
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id
+   * @returns {Array}
+   */
+
+  async isTargetedBasedOnUserProfile(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(req.params._id, req.body);
+
+        return resolve(solutionData);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
@@ -2154,6 +2230,261 @@ module.exports = class Solutions extends Abstract {
         return resolve(solutionThemes);
       } catch (error) {
         reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+    * @api {post} /kendra/api/v1/solutions/create Create solution
+    * @apiVersion 1.0.0
+    * @apiName Create solution
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+    * "resourceType" : [],
+    * "language" : [],
+    * "keywords" : [],
+    * "concepts" : [],
+    "themes" : [],
+    "flattenedThemes" : [],
+    "entities" : ["bc75cc99-9205-463e-a722-5326857838f8","8ac1efe9-0415-4313-89ef-884e1c8eee34"]
+    "registry" : [],
+    "isRubricDriven" : false,
+    "enableQuestionReadOut" : false,
+    "allowMultipleAssessemts" : false,
+    "isDeleted" : false,
+    "programExternalId" : "AMAN_TEST_123-1607937244986",
+    "entityType" : "school",
+    "type" : "improvementProject",
+    "subType" : "improvementProject",
+    "isReusable" : false,
+    "externalId" : "01c04166-a65e-4e92-a87b-a9e4194e771d-1607936956167",
+    "minNoOfSubmissionsRequired" : 2,
+    "allowMultipleAssessemts" : true
+    }
+    * @apiHeader {String} internal-access-token internal access token  
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /kendra/api/v1/solutions/create
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+    "message": "Solution created successfully",
+    "status": 200,
+    "result": {
+        "_id": "5ff447e127ef425953bd8306"
+    }}
+    */
+
+  /**
+   * Create solution.
+   * @method
+   * @name create
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id.
+   * @returns {JSON} Created solution data.
+   */
+
+  async create(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await solutionsHelper.createSolution(req.body, true);
+
+        solutionData['result'] = solutionData.data;
+
+        return resolve(solutionData);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * Auto targeted solution.
+   * @method
+   * @name forUserRoleAndLocation
+   * @param {Object} req - requested data.
+   * @returns {JSON} Created solution data.
+   */
+
+  async forUserRoleAndLocation(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let targetedSolutions = await solutionsHelper.forUserRoleAndLocation(
+          req.body,
+          req.query.type ? req.query.type : '',
+          req.query.subType ? req.query.subType : '',
+          req.query.programId ? req.query.programId : '',
+          req.pageSize,
+          req.pageNo,
+          req.searchText,
+        );
+
+        targetedSolutions['result'] = targetedSolutions.data;
+        return resolve(targetedSolutions);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * Solution details based on role and location.
+   * @method
+   * @name detailsBasedOnRoleAndLocation
+   * @param {Object} req - requested data.
+   * @returns {JSON} Created solution data.
+   */
+
+  async detailsBasedOnRoleAndLocation(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionDetails = await solutionsHelper.detailsBasedOnRoleAndLocation(
+          req.params._id,
+          req.body,
+          req.query.type ? req.query.type : '',
+        );
+
+        solutionDetails.result = solutionDetails.data;
+        return resolve(solutionDetails);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+    * @api {post} /kendra/api/v1/solutions/addRolesInScope/:solutionId Add roles in solutions
+    * @apiVersion 1.0.0
+    * @apiName Add roles in solutions
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+    * "roles" : ["DEO","SPD"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /kendra/api/v1/solutions/addRolesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully added roles in solutions scope",
+        "status": 200
+      }
+    */
+
+  /**
+   * Add roles in solution scope
+   * @method
+   * @name addRolesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id.
+   * @param {Array} req.body.roles - Roles to be added.
+   * @returns {Array} solution scope roles.
+   */
+
+  async addRolesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionUpdated = await solutionsHelper.addRolesInScope(req.params._id, req.body.roles);
+
+        return resolve(solutionUpdated);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * Add entities in solution scope
+   * @method
+   * @name addEntitiesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id.
+   * @param {Array} req.body.entities - Entities to be added.
+   * @returns {Array} Solution scope entities updation.
+   */
+
+  async addEntitiesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionUpdated = await solutionsHelper.addEntitiesInScope(req.params._id, req.body.entities);
+
+        return resolve(solutionUpdated);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * Remove roles in solution scope
+   * @method
+   * @name removeRolesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id.
+   * @param {Array} req.body.roles - Roles to be added.
+   * @returns {Array} Removed solution scope roles.
+   */
+
+  async removeRolesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionUpdated = await solutionsHelper.removeRolesInScope(req.params._id, req.body.roles);
+
+        return resolve(solutionUpdated);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * Remove entities in slution scope
+   * @method
+   * @name removeEntitiesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id.
+   * @param {Array} req.body.entities - Entities to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+  async removeEntitiesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(req.params._id, req.body.entities);
+
+        return resolve(solutionUpdated);
+      } catch (error) {
+        return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
           errorObject: error,

@@ -5,6 +5,7 @@
  * Description : Solution related helper functionality.
  */
 
+
 //Dependencies
 const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
@@ -12,11 +13,153 @@ const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 const entityTypesHelper = require(MODULES_BASE_PATH + '/entityTypes/helper');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + '/';
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const timeZoneDifference = process.env.TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC;
+const surveyHelper = require(MODULES_BASE_PATH + '/surveys/helper');
+const observationHelper = require(MODULES_BASE_PATH + '/observations/helper');
+const userHelper = require(MODULES_BASE_PATH + '/users/helper');
+const improvementProjectService = require(ROOT_PATH + '/generics/services/improvement-project');
+const validateEntity = process.env.VALIDATE_ENTITIES;
+const programUsersHelper = require(MODULES_BASE_PATH + '/programUsers/helper');
 /**
  * SolutionsHelper
  * @class
  */
 module.exports = class SolutionsHelper {
+  /**
+   * Create solution.
+   * @method
+   * @name createSolution
+   * @param {Object} solutionData - solution creation data.
+   * @returns {JSON} solution creation data.
+   */
+
+  static createSolution(solutionData, checkDate = false) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programData = await programsHelper.programDocuments(
+          {
+            externalId: solutionData.programExternalId,
+          },
+          ['name', 'description', 'scope', 'endDate', 'startDate'],
+        );
+
+        if (!(programData.length > 0)) {
+          throw {
+            message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+          };
+        }
+
+        solutionData.programId = programData[0]._id;
+        solutionData.programName = programData[0].name;
+        solutionData.programDescription = programData[0].description;
+
+        if (solutionData.type == messageConstants.common.COURSE && !solutionData.link) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.COURSE_LINK_REQUIRED,
+          });
+        }
+
+        if (solutionData.entities && solutionData.entities.length > 0) {
+          let entityIds = [];
+          let locationData = gen.utils.filterLocationIdandCode(solutionData.entities);
+          if (locationData.ids.length > 0) {
+            let bodyData = {
+              id: locationData.ids,
+            };
+            let entityData = await userService.locationSearch(bodyData);
+            if (entityData.success) {
+              entityData.data.forEach((entity) => {
+                entityIds.push(entity.id);
+              });
+            }
+          }
+
+          if (locationData.codes.length > 0) {
+            let filterData = {
+              externalId: locationData.codes,
+            };
+            let schoolDetails = await userService.orgSchoolSearch(filterData);
+            if (schoolDetails.success) {
+              let schoolData = schoolDetails.data;
+              schoolData.forEach((entity) => {
+                entityIds.push(entity.externalId);
+              });
+            }
+          }
+
+          if (!(entityIds.length > 0)) {
+            throw {
+              message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+            };
+          }
+
+          solutionData.entities = entityIds;
+        }
+
+        if (
+          solutionData.minNoOfSubmissionsRequired &&
+          solutionData.minNoOfSubmissionsRequired > messageConstants.common.DEFAULT_SUBMISSION_REQUIRED
+        ) {
+          if (!solutionData.allowMultipleAssessemts) {
+            solutionData.minNoOfSubmissionsRequired = messageConstants.common.DEFAULT_SUBMISSION_REQUIRED;
+          }
+        }
+
+        solutionData.status = messageConstants.common.ACTIVE_STATUS;
+
+        if (checkDate) {
+          if (solutionData.hasOwnProperty('endDate')) {
+            solutionData.endDate = gen.utils.getEndDate(solutionData.endDate, timeZoneDifference);
+            if (solutionData.endDate > programData[0].endDate) {
+              solutionData.endDate = programData[0].endDate;
+            }
+          }
+          if (solutionData.hasOwnProperty('startDate')) {
+            solutionData.startDate = gen.utils.getStartDate(solutionData.startDate, timeZoneDifference);
+            if (solutionData.startDate < programData[0].startDate) {
+              solutionData.startDate = programData[0].startDate;
+            }
+          }
+        }
+
+        let solutionCreation = await database.models.solutions.create(_.omit(solutionData, ['scope']));
+
+        if (!solutionCreation._id) {
+          throw {
+            message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
+          };
+        }
+
+        let updateProgram = await database.models.programs.updateOne(
+          {
+            _id: solutionData.programId,
+          },
+          {
+            $addToSet: { components: solutionCreation._id },
+          },
+        );
+
+        if (!solutionData.excludeScope && programData[0].scope) {
+          let solutionScope = await this.setScope(
+            solutionData.programId,
+            solutionCreation._id,
+            solutionData.scope ? solutionData.scope : {},
+          );
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.SOLUTION_CREATED,
+          data: {
+            _id: solutionCreation._id,
+          },
+        });
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
   /**
    * List of solutions and targeted ones.
    * @method
@@ -24,6 +167,104 @@ module.exports = class SolutionsHelper {
    * @param {String} solutionId - Program Id.
    * @returns {Object} - Details of the solution.
    */
+
+  // static targetedSolutions(
+  //   requestedData,
+  //   solutionType,
+  //   userToken,
+  //   pageSize,
+  //   pageNo,
+  //   search,
+  //   filter,
+  //   surveyReportPage = '',
+  // ) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let totalCount = 0;
+  //       let mergedData = [];
+  //       let solutionIds = [];
+
+  //       requestedData['filter'] = {};
+  //       if (solutionIds.length > 0) {
+  //         requestedData['filter']['skipSolutions'] = solutionIds;
+  //       }
+
+  //       if (filter && filter !== '') {
+  //         if (filter === messageConstants.common.CREATED_BY_ME) {
+  //           requestedData['filter']['isAPrivateProgram'] = {
+  //             $ne: false,
+  //           };
+  //         } else if (filter === messageConstants.common.ASSIGN_TO_ME) {
+  //           requestedData['filter']['isAPrivateProgram'] = false;
+  //         }
+  //       }
+
+  //       let targetedSolutions = {
+  //         success: false,
+  //       };
+
+  //       let getTargetedSolution = true;
+
+  //       if (filter === messageConstants.common.DISCOVERED_BY_ME) {
+  //         getTargetedSolution = false;
+  //       }
+
+  //       if (getTargetedSolution) {
+  //         targetedSolutions = await this.forUserRoleAndLocation(
+  //           requestedData,
+  //           solutionType,
+  //           '',
+  //           messageConstants.common.DEFAULT_PAGE_SIZE,
+  //           messageConstants.common.DEFAULT_PAGE_NO,
+  //           search,
+  //         );
+  //       }
+
+  //       if (targetedSolutions.success) {
+  //         if (targetedSolutions.success && targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
+  //           totalCount += targetedSolutions.data.count;
+  //           targetedSolutions.data.data.forEach((targetedSolution) => {
+  //             targetedSolution.solutionId = targetedSolution._id;
+  //             targetedSolution._id = '';
+
+  //             if (solutionType !== messageConstants.common.COURSE) {
+  //               targetedSolution['creator'] = targetedSolution.creator ? targetedSolution.creator : '';
+  //             }
+
+  //             if (solutionType === messageConstants.common.SURVEY) {
+  //               targetedSolution.isCreator = false;
+  //             }
+
+  //             mergedData.push(targetedSolution);
+  //             delete targetedSolution.type;
+  //             delete targetedSolution.externalId;
+  //           });
+  //         }
+  //       }
+
+  //       if (mergedData.length > 0) {
+  //         let startIndex = pageSize * (pageNo - 1);
+  //         let endIndex = startIndex + pageSize;
+  //         mergedData = mergedData.slice(startIndex, endIndex);
+  //       }
+
+  //       return resolve({
+  //         success: true,
+  //         message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+  //         data: {
+  //           data: mergedData,
+  //           count: totalCount,
+  //         },
+  //       });
+  //     } catch (error) {
+  //       return reject({
+  //         status: error.status || httpStatusCode.internal_server_error.status,
+  //         message: error.message || httpStatusCode.internal_server_error.message,
+  //         errorObject: error,
+  //       });
+  //     }
+  //   });
+  // }
 
   static targetedSolutions(
     requestedData,
@@ -37,9 +278,64 @@ module.exports = class SolutionsHelper {
   ) {
     return new Promise(async (resolve, reject) => {
       try {
+        let assignedSolutions = await this.assignedUserSolutions(
+          solutionType,
+          userToken,
+          search,
+          filter,
+          surveyReportPage,
+        );
         let totalCount = 0;
         let mergedData = [];
         let solutionIds = [];
+        if (assignedSolutions.success && assignedSolutions.data) {
+          // Remove observation solutions which for project tasks.
+
+          _.remove(assignedSolutions.data.data, function (solution) {
+            return (
+              solution.referenceFrom == messageConstants.common.PROJECT &&
+              solution.type == messageConstants.common.OBSERVATION
+            );
+          });
+
+          totalCount =
+            assignedSolutions.data.data && assignedSolutions.data.data.length > 0
+              ? assignedSolutions.data.data.length
+              : totalCount;
+          mergedData = assignedSolutions.data.data;
+
+          if (mergedData.length > 0) {
+            let programIds = [];
+
+            mergedData.forEach((mergeSolutionData) => {
+              if (mergeSolutionData.solutionId) {
+                solutionIds.push(mergeSolutionData.solutionId);
+              }
+
+              if (mergeSolutionData.programId) {
+                programIds.push(mergeSolutionData.programId);
+              }
+            });
+
+            let programsData = await programsHelper.programDocuments(
+              {
+                _id: { $in: programIds },
+              },
+              ['name'],
+            );
+
+            if (programsData.length > 0) {
+              let programs = programsData.reduce((ac, program) => ({ ...ac, [program._id.toString()]: program }), {});
+
+              mergedData = mergedData.map((data) => {
+                if (data.programId && programs[data.programId.toString()]) {
+                  data.programName = programs[data.programId.toString()].name;
+                }
+                return data;
+              });
+            }
+          }
+        }
 
         requestedData['filter'] = {};
         if (solutionIds.length > 0) {
@@ -64,6 +360,8 @@ module.exports = class SolutionsHelper {
 
         if (filter === messageConstants.common.DISCOVERED_BY_ME) {
           getTargetedSolution = false;
+        } else if (gen.utils.convertStringToBoolean(surveyReportPage) === true) {
+          getTargetedSolution = false;
         }
 
         if (getTargetedSolution) {
@@ -71,12 +369,13 @@ module.exports = class SolutionsHelper {
             requestedData,
             solutionType,
             '',
-            messageConstants.common.DEFAULT_PAGE_SIZE,
-            messageConstants.common.DEFAULT_PAGE_NO,
+            '',
+            "",
+            "",
             search,
           );
+          
         }
-
         if (targetedSolutions.success) {
           if (targetedSolutions.success && targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
             totalCount += targetedSolutions.data.count;
@@ -107,7 +406,7 @@ module.exports = class SolutionsHelper {
 
         return resolve({
           success: true,
-          message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+          message: messageConstants.apiResponses.TARGETED_OBSERVATION_FETCHED,
           data: {
             data: mergedData,
             count: totalCount,
@@ -124,6 +423,55 @@ module.exports = class SolutionsHelper {
   }
 
   /**
+   * Solution details.
+   * @method
+   * @name assignedUserSolutions
+   * @param {String} solutionId - Program Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static assignedUserSolutions(solutionType, userToken, search, filter, surveyReportPage = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let userAssignedSolutions = {};
+        if (solutionType === messageConstants.common.OBSERVATION) {
+          userAssignedSolutions = await observationHelper.userAssigned(
+            userToken,
+            '', //Page No
+            '', //Page Size
+            search,
+            filter,
+          );
+
+        } else if (solutionType === messageConstants.common.SURVEY) {
+          // Ml-core it will available IN survey service
+
+          userAssignedSolutions = await surveyHelper.userAssigned(
+            userToken,
+            '', //Page No
+            '', //Page Size
+            search,
+            filter,
+            surveyReportPage,
+          );
+        } else {
+          userAssignedSolutions =
+            // Ml-core it will available IN imporovement project service
+
+            await improvementProjectService.assignedProjects(userToken, search, filter);
+        }
+
+        return resolve(userAssignedSolutions);
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+  /**
    * Auto targeted query field.
    * @method
    * @name queryBasedOnRoleAndLocation
@@ -131,51 +479,130 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Auto targeted solutions query.
    */
 
+  // static queryBasedOnRoleAndLocation(data, type = '') {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+
+  //       let userRole = _.omit(data, ['factors', 'filter']);
+  //       let userRoleKeys = Object.keys(userRole);
+  //       let filterQuery = {};
+  //       let queryFilter = [];
+  //       if (data.hasOwnProperty('factors')) {
+  //         let factors = data.factors;
+  //         if (factors.length > 0) {
+  //           factors.forEach((factor) => {
+  //             let scope = 'scope.' + factor;
+  //             queryFilter.push({ [scope]: { $in: [...userRole[factor]] } });
+  //           });
+  //           filterQuery = {
+  //             $or: queryFilter,
+  //             isReusable: false,
+  //             isDeleted: false,
+  //           };
+  //         } else {
+  //           userRoleKeys.forEach((key) => {
+  //             let scope = 'scope.' + key;
+  //             queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
+  //           });
+  //           filterQuery = {
+  //             $and: queryFilter,
+  //             isReusable: false,
+  //             isDeleted: false,
+  //           };
+  //         }
+  //       } else {
+  //         userRoleKeys.forEach((key) => {
+  //           let scope = 'scope.' + key;
+  //           queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
+  //         });
+  //         filterQuery = {
+  //           $and: queryFilter,
+  //           isReusable: false,
+  //           isDeleted: false,
+  //         };
+  //       }
+
+  //       if (type === messageConstants.common.SURVEY) {
+  //         filterQuery['status'] = {
+  //           $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
+  //         };
+  //         let validDate = new Date();
+  //         validDate.setDate(validDate.getDate() - messageConstants.common.DEFAULT_SURVEY_REMOVED_DAY);
+  //         filterQuery['endDate'] = { $gte: validDate };
+  //       } else {
+  //         filterQuery.status = messageConstants.common.ACTIVE_STATUS;
+  //       }
+
+  //       if (data.filter && Object.keys(data.filter).length > 0) {
+  //         let solutionsSkipped = [];
+
+  //         if (data.filter.skipSolutions) {
+  //           data.filter.skipSolutions.forEach((solution) => {
+  //             solutionsSkipped.push(new ObjectId(solution.toString()));
+  //           });
+
+  //           data.filter['_id'] = {
+  //             $nin: solutionsSkipped,
+  //           };
+
+  //           delete data.filter.skipSolutions;
+  //         }
+
+  //         filterQuery = _.merge(filterQuery, data.filter);
+  //       }
+
+  //       return resolve({
+  //         success: true,
+  //         data: filterQuery,
+  //       });
+  //     } catch (error) {
+  //       return resolve({
+  //         success: false,
+  //         status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+  //         message: error.message,
+  //         data: {},
+  //       });
+  //     }
+  //   });
+  // }
   static queryBasedOnRoleAndLocation(data, type = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        let userRole = _.omit(data, ['factors', 'filter']);
-        let userRoleKeys = Object.keys(userRole);
-        let filterQuery = {};
-        let queryFilter = [];
-        if (data.hasOwnProperty('factors')) {
-          let factors = data.factors;
-          if (factors.length > 0) {
-            factors.forEach((factor) => {
-              let scope = 'scope.' + factor;
-              queryFilter.push({ [scope]: { $in: [...userRole[factor]] } });
-            });
-            filterQuery = {
-              $or: queryFilter,
-              isReusable: false,
-              isDeleted: false,
-            };
-          } else {
-            userRoleKeys.forEach((key) => {
-              let scope = 'scope.' + key;
-              queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
-            });
-            filterQuery = {
-              $and: queryFilter,
-              isReusable: false,
-              isDeleted: false,
+        let registryIds = [];
+        let entityTypes = [];
+        let filterQuery = {
+          isReusable: false,
+          isDeleted: false,
+        };
+        if (validateEntity !== messageConstants.common.OFF) {
+          Object.keys(_.omit(data, ['filter', 'role'])).forEach((requestedDataKey) => {
+            registryIds.push(data[requestedDataKey]);
+            entityTypes.push(requestedDataKey);
+          });
+          if (!(registryIds.length > 0)) {
+            throw {
+              message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
             };
           }
-        } else {
-          userRoleKeys.forEach((key) => {
-            let scope = 'scope.' + key;
-            queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
-          });
-          filterQuery = {
-            $and: queryFilter,
-            isReusable: false,
-            isDeleted: false,
+
+          filterQuery['scope.roles.code'] = {
+            $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           };
+          filterQuery['scope.entities'] = { $in: registryIds };
+          filterQuery['scope.entityType'] = { $in: entityTypes };
+        } else {
+          let userRoleInfo = _.omit(data, ['filter']);
+          let userRoleKeys = Object.keys(userRoleInfo);
+          userRoleKeys.forEach((entities) => {
+            filterQuery['scope.' + entities] = {
+              $in: userRoleInfo[entities].split(','),
+            };
+          });
         }
 
         if (type === messageConstants.common.SURVEY) {
           filterQuery['status'] = {
-            $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
+            $in: [messageConstants.common.ACTIVE, messageConstants.common.INACTIVE],
           };
           let validDate = new Date();
           validDate.setDate(validDate.getDate() - messageConstants.common.DEFAULT_SURVEY_REMOVED_DAY);
@@ -183,10 +610,9 @@ module.exports = class SolutionsHelper {
         } else {
           filterQuery.status = messageConstants.common.ACTIVE_STATUS;
         }
-
         if (data.filter && Object.keys(data.filter).length > 0) {
           let solutionsSkipped = [];
-
+         
           if (data.filter.skipSolutions) {
             data.filter.skipSolutions.forEach((solution) => {
               solutionsSkipped.push(new ObjectId(solution.toString()));
@@ -231,11 +657,10 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - List of solutions based on role and location.
    */
 
-  static forUserRoleAndLocation(bodyData, type, subType = '', pageSize, pageNo, searchText = '') {
+  static forUserRoleAndLocation(bodyData, type, subType = '', programId, pageSize, pageNo, searchText = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType);
-
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType, programId);
         if (!queryData.success) {
           return resolve(queryData);
         }
@@ -256,17 +681,31 @@ module.exports = class SolutionsHelper {
         } else {
           if (type !== '') {
             matchQuery['type'] = type;
+            if (type === messageConstants.common.SURVEY) {
+              const currentDate = new Date();
+              currentDate.setDate(currentDate.getDate() - 15);
+              matchQuery['endDate'] = { $gte: currentDate };
+            } else {
+              matchQuery['endDate'] = { $gte: new Date() };
+            }
           }
 
           if (subType !== '') {
             matchQuery['subType'] = subType;
           }
         }
-        console.log(JSON.stringify(matchQuery));
+
+        if (programId !== '') {
+          matchQuery['programId'] = ObjectId(programId);
+        }
+
+        matchQuery['startDate'] = { $lte: new Date() };
 
         let targetedSolutions = await this.list(type, subType, matchQuery, pageNo, pageSize, searchText, [
           'name',
           'description',
+          'programName',
+          'programId',
           'externalId',
           'projectTemplateId',
           'type',
@@ -278,7 +717,6 @@ module.exports = class SolutionsHelper {
           'entityType',
           'certificateTemplateId',
         ]);
-
         return resolve({
           success: true,
           message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
@@ -344,171 +782,439 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - scope in solution.
    */
 
-  static setScope(solutionId, scopeData) {
+  // static setScope(solutionId, scopeData) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let solutionData = await this.solutionDocuments({ _id: solutionId }, ['_id']);
+
+  //       if (!solutionData.length > 0) {
+  //         return resolve({
+  //           status: httpStatusCode.bad_request.status,
+  //           message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+  //         });
+  //       }
+
+  //       // let currentSolutionScope = {};
+  //       let scopeDatas = Object.keys(scopeData);
+  //       let scopeDataIndex = scopeDatas.map((index) => {
+  //         return `scope.${index}`;
+  //       });
+
+  //       let solutionIndex = await database.models.solutions.listIndexes({}, { key: 1 });
+  //       let indexes = solutionIndex.map((indexedKeys) => {
+  //         return Object.keys(indexedKeys.key)[0];
+  //       });
+  //       let keysNotIndexed = _.differenceWith(scopeDataIndex, indexes);
+  //       // if (Object.keys(scopeData).length > 0) {
+  //       //   if (scopeData.entityType) {
+  //       //     let bodyData = { name: scopeData.entityType };
+  //       //     let entityTypeData = await entityTypesHelper.list(bodyData);
+  //       //     if (entityTypeData.length > 0) {
+  //       //       currentSolutionScope.entityType = entityTypeData[0].name;
+  //       //     }
+  //       //   }
+
+  //       //   if (scopeData.entities && scopeData.entities.length > 0) {
+  //       //     //call learners api for search
+  //       //     let entityIds = [];
+  //       //     let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
+
+  //       //     if (locationData.codes.length > 0) {
+  //       //       let filterData = {
+  //       //         'registryDetails.code': locationData.codes,
+  //       //         entityType: currentSolutionScope.entityType,
+  //       //       };
+  //       //       let entityDetails = await entitiesHelper.entitiesDocument(filterData);
+
+  //       //       if (entityDetails.success) {
+  //       //         entityDetails.data.forEach((entity) => {
+  //       //           entityIds.push(entity.id);
+  //       //         });
+  //       //       }
+  //       //     }
+  //       //     entityIds = [...locationData.ids, ...locationData.codes];
+
+  //       //     if (!entityIds.length > 0) {
+  //       //       return resolve({
+  //       //         status: httpStatusCode.bad_request.status,
+  //       //         message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+  //       //       });
+  //       //     }
+
+  //       //     let entitiesData = [];
+
+  //       //     // if( currentSolutionScope.entityType !== programData[0].scope.entityType ) {
+  //       //     //   let result = [];
+  //       //     //   let childEntities = await userService.getSubEntitiesBasedOnEntityType(currentSolutionScope.entities, currentSolutionScope.entityType, result);
+  //       //     //   if( childEntities.length > 0 ) {
+  //       //     //     entitiesData = entityIds.filter(element => childEntities.includes(element));
+  //       //     //   }
+  //       //     // } else {
+  //       //     entitiesData = entityIds;
+  //       //     // }
+
+  //       //     if (!entitiesData.length > 0) {
+  //       //       return resolve({
+  //       //         status: httpStatusCode.bad_request.status,
+  //       //         message: messageConstants.apiResponses.SCOPE_ENTITY_INVALID,
+  //       //       });
+  //       //     }
+
+  //       //     currentSolutionScope.entities = entitiesData;
+  //       //   }
+
+  //       //   // currentSolutionScope.recommendedFor = scopeData.recommendedFor;
+
+  //       //   // if (scopeData.roles) {
+  //       //   //   if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
+  //       //   //     let userRoles = await userRolesHelper.list(
+  //       //   //       {
+  //       //   //         code: { $in: scopeData.roles },
+  //       //   //       },
+  //       //   //       ['_id', 'code'],
+  //       //   //     );
+
+  //       //   //     if (!userRoles.length > 0) {
+  //       //   //       return resolve({
+  //       //   //         status: httpStatusCode.bad_request.status,
+  //       //   //         message: messageConstants.apiResponses.INVALID_ROLE_CODE,
+  //       //   //       });
+  //       //   //     }
+
+  //       //   //     currentSolutionScope['roles'] = userRoles;
+  //       //   //   } else {
+  //       //   //     if (scopeData.roles === messageConstants.common.ALL_ROLES) {
+  //       //   //       currentSolutionScope['roles'] = [
+  //       //   //         {
+  //       //   //           code: messageConstants.common.ALL_ROLES,
+  //       //   //         },
+  //       //   //       ];
+  //       //   //     }
+  //       //   //   }
+  //       //   // }
+  //       // }
+  //       if (keysNotIndexed.length > 0) {
+  //         let keysCannotBeAdded = keysNotIndexed.map((keys) => {
+  //           return keys.split('.')[1];
+  //         });
+  //         scopeData = _.omit(scopeData, keysCannotBeAdded);
+  //       }
+
+  //       let updateSolution = await database.models.solutions
+  //         .findOneAndUpdate(
+  //           {
+  //             _id: solutionId,
+  //           },
+  //           { $set: { scope: scopeData } },
+  //           // { new: true },
+  //         )
+  //         .lean();
+
+  //       if (!updateSolution._id) {
+  //         throw {
+  //           status: messageConstants.apiResponses.SOLUTION_SCOPE_NOT_ADDED,
+  //         };
+  //       }
+  //       solutionData = updateSolution;
+  //       let result = { _id: solutionId, scope: updateSolution.scope };
+  //       return resolve({
+  //         success: true,
+  //         message: messageConstants.apiResponses.SOLUTION_UPDATED,
+  //         result: result,
+  //       });
+  //     } catch (error) {
+  //       console.log(error);
+  //       return resolve({
+  //         message: error.message,
+  //         success: false,
+  //       });
+  //     }
+  //   });
+  // }
+
+  static setScope(programId, solutionId, scopeData) {
     return new Promise(async (resolve, reject) => {
       try {
+        let programData = await programsHelper.programDocuments({ _id: programId }, ['_id', 'scope']);
+
+        if (!(programData.length > 0)) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+          });
+        }
+
         let solutionData = await this.solutionDocuments({ _id: solutionId }, ['_id']);
 
-        if (!solutionData.length > 0) {
+        if (!(solutionData.length > 0)) {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
+        if (programData[0].scope) {
+          let currentSolutionScope = JSON.parse(JSON.stringify(programData[0].scope));
+          if (validateEntity !== messageConstants.common.OFF) {
+            if (Object.keys(scopeData).length > 0) {
+              if (scopeData.entityType) {
+                let bodyData = { type: scopeData.entityType };
+                let entityTypeData = await userService.locationSearch(bodyData);
+                if (entityTypeData.success) {
+                  currentSolutionScope.entityType = entityTypeData.data[0].type;
+                }
+              }
 
-        // let currentSolutionScope = {};
-        let scopeDatas = Object.keys(scopeData);
-        let scopeDataIndex = scopeDatas.map((index) => {
-          return `scope.${index}`;
-        });
+              if (scopeData.entities && scopeData.entities.length > 0) {
+                //call learners api for search
+                let entityIds = [];
+                let bodyData = {};
+                let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
 
-        let solutionIndex = await database.models.solutions.listIndexes({}, { key: 1 });
-        let indexes = solutionIndex.map((indexedKeys) => {
-          return Object.keys(indexedKeys.key)[0];
-        });
-        let keysNotIndexed = _.differenceWith(scopeDataIndex, indexes);
-        // if (Object.keys(scopeData).length > 0) {
-        //   if (scopeData.entityType) {
-        //     let bodyData = { name: scopeData.entityType };
-        //     let entityTypeData = await entityTypesHelper.list(bodyData);
-        //     if (entityTypeData.length > 0) {
-        //       currentSolutionScope.entityType = entityTypeData[0].name;
-        //     }
-        //   }
+                if (locationData.ids.length > 0) {
+                  bodyData = {
+                    id: locationData.ids,
+                    type: currentSolutionScope.entityType,
+                  };
+                  let entityData = await userService.locationSearch(bodyData);
+                  if (entityData.success) {
+                    entityData.data.forEach((entity) => {
+                      entityIds.push(entity.id);
+                    });
+                  }
+                }
 
-        //   if (scopeData.entities && scopeData.entities.length > 0) {
-        //     //call learners api for search
-        //     let entityIds = [];
-        //     let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
+                if (locationData.codes.length > 0) {
+                  let filterData = {
+                    code: locationData.codes,
+                    type: currentSolutionScope.entityType,
+                  };
+                  let entityDetails = await userService.locationSearch(filterData);
 
-        //     if (locationData.codes.length > 0) {
-        //       let filterData = {
-        //         'registryDetails.code': locationData.codes,
-        //         entityType: currentSolutionScope.entityType,
-        //       };
-        //       let entityDetails = await entitiesHelper.entitiesDocument(filterData);
+                  if (entityDetails.success) {
+                    entityDetails.data.forEach((entity) => {
+                      entityIds.push(entity.id);
+                    });
+                  }
+                }
 
-        //       if (entityDetails.success) {
-        //         entityDetails.data.forEach((entity) => {
-        //           entityIds.push(entity.id);
-        //         });
-        //       }
-        //     }
-        //     entityIds = [...locationData.ids, ...locationData.codes];
+                if (!(entityIds.length > 0)) {
+                  return resolve({
+                    status: httpStatusCode.bad_request.status,
+                    message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+                  });
+                }
 
-        //     if (!entityIds.length > 0) {
-        //       return resolve({
-        //         status: httpStatusCode.bad_request.status,
-        //         message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-        //       });
-        //     }
+                let entitiesData = [];
 
-        //     let entitiesData = [];
+                // if( currentSolutionScope.entityType !== programData[0].scope.entityType ) {
+                //   let result = [];
+                //   let childEntities = await userService.getSubEntitiesBasedOnEntityType(currentSolutionScope.entities, currentSolutionScope.entityType, result);
+                //   if( childEntities.length > 0 ) {
+                //     entitiesData = entityIds.filter(element => childEntities.includes(element));
+                //   }
+                // } else {
+                entitiesData = entityIds;
+                // }
 
-        //     // if( currentSolutionScope.entityType !== programData[0].scope.entityType ) {
-        //     //   let result = [];
-        //     //   let childEntities = await userService.getSubEntitiesBasedOnEntityType(currentSolutionScope.entities, currentSolutionScope.entityType, result);
-        //     //   if( childEntities.length > 0 ) {
-        //     //     entitiesData = entityIds.filter(element => childEntities.includes(element));
-        //     //   }
-        //     // } else {
-        //     entitiesData = entityIds;
-        //     // }
+                if (!(entitiesData.length > 0)) {
+                  return resolve({
+                    status: httpStatusCode.bad_request.status,
+                    message: messageConstants.apiResponses.SCOPE_ENTITY_INVALID,
+                  });
+                }
 
-        //     if (!entitiesData.length > 0) {
-        //       return resolve({
-        //         status: httpStatusCode.bad_request.status,
-        //         message: messageConstants.apiResponses.SCOPE_ENTITY_INVALID,
-        //       });
-        //     }
+                currentSolutionScope.entities = entitiesData;
+              }
+            }
 
-        //     currentSolutionScope.entities = entitiesData;
-        //   }
+            if (scopeData.roles) {
+              if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
+                let userRoles = await userRolesHelper.roleDocuments(
+                  {
+                    code: { $in: scopeData.roles },
+                  },
+                  ['_id', 'code'],
+                );
 
-        //   // currentSolutionScope.recommendedFor = scopeData.recommendedFor;
+                if (!(userRoles.length > 0)) {
+                  return resolve({
+                    status: httpStatusCode.bad_request.status,
+                    message: messageConstants.apiResponses.INVALID_ROLE_CODE,
+                  });
+                }
 
-        //   // if (scopeData.roles) {
-        //   //   if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
-        //   //     let userRoles = await userRolesHelper.list(
-        //   //       {
-        //   //         code: { $in: scopeData.roles },
-        //   //       },
-        //   //       ['_id', 'code'],
-        //   //     );
+                currentSolutionScope['roles'] = userRoles;
+              } else {
+                if (scopeData.roles === messageConstants.common.ALL_ROLES) {
+                  currentSolutionScope['roles'] = [
+                    {
+                      code: messageConstants.common.ALL_ROLES,
+                    },
+                  ];
+                }
+              }
+            }
+          } else {
+            currentSolutionScope = scopeData;
+          }
 
-        //   //     if (!userRoles.length > 0) {
-        //   //       return resolve({
-        //   //         status: httpStatusCode.bad_request.status,
-        //   //         message: messageConstants.apiResponses.INVALID_ROLE_CODE,
-        //   //       });
-        //   //     }
+          let updateSolution = await database.models.solutions
+            .findOneAndUpdate(
+              {
+                _id: solutionId,
+              },
+              { $set: { scope: currentSolutionScope } },
+              { new: true },
+            )
+            .lean();
 
-        //   //     currentSolutionScope['roles'] = userRoles;
-        //   //   } else {
-        //   //     if (scopeData.roles === messageConstants.common.ALL_ROLES) {
-        //   //       currentSolutionScope['roles'] = [
-        //   //         {
-        //   //           code: messageConstants.common.ALL_ROLES,
-        //   //         },
-        //   //       ];
-        //   //     }
-        //   //   }
-        //   // }
-        // }
-        if (keysNotIndexed.length > 0) {
-          let keysCannotBeAdded = keysNotIndexed.map((keys) => {
-            return keys.split('.')[1];
-          });
-          scopeData = _.omit(scopeData, keysCannotBeAdded);
+          if (!updateSolution._id) {
+            throw {
+              status: messageConstants.apiResponses.SOLUTION_SCOPE_NOT_ADDED,
+            };
+          }
+          solutionData = updateSolution;
         }
 
-        let updateSolution = await database.models.solutions
-          .findOneAndUpdate(
-            {
-              _id: solutionId,
-            },
-            { $set: { scope: scopeData } },
-            // { new: true },
-          )
-          .lean();
-
-        if (!updateSolution._id) {
-          throw {
-            status: messageConstants.apiResponses.SOLUTION_SCOPE_NOT_ADDED,
-          };
-        }
-        solutionData = updateSolution;
-        let result = { _id: solutionId, scope: updateSolution.scope };
         return resolve({
           success: true,
           message: messageConstants.apiResponses.SOLUTION_UPDATED,
-          result: result,
         });
       } catch (error) {
-        console.log(error);
         return resolve({
-          message: error.message,
           success: false,
         });
       }
     });
   }
+  // static update(SolutionId, bodyData, userId) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let solutionData = bodyData;
+  //       let queryObject = {
+  //         _id: SolutionId,
+  //       };
 
-  static update(SolutionId, bodyData, userId) {
+  //       let solutionDocument = await this.solutionDocuments(queryObject, ['_id']);
+
+  //       if (!solutionDocument.length > 0) {
+  //         return resolve({
+  //           status: httpStatusCode.bad_request.status,
+  //           message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+  //         });
+  //       }
+
+  //       let updateObject = {
+  //         $set: {},
+  //       };
+
+  //       if (
+  //         solutionData.minNoOfSubmissionsRequired &&
+  //         solutionData.minNoOfSubmissionsRequired > messageConstants.common.DEFAULT_SUBMISSION_REQUIRED
+  //       ) {
+  //         if (!solutionData.allowMultipleAssessemts) {
+  //           solutionData.minNoOfSubmissionsRequired = messageConstants.common.DEFAULT_SUBMISSION_REQUIRED;
+  //         }
+  //       }
+
+  //       let solutionUpdateData = solutionData;
+
+  //       Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
+  //         updateObject['$set'][updationData] = solutionUpdateData[updationData];
+  //       });
+  //       updateObject['$set']['updatedBy'] = userId;
+
+  //       let solutionUpdatedData = await database.models.solutions
+  //         .findOneAndUpdate(
+  //           {
+  //             _id: solutionDocument[0]._id,
+  //           },
+  //           updateObject,
+  //           { new: true },
+  //         )
+  //         .lean();
+
+  //       if (!solutionUpdatedData._id) {
+  //         throw {
+  //           message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
+  //         };
+  //       }
+
+  //       if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
+  //         let solutionScope = await this.setScope(solutionUpdatedData._id, solutionData.scope);
+
+  //         if (!solutionScope.success) {
+  //           throw {
+  //             message: messageConstants.apiResponses.COULD_NOT_UPDATE_SCOPE,
+  //           };
+  //         }
+  //         solutionData = solutionScope.result;
+  //       }
+
+  //       return resolve({
+  //         success: true,
+  //         message: messageConstants.apiResponses.SOLUTION_UPDATED,
+  //         result: solutionData,
+  //         data: solutionData,
+  //       });
+  //     } catch (error) {
+  //       return resolve({
+  //         success: false,
+  //         message: error.message,
+  //         data: {},
+  //       });
+  //     }
+  //   });
+  // }
+
+  /**
+   * Update solution.
+   * @method
+   * @name update
+   * @param {String} solutionId - solution id.
+   * @param {Object} solutionData - solution creation data.
+   * @returns {JSON} solution creation data.
+   */
+
+  static update(solutionId, solutionData, userId, checkDate = false) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = bodyData;
         let queryObject = {
-          _id: SolutionId,
+          _id: solutionId,
         };
 
-        let solutionDocument = await this.solutionDocuments(queryObject, ['_id']);
-
-        if (!solutionDocument.length > 0) {
+        let solutionDocument = await this.solutionDocuments(queryObject, ['_id', 'programId']);
+        if (!(solutionDocument.length > 0)) {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
+        }
+
+        if (checkDate && (solutionData.hasOwnProperty('endDate') || solutionData.hasOwnProperty('endDate'))) {
+          let programData = await programsHelper.programDocuments(
+            {
+              _id: solutionDocument[0].programId,
+            },
+            ['_id', 'endDate', 'startDate'],
+          );
+          if (!(programData.length > 0)) {
+            throw {
+              message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            };
+          }
+          if (solutionData.hasOwnProperty('endDate')) {
+            solutionData.endDate = gen.utils.getEndDate(solutionData.endDate, timeZoneDifference);
+            if (solutionData.endDate > programData[0].endDate) {
+              solutionData.endDate = programData[0].endDate;
+            }
+          }
+          if (solutionData.hasOwnProperty('startDate')) {
+            solutionData.startDate = gen.utils.getStartDate(solutionData.startDate, timeZoneDifference);
+            if (solutionData.startDate < programData[0].startDate) {
+              solutionData.startDate = programData[0].startDate;
+            }
+          }
         }
 
         let updateObject = {
@@ -525,12 +1231,10 @@ module.exports = class SolutionsHelper {
         }
 
         let solutionUpdateData = solutionData;
-
         Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
           updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
         updateObject['$set']['updatedBy'] = userId;
-
         let solutionUpdatedData = await database.models.solutions
           .findOneAndUpdate(
             {
@@ -540,7 +1244,6 @@ module.exports = class SolutionsHelper {
             { new: true },
           )
           .lean();
-
         if (!solutionUpdatedData._id) {
           throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
@@ -548,20 +1251,22 @@ module.exports = class SolutionsHelper {
         }
 
         if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
-          let solutionScope = await this.setScope(solutionUpdatedData._id, solutionData.scope);
+          let solutionScope = await this.setScope(
+            solutionUpdatedData.programId,
+            solutionUpdatedData._id,
+            solutionData.scope,
+          );
 
           if (!solutionScope.success) {
             throw {
               message: messageConstants.apiResponses.COULD_NOT_UPDATE_SCOPE,
             };
           }
-          solutionData = solutionScope.result;
         }
 
         return resolve({
           success: true,
           message: messageConstants.apiResponses.SOLUTION_UPDATED,
-          result: solutionData,
           data: solutionData,
         });
       } catch (error) {
@@ -1369,30 +2074,125 @@ module.exports = class SolutionsHelper {
    * @returns {Object} - Solution details information.
    */
 
-  static details(solutionId) {
+  // static details(solutionId) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let solutionData = await this.solutionDocuments(
+  //         {
+  //           _id: solutionId,
+  //         },
+  //         ['creator', 'description', 'themes', 'evidenceMethods', 'linkTitle', 'linkUrl', 'name', 'entityType', 'type'],
+  //       );
+
+  //       if (!solutionData[0]) {
+  //         throw {
+  //           status: httpStatusCode.bad_request.status,
+  //           message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+  //         };
+  //       }
+
+  //       return resolve(solutionData[0]);
+  //     } catch (error) {
+  //       return reject(error);
+  //     }
+  //   });
+  // }
+
+  /**
+   * Fetch template observation based on solution Id.
+   * @method
+   * @name details
+   * @param {String} solutionId - Solution Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static details(solutionId, bodyData = {}, userId = '', userToken = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await this.solutionDocuments(
-          {
-            _id: solutionId,
-          },
-          ['creator', 'description', 'themes', 'evidenceMethods', 'linkTitle', 'linkUrl', 'name', 'entityType', 'type'],
-        );
+        let solutionData = await this.solutionDocuments({ _id: solutionId }, [
+          'type',
+          'projectTemplateId',
+          'programId',
+        ]);
 
-        if (!solutionData[0]) {
-          throw {
-            status: httpStatusCode.bad_request.status,
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          return resolve({
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+            result: [],
+          });
+        }
+
+        solutionData = solutionData[0];
+        let templateOrQuestionDetails;
+        //this will get wether user is targeted to the solution or not based on user Role Information
+        const isSolutionTargeted = await this.isTargetedBasedOnUserProfile(solutionId, bodyData);
+
+        if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
+          if (!solutionData.projectTemplateId) {
+            throw {
+              message: messageConstants.apiResponses.PROJECT_TEMPLATE_ID_NOT_FOUND,
+            };
+          }
+
+          templateOrQuestionDetails = await improvementProjectService.getTemplateDetail(
+            solutionData.projectTemplateId,
+            userToken,
+            isSolutionTargeted.result.isATargetedSolution ? false : true,
+          );
+        } else if (
+          solutionData.type === messageConstants.common.OBSERVATION ||
+          solutionData.type === messageConstants.common.SURVEY
+        ) {
+          templateOrQuestionDetails = await this.questions(solutionData._id, userToken);
+        } else {
+          templateOrQuestionDetails = {
+            status: httpStatusCode.ok.status,
+            message: messageConstants.apiResponses.SOLUTION_TYPE_INVALID,
+            result: {},
           };
         }
 
-        return resolve(solutionData[0]);
+        if (solutionData.programId) {
+          // add ["rootOrganisations","requestForPIIConsent","programJoined"] values to response. Based on these values front end calls PII consent
+          let programData = await programsHelper.programDocuments(
+            {
+              _id: solutionData.programId,
+            },
+            ['rootOrganisations', 'requestForPIIConsent', 'name'],
+          );
+
+          templateOrQuestionDetails.result.rootOrganisations = programData[0].rootOrganisations
+            ? programData[0].rootOrganisations[0]
+            : '';
+          if (programData[0].hasOwnProperty('requestForPIIConsent')) {
+            templateOrQuestionDetails.result.requestForPIIConsent = programData[0].requestForPIIConsent;
+          }
+          // We are passing programId and programName with the response because front end require these values to show program join pop-up in case of survey link flow
+          // In 6.0.0 release these values only used for solutions of  type survey in front-end side. But Backend is not adding any restrictions based on solution type.
+          // If solution have programId then we will pass below values with the response, irrespective of solution type
+          templateOrQuestionDetails.result.programId = solutionData.programId;
+          templateOrQuestionDetails.result.programName = programData[0].name;
+        }
+
+        //Check data present in programUsers collection.
+        //checkForUserJoinedProgramAndConsentShared will returns an object which contain joinProgram and consentShared status
+        let programJoinStatus = await programUsersHelper.checkForUserJoinedProgramAndConsentShared(
+          solutionData.programId,
+          userId,
+        );
+        templateOrQuestionDetails.result.programJoined = programJoinStatus.joinProgram;
+        templateOrQuestionDetails.result.consentShared = programJoinStatus.consentShared;
+
+        return resolve(templateOrQuestionDetails);
       } catch (error) {
-        return reject(error);
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
       }
     });
   }
-
   /**
    * Create solution and program from solution templates.
    * @method
@@ -1704,14 +2504,11 @@ module.exports = class SolutionsHelper {
           let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
 
           let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
-
           solutionLink = updateLink;
         } else {
           solutionLink = solutionData[0].link;
         }
-
         link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
-
         return resolve({
           success: true,
           message: messageConstants.apiResponses.LINK_GENERATED,
@@ -1727,6 +2524,763 @@ module.exports = class SolutionsHelper {
     });
   }
 
+  /**
+   * Verify solution link
+   * @method
+   * @name verifyLink
+   * @param {String} solutionId - solution Id.
+   * @param {String} userId - user Id.
+   * @param {String} userToken - user token.
+   * @param {Boolean} createProject - create project.
+   * @param {Object} bodyData - Req Body.
+   * @param {Object} createPrivateSolutionIfNotTargeted - flag to create private program if user is non targeted
+   * @returns {Object} - Details of the solution.
+   */
+
+  static verifyLink(link = '', bodyData = {}, userId = '', userToken = '', createProject = true) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let verifySolution = await this.verifySolutionDetails(link, userId, userToken);
+
+        let checkForTargetedSolution = await this.checkForTargetedSolution(link, bodyData, userId, userToken);
+
+        if (!checkForTargetedSolution || Object.keys(checkForTargetedSolution.result).length <= 0) {
+          return resolve(checkForTargetedSolution);
+        }
+
+        let solutionData = checkForTargetedSolution.result;
+        let isSolutionActive = solutionData.status === messageConstants.common.INACTIVE ? false : true;
+        if (solutionData.type == messageConstants.common.OBSERVATION) {
+          // Targeted solution
+          if (checkForTargetedSolution.result.isATargetedSolution) {
+            let observationDetailFromLink = await observationHelper.details('', solutionData.solutionId, userId);
+            if (observationDetailFromLink) {
+              checkForTargetedSolution.result['observationId'] =
+                observationDetailFromLink._id != '' ? observationDetailFromLink._id : '';
+            } else if (!isSolutionActive) {
+              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+            }
+          } else {
+            if (!isSolutionActive) {
+              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+            }
+          }
+        } else if (solutionData.type === messageConstants.common.SURVEY) {
+          // Get survey submissions of user
+          /**
+           * function userServeySubmission 
+           * Request:
+           * @query :SolutionId -> solutionId
+           * @param {userToken} for UserId
+           * @response Array of survey submissions
+           * example: {
+            "success":true,
+            "message":"Survey submission fetched successfully",
+            "data":[
+                {
+                    "_id":"62e228eedd8c6d0009da5084",
+                    "solutionId":"627dfc6509446e00072ccf78",
+                    "surveyId":"62e228eedd8c6d0009da507d",
+                    "status":"completed",
+                    "surveyInformation":{
+                        "name":"Create a Survey (To check collated reports) for 4.9 regression -- FD 380",
+                        "description":"Create a Survey (To check collated reports) for 4.9 regression -- FD 380"
+                    }
+                }
+            ]
+          }       
+           */
+          //added from ml-survey
+          let surveySubmissionDetails = await userHelper.surveySubmissions(userId, solutionData.solutionId);
+          let surveySubmissionData = surveySubmissionDetails.data;
+          if (surveySubmissionData.length > 0) {
+            checkForTargetedSolution.result.submissionId = surveySubmissionData[0]._id
+              ? surveySubmissionData[0]._id
+              : '';
+            checkForTargetedSolution.result.surveyId = surveySubmissionData[0].surveyId
+              ? surveySubmissionData[0].surveyId
+              : '';
+            checkForTargetedSolution.result.submissionStatus = surveySubmissionData[0].status;
+          } else if (!isSolutionActive) {
+            throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+          }
+        } else if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
+          // Targeted solution
+          if (checkForTargetedSolution.result.isATargetedSolution && createProject) {
+            //targeted user with project creation
+
+            let projectDetailFromLink = await improvementProjectService.getProjectDetail(
+              solutionData.solutionId,
+              userToken,
+              bodyData,
+            );
+
+            if (!projectDetailFromLink || !projectDetailFromLink.data) {
+              return resolve(projectDetailFromLink);
+            }
+            if (projectDetailFromLink.data.length < 1 && !isSolutionActive) {
+              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+            }
+
+            checkForTargetedSolution.result['projectId'] = projectDetailFromLink.data._id
+              ? projectDetailFromLink.data._id
+              : '';
+          } else if (checkForTargetedSolution.result.isATargetedSolution && !createProject) {
+            //targeted user with no project creation
+            let findQuery = {
+              userId: userId,
+              projectTemplateId: solutionData.projectTemplateId,
+              referenceFrom: {
+                $ne: messageConstants.common.LINK,
+              },
+              isDeleted: false,
+            };
+
+            let checkTargetedProjectExist = await improvementProjectService.projectDocuments(userToken, findQuery, [
+              '_id',
+            ]);
+
+            if (
+              checkTargetedProjectExist.success &&
+              checkTargetedProjectExist.data &&
+              checkTargetedProjectExist.data.length > 0 &&
+              checkTargetedProjectExist.data[0]._id != ''
+            ) {
+              checkForTargetedSolution.result['projectId'] = checkTargetedProjectExist.data[0]._id;
+            } else if (!isSolutionActive) {
+              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+            }
+          } else {
+            if (!isSolutionActive) {
+              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+            }
+
+            // check if private-Project already exists
+            let checkIfUserProjectExistsQuery = {
+              createdBy: userId,
+              referenceFrom: messageConstants.common.LINK,
+              link: link,
+            };
+            let checkForProjectExist = await improvementProjectService.projectDocuments(
+              userToken,
+              checkIfUserProjectExistsQuery,
+              ['_id'],
+            );
+            if (
+              checkForProjectExist.success &&
+              checkForProjectExist.data &&
+              checkForProjectExist.data.length > 0 &&
+              checkForProjectExist.data[0]._id != ''
+            ) {
+              checkForTargetedSolution.result['projectId'] = checkForProjectExist.data[0]._id;
+            }
+            // If project not found and createPrivateSolutionIfNotTargeted := true
+            // By default will be false for old version of app
+            if (!checkForTargetedSolution.result['projectId'] || checkForTargetedSolution.result['projectId'] === '') {
+              // user is not targeted and privateSolutionCreation required
+              /**
+               * function privateProgramAndSolutionDetails
+               * Request:
+               * @param {solutionData} solution data
+               * @param {userToken} for UserId
+               * @response private solutionId
+               */
+              let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
+                solutionData,
+                userId,
+                userToken,
+              );
+              if (!privateProgramAndSolutionDetails.success) {
+                throw {
+                  status: httpStatusCode.bad_request.status,
+                  message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+                };
+              }
+              // Replace public solutionId with private solutionId.
+              if (privateProgramAndSolutionDetails.result != '') {
+                checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
+              }
+            }
+          }
+        }
+        delete checkForTargetedSolution.result['status'];
+        return resolve(checkForTargetedSolution);
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+   * Verify Solution details.
+   * @method
+   * @name verifySolutionDetails
+   * @param {String} solutionId - Program Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static verifySolutionDetails(link = '', userId = '', userToken = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = {
+          verified: false,
+        };
+
+        if (userToken == '') {
+          throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
+        }
+
+        if (userId == '') {
+          throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
+        }
+
+        let solutionData = await this.solutionDocuments(
+          {
+            link: link,
+            isReusable: false,
+            status: {
+              $ne: messageConstants.common.INACTIVE,
+            },
+          },
+          ['type', 'status', 'endDate'],
+        );
+
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          return resolve({
+            message: messageConstants.apiResponses.INVALID_LINK,
+            result: [],
+          });
+        }
+
+        if (solutionData[0].status !== messageConstants.common.ACTIVE) {
+          return resolve({
+            message: messageConstants.apiResponses.LINK_IS_EXPIRED,
+            result: [],
+          });
+        }
+
+        if (solutionData[0].endDate && new Date() > new Date(solutionData[0].endDate)) {
+          if (solutionData[0].status === messageConstants.common.ACTIVE) {
+            let updateSolution = await this.update(
+              solutionData[0]._id,
+              {
+                status: messageConstants.common.INACTIVE,
+              },
+              userId,
+            );
+          }
+
+          return resolve({
+            message: messageConstants.apiResponses.LINK_IS_EXPIRED,
+            result: [],
+          });
+        }
+
+        response.verified = true;
+        return resolve({
+          message: messageConstants.apiResponses.LINK_VERIFIED,
+          result: response,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+   * Check the user is targeted.
+   * @method
+   * @name checkForTargetedSolution
+   * @param {String} link - Solution link.
+   * @returns {Object} - Details of the solution.
+   */
+
+  static checkForTargetedSolution(link = '', bodyData = {}, userId = '', userToken = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = {
+          isATargetedSolution: false,
+          link: link,
+        };
+
+        let solutionDetails = await this.solutionDocuments({ link: link }, [
+          'type',
+          '_id',
+          'programId',
+          'name',
+          'projectTemplateId',
+          'programName',
+          'status',
+        ]);
+
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData);
+        if (!queryData.success) {
+          return resolve(queryData);
+        }
+        queryData.data['link'] = link;
+        let matchQuery = queryData.data;
+        let solutionData = await this.solutionDocuments(matchQuery, [
+          '_id',
+          'link',
+          'type',
+          'programId',
+          'name',
+          'projectTemplateId',
+        ]);
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          response.solutionId = solutionDetails[0]._id;
+          response.type = solutionDetails[0].type;
+          response.name = solutionDetails[0].name;
+          response.programId = solutionDetails[0].programId;
+          response.programName = solutionDetails[0].programName;
+          response.status = solutionDetails[0].status;
+
+          return resolve({
+            success: true,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND_OR_NOT_A_TARGETED,
+            result: response,
+          });
+        }
+
+        response.isATargetedSolution = true;
+        Object.assign(response, solutionData[0]);
+        response.solutionId = solutionData[0]._id;
+        response.projectTemplateId = solutionDetails[0].projectTemplateId ? solutionDetails[0].projectTemplateId : '';
+        response.programName = solutionDetails[0].programName;
+        delete response._id;
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.SOLUTION_DETAILS_VERIFIED,
+          result: response,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+   * privateProgramAndSolutionDetails
+   * @method
+   * @name PrivateProgramAndSolutionDetails
+   * @param {Object} solutionData - solution data.
+   * @param {String} userId - user Id.
+   * @param {String} userToken - user token.
+   * @returns {Object} - Details of the private solution.
+   */
+
+  static privateProgramAndSolutionDetails(solutionData, userId = '', userToken = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Check if a private program and private solution already exist or not for this user.
+        let privateSolutionDetails = await this.solutionDocuments(
+          {
+            parentSolutionId: solutionData.solutionId,
+            author: userId,
+            type: solutionData.type,
+            isAPrivateProgram: true,
+          },
+          ['_id', 'programId', 'programName'],
+        );
+
+        if (!(privateSolutionDetails.length > 0)) {
+          // Data for program and solution creation
+          let programAndSolutionData = {
+            type: messageConstants.common.IMPROVEMENT_PROJECT,
+            subType: messageConstants.common.IMPROVEMENT_PROJECT,
+            isReusable: false,
+            solutionId: solutionData.solutionId,
+          };
+
+          if (solutionData.programId && solutionData.programId !== '') {
+            programAndSolutionData['programId'] = solutionData.programId;
+            programAndSolutionData['programName'] = solutionData.programName;
+          }
+          // create private program and solution
+          let solutionAndProgramCreation = await this.createProgramAndSolution(
+            userId,
+            programAndSolutionData,
+            userToken,
+            'true', // create duplicate solution
+          );
+
+          if (!solutionAndProgramCreation.success) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+            };
+          }
+          return resolve({
+            success: true,
+            result: solutionAndProgramCreation.result.solution._id,
+          });
+        } else {
+          return resolve({
+            success: true,
+            result: privateSolutionDetails[0]._id,
+          });
+        }
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  // moved this function to solutions helper to avoid circular dependency with users/helper
+  /**
+   * Create user program and solution
+   * @method
+   * @name createProgramAndSolution
+   * @param {string} userId - logged in user Id.
+   * @param {object} programData - data needed for creation of program.
+   * @param {object} solutionData - data needed for creation of solution.
+   * @returns {Array} - Created user program and solution.
+   */
+
+  static createProgramAndSolution(userId, data, userToken, createADuplicateSolution = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let userPrivateProgram = {};
+        let dateFormat = gen.utils.epochTime();
+        let parentSolutionInformation = {};
+
+        createADuplicateSolution = gen.utils.convertStringToBoolean(createADuplicateSolution);
+        //program part
+        if (data.programId && data.programId !== '') {
+          let filterQuery = {
+            _id: data.programId,
+          };
+
+          if (createADuplicateSolution === false) {
+            filterQuery.createdBy = userId;
+          }
+
+          let checkforProgramExist = await programsHelper.programDocuments(filterQuery, 'all', ['__v']);
+
+          if (!(checkforProgramExist.length > 0)) {
+            return resolve({
+              status: httpStatusCode['bad_request'].status,
+              message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              result: {},
+            });
+          }
+
+          if (createADuplicateSolution === true) {
+            let duplicateProgram = checkforProgramExist[0];
+            duplicateProgram = await _createProgramData(
+              duplicateProgram.name,
+              duplicateProgram.externalId
+                ? duplicateProgram.externalId + '-' + dateFormat
+                : duplicateProgram.name + '-' + dateFormat,
+              true,
+              messageConstants.common.ACTIVE,
+              duplicateProgram.description,
+              userId,
+              duplicateProgram.startDate,
+              duplicateProgram.endDate,
+              userId,
+            );
+            // set rootorganisation from parent program
+            if (checkforProgramExist[0].hasOwnProperty('rootOrganisations')) {
+              duplicateProgram.rootOrganisations = checkforProgramExist[0].rootOrganisations;
+            }
+            if (checkforProgramExist[0].hasOwnProperty('requestForPIIConsent')) {
+              duplicateProgram.requestForPIIConsent = checkforProgramExist[0].requestForPIIConsent;
+            }
+            userPrivateProgram = await programsHelper.create(_.omit(duplicateProgram, ['_id', 'components', 'scope']));
+          } else {
+            userPrivateProgram = checkforProgramExist[0];
+          }
+        } else {
+          /* If the programId is not passed from the front end, we will enter this else block. 
+          In this block, we need to provide the necessary basic details to create a new program, Including startDate and endDate.*/
+          // Current date
+          let startDate = new Date();
+          // Add one year to the current date
+          let endDate = new Date();
+          endDate.setFullYear(endDate.getFullYear() + 1);
+          let programData = await _createProgramData(
+            data.programName,
+            data.programExternalId ? data.programExternalId : data.programName + '-' + dateFormat,
+            true,
+            messageConstants.common.ACTIVE,
+            data.programDescription ? data.programDescription : data.programName,
+            userId,
+            startDate,
+            endDate,
+          );
+
+          if (data.rootOrganisations) {
+            programData.rootOrganisations = data.rootOrganisations;
+          }
+          userPrivateProgram = await programsHelper.create(programData);
+        }
+
+        let solutionDataToBeUpdated = {
+          programId: userPrivateProgram._id,
+          programExternalId: userPrivateProgram.externalId,
+          programName: userPrivateProgram.name,
+          programDescription: userPrivateProgram.description,
+          isAPrivateProgram: userPrivateProgram.isAPrivateProgram,
+        };
+
+        //entities
+        if (Array.isArray(data.entities) && data.entities && data.entities.length > 0) {
+          let entitiesData = [];
+          let bodyData = {};
+
+          let locationData = gen.utils.filterLocationIdandCode(data.entities);
+
+          if (locationData.ids.length > 0) {
+            bodyData = {
+              id: locationData.ids,
+            };
+            let entityData = await userService.locationSearch(bodyData);
+
+            if (!entityData.success) {
+              return resolve({
+                status: httpStatusCode['bad_request'].status,
+                message: messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                result: {},
+              });
+            }
+
+            entityData.data.forEach((entity) => {
+              entitiesData.push(entity.id);
+            });
+
+            solutionDataToBeUpdated['entityType'] = entityData.data[0].type;
+          }
+
+          if (locationData.codes.length > 0) {
+            let filterData = {
+              code: locationData.codes,
+            };
+            let entityDetails = await userService.locationSearch(filterData);
+            let entityDocuments = entityDetails.data;
+            if (!entityDetails.success || !(entityDocuments.length > 0)) {
+              return resolve({
+                status: httpStatusCode['bad_request'].status,
+                message: messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                result: {},
+              });
+            }
+
+            entityDocuments.forEach((entity) => {
+              entitiesData.push(entity.id);
+            });
+
+            solutionDataToBeUpdated['entityType'] = messageConstants.common.SCHOOL;
+          }
+
+          if (data.type && data.type !== messageConstants.common.IMPROVEMENT_PROJECT) {
+            solutionDataToBeUpdated['entities'] = entitiesData;
+          }
+        }
+
+        //solution part
+        let solution = '';
+        if (data.solutionId && data.solutionId !== '') {
+          let solutionData = await this.solutionDocuments(
+            {
+              _id: data.solutionId,
+            },
+            [
+              'name',
+              'link',
+              'type',
+              'subType',
+              'externalId',
+              'description',
+              'certificateTemplateId',
+              'projectTemplateId',
+            ],
+          );
+
+          if (!(solutionData.length > 0)) {
+            return resolve({
+              status: httpStatusCode['bad_request'].status,
+              message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+              result: {},
+            });
+          }
+
+          if (createADuplicateSolution === true) {
+            let duplicateSolution = solutionData[0];
+            let solutionCreationData = await _createSolutionData(
+              duplicateSolution.name,
+              duplicateSolution.externalId
+                ? duplicateSolution.externalId + '-' + dateFormat
+                : duplicateSolution.name + '-' + dateFormat,
+              true,
+              messageConstants.common.ACTIVE,
+              duplicateSolution.description,
+              userId,
+              false,
+              duplicateSolution._id,
+              duplicateSolution.type,
+              duplicateSolution.subType,
+              userId,
+              duplicateSolution.projectTemplateId,
+            );
+
+            _.merge(duplicateSolution, solutionCreationData);
+            _.merge(duplicateSolution, solutionDataToBeUpdated);
+
+            solution = await this.create(_.omit(duplicateSolution, ['_id', 'link']));
+            parentSolutionInformation.solutionId = duplicateSolution._id;
+            parentSolutionInformation.link = duplicateSolution.link;
+          } else {
+            if (solutionData[0].isReusable === false) {
+              return resolve({
+                status: httpStatusCode['bad_request'].status,
+                message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+                result: {},
+              });
+            }
+
+            solution = await database.models.solutions.findOneAndUpdate(
+              {
+                _id: solutionData[0]._id,
+              },
+              {
+                $set: solutionDataToBeUpdated,
+              },
+              {
+                new: true,
+              },
+            );
+          }
+        } else {
+          let externalId, description;
+          if (data.solutionName) {
+            externalId = data.solutionExternalId ? data.solutionExternalId : data.solutionName + '-' + dateFormat;
+            description = data.solutionDescription ? data.solutionDescription : data.solutionName;
+          } else {
+            externalId = userId + '-' + dateFormat;
+            description = userPrivateProgram.programDescription;
+          }
+
+          let createSolutionData = await _createSolutionData(
+            data.solutionName ? data.solutionName : userPrivateProgram.programName,
+            externalId,
+            userPrivateProgram.isAPrivateProgram,
+            messageConstants.common.ACTIVE,
+            description,
+            '',
+            false,
+            '',
+            data.type ? data.type : messageConstants.common.ASSESSMENT,
+            data.subType ? data.subType : messageConstants.common.INSTITUTIONAL,
+            userId,
+          );
+          _.merge(solutionDataToBeUpdated, createSolutionData);
+          solution = await this.create(solutionDataToBeUpdated);
+        }
+
+        if (solution && solution._id) {
+          await database.models.programs.findOneAndUpdate(
+            {
+              _id: userPrivateProgram._id,
+            },
+            {
+              $addToSet: { components: new ObjectId(solution._id) },
+            },
+          );
+        }
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.USER_PROGRAM_AND_SOLUTION_CREATED,
+          result: {
+            program: userPrivateProgram,
+            solution: solution,
+            parentSolutionInformation: parentSolutionInformation,
+          },
+        });
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+
+  /**
+   * Verify solution id
+   * @method
+   * @name verifySolution
+   * @param {String} solutionId - solution Id.
+   * @param {String} userId - user Id.
+   * @param {String} userToken - user token.
+   * @param {Boolean} createProject - create project.
+   * @param {Object} bodyData - Req Body.
+   * @returns {Object} - Details of the solution.
+   * Takes SolutionId and userRoleInformation as parameters.
+   * @return {Object} - {
+    "message": "Solution is not targeted to the role",
+    "status": 200,
+    "result": {
+        "isATargetedSolution": false/true,
+        "_id": "63987b5d26a3620009a1142d"
+    }
+  }
+   */
+
+  static isTargetedBasedOnUserProfile(solutionId = '', bodyData = {}) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = {
+          isATargetedSolution: false,
+          _id: solutionId,
+        };
+
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData);
+        if (!queryData.success) {
+          return resolve(queryData);
+        }
+        queryData.data['_id'] = solutionId;
+        let matchQuery = queryData.data;
+        let solutionData = await this.solutionDocuments(matchQuery, ['_id', 'type', 'programId', 'name']);
+
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          return resolve({
+            success: true,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND_OR_NOT_A_TARGETED,
+            result: response,
+          });
+        }
+
+        response.isATargetedSolution = true;
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.SOLUTION_DETAILS_VERIFIED,
+          result: response,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
   /**
    * Add default acl.
    * @method
@@ -2212,7 +3766,6 @@ module.exports = class SolutionsHelper {
             $arrayElemAt: ['$totalCount.count', 0],
           },
         };
-
         let solutionDocuments = await database.models.solutions.aggregate([
           { $match: matchQuery },
           {
@@ -2222,7 +3775,6 @@ module.exports = class SolutionsHelper {
           facetQuery,
           projection2,
         ]);
-
         return resolve({
           success: true,
           message: messageConstants.apiResponses.SOLUTIONS_LIST,
@@ -2318,7 +3870,7 @@ module.exports = class SolutionsHelper {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
         }
 
-        let updateEntityIds = entityIds.map((entityId) => ObjectId(entityId));
+        let updateEntityIds = entityIds.map((entityId) => new ObjectId(entityId));
 
         await database.models.solutions.findOneAndUpdate(
           solutionQuery,
@@ -2432,6 +3984,597 @@ module.exports = class SolutionsHelper {
       }
     });
   }
+
+  /**
+   * Details of solution based on role and location.
+   * @method
+   * @name detailsBasedOnRoleAndLocation
+   * @param {String} solutionId - solution Id.
+   * @param {Object} bodyData - Requested body data.
+   * @returns {JSON} - Details of solution based on role and location.
+   */
+
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
+        if (!queryData.success) {
+          return resolve(queryData);
+        }
+
+        queryData.data['_id'] = solutionId;
+        let targetedSolutionDetails = await this.solutionDocuments(queryData.data, [
+          'name',
+          'externalId',
+          'description',
+          'programId',
+          'programName',
+          'programDescription',
+          'programExternalId',
+          'isAPrivateProgram',
+          'projectTemplateId',
+          'entityType',
+          'entityTypeId',
+          'language',
+          'creator',
+          'link',
+          'certificateTemplateId',
+          'endDate',
+        ]);
+        if (!(targetedSolutionDetails.length > 0)) {
+          throw {
+            status: httpStatusCode['bad_request'].status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          };
+        }
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+          data: targetedSolutionDetails[0],
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          message: error.message,
+          data: {},
+          status: error.status,
+        });
+      }
+    });
+  }
+
+  /**
+   * Add roles in solution scope.
+   * @method
+   * @name addRolesInScope
+   * @param {String} solutionId - Solution Id.
+   * @param {Array} roles - roles data.
+   * @returns {JSON} - Added roles data.
+   */
+
+  static addRolesInScope(solutionId, roles) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments(
+          {
+            _id: solutionId,
+            scope: { $exists: true },
+            isReusable: false,
+            isDeleted: false,
+          },
+          ['_id'],
+        );
+
+        if (!(solutionData.length > 0)) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+
+        let updateQuery = {};
+
+        if (Array.isArray(roles) && roles.length > 0) {
+          let userRoles = await userRolesHelper.roleDocuments(
+            {
+              code: { $in: roles },
+            },
+            ['_id', 'code'],
+          );
+
+          if (!(userRoles.length > 0)) {
+            return resolve({
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.INVALID_ROLE_CODE,
+            });
+          }
+
+          await database.models.solutions
+            .findOneAndUpdate(
+              {
+                _id: solutionId,
+              },
+              {
+                $pull: { 'scope.roles': { code: messageConstants.common.ALL_ROLES } },
+              },
+              { new: true },
+            )
+            .lean();
+
+          updateQuery['$addToSet'] = {
+            'scope.roles': { $each: userRoles },
+          };
+        } else {
+          if (roles === messageConstants.common.ALL_ROLES) {
+            updateQuery['$set'] = {
+              'scope.roles': [{ code: messageConstants.common.ALL_ROLES }],
+            };
+          }
+        }
+
+        let updateSolution = await database.models.solutions
+          .findOneAndUpdate(
+            {
+              _id: solutionId,
+            },
+            updateQuery,
+            { new: true },
+          )
+          .lean();
+
+        if (!updateSolution || !updateSolution._id) {
+          throw {
+            message: messageConstants.apiResponses.PROGRAM_NOT_UPDATED,
+          };
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.ROLES_ADDED_IN_SOLUTION,
+          success: true,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+   * Add entities in solution.
+   * @method
+   * @name addEntitiesInScope
+   * @param {String} solutionId - solution Id.
+   * @param {Array} entities - entities data.
+   * @returns {JSON} - Added entities data.
+   */
+
+  static addEntitiesInScope(solutionId, entities) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments(
+          {
+            _id: solutionId,
+            scope: { $exists: true },
+            isReusable: false,
+            isDeleted: false,
+          },
+          ['_id', 'programId', 'scope.entityType'],
+        );
+
+        if (!(solutionData.length > 0)) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+        let programData = await programsHelper.programDocuments(
+          {
+            _id: solutionData[0].programId,
+          },
+          ['scope.entities', 'scope.entityType'],
+        );
+
+        if (!(programData.length > 0)) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+          });
+        }
+
+        if (solutionData[0].scope.entityType !== programData[0].scope.entityType) {
+          let matchData = [];
+          let checkEntityInParent = [];
+          let childEntities = await userService.getSubEntitiesBasedOnEntityType(
+            programData[0].scope.entities,
+            solutionData[0].scope.entityType,
+            matchData,
+          );
+
+          if (!(childEntities.length > 0)) {
+            throw {
+              message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
+            };
+          }
+          checkEntityInParent = entities.filter((element) => childEntities.includes(element));
+          if (!(checkEntityInParent.length > 0)) {
+            throw {
+              message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
+            };
+          }
+        }
+        let entityIds = [];
+        let bodyData = {};
+        let locationData = gen.utils.filterLocationIdandCode(entities);
+
+        if (locationData.ids.length > 0) {
+          bodyData = {
+            id: locationData.ids,
+            type: solutionData[0].scope.entityType,
+          };
+          let entityData = await userService.locationSearch(bodyData);
+          if (entityData.success) {
+            entityData.data.forEach((entity) => {
+              entityIds.push(entity.id);
+            });
+          }
+        }
+
+        if (locationData.codes.length > 0) {
+          let filterData = {
+            code: locationData.codes,
+            type: solutionData[0].scope.entityType,
+          };
+          let entityDetails = await userService.locationSearch(filterData);
+
+          if (entityDetails.success) {
+            entityDetails.data.forEach((entity) => {
+              entityIds.push(entity.id);
+            });
+          }
+        }
+
+        if (!(entityIds.length > 0)) {
+          throw {
+            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+          };
+        }
+
+        let updateSolution = await database.models.solutions
+          .findOneAndUpdate(
+            {
+              _id: solutionId,
+            },
+            {
+              $addToSet: { 'scope.entities': { $each: entityIds } },
+            },
+            { new: true },
+          )
+          .lean();
+
+        if (!updateSolution || !updateSolution._id) {
+          throw {
+            message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
+          };
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.ENTITIES_ADDED_IN_SOLUTION,
+          success: true,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+   * remove roles from solution scope.
+   * @method
+   * @name removeRolesInScope
+   * @param {String} solutionId - Solution Id.
+   * @param {Array} roles - roles data.
+   * @returns {JSON} - Removed solution roles.
+   */
+
+  static removeRolesInScope(solutionId, roles) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments(
+          {
+            _id: solutionId,
+            scope: { $exists: true },
+            isReusable: false,
+            isDeleted: false,
+          },
+          ['_id'],
+        );
+
+        if (!(solutionData.length > 0)) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+
+        let userRoles = await userRolesHelper.roleDocuments(
+          {
+            code: { $in: roles },
+          },
+          ['_id', 'code'],
+        );
+
+        if (!(userRoles.length > 0)) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.INVALID_ROLE_CODE,
+          });
+        }
+
+        let updateSolution = await database.models.solutions
+          .findOneAndUpdate(
+            {
+              _id: solutionId,
+            },
+            {
+              $pull: { 'scope.roles': { $in: userRoles } },
+            },
+            { new: true },
+          )
+          .lean();
+
+        if (!updateSolution || !updateSolution._id) {
+          throw {
+            message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
+          };
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.ROLES_REMOVED_IN_SOLUTION,
+          success: true,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+   * remove entities in solution scope.
+   * @method
+   * @name removeEntitiesInScope
+   * @param {String} solutionId - Program Id.
+   * @param {Array} entities - entities.
+   * @returns {JSON} - Removed entities from solution scope.
+   */
+
+  static removeEntitiesInScope(solutionId, entities) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let solutionData = await this.solutionDocuments(
+          {
+            _id: solutionId,
+            scope: { $exists: true },
+            isReusable: false,
+            isDeleted: false,
+          },
+          ['_id', 'scope.entities'],
+        );
+
+        if (!(solutionData.length > 0)) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+        let entitiesData = [];
+        entitiesData = solutionData[0].scope.entities;
+        if (!(entitiesData.length > 0)) {
+          throw {
+            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+          };
+        }
+
+        let updateSolution = await database.models.solutions
+          .findOneAndUpdate(
+            {
+              _id: solutionId,
+            },
+            {
+              $pull: { 'scope.entities': { $in: entities } },
+            },
+            { new: true },
+          )
+          .lean();
+
+        if (!updateSolution || !updateSolution._id) {
+          throw {
+            message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
+          };
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.ENTITIES_REMOVED_IN_SOLUTION,
+          success: true,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  /**
+   * Get Questions in solution.
+   * @method
+   * @name deleteSolution
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solutiion internal id.
+   * @returns {JSON} consists of solution id.
+   */
+
+  static questions(solutionIds, userToken) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = {
+          message: messageConstants.apiResponses.ASSESSMENT_FETCHED,
+          result: {},
+        };
+
+        let solutionId = solutionIds;
+        let userId = userToken;
+
+        if (userId == '') {
+          throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
+        }
+
+        let solutionDocumentProjectionFields = await observationHelper.solutionDocumentProjectionFieldsForDetailsAPI();
+        let solutionDocument = await database.models.solutions
+          .findOne({ _id: solutionId }, solutionDocumentProjectionFields)
+          .lean();
+
+        if (!solutionDocument) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+          });
+        }
+
+        let solutionDocumentFieldList = await observationHelper.solutionDocumentFieldListInResponse();
+
+        response.result.solution = await _.pick(solutionDocument, solutionDocumentFieldList);
+
+        let assessment = {};
+        assessment.name = solutionDocument.name;
+        assessment.description = solutionDocument.description;
+        assessment.externalId = solutionDocument.externalId;
+        assessment.pageHeading = solutionDocument.pageHeading;
+        assessment.submissionId = '';
+
+        let criteriaId = new Array();
+        let criteriaObject = {};
+        let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
+
+        criteriaIdArray.forEach((eachCriteriaId) => {
+          criteriaId.push(eachCriteriaId.criteriaId);
+          criteriaObject[eachCriteriaId.criteriaId.toString()] = {
+            weightage: eachCriteriaId.weightage,
+          };
+        });
+
+        let criteriaQuestionDocument = await database.models.criteriaQuestions
+          .find(
+            { _id: { $in: criteriaId } },
+            {
+              resourceType: 0,
+              language: 0,
+              keywords: 0,
+              concepts: 0,
+            },
+          )
+          .lean();
+
+        let evidenceMethodArray = {};
+        let submissionDocumentEvidences = {};
+        let submissionDocumentCriterias = [];
+        Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
+          solutionDocument.evidenceMethods[solutionEcm].startTime = '';
+          solutionDocument.evidenceMethods[solutionEcm].endTime = '';
+          solutionDocument.evidenceMethods[solutionEcm].isSubmitted = false;
+          solutionDocument.evidenceMethods[solutionEcm].submissions = new Array();
+        });
+
+        submissionDocumentEvidences = solutionDocument.evidenceMethods;
+
+        criteriaQuestionDocument.forEach((criteria) => {
+          criteria.weightage = criteriaObject[criteria._id.toString()].weightage;
+
+          submissionDocumentCriterias.push(_.omit(criteria, ['evidences']));
+
+          criteria.evidences.forEach((evidenceMethod) => {
+            if (evidenceMethod.code) {
+              if (!evidenceMethodArray[evidenceMethod.code]) {
+                evidenceMethod.sections.forEach((ecmSection) => {
+                  ecmSection.name = solutionDocument.sections[ecmSection.code];
+                });
+                _.merge(evidenceMethod, submissionDocumentEvidences[evidenceMethod.code]);
+                evidenceMethodArray[evidenceMethod.code] = evidenceMethod;
+              } else {
+                evidenceMethod.sections.forEach((evidenceMethodSection) => {
+                  let sectionExisitsInEvidenceMethod = 0;
+                  let existingSectionQuestionsArrayInEvidenceMethod = [];
+
+                  evidenceMethodArray[evidenceMethod.code].sections.forEach((exisitingSectionInEvidenceMethod) => {
+                    if (exisitingSectionInEvidenceMethod.code == evidenceMethodSection.code) {
+                      sectionExisitsInEvidenceMethod = 1;
+                      existingSectionQuestionsArrayInEvidenceMethod = exisitingSectionInEvidenceMethod.questions;
+                    }
+                  });
+
+                  if (!sectionExisitsInEvidenceMethod) {
+                    evidenceMethodSection.name = solutionDocument.sections[evidenceMethodSection.code];
+                    evidenceMethodArray[evidenceMethod.code].sections.push(evidenceMethodSection);
+                  } else {
+                    evidenceMethodSection.questions.forEach((questionInEvidenceMethodSection) => {
+                      existingSectionQuestionsArrayInEvidenceMethod.push(questionInEvidenceMethodSection);
+                    });
+                  }
+                });
+              }
+            }
+          });
+        });
+
+        let entityDocument = {
+          metaInformation: {},
+          questionGroup: '',
+        };
+
+        let entityDocumentQuestionGroup = entityDocument.metaInformation.questionGroup
+          ? entityDocument.metaInformation.questionGroup
+          : ['A1'];
+        assessment.evidences = [];
+        const assessmentsHelper = require(MODULES_BASE_PATH + '/assessments/helper');
+
+        const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
+          Object.values(evidenceMethodArray),
+          entityDocumentQuestionGroup,
+          submissionDocumentEvidences,
+          solutionDocument && solutionDocument.questionSequenceByEcm ? solutionDocument.questionSequenceByEcm : false,
+          {},
+        );
+        assessment.evidences = parsedAssessment.evidences;
+        assessment.submissions = parsedAssessment.submissions;
+
+        if (parsedAssessment.generalQuestions && parsedAssessment.generalQuestions.length > 0) {
+          assessment.generalQuestions = parsedAssessment.generalQuestions;
+        }
+
+        response.result.assessment = assessment;
+        return resolve(response);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };
 
 /**
@@ -2467,4 +4610,85 @@ function _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
 
 function _targetedSolutionTypes() {
   return [messageConstants.common.OBSERVATION, messageConstants.common.SURVEY];
+}
+
+/**
+ * Generate program creation data.
+ * @method
+ * @name _createProgramData
+ * @returns {Object} - program creation data
+ */
+
+function _createProgramData(
+  name,
+  externalId,
+  isAPrivateProgram,
+  status,
+  description,
+  userId,
+  startDate,
+  endDate,
+  createdBy = '',
+) {
+  let programData = {};
+  programData.name = name;
+  programData.externalId = externalId;
+  programData.isAPrivateProgram = isAPrivateProgram;
+  programData.status = status;
+  programData.description = description;
+  programData.userId = userId;
+  programData.createdBy = createdBy;
+  programData.startDate = startDate;
+  programData.endDate = endDate;
+  return programData;
+}
+
+/**
+ * Generate solution creation data.
+ * @method
+ * @name _createSolutionData
+ * @returns {Object} - solution creation data
+ */
+
+function _createSolutionData(
+  name = '',
+  externalId = '',
+  isAPrivateProgram = '',
+  status,
+  description = '',
+  userId,
+  isReusable = '',
+  parentSolutionId = '',
+  type = '',
+  subType = '',
+  updatedBy = '',
+  projectTemplateId = '',
+) {
+  let solutionData = {};
+  solutionData.name = name;
+  solutionData.externalId = externalId;
+  solutionData.isAPrivateProgram = isAPrivateProgram;
+  solutionData.status = status;
+  solutionData.description = description;
+  solutionData.author = userId;
+  if (parentSolutionId) {
+    solutionData.parentSolutionId = parentSolutionId;
+  }
+  if (type) {
+    solutionData.type = type;
+  }
+  if (subType) {
+    solutionData.subType = subType;
+  }
+  if (updatedBy) {
+    solutionData.updatedBy = updatedBy;
+  }
+  if (isReusable) {
+    solutionData.isReusable = isReusable;
+  }
+  if (projectTemplateId) {
+    solutionData.projectTemplateId = projectTemplateId;
+  }
+
+  return solutionData;
 }

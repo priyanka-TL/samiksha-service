@@ -101,5 +101,16 @@ module.exports = {
       default: false,
       type: Boolean,
     },
+    projectTemplateId : {
+      type : "ObjectId",
+      index: true
+    },
+    license:Object,
+    minNoOfSubmissionsRequired: {
+      type: Number,
+      default: 1
+    },
+    reportInformation : Object,
+    certificateTemplateId : "ObjectId",
   },
 };

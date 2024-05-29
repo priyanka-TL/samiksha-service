@@ -15,6 +15,42 @@ const entityTypesHelper = require(MODULES_BASE_PATH + '/entityTypes/helper');
 
 module.exports = class UserRolesHelper {
   /**
+   * User roles document.
+   * @method
+   * @name roleDocuments
+   * @param {Array} [filterQuery = "all"] - solution ids.
+   * @param {Array} [fieldsArray = "all"] - projected fields.
+   * @param {Array} [skipFields = "none"] - field not to include
+   * @returns {Array} List of user roles document.
+   */
+
+  static roleDocuments(filterQuery = 'all', fieldsArray = 'all', skipFields = 'none') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let queryObject = filterQuery != 'all' ? filterQuery : {};
+
+        let projection = {};
+
+        if (fieldsArray != 'all') {
+          fieldsArray.forEach((field) => {
+            projection[field] = 1;
+          });
+        }
+
+        if (skipFields !== 'none') {
+          skipFields.forEach((field) => {
+            projection[field] = 0;
+          });
+        }
+
+        let userRolesData = await database.models.userRoles.find(queryObject, projection).lean();
+        return resolve(userRolesData);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+  /**
    * list user roles.
    * @method
    * @name list

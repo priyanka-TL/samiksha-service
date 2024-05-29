@@ -54,54 +54,387 @@ module.exports = class Programs extends Abstract {
   * @apiUse errorBody
   */
 
-  /**
+   /**
    * List programs.
    * @method
    * @name list
-   * @returns {JSON} - List of programs
-   */
+   * @param {Object} req - Requested data.
+   * @param {Array} req.query.page - Page number.
+   * @param {Array} req.query.limit - Page Limit.
+   * @param {Array} req.query.search - Search text.
+   * @returns {JSON} List programs data.
+  */
 
+
+  // async list(req) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let programDocument = await database.models.programs.aggregate([
+  //         {
+  //           $lookup: {
+  //             from: 'solutions',
+  //             localField: 'components',
+  //             foreignField: '_id',
+  //             as: 'assessments',
+  //           },
+  //         },
+  //         {
+  //           $project: {
+  //             externalId: 1,
+  //             name: 1,
+  //             description: 1,
+  //             'assessments._id': 1,
+  //             'assessments.externalId': 1,
+  //             'assessments.name': 1,
+  //             'assessments.description': 1,
+  //           },
+  //         },
+  //       ]);
+
+  //       if (!programDocument) {
+  //         return reject({
+  //           status: httpStatusCode.not_found.status,
+  //           message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+  //         });
+  //       }
+
+  //       let response = { message: messageConstants.apiResponses.PROGRAM_LIST, result: programDocument };
+
+  //       return resolve(response);
+  //     } catch (error) {
+  //       return reject({ message: error });
+  //     }
+  //   });
+  // }
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programDocument = await database.models.programs.aggregate([
-          {
-            $lookup: {
-              from: 'solutions',
-              localField: 'components',
-              foreignField: '_id',
-              as: 'assessments',
-            },
-          },
-          {
-            $project: {
-              externalId: 1,
-              name: 1,
-              description: 1,
-              'assessments._id': 1,
-              'assessments.externalId': 1,
-              'assessments.name': 1,
-              'assessments.description': 1,
-            },
-          },
-        ]);
+        let listOfPrograms = await programsHelper.list(
+          req.pageNo,
+          req.pageSize,
+          req.query.searchText
+        );
+        
 
-        if (!programDocument) {
+        listOfPrograms["result"] = listOfPrograms.data;
+  
+        return resolve(listOfPrograms);
+  
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error
+        });
+      }
+    });
+  }
+ 
+   /**
+   * Create program.
+   * @method
+   * @name create
+   * @param {Object} req - requested data.
+   * @returns {JSON} - created program document.
+   */
+
+   async create(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        req.body.userId = req.userDetails.userId;
+        let programCreationData = await programsHelper.create(
+          req.body,
+          true
+        );
+        
+        return resolve({
+          message : messageConstants.apiResponses.PROGRAMS_CREATED,
+          result : _.pick(programCreationData,["_id"])
+        });
+
+      }
+      catch (error) {
+        reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error
+        })
+      }
+    })
+  }
+  
+
+   /**
+   * Update program.
+   * @method
+   * @name update
+   * @param {Object} req - requested data.
+   * @param {Object} 
+   * @returns {JSON} - 
+   */
+
+   async update(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let programUpdationData = await programsHelper.update(
+          req.params._id,
+          req.body,
+          req.userDetails.userId,
+          true
+        );
+        
+        programUpdationData.result = programUpdationData.data;
+        return resolve(programUpdationData);
+
+      }
+      catch (error) {
+        reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error
+        })
+      }
+    })
+  }
+
+
+    /**
+   * Add roles in program scope
+   * @method
+   * @name addRolesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.roles - Roles to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+    async addRolesInScope(req) {
+      return new Promise(async (resolve, reject) => {
+        try {
+  
+          let programUpdated = await programsHelper.addRolesInScope(
+            req.params._id,
+            req.body.roles
+          );
+      
+          return resolve(programUpdated);
+  
+        } catch (error) {
           return reject({
-            status: httpStatusCode.not_found.status,
-            message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            status: error.status || httpStatusCode.internal_server_error.status,
+            message: error.message || httpStatusCode.internal_server_error.message,
+            errorObject: error
           });
         }
+      });
+    }
 
-        let response = { message: messageConstants.apiResponses.PROGRAM_LIST, result: programDocument };
+        /**
+   * Add entities in program scope
+   * @method
+   * @name addEntitiesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.entities - Entities to be added.
+   * @returns {Array} Program scope roles.
+   */
 
-        return resolve(response);
+  async addEntitiesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let programUpdated = await programsHelper.addEntitiesInScope(
+          req.params._id,
+          req.body.entities
+        );
+    
+        return resolve(programUpdated);
+
       } catch (error) {
-        return reject({ message: error });
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error
+        });
       }
     });
   }
 
+     /**
+   * Remove roles in program scope
+   * @method
+   * @name removeRolesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.roles - Roles to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+     async removeRolesInScope(req) {
+      return new Promise(async (resolve, reject) => {
+        try {
+  
+          let programUpdated = await programsHelper.removeRolesInScope(
+            req.params._id,
+            req.body.roles
+          );
+      
+          return resolve(programUpdated);
+  
+        } catch (error) {
+          return reject({
+            status: error.status || httpStatusCode.internal_server_error.status,
+            message: error.message || httpStatusCode.internal_server_error.message,
+            errorObject: error
+          });
+        }
+      });
+    }
+
+     /**
+    * @api {post} /assessment/api/v1/programs/removeEntitiesInScope/:programId Add roles in programs
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Programs
+    * @apiParamExample {json} Request-Body:
+    * {
+      "entities" : ["5f33c3d85f637784791cd830"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /assessment/api/v1/programs/removeEntitiesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully removed entities in program scope",
+        "status": 200
+      }
+    */
+
+     /**
+   * Remove entities in program scope
+   * @method
+   * @name removeEntitiesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.entities - Entities to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+  async removeEntitiesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let programUpdated = await programsHelper.removeEntitiesInScope(
+          req.params._id,
+          req.body.entities
+        );
+    
+        return resolve(programUpdated);
+
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error
+        });
+      }
+    });
+  }
+
+ 
+  /**
+    * @api {get} /assessment/api/v1/programs/details/:programId Program Details
+    * @apiVersion 1.0.0
+    * @apiName Program Details
+    * @apiGroup Programs
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /assessment/api/v1/programs/details/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+    "message": "Program details fetched successfully",
+    "status": 200,
+    "result": {
+
+      }
+    }
+    */
+
+     /**
+   * Details of the program
+   * @method
+   * @name details
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @returns {Array} Program scope roles.
+   */
+
+     async details(req) {
+      return new Promise(async (resolve, reject) => {
+        try {
+  
+          let programData = await programsHelper.details(
+            req.params._id
+          );
+  
+          programData["result"] = programData.data;
+      
+          return resolve(programData);
+          
+        } catch (error) {
+          return reject({
+            status: error.status || httpStatusCode.internal_server_error.status,
+            message: error.message || httpStatusCode.internal_server_error.message,
+            errorObject: error
+          });
+        }
+      });
+    }
+    
+    /**
+   * join program
+   * @method
+   * @name join
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @returns {Object} Program join status.
+  */
+
+   async join(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+      
+        let programJoin = await programsHelper.join(
+          req.params._id,
+          req.body,
+          req.userDetails.userId,
+          req.userDetails.userToken,
+          req.headers["x-app-id"]  ? 
+          req.headers["x-app-id"]  : 
+          req.headers.appname ? req.headers.appname : "",
+          req.headers["x-app-ver"] ? 
+          req.headers["x-app-ver"] : 
+          req.headers.appversion ? req.headers.appversion : "",
+          req.headers["internal-access-token"] ? 
+          true : 
+          req.headers.internalAccessToken ? true : false
+        );    
+        programJoin["result"] = programJoin.data;
+        return resolve(programJoin);
+        
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error
+        });
+      }
+    });
+  }
   /**
   * @api {get} /assessment/api/v1/programs/entityList?solutionId=""&search="" Fetch Entity List
   * @apiVersion 1.0.0
@@ -203,7 +536,7 @@ module.exports = class Programs extends Abstract {
       }
     });
   }
-
+  
   /**
   * @api {get} /assessment/api/v1/programs/userEntityList?solutionId="" Fetch User Entity List
   * @apiVersion 1.0.0
