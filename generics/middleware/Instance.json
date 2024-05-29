@@ -1,0 +1,12 @@
+{
+    "SUNBIRD":{
+        "id": "data._id"
+    },
+    "ELEVATE":{
+        "id":["data[id]"],
+        "userName":["data[name]"],
+        "email":"NA",
+        "firstName": "[data][name]"
+    
+    }
+}
