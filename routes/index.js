@@ -124,11 +124,11 @@ module.exports = function (app) {
     }
   };
 
-  app.all(applicationBaseUrl + 'api/:version/:controller/:method', inputValidator, router);
-  app.all(applicationBaseUrl + 'api/:version/:controller/:file/:method', inputValidator, router);
+  app.all(applicationBaseUrl + ':version/:controller/:method', inputValidator, router);
+  app.all(applicationBaseUrl + ':version/:controller/:file/:method', inputValidator, router);
 
-  app.all(applicationBaseUrl + 'api/:version/:controller/:method/:_id', inputValidator, router);
-  app.all(applicationBaseUrl + 'api/:version/:controller/:file/:method/:_id', inputValidator, router);
+  app.all(applicationBaseUrl + ':version/:controller/:method/:_id', inputValidator, router);
+  app.all(applicationBaseUrl + ':version/:controller/:file/:method/:_id', inputValidator, router);
 
   app.use((req, res, next) => {
     res.status(httpStatusCode.not_found.status).send(messageConstants.apiResponses.NOT_FOUND);
