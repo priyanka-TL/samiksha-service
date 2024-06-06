@@ -15,7 +15,7 @@ const aws = require(ROOT_PATH + '/generics/helpers/awsFileUpload');
 const azure = require(ROOT_PATH + '/generics/helpers/azureFileUpload');
 const {cloudClient} = require(ROOT_PATH+'/config/cloud-service');
 const bucketName = process.env.CLOUD_STORAGE_BUCKETNAME;
-let cloudStorageProvider = process.env.CLOUD_STORAGE_PROVIDER;
+const cloudStorageProvider = process.env.CLOUD_STORAGE_PROVIDER;
 
 /**
  * FilesHelper
