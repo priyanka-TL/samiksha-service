@@ -13,6 +13,68 @@ const filesHelper = require(MODULES_BASE_PATH + '/files/helper');
  * @class
  */
 module.exports = class FileUpload {
+  
+  /**
+   * Get signed urls.
+   * @method
+   * @name preSignedUrls
+   * @param  {Request}  req  request body.
+   * @param  {Array}  req.body.fileNames - list of file names
+   * @param  {String}  req.body.bucket - name of the bucket
+   * @returns {JSON} Response with status and message.
+   */
+
+  async preSignedUrls(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let signedUrl = await filesHelper.preSignedUrls(
+          req.body.request,
+          req.body.ref,
+          req.userDetails ? req.userDetails.userId : '',
+          req.query.serviceUpload == 'true' ? true : false,
+        );
+        signedUrl['result'] = signedUrl['data'];
+        return resolve(signedUrl);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode['internal_server_error'].status,
+
+          message: error.message || httpStatusCode['internal_server_error'].message,
+
+          errorObject: error,
+        });
+      }
+    });
+  }
+  /**
+   * Get Downloadable URL from cloud service.
+   * @method
+   * @name getDownloadableUrl
+   * @param  {Request}  req  request body.
+   * @returns {JSON} Response with status and message.
+   */
+
+  async getDownloadableUrl(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let downloadableUrl = await filesHelper.getDownloadableUrl(
+          req.body.filePaths
+        );
+
+        return resolve(downloadableUrl);
+      } catch (error) {
+        return reject({
+          status:
+            error.status || httpStatusCode["internal_server_error"].status,
+
+          message:
+            error.message || httpStatusCode["internal_server_error"].message,
+
+          errorObject: error,
+        });
+      }
+    });
+  }
   /**
    * @api {post} /assessment/api/v1/files/getImageUploadUrl Get File Upload URL
    * @apiVersion 1.0.0
