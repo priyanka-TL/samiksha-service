@@ -25,6 +25,7 @@ const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_EN
 const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const userService = require(ROOT_PATH + "/generics/services/users");
 
 /**
  * ObservationsHelper
@@ -943,7 +944,7 @@ module.exports = class ObservationsHelper {
   //     }
   //   });
   // }
-  static details(observationId = "", solutionId = "", userId = "") {
+  static details(observationId = "", solutionId = "", userId = "",token) {
     return new Promise(async (resolve, reject) => {
       try {
         if (observationId == "" && solutionId == "") {
@@ -970,28 +971,29 @@ module.exports = class ObservationsHelper {
           throw new Error(messageConstants.apiResponses.OBSERVATION_NOT_FOUND);
         }
 
-        // if (observationDocument[0].entities.length > 0) {
-        //   let filterData = {
-        //     id: observationDocument[0].entities,
-        //   };
+        if (observationDocument[0].entities.length > 0) {
+          let filterData = {
+            "registryDetails.code": {$in:observationDocument[0].entities},
+          };
 
-        //   let entitiesDocument = await userProfileService.locationSearch(
-        //     filterData,
-        //     "",
-        //     "",
-        //     "",
-        //     true,
-        //     false
-        //   );
+          let entitiesDocument = await userService.locationSearch(
+            filterData,
+            token,
+            "",
+            "",
+            "",
+            true,
+            false
+          );
 
-        //   if (entitiesDocument.success) {
-        //     observationDocument[0].entities = entitiesDocument.data;
-        //     observationDocument[0].count = entitiesDocument.count;
-        //   } else {
-        //     observationDocument[0].entities = [];
-        //     observationDocument[0].count = 0;
-        //   }
-        // }
+          if (entitiesDocument.success) {
+            observationDocument[0].entities = entitiesDocument.data;
+            observationDocument[0].count = entitiesDocument.count;
+          } else {
+            observationDocument[0].entities = [];
+            observationDocument[0].count = 0;
+          }
+        }
 
         return resolve(observationDocument[0]);
       } catch (error) {

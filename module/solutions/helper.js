@@ -21,6 +21,8 @@ const userHelper = require(MODULES_BASE_PATH + '/users/helper');
 const improvementProjectService = require(ROOT_PATH + '/generics/services/improvement-project');
 const validateEntity = process.env.VALIDATE_ENTITIES;
 const programUsersHelper = require(MODULES_BASE_PATH + '/programUsers/helper');
+const userService = require(ROOT_PATH + "/generics/services/users");
+
 /**
  * SolutionsHelper
  * @class
@@ -34,7 +36,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} solution creation data.
    */
 
-  static createSolution(solutionData, checkDate = false) {
+  static createSolution(solutionData, checkDate = false,token) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await programsHelper.programDocuments(
@@ -43,7 +45,6 @@ module.exports = class SolutionsHelper {
           },
           ['name', 'description', 'scope', 'endDate', 'startDate'],
         );
-
         if (!(programData.length > 0)) {
           throw {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
@@ -53,25 +54,26 @@ module.exports = class SolutionsHelper {
         solutionData.programId = programData[0]._id;
         solutionData.programName = programData[0].name;
         solutionData.programDescription = programData[0].description;
-
+        
         if (solutionData.type == messageConstants.common.COURSE && !solutionData.link) {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.COURSE_LINK_REQUIRED,
           });
         }
-
         if (solutionData.entities && solutionData.entities.length > 0) {
           let entityIds = [];
           let locationData = gen.utils.filterLocationIdandCode(solutionData.entities);
           if (locationData.ids.length > 0) {
             let bodyData = {
-              id: locationData.ids,
+              "registryDetails.code": {$in:locationData.ids},
             };
-            let entityData = await userService.locationSearch(bodyData);
+            let entityData = await userService.locationSearch(bodyData,token);
             if (entityData.success) {
               entityData.data.forEach((entity) => {
-                entityIds.push(entity.id);
+                // entityIds.push(entity.id);
+                entityIds.push(entity._id);
+
               });
             }
           }
@@ -140,12 +142,12 @@ module.exports = class SolutionsHelper {
             $addToSet: { components: solutionCreation._id },
           },
         );
-
         if (!solutionData.excludeScope && programData[0].scope) {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
             solutionData.scope ? solutionData.scope : {},
+            token
           );
         }
 
@@ -602,7 +604,7 @@ module.exports = class SolutionsHelper {
 
         if (type === messageConstants.common.SURVEY) {
           filterQuery['status'] = {
-            $in: [messageConstants.common.ACTIVE, messageConstants.common.INACTIVE],
+            $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
           };
           let validDate = new Date();
           validDate.setDate(validDate.getDate() - messageConstants.common.DEFAULT_SURVEY_REMOVED_DAY);
@@ -932,7 +934,7 @@ module.exports = class SolutionsHelper {
   //   });
   // }
 
-  static setScope(programId, solutionId, scopeData) {
+  static setScope(programId, solutionId, scopeData,token) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await programsHelper.programDocuments({ _id: programId }, ['_id', 'scope']);
@@ -957,10 +959,14 @@ module.exports = class SolutionsHelper {
           if (validateEntity !== messageConstants.common.OFF) {
             if (Object.keys(scopeData).length > 0) {
               if (scopeData.entityType) {
-                let bodyData = { type: scopeData.entityType };
-                let entityTypeData = await userService.locationSearch(bodyData);
+                // let bodyData = { type: scopeData.entityType };
+                let bodyData = { entityType: scopeData.entityType };
+
+                let entityTypeData = await userService.locationSearch(bodyData,token);
                 if (entityTypeData.success) {
-                  currentSolutionScope.entityType = entityTypeData.data[0].type;
+                  // currentSolutionScope.entityType = entityTypeData.data[0].type;
+                  currentSolutionScope.entityType = entityTypeData.data[0].entityType;
+
                 }
               }
 
@@ -972,30 +978,35 @@ module.exports = class SolutionsHelper {
 
                 if (locationData.ids.length > 0) {
                   bodyData = {
-                    id: locationData.ids,
-                    type: currentSolutionScope.entityType,
+                    // id: locationData.ids
+                    "registryDetails.code": {$in:locationData.ids},
+                    // type: currentSolutionScope.entityType,
+                    entityType: currentSolutionScope.entityType,
                   };
-                  let entityData = await userService.locationSearch(bodyData);
+                  let entityData = await userService.locationSearch(bodyData,token);
                   if (entityData.success) {
                     entityData.data.forEach((entity) => {
-                      entityIds.push(entity.id);
+                      // entityIds.push(entity.id);
+                      // entityIds.push(entity._id);
+                      entityIds.push(entity.registryDetails.locationId)
+
                     });
                   }
                 }
 
-                if (locationData.codes.length > 0) {
-                  let filterData = {
-                    code: locationData.codes,
-                    type: currentSolutionScope.entityType,
-                  };
-                  let entityDetails = await userService.locationSearch(filterData);
+                // if (locationData.codes.length > 0) {
+                //   let filterData = {
+                //     code: locationData.codes,
+                //     type: currentSolutionScope.entityType,
+                //   };
+                //   let entityDetails = await userService.locationSearch(filterData);
 
-                  if (entityDetails.success) {
-                    entityDetails.data.forEach((entity) => {
-                      entityIds.push(entity.id);
-                    });
-                  }
-                }
+                //   if (entityDetails.success) {
+                //     entityDetails.data.forEach((entity) => {
+                //       entityIds.push(entity.id);
+                //     });
+                //   }
+                // }
 
                 if (!(entityIds.length > 0)) {
                   return resolve({
@@ -1176,7 +1187,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} solution creation data.
    */
 
-  static update(solutionId, solutionData, userId, checkDate = false) {
+  static update(solutionId, solutionData, userId, checkDate = false,token) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
@@ -1255,6 +1266,7 @@ module.exports = class SolutionsHelper {
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
             solutionData.scope,
+            token,
           );
 
           if (!solutionScope.success) {
@@ -2549,11 +2561,11 @@ module.exports = class SolutionsHelper {
         }
 
         let solutionData = checkForTargetedSolution.result;
-        let isSolutionActive = solutionData.status === messageConstants.common.INACTIVE ? false : true;
+        let isSolutionActive = solutionData.status === messageConstants.common.INACTIVE_STATUS ? false : true;
         if (solutionData.type == messageConstants.common.OBSERVATION) {
           // Targeted solution
           if (checkForTargetedSolution.result.isATargetedSolution) {
-            let observationDetailFromLink = await observationHelper.details('', solutionData.solutionId, userId);
+            let observationDetailFromLink = await observationHelper.details('', solutionData.solutionId, userId,userToken);
             if (observationDetailFromLink) {
               checkForTargetedSolution.result['observationId'] =
                 observationDetailFromLink._id != '' ? observationDetailFromLink._id : '';
@@ -2743,7 +2755,7 @@ module.exports = class SolutionsHelper {
             link: link,
             isReusable: false,
             status: {
-              $ne: messageConstants.common.INACTIVE,
+              $ne: messageConstants.common.INACTIVE_STATUS,
             },
           },
           ['type', 'status', 'endDate'],
@@ -2756,7 +2768,7 @@ module.exports = class SolutionsHelper {
           });
         }
 
-        if (solutionData[0].status !== messageConstants.common.ACTIVE) {
+        if (solutionData[0].status !== messageConstants.common.ACTIVE_STATUS) {
           return resolve({
             message: messageConstants.apiResponses.LINK_IS_EXPIRED,
             result: [],
@@ -2764,11 +2776,11 @@ module.exports = class SolutionsHelper {
         }
 
         if (solutionData[0].endDate && new Date() > new Date(solutionData[0].endDate)) {
-          if (solutionData[0].status === messageConstants.common.ACTIVE) {
+          if (solutionData[0].status === messageConstants.common.ACTIVE_STATUS) {
             let updateSolution = await this.update(
               solutionData[0]._id,
               {
-                status: messageConstants.common.INACTIVE,
+                status: messageConstants.common.INACTIVE_STATUS,
               },
               userId,
             );
@@ -2990,7 +3002,7 @@ module.exports = class SolutionsHelper {
                 ? duplicateProgram.externalId + '-' + dateFormat
                 : duplicateProgram.name + '-' + dateFormat,
               true,
-              messageConstants.common.ACTIVE,
+              messageConstants.common.ACTIVE_STATUS,
               duplicateProgram.description,
               userId,
               duplicateProgram.startDate,
@@ -3020,7 +3032,7 @@ module.exports = class SolutionsHelper {
             data.programName,
             data.programExternalId ? data.programExternalId : data.programName + '-' + dateFormat,
             true,
-            messageConstants.common.ACTIVE,
+            messageConstants.common.ACTIVE_STATUS,
             data.programDescription ? data.programDescription : data.programName,
             userId,
             startDate,
@@ -3040,7 +3052,7 @@ module.exports = class SolutionsHelper {
           programDescription: userPrivateProgram.description,
           isAPrivateProgram: userPrivateProgram.isAPrivateProgram,
         };
-
+    
         //entities
         if (Array.isArray(data.entities) && data.entities && data.entities.length > 0) {
           let entitiesData = [];
@@ -3050,7 +3062,8 @@ module.exports = class SolutionsHelper {
 
           if (locationData.ids.length > 0) {
             bodyData = {
-              id: locationData.ids,
+              // id: locationData.ids,
+              "registryDetails.code":{$in:locationData.ids},
             };
             let entityData = await userService.locationSearch(bodyData);
 
@@ -3130,7 +3143,7 @@ module.exports = class SolutionsHelper {
                 ? duplicateSolution.externalId + '-' + dateFormat
                 : duplicateSolution.name + '-' + dateFormat,
               true,
-              messageConstants.common.ACTIVE,
+              messageConstants.common.ACTIVE_STATUS,
               duplicateSolution.description,
               userId,
               false,
@@ -3182,7 +3195,7 @@ module.exports = class SolutionsHelper {
             data.solutionName ? data.solutionName : userPrivateProgram.programName,
             externalId,
             userPrivateProgram.isAPrivateProgram,
-            messageConstants.common.ACTIVE,
+            messageConstants.common.ACTIVE_STATUS,
             description,
             '',
             false,
@@ -3998,6 +4011,7 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
+        
         if (!queryData.success) {
           return resolve(queryData);
         }
@@ -4152,7 +4166,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(solutionId, entities) {
+  static addEntitiesInScope(solutionId, entities,token) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await this.solutionDocuments(
@@ -4192,6 +4206,7 @@ module.exports = class SolutionsHelper {
             programData[0].scope.entities,
             solutionData[0].scope.entityType,
             matchData,
+            token
           );
 
           if (!(childEntities.length > 0)) {
@@ -4212,27 +4227,33 @@ module.exports = class SolutionsHelper {
 
         if (locationData.ids.length > 0) {
           bodyData = {
-            id: locationData.ids,
-            type: solutionData[0].scope.entityType,
+            // id: locationData.ids,
+            "registryDetails.code":{$in:locationData.ids},
+
+            // type: solutionData[0].scope.entityType,
+            entityType: solutionData[0].scope.entityType,
+
           };
-          let entityData = await userService.locationSearch(bodyData);
+          let entityData = await userService.locationSearch(bodyData,token);
           if (entityData.success) {
             entityData.data.forEach((entity) => {
-              entityIds.push(entity.id);
+              entityIds.push(entity.registryDetails.locationId);
             });
           }
         }
 
         if (locationData.codes.length > 0) {
           let filterData = {
-            code: locationData.codes,
+            // code: locationData.codes,
+            "registryDetails.code":{$in:locationData.ids},
+
             type: solutionData[0].scope.entityType,
           };
           let entityDetails = await userService.locationSearch(filterData);
 
           if (entityDetails.success) {
             entityDetails.data.forEach((entity) => {
-              entityIds.push(entity.id);
+              entityIds.push(entity.registryDetails.locationId);
             });
           }
         }

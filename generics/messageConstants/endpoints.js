@@ -17,8 +17,10 @@ module.exports = {
   SOLUTION_DETAILS_BASED_ON_ROLE_LOCATION: 'api/v1/solutions/detailsBasedOnRoleAndLocation',
   GET_PROJECT_TEMPLATE_LISTS: 'api/v1/project/templates/listByIds',
   DOWNLOADABLE_FILE_URL: 'api/v1/cloud-services/files/getDownloadableUrl',
-  GET_LOCATION_DATA: '/v1/location/search',
-  GET_SCHOOL_DATA: '/v1/org/search',
+  // GET_LOCATION_DATA: '/v1/location/search',
+  // GET_LOCATION_DATA: '/v1/entities/listByLocationIds',
+  GET_LOCATION_DATA: '/v1/entities/find',
+  GET_SCHOOL_DATA: '/v1/entities/listByLocationIds',
   USER_CONSENT_API: '/v1/user/consent/update',
   GET_TEMPLATE_DETAILS: '/v1/project/templates/details',
   USER_READ_V5:"/v1/user/read"

@@ -253,7 +253,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - create program.
    */
 
-  static create(data, checkDate = false) {
+  static create(data, checkDate = false,token) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = {
@@ -301,7 +301,8 @@ module.exports = class ProgramsHelper {
         if (data.scope) {
           let programScopeUpdated = await this.setScope(
             program._id,
-            data.scope
+            data.scope,
+            token
           );
 
           if (!programScopeUpdated.success) {
@@ -329,7 +330,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - update program.
    */
 
-  static update(programId, data, userId, checkDate = false) {
+  static update(programId, data, userId, checkDate = false,token) {
     return new Promise(async (resolve, reject) => {
       try {
         data.updatedBy = userId;
@@ -370,7 +371,7 @@ module.exports = class ProgramsHelper {
         }
 
         if (data.scope) {
-          let programScopeUpdated = await this.setScope(programId, data.scope);
+          let programScopeUpdated = await this.setScope(programId, data.scope,token);
 
           if (!programScopeUpdated.success) {
             throw {
@@ -507,7 +508,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(programId, entities) {
+  static addEntitiesInScope(programId, entities,userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await this.programDocuments(
@@ -531,21 +532,23 @@ module.exports = class ProgramsHelper {
 
         if (locationData.ids.length > 0) {
           bodyData = {
-            id: locationData.ids,
-            type: programData[0].scope.entityType,
+            "registryDetails.code": {$in:locationData.ids},
+            entityType: programData[0].scope.entityType,
           };
-          let entityData = await userService.locationSearch(bodyData);
+          let entityData = await userService.locationSearch(bodyData,userToken);
           if (entityData.success) {
             entityData.data.forEach((entity) => {
-              entityIds.push(entity.id);
+              // entityIds.push(entity._id);
+              entityIds.push(entity.registryDetails.locationId);
+              
             });
           }
         }
 
         if (locationData.codes.length > 0) {
           let filterData = {
-            code: locationData.codes,
-            type: programData[0].scope.entityType,
+            "registryDetails.code": locationData.codes,
+            entityType: programData[0].scope.entityType,
           };
           let entityDetails = await userService.locationSearch(filterData);
 
@@ -997,7 +1000,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Set scope data.
    */
 
-   static setScope(programId, scopeData) {
+   static setScope(programId, scopeData,token) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await this.programDocuments({ _id: programId }, [
@@ -1016,9 +1019,9 @@ module.exports = class ProgramsHelper {
           if (scopeData.entityType) {
             // Get entity details of type {scopeData.entityType}
             let bodyData = {
-              type: scopeData.entityType,
+              entityType: scopeData.entityType,
             };
-            let entityTypeData = await userService.locationSearch(bodyData);
+            let entityTypeData = await userService.locationSearch(bodyData,token);
 
             if (!entityTypeData.success) {
               return resolve({
@@ -1027,7 +1030,7 @@ module.exports = class ProgramsHelper {
               });
             }
 
-            scope["entityType"] = entityTypeData.data[0].type;
+            scope["entityType"] = entityTypeData.data[0].entityType;
           }
 
           if (scopeData.entities && scopeData.entities.length > 0) {
@@ -1041,28 +1044,33 @@ module.exports = class ProgramsHelper {
             //locationIds contain id of location data.
             if (locationData.ids.length > 0) {
               bodyData = {
-                id: locationData.ids,
-                type: scopeData.entityType,
+                // id: locationData.ids,
+                "registryDetails.code":{$in:locationData.ids},
+                 entityType: scopeData.entityType,
               };
-              let entityData = await userService.locationSearch(bodyData);
+              let entityData = await userService.locationSearch(bodyData,token);
               if (entityData.success) {
                 entityData.data.forEach((entity) => {
-                  entityIds.push(entity.id);
+                  // entityIds.push(entity._id);
+                  entityIds.push(entity.registryDetails.locationId)
                 });
               }
             }
 
             if (locationData.codes.length > 0) {
               let filterData = {
-                code: locationData.codes,
-                type: scopeData.entityType,
+                // code: locationData.codes,
+                "registryDetails.code":locationData.codes,
+                entityType: scopeData.entityType,
               };
-              let entityDetails = await userService.locationSearch(filterData);
+              let entityDetails = await userService.locationSearch(filterData,token);
 
               if (entityDetails.success) {
                 let entitiesData = entityDetails.data;
                 entitiesData.forEach((entity) => {
-                  entityIds.push(entity.id);
+                  // entityIds.push(entity._id);
+                  entityIds.push(entity.registryDetails.locationId)
+
                 });
               }
             }

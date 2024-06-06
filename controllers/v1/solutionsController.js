@@ -650,7 +650,7 @@ module.exports = class Solutions extends Abstract {
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId, true);
+        let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId, true,req.userDetails.userToken);
         return resolve(solutionData);
       } catch (error) {
         reject({
@@ -2292,7 +2292,8 @@ module.exports = class Solutions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.createSolution(req.body, true);
+        console.log('Creating solution', req.userDetails)
+        let solutionData = await solutionsHelper.createSolution(req.body, true,req.userDetails.userToken);
 
         solutionData['result'] = solutionData.data;
 
@@ -2428,7 +2429,7 @@ module.exports = class Solutions extends Abstract {
   async addEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionUpdated = await solutionsHelper.addEntitiesInScope(req.params._id, req.body.entities);
+        let solutionUpdated = await solutionsHelper.addEntitiesInScope(req.params._id, req.body.entities,req.userDetails.userToken);
 
         return resolve(solutionUpdated);
       } catch (error) {

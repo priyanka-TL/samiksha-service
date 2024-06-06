@@ -79,6 +79,7 @@ const profile = function ( token,userId = "" ) {
 
 const locationSearch = function (
   filterData,
+  token,
   pageSize = '',
   pageNo = '',
   searchKey = '',
@@ -88,9 +89,11 @@ const locationSearch = function (
 ) {
   return new Promise(async (resolve, reject) => {
     try {
+
       let bodyData = {};
       bodyData['request'] = {};
-      bodyData['request']['filters'] = filterData;
+      // bodyData['request']['filters'] = filterData;
+      bodyData['query'] = filterData;
 
       if (pageSize !== '') {
         bodyData['request']['limit'] = pageSize;
@@ -105,10 +108,12 @@ const locationSearch = function (
         bodyData['request']['query'] = searchKey;
       }
 
-      const url = userServiceUrl + constants.endpoints.GET_LOCATION_DATA;
+      const url = entityServiceUrl + messageConstants.endpoints.GET_LOCATION_DATA;
       const options = {
         headers: {
           'content-type': 'application/json',
+          "x-authenticated-token": token,
+          "internal-access-token":process.env.INTERNAL_ACCESS_TOKEN
         },
         json: bodyData,
       };
@@ -123,26 +128,35 @@ const locationSearch = function (
           result.success = false;
         } else {
           let response = data.body;
-
           if (
-            response.responseCode === constants.common.OK &&
-            response.result &&
-            response.result.response &&
-            response.result.response.length > 0
+            // response.responseCode === messageConstants.common.OK &&
+            response.result 
+            // response.result.response &&
+            // response.result.response.length > 0
+            // response.result.length > 0
+
           ) {
             // format result if true
             if (formatResult) {
               let entityDocument = [];
-              response.result.response.map((entityData) => {
+              response.result.map((entityData) => {
                 let data = {};
-                data._id = entityData.id;
-                data.entityType = entityData.type;
+                // data._id = entityData.id;
+                // data.entityType = entityData.type;
+                // data.metaInformation = {};
+                // data.metaInformation.name = entityData.name;
+                // data.metaInformation.externalId = entityData.code;
+                // data.registryDetails = {};
+                // data.registryDetails.locationId = entityData.id;
+                // data.registryDetails.code = entityData.code;
+                data._id = entityData._id;
+                data.entityType = entityData.entityType;
                 data.metaInformation = {};
-                data.metaInformation.name = entityData.name;
-                data.metaInformation.externalId = entityData.code;
+                data.metaInformation.name = entityData.metaInformation.name;
+                data.metaInformation.externalId = entityData.metaInformation.code;
                 data.registryDetails = {};
-                data.registryDetails.locationId = entityData.id;
-                data.registryDetails.code = entityData.code;
+                data.registryDetails.locationId = entityData.registryDetails.locationId ;
+                data.registryDetails.code = entityData.registryDetails.code ;
                 entityDocument.push(data);
               });
               if (returnObject) {
@@ -156,16 +170,18 @@ const locationSearch = function (
               let entityDocument = [];
               response.result.response.map((entityData) => {
                 let data = {};
-                data._id = entityData.id;
+                data._id = entityData._id;
                 data.name = entityData.name;
-                data.externalId = entityData.code;
+                data.externalId = entityData.registryDetails.code;
                 entityDocument.push(data);
               });
               result['data'] = entityDocument;
               result['count'] = response.result.count;
             } else {
-              result['data'] = response.result.response;
-              result['count'] = response.result.count;
+              // result['data'] = response.result.response;
+              result['data'] = response.result;
+
+              // result['count'] = response.result.count;
             }
           } else {
             result.success = false;
@@ -174,13 +190,13 @@ const locationSearch = function (
         return resolve(result);
       }
 
-      setTimeout(function () {
-        return resolve(
-          (result = {
-            success: false,
-          }),
-        );
-      }, constants.common.SERVER_TIME_OUT);
+      // setTimeout(function () {
+      //   return resolve(
+      //     (result = {
+      //       success: false,
+      //     }),
+      //   );
+      // }, messageConstants.common.SERVER_TIME_OUT);
     } catch (error) {
       return reject(error);
     }
@@ -232,7 +248,7 @@ const orgSchoolSearch = function (filterData, pageSize = '', pageNo = '', search
         bodyData['request']['fields'] = fields;
       }
 
-      const url = userServiceUrl + constants.endpoints.GET_SCHOOL_DATA;
+      const url = userServiceUrl + messageConstants.endpoints.GET_SCHOOL_DATA;
       const options = {
         headers: {
           'content-type': 'application/json',
@@ -251,7 +267,7 @@ const orgSchoolSearch = function (filterData, pageSize = '', pageNo = '', search
         } else {
           let response = data.body;
           if (
-            response.responseCode === constants.common.OK &&
+            response.responseCode === messageConstants.common.OK &&
             response.result &&
             response.result.response &&
             response.result.response.content &&
@@ -271,7 +287,7 @@ const orgSchoolSearch = function (filterData, pageSize = '', pageNo = '', search
             success: false,
           }),
         );
-      }, constants.common.SERVER_TIME_OUT);
+      }, messageConstants.common.SERVER_TIME_OUT);
     } catch (error) {
       return reject(error);
     }
@@ -287,16 +303,17 @@ const orgSchoolSearch = function (filterData, pageSize = '', pageNo = '', search
   * @returns {Array} - Sub entities matching the type .
 */
 
-async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result ) {
+async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result,token ) {
 
   if( !(parentIds.length > 0) ){
       return result;
   }
   let bodyData={
-      "parentId" : parentIds
+      // "parentId" : parentIds
+      "registryDetails.code":{$in:parentIds}
   };
 
-  let entityDetails = await locationSearch(bodyData);
+  let entityDetails = await locationSearch(bodyData,token);
   if( !entityDetails.success ) {
       return (result);
   }
@@ -304,15 +321,15 @@ async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result ) 
   let entityData = entityDetails.data;
   let parentEntities = [];
   entityData.map(entity => {
-  if( entity.type == entityType ) {
-      result.push(entity.id)
+  if( entity.entityType == entityType ) {
+      result.push(entity._id)
   } else {
-      parentEntities.push(entity.id)
+      parentEntities.push(entity._id)
   }
   });
   
   if( parentEntities.length > 0 ){
-      await getSubEntitiesBasedOnEntityType(parentEntities,entityType,result)
+      await getSubEntitiesBasedOnEntityType(parentEntities,entityType,result,token)
   } 
   
   let uniqueEntities = _.uniq(result);

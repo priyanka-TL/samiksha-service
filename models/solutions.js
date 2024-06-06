@@ -1,116 +1,112 @@
 module.exports = {
-  name: 'solutions',
+  name: "solutions",
   schema: {
-    externalId: {
-      type: String,
-      index: true,
-      unique: true,
-    },
-    isReusable: {
-      type: Boolean,
-      index: false,
-    },
+    externalId: String,
+    isReusable: Boolean,
     name: {
-      type: String,
-      index: true,
+      type : String,
+      index : true
     },
-    description: String,
+    description: {
+      type : String,
+      index : true
+    },
     author: String,
-    parentSolutionId: 'ObjectId',
+    parentSolutionId: "ObjectId",
     resourceType: Array,
     language: Array,
     keywords: Array,
     concepts: Array,
-    createdFor: {
-      type: Array,
-    },
     scoringSystem: String,
     levelToScoreMapping: Object,
     themes: Array,
-    flattenedThemes: Array,
+    flattenedThemes : Array,
     questionSequenceByEcm: Object,
-    entityTypeId: 'ObjectId',
     entityType: String,
-    type: {
-      type: String,
-      required: false,
-      index: true,
-    },
-    subType: {
-      type: String,
-      required: false,
-      index: true,
-    },
+    type: String,
+    subType: String,
     entities: Array,
+    programId: "ObjectId",
+    programExternalId: String,
+    programName: String,
+    programDescription: String,
     entityProfileFieldsPerEntityTypes: Object,
     startDate: Date,
-    endDate: Date,
-    status: {
-      type: String,
-      index: true,
+    endDate: {
+      type : Date,
+      index : true
     },
+    status: String,
     evidenceMethods: Object,
     sections: Object,
     registry: Array,
-    frameworkId: 'ObjectId',
+    frameworkId: "ObjectId",
     frameworkExternalId: String,
-    parentSolutionId: 'ObjectId',
+    parentSolutionId: "ObjectId",
     noOfRatingLevels: Number,
-    isRubricDriven: { type: Boolean, default: false },
-    enableQuestionReadOut: { type: Boolean, default: false },
+    isRubricDriven: { type : Boolean, default: false },
+    enableQuestionReadOut: { type : Boolean, default: false },
     isReusable: Boolean,
     roles: Object,
     observationMetaFormKey: String,
     updatedBy: String,
-    captureGpsLocationAtQuestionLevel: { type: Boolean, default: false },
+    captureGpsLocationAtQuestionLevel:{ type : Boolean, default: false },
     sendSubmissionRatingEmailsTo: String,
     creator: String,
     linkTitle: String,
     linkUrl: String,
-    isAPrivateProgram: {
-      default: false,
-      type: Boolean,
+    isAPrivateProgram : {
+      default : false,
+      type : Boolean
     },
-    assessmentMetaFormKey: String,
-    allowMultipleAssessemts: {
-      default: false,
-      type: Boolean,
+    assessmentMetaFormKey : String,
+    allowMultipleAssessemts : {
+      default : false,
+      type : Boolean
     },
     isDeleted: {
-      default: false,
-      type: Boolean,
+        default : false,
+        type : Boolean,
+        index : true
     },
-    rootOrganisations: {
-      type: [String],
-      default: [],
-    },
-    link: {
-      type: String,
-      index: true,
-    },
-    referenceFrom: String,
-    scope: {
-      type: Object,
-      default: {},
+    project : Object,
+    referenceFrom : String,
+    scope : {
+      type:Object,
+      entityType : String,
+      entities : {
+        type : Array,
+        index : true
+      },
+      roles : [{
+        _id : "ObjectId",
+        code : {
+          type : String,
+          index : true
+        }
+      }]
     },
     pageHeading: {
-      default: 'Domains',
-      type: String,
+      default : "Domains",
+      type : String
     },
-    criteriaLevelReport: {
-      default: false,
-      type: Boolean,
-    },
-    projectTemplateId : {
-      type : "ObjectId",
-      index: true
-    },
+    criteriaLevelReport : Boolean,
     license:Object,
+    link: {
+      type : String,
+      index : true
+    },
     minNoOfSubmissionsRequired: {
       type: Number,
       default: 1
     },
     reportInformation : Object,
     certificateTemplateId : "ObjectId",
-  },
+    rootOrganisations : Array,
+    createdFor : Array,
+    projectTemplateId : {
+      type : "ObjectId",
+      index: true
+    }
+  }
 };

@@ -1,4 +1,4 @@
-const uuid = require('uuid/v4');
+const { validate: uuidValidate, v4: uuid } = require("uuid");
 const md5 = require('md5');
 
 function camelCaseToTitleCase(in_camelCaseString) {
@@ -175,17 +175,17 @@ function valueParser(dataToBeParsed) {
  */
 
 function filterLocationIdandCode(dataArray) {
-  let entityId = [];
+  let locationIds = [];
   let locationCodes = [];
   dataArray.forEach((element) => {
-    if (this.isValidMongoId(element)) {
-      entityId.push(element);
+    if (this.checkValidUUID(element)) {
+      locationIds.push(element);
     } else {
       locationCodes.push(element);
     }
   });
   return {
-    ids: entityId,
+    ids: locationIds,
     codes: locationCodes,
   };
 }
@@ -372,6 +372,40 @@ function addOffsetToDateTime(time, timeZoneDifference) {
     return time;
   }
 }
+
+/**
+ * check whether string is valid uuid.
+ * @function
+ * @name checkValidUUID
+ * @param {String} uuids
+ * @returns {Boolean} returns a Boolean value true/false
+ */
+
+function checkValidUUID(uuids) {
+  var validateUUID = true;
+  if (Array.isArray(uuids)) {
+    for (var i = 0; uuids.length > i; i++) {
+      if (!uuidValidate(uuids[i])) {
+        validateUUID = false;
+      }
+    }
+  } else {
+    validateUUID = uuidValidate(uuids);
+  }
+  return validateUUID;
+}
+
+/**
+ * check whether string contains only number
+ * @function
+ * @name checkIfStringIsNumber
+ * @returns {Boolean} returns a Boolean value true/false
+ */
+
+function checkIfStringIsNumber(str) {
+  return /^[0-9]+$/.test(str);
+}
+
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
   lowerCase: lowerCase,
@@ -387,6 +421,7 @@ module.exports = {
   assessmentRoles: assessmentRoles,
   arrayIdsTobjectIds: arrayIdsTobjectIds,
   checkIfEnvDataExistsOrNot: checkIfEnvDataExistsOrNot,
+  checkIfStringIsNumber:checkIfStringIsNumber,
   fetchAssessorsLeadAssessorRole: fetchAssessorsLeadAssessorRole,
   epochTime: epochTime,
   isValidMongoId: isValidMongoId,
@@ -395,6 +430,7 @@ module.exports = {
   removeDuplicatesFromArray: removeDuplicatesFromArray,
   convertStringToBoolean: convertStringToBoolean,
   filterLocationIdandCode: filterLocationIdandCode,
+  checkValidUUID:checkValidUUID,
   convertStringToObjectId: convertStringToObjectId,
   getEndDate: getEndDate,
   getStartDate: getStartDate,
