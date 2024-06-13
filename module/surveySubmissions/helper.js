@@ -543,6 +543,7 @@ module.exports = class SurveySubmissionsHelper {
             solutionMatchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
+        const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 
         let result = await solutionsHelper.solutionDocumentsByAggregateQuery([
           solutionMatchQuery,
@@ -558,7 +559,7 @@ module.exports = class SurveySubmissionsHelper {
           {
             $facet: {
               totalCount: [{ $count: 'count' }],
-              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize ? pageSize :100}],
             },
           },
           {

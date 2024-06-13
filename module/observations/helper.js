@@ -25,7 +25,8 @@ const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_EN
 const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
-const userService = require(ROOT_PATH + "/generics/services/users");
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 
 /**
  * ObservationsHelper
@@ -976,7 +977,7 @@ module.exports = class ObservationsHelper {
             "registryDetails.code": {$in:observationDocument[0].entities},
           };
 
-          let entitiesDocument = await userService.locationSearch(
+          let entitiesDocument = await entityManagementService.locationSearch(
             filterData,
             token,
             "",
@@ -1676,9 +1677,8 @@ module.exports = class ObservationsHelper {
           result[0].data.forEach((resultedData) => {
             solutionIds.push(resultedData.solutionId);
           });
-          const solutionHelper = require(MODULES_BASE_PATH +'/solutions/helper');
 
-          let solutionDocuments = await solutionHelper.solutionDocuments(
+          let solutionDocuments = await solutionsQueries.solutionDocuments(
             {
               _id: { $in: solutionIds },
             },

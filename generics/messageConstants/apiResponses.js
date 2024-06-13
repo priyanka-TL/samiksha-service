@@ -396,4 +396,5 @@ module.exports = {
   JOINED_PROGRAM: 'You have joined this program successfully',
   PROJECT_TEMPLATE_ID_NOT_FOUND: 'Project templates not exists in solution',
   SOLUTION_TYPE_INVALID: 'Solution type is invalid',
+  SURVEY_SUBMISSION_FOUND: 'Survey submission fetched successfully',
 };

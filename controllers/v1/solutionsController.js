@@ -27,11 +27,11 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-    * @api {post} /assessment/api/v1/solutions/targetedSolutions?type=:solutionType&page=:page&limit=:limit&search=:search&filter=:filter
+    * @api {post} /samiksha/v1/solutions/targetedSolutions?type=:solutionType&page=:page&limit=:limit&search=:search&filter=:filter
     * List of assigned solutions and targetted ones.
     * @apiVersion 1.0.0
     * @apiGroup Solutions
-    * @apiSampleRequest /assessment/api/v1/solutions/targetedSolutions?type=observation&page=1&limit=10&search=a&filter=assignedToMe
+    * @apiSampleRequest /samiksha/v1/solutions/targetedSolutions?type=observation&page=1&limit=10&search=a&filter=assignedToMe
     * @apiParamExample {json} Request:
     * {
     *   "roles" : ["HM","DEO"],
@@ -78,7 +78,7 @@ module.exports = class Solutions extends Abstract {
         let observations = await solutionsHelper.targetedSolutions(
           req.body,
           req.query.type,
-          JSON.stringify(req.userDetails.userId),
+          req.userDetails.userId,
           req.pageSize,
           req.pageNo,
           req.searchText,
@@ -100,163 +100,96 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {get} /assessment/api/v1/solutions/details/:solutionInternalId Framework & Rubric Details
-   * @apiVersion 1.0.0
-   * @apiName Framework & Rubric Details of a Solution
-   * @apiGroup Solutions
-   * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiSampleRequest /assessment/api/v1/solutions/details/5b98fa069f664f7e1ae7498c
-   * @apiUse successBody
-   * @apiUse errorBody
-   * @apiParamExample {json} Response:
-   * {
-   * "result":{
-   * "heading":"Solution Framework + rubric for - DCPCR Assessment Framework 2018",
-   * "sections": [
-   * {
-   *  "table": true,
-   * "data": [
-   * {
-   * "criteriaName": "Availability of School Leadership",
-   * "L1": "School does not have a principal or vice-principal; there is  a teacher in-charge of the post",
-   * "L2": "The school principal is not available only vice principal is available or vice principal has assumed charge as principal.  Most teachers are involved in administrative work along with principal / vice principal",
-   * "L3": "The school has full time principal but no vice principal and some teachers are involved in administrative work along with principal / vice principal.",
-   * "L4": "School has a full-time principal and vice principal as per norms (if applicable) or in case where vice principal is not mandated, Only principal and vice principal are involved in administrative work."
-   * }
-   * ]
-   * }
-   * ]
-   * }
-   * }
-   */
-
-  /**
-   * Solution details
-   * @method
-   * @name details
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution external id.
-   * @returns {JSON} consists of criteriaName and rubric levels.
-   */
-
-  // async details(req) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let findQuery = {
-  //         _id: req.params._id,
-  //       };
-
-  //       let solutionDocument = await database.models.solutions
-  //         .findOne(findQuery, { themes: 1, levelToScoreMapping: 1, name: 1 })
-  //         .lean();
-
-  //       let criteriasIdArray = gen.utils.getCriteriaIds(solutionDocument.themes);
-  //       let criteriaDocument = await database.models.criteria
-  //         .find({ _id: { $in: criteriasIdArray } }, { name: 1, 'rubric.levels': 1 })
-  //         .lean();
-
-  //       let criteriaObject = {};
-
-  //       criteriaDocument.forEach((eachCriteria) => {
-  //         let levelsDescription = {};
-
-  //         for (let k in eachCriteria.rubric.levels) {
-  //           levelsDescription[k] = eachCriteria.rubric.levels[k].description;
-  //         }
-
-  //         criteriaObject[eachCriteria._id.toString()] = _.merge(
-  //           {
-  //             name: eachCriteria.name,
-  //           },
-  //           levelsDescription,
-  //         );
-  //       });
-
-  //       let responseObject = {};
-  //       responseObject.heading = 'Solution Framework + rubric for - ' + solutionDocument.name;
-
-  //       responseObject.sections = new Array();
-
-  //       let levelValue = {};
-
-  //       let sectionHeaders = new Array();
-
-  //       sectionHeaders.push({
-  //         name: 'criteriaName',
-  //         value: 'Domain',
-  //       });
-
-  //       for (let k in solutionDocument.levelToScoreMapping) {
-  //         levelValue[k] = '';
-  //         sectionHeaders.push({
-  //           name: k,
-  //           value: solutionDocument.levelToScoreMapping[k].label,
-  //         });
-  //       }
-
-  //       let generateCriteriaThemes = function (themes, parentData = []) {
-  //         themes.forEach((theme) => {
-  //           if (theme.children) {
-  //             let hierarchyTrackToUpdate = [...parentData];
-  //             hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
-
-  //             generateCriteriaThemes(theme.children, hierarchyTrackToUpdate);
-  //           } else {
-  //             let tableData = new Array();
-  //             let levelObjectFromCriteria = {};
-
-  //             let hierarchyTrackToUpdate = [...parentData];
-  //             hierarchyTrackToUpdate.push(_.pick(theme, ['type', 'label', 'externalId', 'name']));
-
-  //             theme.criteria.forEach((criteria) => {
-  //               if (criteriaObject[criteria.criteriaId.toString()]) {
-  //                 Object.keys(levelValue).forEach((eachLevel) => {
-  //                   levelObjectFromCriteria[eachLevel] = criteriaObject[criteria.criteriaId.toString()][eachLevel];
-  //                 });
-
-  //                 tableData.push(
-  //                   _.merge(
-  //                     {
-  //                       criteriaName: criteriaObject[criteria.criteriaId.toString()].name,
-  //                     },
-  //                     levelObjectFromCriteria,
-  //                   ),
-  //                 );
-  //               }
-  //             });
-
-  //             let eachSection = {
-  //               table: true,
-  //               data: tableData,
-  //               tabularData: {
-  //                 headers: sectionHeaders,
-  //               },
-  //               summary: hierarchyTrackToUpdate,
-  //             };
-
-  //             responseObject.sections.push(eachSection);
-  //           }
-  //         });
-  //       };
-
-  //       generateCriteriaThemes(solutionDocument.themes);
-
-  //       let response = {
-  //         message: 'Solution framework + rubric fetched successfully.',
-  //         result: responseObject,
-  //       };
-
-  //       return resolve(response);
-  //     } catch (error) {
-  //       return reject({
-  //         status: error.status || httpStatusCode.internal_server_error.status,
-  //         message: error.message || httpStatusCode.internal_server_error.message,
-  //         errorObject: error,
-  //       });
-  //     }
-  //   });
-  // }
-
+  * @api {post} /samiksha/v1/solutions/details/:solutionId
+  * @apiVersion 1.0.0
+  * @apiName details
+  * @apiGroup Solutions
+  * @apiSampleRequest /samiksha/v1/solutions/details/5ff9d50f9259097d48017bbb
+  * @apiHeader {String} X-authenticated-user-token Authenticity token  
+  * @apiUse successBody
+  * @apiUse errorBody
+  * @apiParamExample {json} Request:
+  * {
+  *   "role" : "HM,DEO",
+      "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
+      "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+      "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
+    }
+  * @apiParamExample {json} Response:
+  * {
+    "message": "Successfully fetched details",
+    "status": 200,
+    "result": {
+        "_id": "5f97d2f6bf3a3b1c0116c80a",
+        "status": "published",
+        "isDeleted": false,
+        "categories": [
+            {
+                "_id": "5f102331665bee6a740714e8",
+                "name": "Teachers",
+                "externalId": "teachers"
+            },
+            {
+                "name": "newCategory",
+                "externalId": "",
+                "_id": ""
+            }
+        ],
+        "tasks": [
+            {
+                "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
+                "name": "Task 1",
+                "description": "Task 1 description",
+                "status": "notStarted",
+                "isACustomTask": false,
+                "startDate": "2020-09-29T09:08:41.667Z",
+                "endDate": "2020-09-29T09:08:41.667Z",
+                "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                "type": "single",
+                "isDeleted": false,
+                "attachments": [
+                    {
+                        "name": "download(2).jpeg",
+                        "type": "image/jpeg",
+                        "sourcePath": "projectId/userId/imageName"
+                    }
+                ],
+                "remarks": "Tasks completed",
+                "assignee": "Aman",
+                "children": [
+                    {
+                        "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
+                        "name": "Task 2",
+                        "description": "Task 2 description",
+                        "status": "notStarted",
+                        "children": [],
+                        "isACustomTask": false,
+                        "startDate": "2020-09-29T09:08:41.667Z",
+                        "endDate": "2020-09-29T09:08:41.667Z",
+                        "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                        "type": "single",
+                        "isDeleted": false,
+                        "externalId": "task 2",
+                        "isDeleteable": false,
+                        "createdAt": "2020-10-28T05:58:24.907Z",
+                        "updatedAt": "2020-10-28T05:58:24.907Z",
+                        "isImportedFromLibrary": false
+                    }
+                ],
+                "externalId": "task 1",
+                "isDeleteable": false,
+                "createdAt": "2020-10-28T05:58:24.907Z",
+                "updatedAt": "2020-10-28T05:58:24.907Z",
+                "isImportedFromLibrary": false
+            }
+        ],
+        "resources": [],
+        "deleted": false,
+        "__v": 0,
+        "description": "Project 1 description"
+    }
+}
+  */
   /**
    * get solution details
    * @method
@@ -287,14 +220,14 @@ module.exports = class Solutions extends Abstract {
     });
   }
   /**
-   * @api {get} /assessment/api/v1/solutions/importFromFramework/?frameworkId:frameworkExternalId&entityType:entityType Create solution from framework.
+   * @api {get} /samiksha/v1/solutions/importFromFramework/?frameworkId:frameworkExternalId&entityType:entityType Create solution from framework.
    * @apiVersion 1.0.0
    * @apiName Create solution from framework.
    * @apiGroup Solutions
    * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @apiParam {String} frameworkId Framework External ID.
    * @apiParam {String} entityType Entity Type.
-   * @apiSampleRequest /assessment/api/v1/solutions/importFromFramework?frameworkId=EF-SMC&entityType=school
+   * @apiSampleRequest /samiksha/v1/solutions/importFromFramework?frameworkId=EF-SMC&entityType=school
    * @apiUse successBody
    * @apiUse errorBody
    *
@@ -416,7 +349,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/mapEntityToSolution/:solutionExternalId Map entity id to solution
+   * @api {post} /samiksha/v1/solutions/mapEntityToSolution/:solutionExternalId Map entity id to solution
    * @apiVersion 1.0.0
    * @apiName Map entity id to solution
    * @apiGroup Solutions
@@ -458,12 +391,12 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/uploadThemes/{solutionsExternalID} Upload Themes For Solutions
+   * @api {post} /samiksha/v1/solutions/uploadThemes/{solutionsExternalID} Upload Themes For Solutions
    * @apiVersion 1.0.0
    * @apiName Upload Themes in Solutions
    * @apiGroup Solutions
    * @apiParam {File} themes Mandatory file upload with themes data.
-   * @apiSampleRequest /assessment/api/v1/solutions/uploadThemes/EF-DCPCR-2018-001
+   * @apiSampleRequest /samiksha/v1/solutions/uploadThemes/EF-DCPCR-2018-001
    * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @apiUse successBody
    * @apiUse errorBody
@@ -537,120 +470,39 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/update?solutionExternalId={solutionExternalId} Update Solutions
-   * @apiVersion 1.0.0
-   * @apiName update Solutions
-   * @apiGroup Solutions
-   * @apiParam {File} Mandatory solution file of type json.
-   * @apiSampleRequest /assessment/api/v1/solutions/update
-   * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiUse successBody
-   * @apiUse errorBody
-   */
-
-  /**
-   * Update solution.
-   * @method
-   * @name update
-   * @param {Object} req - requested data.
-   * @param {String} req.query.solutionExternalId - solution external id.
-   * @param {JSON} req.files.solution - solution data to be updated.
-   * @returns {JSON}
-   */
-
-  // async update(req) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId);
-
-  //       return resolve(solutionData);
-  //     } catch (error) {
-  //       reject({
-  //         status: error.status || httpStatusCode.internal_server_error.status,
-  //         message: error.message || httpStatusCode.internal_server_error.message,
-  //         errorObject: error,
-  //       });
-  //     }
-  //   });
-  // }
-  // async update(req) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let solutionData = JSON.parse(req.files.solution.data.toString());
-
-  //       let queryObject = {
-  //         externalId: req.query.solutionExternalId,
-  //       };
-
-  //       let solutionDocument = await database.models.solutions.findOne(queryObject, { themes: 0 }).lean();
-
-  //       if (!solutionDocument) {
-  //         return resolve({
-  //           status: httpStatusCode.bad_request.status,
-  //           message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-  //         });
-  //       }
-
-  //       let solutionMandatoryField = solutionsHelper.mandatoryField();
-
-  //       Object.keys(solutionMandatoryField).forEach((eachSolutionMandatoryField) => {
-  //         if (
-  //           solutionDocument[eachSolutionMandatoryField] === undefined &&
-  //           solutionData[eachSolutionMandatoryField] === undefined
-  //         ) {
-  //           solutionData[eachSolutionMandatoryField] = solutionMandatoryField[eachSolutionMandatoryField];
-  //         }
-  //       });
-
-  //       let updateObject = _.merge(_.omit(solutionDocument, 'createdAt'), solutionData);
-
-  //       updateObject.updatedBy = req.userDetails.id;
-
-  //       await database.models.solutions.findOneAndUpdate(
-  //         {
-  //           _id: solutionDocument._id,
-  //         },
-  //         updateObject,
-  //       );
-
-  //       return resolve({
-  //         status: httpStatusCode.ok.status,
-  //         message: messageConstants.apiResponses.SOLUTION_UPDATED,
-  //       });
-  //     } catch (error) {
-  //       reject({
-  //         status: error.status || httpStatusCode.internal_server_error.status,
-  //         message: error.message || httpStatusCode.internal_server_error.message,
-  //         errorObject: error,
-  //       });
-  //     }
-  //   });
-  // }
-
-  /**
-   * @api {post} /assessment/api/v1/solutions/updateSolutions?solutionExternalId={solutionExternalId} Update Solutions
-   * @apiVersion 1.0.0
-   * @apiName updateSolutions Solutions
-   * @apiGroup Solutions
-   * @apiSampleRequest /assessment/api/v1/solutions/updateSolutions
-   * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiUse successBody
-   * @apiUse errorBody
-   */
-
+  * @api {post} /samiksha/v1/solutions/update/:solutionId Update Solution
+  * @apiVersion 1.0.0
+  * @apiName Update Solution
+  * @apiGroup Solutions
+  * @apiSampleRequest /samiksha/v1/solutions/update/6006b5cca1a95727dbcdf648
+  * @apiHeader {String} X-authenticated-user-token Authenticity token  
+  * @apiUse successBody
+  * @apiUse errorBody
+  * @apiParamExample {json} Response:
+  * {
+  *  "status": 200,
+    "message": "Solution updated successfully"
+  }
+  */
   /**
    * Update solution.
    * @method
    * @name updateSolutions
    * @param {Object} req - requested data.
-   * @param {String} req.query.solutionExternalId -  solution external id.
+   * @param {String} req.query.solutionId -  solution  id.
    * @returns {JSON}
    */
 
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.update(req.params._id, req.body, req.userDetails.userId, true,req.userDetails.userToken);
+        let solutionData = await solutionsHelper.update(
+          req.params._id,
+          req.body,
+          req.userDetails.userId,
+          true, //checkDate
+          req.userDetails.userToken,
+        );
         return resolve(solutionData);
       } catch (error) {
         reject({
@@ -663,12 +515,12 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/uploadThemesRubricExpressions/{{solutionsExternalID}} Upload Rubric For Themes Of Solutions
+   * @api {post} /samiksha/v1/solutions/uploadThemesRubricExpressions/{{solutionsExternalID}} Upload Rubric For Themes Of Solutions
    * @apiVersion 1.0.0
    * @apiName Upload Rubric For Themes Of Solutions
    * @apiGroup Solutions
    * @apiParam {File} themes Mandatory file upload with themes data.
-   * @apiSampleRequest /assessment/api/v1/solutions/uploadThemesRubricExpressions/EF-DCPCR-2018-001
+   * @apiSampleRequest /samiksha/v1/solutions/uploadThemesRubricExpressions/EF-DCPCR-2018-001
    * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @apiUse successBody
    * @apiUse errorBody
@@ -767,12 +619,12 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-    * @api {get} /assessment/api/v1/solutions/getDetails/:solutionId Solution details
+    * @api {get} /samiksha/v1/solutions/getDetails/:solutionId Solution details
     * @apiVersion 1.0.0
     * @apiName Details of the solution.
     * @apiGroup Solutions
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /assessment/api/v1/solutions/getDetails/5ffbf8909259097d48017bbf
+    * @apiSampleRequest /samiksha/v1/solutions/getDetails/5ffbf8909259097d48017bbf
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -894,12 +746,12 @@ module.exports = class Solutions extends Abstract {
     });
   }
   /**
-   * @api {post} /assessment/api/v1/solutions/uploadCriteriaRubricExpressions/{{solutionsExternalID}} Upload Rubric For Criteria Of Solutions
+   * @api {post} /samiksha/v1/solutions/uploadCriteriaRubricExpressions/{{solutionsExternalID}} Upload Rubric For Criteria Of Solutions
    * @apiVersion 1.0.0
    * @apiName Upload Rubric For Criteria Of Solutions
    * @apiGroup Solutions
    * @apiParam {File} criteria Mandatory file upload with criteria data.
-   * @apiSampleRequest /assessment/api/v1/solutions/uploadCriteriaRubricExpressions/EF-DCPCR-2018-001
+   * @apiSampleRequest /samiksha/v1/solutions/uploadCriteriaRubricExpressions/EF-DCPCR-2018-001
    * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @apiUse successBody
    * @apiUse errorBody
@@ -1126,12 +978,12 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/questionList/:solutionInternalId Question List of a Solution
+  * @api {get} /samiksha/v1/solutions/questionList/:solutionInternalId Question List of a Solution
   * @apiVersion 1.0.0
   * @apiName Question List of a Solution
   * @apiGroup Solutions
   * @apiHeader {String} X-authenticated-user-token Authenticity token
-  * @apiSampleRequest /assessment/api/v1/solutions/questionList/5b98fa069f664f7e1ae7498c
+  * @apiSampleRequest /samiksha/v1/solutions/questionList/5b98fa069f664f7e1ae7498c
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Response:
@@ -1380,7 +1232,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/importFromSolution?solutionId:solutionExternalId
+   * @api {post} /samiksha/v1/solutions/importFromSolution?solutionId:solutionExternalId
    * Create duplicate solution.
    * @apiVersion 0.0.1
    * @apiName Create duplicate solution.
@@ -1394,7 +1246,7 @@ module.exports = class Solutions extends Abstract {
    * "description": ""
    * "programExternalId": ""
    * }
-   * @apiSampleRequest /assessment/api/v1/solutions/importFromSolution?solutionId=Mantra-STL-2019-001
+   * @apiSampleRequest /samiksha/v1/solutions/importFromSolution?solutionId=Mantra-STL-2019-001
    * @apiUse successBody
    * @apiUse errorBody
    */
@@ -1445,11 +1297,11 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/fetchLink/:solutionId
+  * @api {get} /samiksha/v1/solutions/fetchLink/:solutionId
   * @apiVersion 1.0.0
   * @apiName Get link by solution id
   * @apiGroup Solutions
-  * @apiSampleRequest /assessment/api/v1/solutions/5fa28620b6bd9b757dc4e932
+  * @apiSampleRequest /samiksha/v1/solutions/5fa28620b6bd9b757dc4e932
   * @apiHeader {String} X-authenticated-user-token Authenticity token  
   * @apiUse successBody
   * @apiUse errorBody
@@ -1457,69 +1309,9 @@ module.exports = class Solutions extends Abstract {
   * {
     "message": "Solution Link generated successfully",
     "status": 200,
-    "result": "https://dev.sunbirded.org/manage-learn/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
+    "result": "https://samiksha/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
     }
   */
-  /**
-   * Get link by solution id
-   * @method
-   * @name fetchLink
-   * @param {String} solutionId - solution Id.
-   * @param {String} appName - app Name.
-   * @param {String} userId - user Id.
-   * @returns {Object} - Details of the solution.
-   */
-
-  // static fetchLink(solutionId, userId) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let solutionData = await this.solutionDocuments(
-  //         {
-  //           _id: solutionId,
-  //           isReusable: false,
-  //           isAPrivateProgram: false,
-  //         },
-  //         ['link', 'type', 'author'],
-  //       );
-
-  //       if (!Array.isArray(solutionData) || solutionData.length < 1) {
-  //         return resolve({
-  //           message: constants.apiResponses.SOLUTION_NOT_FOUND,
-  //           result: {},
-  //         });
-  //       }
-
-  //       let prefix = constants.common.PREFIX_FOR_SOLUTION_LINK;
-
-  //       let solutionLink, link;
-
-  //       if (!solutionData[0].link) {
-  //         let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
-
-  //         let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
-
-  //         solutionLink = updateLink;
-  //       } else {
-  //         solutionLink = solutionData[0].link;
-  //       }
-
-  //       link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
-
-  //       return resolve({
-  //         success: true,
-  //         message: constants.apiResponses.LINK_GENERATED,
-  //         result: link,
-  //       });
-  //     } catch (error) {
-  //       return resolve({
-  //         success: false,
-  //         status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
-  //         message: error.message,
-  //       });
-  //     }
-  //   });
-  // }
-
   /**
    * Get link by solution id.
    * @method
@@ -1546,11 +1338,11 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/fetchLink/:solutionId
+  * @api {get} /samiksha/v1/solutions/fetchLink/:solutionId
   * @apiVersion 1.0.0
   * @apiName Get link by solution id
   * @apiGroup Solutions
-  * @apiSampleRequest /assessment/api/v1/solutions/5fa28620b6bd9b757dc4e932
+  * @apiSampleRequest /samiksha/v1/solutions/5fa28620b6bd9b757dc4e932
   * @apiHeader {String} X-authenticated-user-token Authenticity token  
   * @apiUse successBody
   * @apiUse errorBody
@@ -1558,7 +1350,7 @@ module.exports = class Solutions extends Abstract {
   * {
     "message": "Solution Link generated successfully",
     "status": 200,
-    "result": "https://dev.sunbirded.org/manage-learn/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
+    "result": "https://samiksha/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
     }
   */
 
@@ -1588,13 +1380,13 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/delete/{{solutionId}} Delete solution .
+  * @api {get} /samiksha/v1/solutions/delete/{{solutionId}} Delete solution .
   * @apiVersion 1.0.0
   * @apiName Delete Solution.
   * @apiGroup Solutions
   * @apiHeader {String} X-authenticated-user-token Authenticity token
   * @apiParam {String} solutionId Solution Intenal ID.
-  * @apiSampleRequest /assessment/api/v1/solutions/delete/5f64601df5f6e432fe0f0575
+  * @apiSampleRequest /samiksha/v1/solutions/delete/5f64601df5f6e432fe0f0575
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Response:
@@ -1630,13 +1422,13 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/moveToTrash/{{solutionId}} Solution Move to Trash .
+  * @api {get} /samiksha/v1/solutions/moveToTrash/{{solutionId}} Solution Move to Trash .
   * @apiVersion 1.0.0
   * @apiName Solution Move To Trash .
   * @apiGroup Solutions
   * @apiHeader {String} X-authenticated-user-token Authenticity token
   * @apiParam {String} solutionId Solution Intenal ID.
-  * @apiSampleRequest /assessment/api/v1/solutions/moveToTrash/5f64601df5f6e432fe0f0575
+  * @apiSampleRequest /samiksha/v1/solutions/moveToTrash/5f64601df5f6e432fe0f0575
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Response:
@@ -1671,13 +1463,13 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/restoreFromTrash/{{solutionId}} Solution Restore FRom Trash .
+  * @api {get} /samiksha/v1/solutions/restoreFromTrash/{{solutionId}} Solution Restore FRom Trash .
   * @apiVersion 1.0.0
   * @apiName Solution Restore From Trash.
   * @apiGroup Solutions
   * @apiHeader {String} X-authenticated-user-token Authenticity token
   * @apiParam {String} solutionId Solution Intenal ID.
-  * @apiSampleRequest /assessment/api/v1/solutions/restoreFromTrash/5f64601df5f6e432fe0f0575
+  * @apiSampleRequest /samiksha/v1/solutions/restoreFromTrash/5f64601df5f6e432fe0f0575
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Response:
@@ -1712,12 +1504,12 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/trashList Solution Trash List .
+  * @api {get} /samiksha/v1/solutions/trashList Solution Trash List .
   * @apiVersion 1.0.0
   * @apiName Solution Trash List.
   * @apiGroup Solutions
   * @apiHeader {String} X-authenticated-user-token Authenticity token
-  * @apiSampleRequest /assessment/api/v1/solutions/trashList
+  * @apiSampleRequest /samiksha/v1/solutions/trashList
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Response:
@@ -1762,13 +1554,13 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/solutions/removeFromHomeScreen/{{solutionId}} Solution Remove From Library .
+  * @api {get} /samiksha/v1/solutions/removeFromHomeScreen/{{solutionId}} Solution Remove From Library .
   * @apiVersion 1.0.0
   * @apiName Solution Remove From Home screen .
   * @apiGroup Solutions
   * @apiHeader {String} X-authenticated-user-token Authenticity token
   * @apiParam {String} solutionId Solution Internal ID.
-  * @apiSampleRequest /assessment/api/v1/solutions/removeFromHomeScreen/5f64601df5f6e432fe0f0575
+  * @apiSampleRequest /samiksha/v1/solutions/removeFromHomeScreen/5f64601df5f6e432fe0f0575
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Response:
@@ -1804,14 +1596,14 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-    * @api {get} /assessment/api/v1/solutions/getObservationSolutionLink/{{observationsolutionId}}?appName:appName 
+    * @api {get} /samiksha/v1/solutions/getObservationSolutionLink/{{observationsolutionId}}?appName:appName 
     * @apiVersion 1.0.0
     * @apiName Get observation shareable link
     * @apiGroup Solutions
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiParam {String} observationsolutionId Observation Solution External ID.
     * @apiParam {String} appName Name of App.
-    * @apiSampleRequest /assessment/api/v1/observations/getObservationSolutionLink/Mid-day_Meal_SMC_Observation-Aug2019?appName=samiksha
+    * @apiSampleRequest /samiksha/v1/observations/getObservationSolutionLink/Mid-day_Meal_SMC_Observation-Aug2019?appName=samiksha
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -1847,7 +1639,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-    * @api {post} /assessment/api/v1/solutions/verifyLink/{{link}} Verify Observation Link And get details
+    * @api {post} /samiksha/v1/solutions/verifyLink/{{link}} Verify Observation Link And get details
     * @apiVersion 1.0.0
     * @apiName Verify Observation Solution Link
     * @apiGroup Solutions
@@ -1860,7 +1652,7 @@ module.exports = class Solutions extends Abstract {
       }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiParam {String} link Observation Solution Link.
-    * @apiSampleRequest /assessment/api/v1/solutions/verifyLink/38cd93bdb87489c3890fe0ab00e7d406
+    * @apiSampleRequest /samiksha/v1/solutions/verifyLink/38cd93bdb87489c3890fe0ab00e7d406
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -1908,28 +1700,6 @@ module.exports = class Solutions extends Abstract {
    * @param {String} req.params._id observation solution link.
    * @returns {JSON} observation data.
    */
-
-  // async verifyLink(req) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let result = await observationsHelper.verifyLink(
-  //         req.params._id,
-  //         req.rspObj.userToken,
-  //         req.userDetails.userId,
-  //         req.body,
-  //       );
-
-  //       return resolve(result);
-  //     } catch (error) {
-  //       return reject({
-  //         status: error.status || httpStatusCode.internal_server_error.status,
-  //         message: error.message || httpStatusCode.internal_server_error.message,
-  //         errorObject: error,
-  //       });
-  //     }
-  //   });
-  // }
-
   /**
    * verify Link
    * @method
@@ -1987,7 +1757,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/addEntities/:solutionId Add entity to solution
+   * @api {post} /samiksha/v1/solutions/addEntities/:solutionId Add entity to solution
    * @apiVersion 1.0.0
    * @apiName Add entity to solution
    * @apiGroup Solutions
@@ -1996,7 +1766,7 @@ module.exports = class Solutions extends Abstract {
    *	    "entities": ["5beaa888af0065f0e0a10515","5beaa888af0065f0e0a10516"]
    * }
    * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiSampleRequest /assessment/api/v1/solutions/addEntities/5f64601df5f6e432fe0f0575
+   * @apiSampleRequest /samiksha/v1/solutions/addEntities/5f64601df5f6e432fe0f0575
    * @apiUse successBody
    * @apiUse errorBody
    * @apiParamExample {json} Response:
@@ -2031,7 +1801,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-    * @api {post} /assessment/api/v1/solutions/list list of solutions
+    * @api {post} /samiksha/v1/solutions/list list of solutions
     * @apiVersion 1.0.0
     * @apiName List solutions
     * @apiGroup Solutions
@@ -2040,7 +1810,7 @@ module.exports = class Solutions extends Abstract {
     *	    "solutionIds": ["EF-DCPCR-2018-001"]
     * }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /assessment/api/v1/solutions/list
+    * @apiSampleRequest /samiksha/v1/solutions/list
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -2113,23 +1883,6 @@ module.exports = class Solutions extends Abstract {
    * @returns {Array} List of solutions.
    */
 
-  // async list(req) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       // let solutionData = await      .list(req.body.solutionIds);
-  //       let solutionData = await solutionsHelper.list();
-  //       solutionData.result = solutionData.data;
-
-  //       return resolve(solutionData);
-  //     } catch (error) {
-  //       return reject({
-  //         status: error.status || httpStatusCode.internal_server_error.status,
-  //         message: error.message || httpStatusCode.internal_server_error.message,
-  //         errorObject: error,
-  //       });
-  //     }
-  //   });
-  // }
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -2156,7 +1909,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/removeEntities/:solutionId Add entity to solution
+   * @api {post} /samiksha/v1/solutions/removeEntities/:solutionId Add entity to solution
    * @apiVersion 1.0.0
    * @apiName Add entity to solution
    * @apiGroup Solutions
@@ -2165,7 +1918,7 @@ module.exports = class Solutions extends Abstract {
    *	    "entities": ["5beaa888af0065f0e0a10515"]
    * }
    * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiSampleRequest /assessment/api/v1/solutions/removeEntities/5f64601df5f6e432fe0f0575
+   * @apiSampleRequest /samiksha/v1/solutions/removeEntities/5f64601df5f6e432fe0f0575
    * @apiUse successBody
    * @apiUse errorBody
    * @apiParamExample {json} Response:
@@ -2200,12 +1953,12 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/solutions/deleteCriteria/{solutionsExternalID} Delete Criteria From Solution
+   * @api {post} /samiksha/v1/solutions/deleteCriteria/{solutionsExternalID} Delete Criteria From Solution
    * @apiVersion 1.0.0
    * @apiName Delete Criteria From Solution
    * @apiGroup Solutions
    * @apiParam {File} themes Mandatory file upload with themes data.
-   * @apiSampleRequest /assessment/api/v1/solutions/deleteCriteria/EF-DCPCR-2018-001
+   * @apiSampleRequest /samiksha/v1/solutions/deleteCriteria/EF-DCPCR-2018-001
    * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @apiParamExample {json} Request-Body:
    * {
@@ -2239,7 +1992,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-    * @api {post} /kendra/api/v1/solutions/create Create solution
+    * @api {post} /samiksha/v1/solutions/create Create solution
     * @apiVersion 1.0.0
     * @apiName Create solution
     * @apiGroup Solutions
@@ -2268,7 +2021,7 @@ module.exports = class Solutions extends Abstract {
     }
     * @apiHeader {String} internal-access-token internal access token  
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /kendra/api/v1/solutions/create
+    * @apiSampleRequest /samiksha/v1/solutions/create
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -2292,8 +2045,8 @@ module.exports = class Solutions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log('Creating solution', req.userDetails)
-        let solutionData = await solutionsHelper.createSolution(req.body, true,req.userDetails.userToken);
+        //passing {true} for checkDate params in helper
+        let solutionData = await solutionsHelper.createSolution(req.body, true , req.userDetails.userToken);
 
         solutionData['result'] = solutionData.data;
 
@@ -2308,6 +2061,39 @@ module.exports = class Solutions extends Abstract {
     });
   }
 
+  /**
+    * @api {post} /samiksha/v1/solutions/forUserRoleAndLocation?programId=:programId&type=:type&subType=:subType&page=:page&limit=:limit Auto targeted solutions
+    * @apiVersion 1.0.0
+    * @apiName Auto targeted solution
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+        "role" : "HM,DEO",
+   		  "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
+        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+        "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824",
+        "filter" : {}
+      }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/solutions/forUserRoleAndLocation?type=assessment&page=1&limit=5
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+    "message": "Successfully targeted solutions fetched",
+    "status": 200,
+    "result": {
+        "data": [
+            {
+                "_id": "5ff447e127ef425953bd8306",
+                "programId": "5ff438b04698083dbfab7284",
+                "programName": "TEST scope in program"
+            }
+        ],
+        "count": 1
+    }
+    }
+    */
   /**
    * Auto targeted solution.
    * @method
@@ -2342,6 +2128,40 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
+    * @api {post} /samiksha/v1/solutions/detailsBasedOnRoleAndLocation/:solutionId Solution details based on role and location.
+    * @apiVersion 1.0.0
+    * @apiName Targeted solution details
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+        "role" : "HM,DEO",
+   		  "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
+        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+        "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
+      }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/solutions/detailsBasedOnRoleAndLocation/5fc3dff14ea9b44f3340afe2
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+    "message": "Successfully targeted solutions fetched",
+    "status": 200,
+    "result": {
+        "_id": "5fc3dff14ea9b44f3340afe2",
+        "isAPrivateProgram": true,
+        "programId": "5ff438b04698083dbfab7284",
+        "programExternalId": "TEST_SCOPE_PROGRAM",
+        "programName": "TEST_SCOPE_PROGRAM",
+        "programDescription": "TEST_SCOPE_PROGRAM",
+        "entityType": "school",
+        "entityTypeId": "5d15a959e9185967a6d5e8a6",
+        "externalId": "f449823a-06bb-4a3f-9d49-edbe1524ebbb-1606672337956",
+        "projectTemplateId": "5ff4a46aa87a5c721f9eb664"
+    }}
+    */
+
+  /**
    * Solution details based on role and location.
    * @method
    * @name detailsBasedOnRoleAndLocation
@@ -2371,7 +2191,7 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-    * @api {post} /kendra/api/v1/solutions/addRolesInScope/:solutionId Add roles in solutions
+    * @api {post} /samiksha/v1/solutions/addRolesInScope/:solutionId Add roles in solutions
     * @apiVersion 1.0.0
     * @apiName Add roles in solutions
     * @apiGroup Solutions
@@ -2380,7 +2200,7 @@ module.exports = class Solutions extends Abstract {
     * "roles" : ["DEO","SPD"]
     }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /kendra/api/v1/solutions/addRolesInScope/5ffbf8909259097d48017bbf
+    * @apiSampleRequest /samiksha/v1/solutions/addRolesInScope/5ffbf8909259097d48017bbf
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -2417,6 +2237,25 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
+    * @api {post} /samiksha/v1/solutions/addEntitiesInScope/:solutionId Add entities in solutions
+    * @apiVersion 1.0.0
+    * @apiName Add entities in solutions
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+      "entities" : ["5f33c3d85f637784791cd830"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/solutions/addEntitiesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully added entities in solution scope",
+        "status": 200
+      }
+    */
+  /**
    * Add entities in solution scope
    * @method
    * @name addEntitiesInScope
@@ -2429,7 +2268,11 @@ module.exports = class Solutions extends Abstract {
   async addEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionUpdated = await solutionsHelper.addEntitiesInScope(req.params._id, req.body.entities,req.userDetails.userToken);
+        let solutionUpdated = await solutionsHelper.addEntitiesInScope(
+          req.params._id,
+          req.body.entities,
+          req.userDetails.userToken,
+        );
 
         return resolve(solutionUpdated);
       } catch (error) {
@@ -2442,6 +2285,25 @@ module.exports = class Solutions extends Abstract {
     });
   }
 
+  /**
+    * @api {post} /samiksha/v1/solutions/removeRolesInScope/:solutionId Remove roles from solutions scope
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+    * "roles" : ["DEO","SPD"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/solutions/removeRolesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully removed roles in solution scope",
+        "status": 200
+      }
+    */
   /**
    * Remove roles in solution scope
    * @method
@@ -2468,6 +2330,25 @@ module.exports = class Solutions extends Abstract {
     });
   }
 
+  /**
+    * @api {post} /samiksha/v1/solutions/removeEntitiesInScope/:solutionId Remove entities from solution scope.
+    * @apiVersion 1.0.0
+    * @apiName Remove entities from solution scope.
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+      "entities" : ["5f33c3d85f637784791cd830"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/solutions/removeEntitiesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully removed entities in solution scope",
+        "status": 200
+      }
+    */
   /**
    * Remove entities in slution scope
    * @method
