@@ -232,6 +232,10 @@ let enviromentVariables = {
 		message: 'Require client storage account name',
 		optional: false,
 	},
+  CLOUD_STORAGE_BUCKET_TYPE: {
+		message: 'Require client storage bucket type',
+		optional: false,
+	},
   	// signedUrl and downloadAble url expiry durations
 	DOWNLOADABLE_URL_EXPIRY_IN_SECONDS: {
 		message: 'Required downloadable url expiration time',
