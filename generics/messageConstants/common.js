@@ -71,4 +71,7 @@ module.exports = {
   VERSION_3: 'v3',
   DRAFT: 'draft',
   PREFIX_FOR_SOLUTION_LINK: 'samiksha',
+  PRIVATE: 'private',
+	WRITE_PERMISSION: 'w',
+	READ_PERMISSION: 'r',
 };

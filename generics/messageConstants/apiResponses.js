@@ -368,4 +368,6 @@ module.exports = {
   SOLUTIONS_LIST: 'Solution Fetched successfully',
   KEYS_INDEXED_SUCCESSFULL: 'Keys indexed successfully',
   KEYS_ALREADY_INDEXED_SUCCESSFULL: 'Keys already indexed',
+  FAILED_TO_CREATE_DOWNLOADABLEURL: 'Failed to generate downloadableUrl',
+  CLOUD_SERVICE_SUCCESS_MESSAGE: "Url's generated successfully",
 };
