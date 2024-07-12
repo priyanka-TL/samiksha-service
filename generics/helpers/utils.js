@@ -191,7 +191,10 @@ function filterLocationIdandCode(dataArray) {
 }
 
 function arrayIdsTobjectIds(ids) {
-  return ids.map((id) => ObjectId(id));
+  //need to verify
+  return ids.map((id) => {
+    return new ObjectId(id)
+  });
 }
 
 function checkIfEnvDataExistsOrNot(data) {

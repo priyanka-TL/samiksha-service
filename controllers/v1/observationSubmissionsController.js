@@ -205,8 +205,8 @@ module.exports = class ObservationSubmissions extends Abstract {
           entityInformation: entityDocument.metaInformation,
           solutionId: solutionDocument._id,
           solutionExternalId: solutionDocument.externalId,
-          // programId: solutionDocument.programId,
-          // programExternalId: solutionDocument.programExternalId,
+          programId: solutionDocument.programId ? solutionDocument.programId :undefined,
+          programExternalId: solutionDocument.programExternalId ? solutionDocument.programExternalId: undefined ,
           isAPrivateProgram: solutionDocument.isAPrivateProgram,
           frameworkId: solutionDocument.frameworkId,
           frameworkExternalId: solutionDocument.frameworkExternalId,
@@ -268,7 +268,8 @@ module.exports = class ObservationSubmissions extends Abstract {
 
         let submissionDocumentEvidences = {};
         let submissionDocumentCriterias = [];
-        Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
+        //need to verify this code 
+        solutionDocument.evidenceMethods !== undefined && Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
           if (!(solutionDocument.evidenceMethods[solutionEcm].isActive === false)) {
             solutionDocument.evidenceMethods[solutionEcm].startTime = '';
             solutionDocument.evidenceMethods[solutionEcm].endTime = '';
@@ -287,7 +288,13 @@ module.exports = class ObservationSubmissions extends Abstract {
         });
 
         submissionDocument.evidences = submissionDocumentEvidences;
-        submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
+        //need to verify this code
+        try{
+          submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
+        }catch(error){
+          submissionDocument.evidencesStatus = []
+        }
+
         submissionDocument.criteria = submissionDocumentCriterias;
         submissionDocument.submissionNumber = lastSubmissionNumber;
 

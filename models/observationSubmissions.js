@@ -53,14 +53,14 @@ module.exports = {
       type: String,
       index: true,
     },
-    // programId: {
-    //   type: "ObjectId",
-    //   required: true
-    // },
-    // programExternalId: {
-    //   type: String,
-    //   required: true
-    // },
+    programId: {
+      type: "ObjectId",
+      required: false
+    },
+    programExternalId: {
+      type: String,
+      required: false
+    },
     submissionNumber: {
       type: Number,
       index: true,

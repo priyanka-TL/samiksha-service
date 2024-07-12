@@ -181,8 +181,8 @@ module.exports = class ObservationsHelper {
           _.merge(data, {
             solutionId: solution._id,
             solutionExternalId: solution.externalId,
-            // programId: solution.programId,
-            // programExternalId: solution.programExternalId,
+            programId: solution.programId ? solution.programId : undefined,
+            programExternalId: solution.programExternalId ? solution.programExternalId :undefined,
             frameworkId: solution.frameworkId,
             frameworkExternalId: solution.frameworkExternalId,
             entityTypeId: solution.entityTypeId,
