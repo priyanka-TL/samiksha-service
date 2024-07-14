@@ -41,6 +41,8 @@ module.exports = class SolutionsHelper {
   static createSolution(solutionData, checkDate = false, token) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        //Get the program details to update on the new solution document
         let programData = await programsQueries.programDocuments(
           {
             externalId: solutionData.programExternalId,
@@ -52,7 +54,7 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
           };
         }
-
+        //adding program details to the solution document
         solutionData.programId = programData[0]._id;
         solutionData.programName = programData[0].name;
         solutionData.programDescription = programData[0].description;
@@ -63,6 +65,7 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.COURSE_LINK_REQUIRED,
           });
         }
+        // if req body has entities adding that to solution document
         if (solutionData.entities && solutionData.entities.length > 0) {
           let entityIds = [];
           let locationData = gen.utils.filterLocationIdandCode(solutionData.entities);
@@ -70,7 +73,7 @@ module.exports = class SolutionsHelper {
             let bodyData = {
               'registryDetails.code': { $in: locationData.ids },
             };
-            let entityData = await entityManagementService.locationSearch(bodyData, token);
+            let entityData = await entityManagementService.locationSearch(bodyData);
             if (entityData.success) {
               entityData.data.forEach((entity) => {
                 // entityIds.push(entity.id);
@@ -100,7 +103,8 @@ module.exports = class SolutionsHelper {
 
           solutionData.entities = entityIds;
         }
-
+        
+        //addding minNoOfSubmissionsRequired in solution documents
         if (
           solutionData.minNoOfSubmissionsRequired &&
           solutionData.minNoOfSubmissionsRequired > messageConstants.common.DEFAULT_SUBMISSION_REQUIRED
@@ -111,7 +115,8 @@ module.exports = class SolutionsHelper {
         }
 
         solutionData.status = messageConstants.common.ACTIVE_STATUS;
-
+        
+        // adding start and end Date to solution documents
         if (checkDate) {
           if (solutionData.hasOwnProperty('endDate')) {
             solutionData.endDate = gen.utils.getEndDate(solutionData.endDate, timeZoneDifference);
@@ -126,7 +131,7 @@ module.exports = class SolutionsHelper {
             }
           }
         }
-
+        // create new solution document
         let solutionCreation = await solutionsQueries.createSolution(_.omit(solutionData, ['scope']));
 
         if (!solutionCreation._id) {
@@ -134,7 +139,8 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
           };
         }
-
+       
+        // adding solution id to the program components key
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
             _id: solutionData.programId,
@@ -143,12 +149,12 @@ module.exports = class SolutionsHelper {
             $addToSet: { components: solutionCreation._id },
           },
         );
+        // adding scope to the solution document
         if (!solutionData.excludeScope && programData[0].scope) {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
             solutionData.scope ? solutionData.scope : {},
-            token,
           );
         }
 
@@ -167,14 +173,20 @@ module.exports = class SolutionsHelper {
    * List of solutions and targeted ones.
    * @method
    * @name targetedSolutions
-   * @param {String} solutionId - Program Id.
+   * @param {Object} requestedData   - req bidy.
+   * @param {String} solutionType   - type of solutions.
+   * @param {String} userId         - logged in user id.
+   * @param {Number} pageNo         - Recent page no.
+   * @param {Number} pageSize       - Size of page.
+   * @param {String} search         - search text.
+   * @param {String} [ filter = ""] - filter text.
    * @returns {Object} - Details of the solution.
    */
 
   static targetedSolutions(
     requestedData,
     solutionType,
-    userToken,
+    userId,
     pageSize,
     pageNo,
     search,
@@ -185,7 +197,7 @@ module.exports = class SolutionsHelper {
       try {
         let assignedSolutions = await this.assignedUserSolutions(
           solutionType,
-          userToken,
+          userId,
           search,
           filter,
           surveyReportPage,
@@ -322,17 +334,22 @@ module.exports = class SolutionsHelper {
    * Solution details.
    * @method
    * @name assignedUserSolutions
-   * @param {String} solutionId - Program Id.
+   * @param {String} solutionType   - type of solutions.
+   * @param {String} userId         - logged in user id.
+   * @param {Number} pageNo         - Recent page no.
+   * @param {Number} pageSize       - Size of page.
+   * @param {String} search         - search text.
+   * @param {String} [ filter = ""] - filter text.
    * @returns {Object} - Details of the solution.
    */
 
-  static assignedUserSolutions(solutionType, userToken, search, filter, surveyReportPage = '') {
+  static assignedUserSolutions(solutionType, userId, search, filter, surveyReportPage = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let userAssignedSolutions = {};
         if (solutionType === messageConstants.common.OBSERVATION) {
           userAssignedSolutions = await observationHelper.userAssigned(
-            userToken,
+            userId,
             '', //Page No
             '', //Page Size
             search,
@@ -342,19 +359,20 @@ module.exports = class SolutionsHelper {
           // Ml-core it will available IN survey service
 
           userAssignedSolutions = await surveyHelper.userAssigned(
-            userToken,
+            userId,
             '', //Page No
             '', //Page Size
             search,
             filter,
             surveyReportPage,
           );
-        } else {
-          userAssignedSolutions =
-            // Ml-core it will available IN imporovement project service
+        } 
+        // else {
+        //   userAssignedSolutions =
+        //     // Ml-core it will available IN imporovement project service
 
-            await improvementProjectService.assignedProjects(userToken, search, filter);
-        }
+        //     await improvementProjectService.assignedProjects(userId, search, filter);
+        // }
 
         return resolve(userAssignedSolutions);
       } catch (error) {
@@ -371,6 +389,7 @@ module.exports = class SolutionsHelper {
    * @method
    * @name queryBasedOnRoleAndLocation
    * @param {String} data - Requested body data.
+   * @param {String} type - type of solutions.
    * @returns {JSON} - Auto targeted solutions query.
    */
 
@@ -545,6 +564,7 @@ module.exports = class SolutionsHelper {
    * Set scope in solution
    * @method
    * @name setScope
+   * @param {String} programId -  programId.
    * @param {String} solutionId - solution id.
    * @param {Object} scopeData - scope data.
    * @param {String} scopeData.entityType - scope entity type
@@ -553,9 +573,10 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - scope in solution.
    */
 
-  static setScope(programId, solutionId, scopeData, token) {
+  static setScope(programId, solutionId, scopeData) {
     return new Promise(async (resolve, reject) => {
       try {
+        // Getting program documents
         let programData = await programsQueries.programDocuments({ _id: programId }, ['_id', 'scope']);
 
         if (!(programData.length > 0)) {
@@ -564,7 +585,7 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
           });
         }
-
+        // Getting solution document to set the scope
         let solutionData = await solutionsQueries.solutionDocuments({ _id: solutionId }, ['_id']);
 
         if (!(solutionData.length > 0)) {
@@ -573,6 +594,8 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
+
+        //if program documents has scope update the scope in solution document
         if (programData[0].scope) {
           let currentSolutionScope = JSON.parse(JSON.stringify(programData[0].scope));
           if (validateEntity !== messageConstants.common.OFF) {
@@ -581,7 +604,7 @@ module.exports = class SolutionsHelper {
                 // let bodyData = { type: scopeData.entityType };
                 let bodyData = { entityType: scopeData.entityType };
 
-                let entityTypeData = await entityManagementService.locationSearch(bodyData, token);
+                let entityTypeData = await entityManagementService.locationSearch(bodyData);
                 if (entityTypeData.success) {
                   // currentSolutionScope.entityType = entityTypeData.data[0].type;
                   currentSolutionScope.entityType = entityTypeData.data[0].entityType;
@@ -601,7 +624,7 @@ module.exports = class SolutionsHelper {
                     // type: currentSolutionScope.entityType,
                     entityType: currentSolutionScope.entityType,
                   };
-                  let entityData = await entityManagementService.locationSearch(bodyData, token);
+                  let entityData = await entityManagementService.locationSearch(bodyData);
                   if (entityData.success) {
                     entityData.data.forEach((entity) => {
                       // entityIds.push(entity.id);
@@ -720,19 +743,19 @@ module.exports = class SolutionsHelper {
    * Update solution.
    * @method
    * @name update
-   * @param {String} solutionId - solution id.
-   * @param {Object} solutionData - solution creation data.
-   * @param {Boolean} checkDate this is true for when its called via API calls
-   * @returns {JSON} solution creation data.
+   * @param {String} solutionId   - solution id.
+   * @param {Object} solutionData - solution update data.
+   * @param {Boolean} checkDate   -this is true for when its called via API calls
+   * @returns {JSON}              -solution updating data.
    */
 
-  static update(solutionId, solutionData, userId, checkDate = false, token) {
+  static update(solutionId, solutionData, userId, checkDate = false) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
           _id: solutionId,
         };
-
+        // Getting solution document to update based on solution id
         let solutionDocument = await solutionsQueries.solutionDocuments(queryObject, ['_id', 'programId']);
         if (!(solutionDocument.length > 0)) {
           return resolve({
@@ -740,8 +763,11 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
+        
+        // if solution document has program id and req body has start and end date update the date in both solution and program document as well
 
-        if (checkDate && (solutionData.hasOwnProperty('endDate') || solutionData.hasOwnProperty('endDate'))) {
+        if (solutionDocument[0].programId && checkDate && (solutionData.hasOwnProperty('endDate') || solutionData.hasOwnProperty('endDate'))) {
+          // getting program document to update start and end date
           let programData = await programsQueries.programDocuments(
             {
               _id: solutionDocument[0].programId,
@@ -770,7 +796,8 @@ module.exports = class SolutionsHelper {
         let updateObject = {
           $set: {},
         };
-
+        
+        // condition to update minNoOfSubmissionsRequired in soluton document
         if (
           solutionData.minNoOfSubmissionsRequired &&
           solutionData.minNoOfSubmissionsRequired > messageConstants.common.DEFAULT_SUBMISSION_REQUIRED
@@ -785,6 +812,7 @@ module.exports = class SolutionsHelper {
           updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
         updateObject['$set']['updatedBy'] = userId;
+        //updating solution document 
         let solutionUpdatedData = await solutionsQueries
           .updateSolutionDocument(
             {
@@ -799,13 +827,13 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
           };
         }
-
+        
+        // If req body has scope to update for the solution document
         if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
           let solutionScope = await this.setScope(
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
             solutionData.scope,
-            token,
           );
 
           if (!solutionScope.success) {
@@ -1598,7 +1626,7 @@ module.exports = class SolutionsHelper {
    * @returns {Object} - Details of the solution.
    */
 
-  static details(solutionId, bodyData = {}, userId = '', userToken = '') {
+  static details(solutionId, bodyData = {}, userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments({ _id: solutionId }, [
@@ -1619,23 +1647,23 @@ module.exports = class SolutionsHelper {
         //this will get wether user is targeted to the solution or not based on user Role Information
         const isSolutionTargeted = await this.isTargetedBasedOnUserProfile(solutionId, bodyData);
 
-        if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
-          if (!solutionData.projectTemplateId) {
-            throw {
-              message: messageConstants.apiResponses.PROJECT_TEMPLATE_ID_NOT_FOUND,
-            };
-          }
+        // if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
+        //   if (!solutionData.projectTemplateId) {
+        //     throw {
+        //       message: messageConstants.apiResponses.PROJECT_TEMPLATE_ID_NOT_FOUND,
+        //     };
+        //   }
 
-          templateOrQuestionDetails = await improvementProjectService.getTemplateDetail(
-            solutionData.projectTemplateId,
-            userToken,
-            isSolutionTargeted.result.isATargetedSolution ? false : true,
-          );
-        } else if (
+        //   templateOrQuestionDetails = await improvementProjectService.getTemplateDetail(
+        //     solutionData.projectTemplateId,
+        //     isSolutionTargeted.result.isATargetedSolution ? false : true,
+        //   );
+        // } 
+         if (
           solutionData.type === messageConstants.common.OBSERVATION ||
           solutionData.type === messageConstants.common.SURVEY
         ) {
-          templateOrQuestionDetails = await this.questions(solutionData._id, userToken);
+          templateOrQuestionDetails = await this.questions(solutionData._id);
         } else {
           templateOrQuestionDetails = {
             status: httpStatusCode.ok.status,
@@ -1997,7 +2025,7 @@ module.exports = class SolutionsHelper {
 
         if (!solutionData[0].link) {
           let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
-
+          // update link to the solution documents
           let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
           solutionLink = updateLink;
         } else {
@@ -2023,20 +2051,21 @@ module.exports = class SolutionsHelper {
    * Verify solution link
    * @method
    * @name verifyLink
-   * @param {String} solutionId - solution Id.
+   * @param {String} link - link Id.
+   * @param {Object} bodyData - Req Body.
    * @param {String} userId - user Id.
    * @param {String} userToken - user token.
    * @param {Boolean} createProject - create project.
-   * @param {Object} bodyData - Req Body.
-   * @param {Object} createPrivateSolutionIfNotTargeted - flag to create private program if user is non targeted
    * @returns {Object} - Details of the solution.
    */
 
   static verifyLink(link = '', bodyData = {}, userId = '', userToken = '', createProject = true) {
     return new Promise(async (resolve, reject) => {
       try {
+        // check solution document is exists and  end date validation
         let verifySolution = await this.verifySolutionDetails(link, userId, userToken);
-
+        
+        // Check targeted solution based on role and location
         let checkForTargetedSolution = await this.checkForTargetedSolution(link, bodyData, userId, userToken);
 
         if (!checkForTargetedSolution || Object.keys(checkForTargetedSolution.result).length <= 0) {
@@ -2103,105 +2132,107 @@ module.exports = class SolutionsHelper {
           } else if (!isSolutionActive) {
             throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
           }
-        } else if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
-          // Targeted solution
-          if (checkForTargetedSolution.result.isATargetedSolution && createProject) {
-            //targeted user with project creation
+        } 
+        // else if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
+        //   // Targeted solution
+        //   if (checkForTargetedSolution.result.isATargetedSolution && createProject) {
+        //     //targeted user with project creation
 
-            let projectDetailFromLink = await improvementProjectService.getProjectDetail(
-              solutionData.solutionId,
-              userToken,
-              bodyData,
-            );
+        //     let projectDetailFromLink = await improvementProjectService.getProjectDetail(
+        //       solutionData.solutionId,
+        //       userToken,
+        //       bodyData,
+        //     );
 
-            if (!projectDetailFromLink || !projectDetailFromLink.data) {
-              return resolve(projectDetailFromLink);
-            }
-            if (projectDetailFromLink.data.length < 1 && !isSolutionActive) {
-              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-            }
+        //     if (!projectDetailFromLink || !projectDetailFromLink.data) {
+        //       return resolve(projectDetailFromLink);
+        //     }
+        //     if (projectDetailFromLink.data.length < 1 && !isSolutionActive) {
+        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+        //     }
 
-            checkForTargetedSolution.result['projectId'] = projectDetailFromLink.data._id
-              ? projectDetailFromLink.data._id
-              : '';
-          } else if (checkForTargetedSolution.result.isATargetedSolution && !createProject) {
-            //targeted user with no project creation
-            let findQuery = {
-              userId: userId,
-              projectTemplateId: solutionData.projectTemplateId,
-              referenceFrom: {
-                $ne: messageConstants.common.LINK,
-              },
-              isDeleted: false,
-            };
+        //     checkForTargetedSolution.result['projectId'] = projectDetailFromLink.data._id
+        //       ? projectDetailFromLink.data._id
+        //       : '';
+        //   } else 
+        //   if (checkForTargetedSolution.result.isATargetedSolution && !createProject) {
+        //     //targeted user with no project creation
+        //     let findQuery = {
+        //       userId: userId,
+        //       projectTemplateId: solutionData.projectTemplateId,
+        //       referenceFrom: {
+        //         $ne: messageConstants.common.LINK,
+        //       },
+        //       isDeleted: false,
+        //     };
 
-            let checkTargetedProjectExist = await improvementProjectService.projectDocuments(userToken, findQuery, [
-              '_id',
-            ]);
+        //     let checkTargetedProjectExist = await improvementProjectService.projectDocuments(userToken, findQuery, [
+        //       '_id',
+        //     ]);
 
-            if (
-              checkTargetedProjectExist.success &&
-              checkTargetedProjectExist.data &&
-              checkTargetedProjectExist.data.length > 0 &&
-              checkTargetedProjectExist.data[0]._id != ''
-            ) {
-              checkForTargetedSolution.result['projectId'] = checkTargetedProjectExist.data[0]._id;
-            } else if (!isSolutionActive) {
-              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-            }
-          } else {
-            if (!isSolutionActive) {
-              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-            }
+        //     if (
+        //       checkTargetedProjectExist.success &&
+        //       checkTargetedProjectExist.data &&
+        //       checkTargetedProjectExist.data.length > 0 &&
+        //       checkTargetedProjectExist.data[0]._id != ''
+        //     ) {
+        //       checkForTargetedSolution.result['projectId'] = checkTargetedProjectExist.data[0]._id;
+        //     } else if (!isSolutionActive) {
+        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+        //     }
+        //   } else {
+        //     if (!isSolutionActive) {
+        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+        //     }
 
-            // check if private-Project already exists
-            let checkIfUserProjectExistsQuery = {
-              createdBy: userId,
-              referenceFrom: messageConstants.common.LINK,
-              link: link,
-            };
-            let checkForProjectExist = await improvementProjectService.projectDocuments(
-              userToken,
-              checkIfUserProjectExistsQuery,
-              ['_id'],
-            );
-            if (
-              checkForProjectExist.success &&
-              checkForProjectExist.data &&
-              checkForProjectExist.data.length > 0 &&
-              checkForProjectExist.data[0]._id != ''
-            ) {
-              checkForTargetedSolution.result['projectId'] = checkForProjectExist.data[0]._id;
-            }
-            // If project not found and createPrivateSolutionIfNotTargeted := true
-            // By default will be false for old version of app
-            if (!checkForTargetedSolution.result['projectId'] || checkForTargetedSolution.result['projectId'] === '') {
-              // user is not targeted and privateSolutionCreation required
-              /**
-               * function privateProgramAndSolutionDetails
-               * Request:
-               * @param {solutionData} solution data
-               * @param {userToken} for UserId
-               * @response private solutionId
-               */
-              let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
-                solutionData,
-                userId,
-                userToken,
-              );
-              if (!privateProgramAndSolutionDetails.success) {
-                throw {
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
-                };
-              }
-              // Replace public solutionId with private solutionId.
-              if (privateProgramAndSolutionDetails.result != '') {
-                checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
-              }
-            }
-          }
-        }
+        //     // check if private-Project already exists
+        //     let checkIfUserProjectExistsQuery = {
+        //       createdBy: userId,
+        //       referenceFrom: messageConstants.common.LINK,
+        //       link: link,
+        //     };
+        //     let checkForProjectExist = await improvementProjectService.projectDocuments(
+        //       userToken,
+        //       checkIfUserProjectExistsQuery,
+        //       ['_id'],
+        //     );
+        //     if (
+        //       checkForProjectExist.success &&
+        //       checkForProjectExist.data &&
+        //       checkForProjectExist.data.length > 0 &&
+        //       checkForProjectExist.data[0]._id != ''
+        //     ) {
+        //       checkForTargetedSolution.result['projectId'] = checkForProjectExist.data[0]._id;
+        //     }
+        //     // If project not found and createPrivateSolutionIfNotTargeted := true
+        //     // By default will be false for old version of app
+        //     if (!checkForTargetedSolution.result['projectId'] || checkForTargetedSolution.result['projectId'] === '') {
+        //       // user is not targeted and privateSolutionCreation required
+        //       /**
+        //        * function privateProgramAndSolutionDetails
+        //        * Request:
+        //        * @param {solutionData} solution data
+        //        * @param {userToken} for UserId
+        //        * @response private solutionId
+        //        */
+        //       let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
+        //         solutionData,
+        //         userId,
+        //         userToken,
+        //       );
+        //       if (!privateProgramAndSolutionDetails.success) {
+        //         throw {
+        //           status: httpStatusCode.bad_request.status,
+        //           message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+        //         };
+        //       }
+        //       // Replace public solutionId with private solutionId.
+        //       if (privateProgramAndSolutionDetails.result != '') {
+        //         checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
+        //       }
+        //     }
+        //   }
+        // }
         delete checkForTargetedSolution.result['status'];
         return resolve(checkForTargetedSolution);
       } catch (error) {
@@ -2218,8 +2249,10 @@ module.exports = class SolutionsHelper {
    * Verify Solution details.
    * @method
    * @name verifySolutionDetails
-   * @param {String} solutionId - Program Id.
-   * @returns {Object} - Details of the solution.
+  * @param {String} link - link Id.
+   * @param {String} userId - user Id.
+   * @param {String} userToken - user token.
+  * @returns {Object} - Details of the solution.
    */
 
   static verifySolutionDetails(link = '', userId = '', userToken = '') {
@@ -2236,7 +2269,7 @@ module.exports = class SolutionsHelper {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
-
+        
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             link: link,
@@ -2261,7 +2294,7 @@ module.exports = class SolutionsHelper {
             result: [],
           });
         }
-
+       // if endDate less than current date change solution status to inActive
         if (solutionData[0].endDate && new Date() > new Date(solutionData[0].endDate)) {
           if (solutionData[0].status === messageConstants.common.ACTIVE_STATUS) {
             let updateSolution = await this.update(
@@ -2298,7 +2331,10 @@ module.exports = class SolutionsHelper {
    * Check the user is targeted.
    * @method
    * @name checkForTargetedSolution
-   * @param {String} link - Solution link.
+   * @param {String} link - link Id.
+   * @param {Object} bodyData - Req Body.
+   * @param {String} userId - user Id.
+   * @param {String} userToken - user token.
    * @returns {Object} - Details of the solution.
    */
 
@@ -2326,6 +2362,7 @@ module.exports = class SolutionsHelper {
         }
         queryData.data['link'] = link;
         let matchQuery = queryData.data;
+        console.log(matchQuery);
         let solutionData = await solutionsQueries.solutionDocuments(matchQuery, [
           '_id',
           'link',
@@ -2448,7 +2485,7 @@ module.exports = class SolutionsHelper {
    * @method
    * @name createProgramAndSolution
    * @param {string} userId - logged in user Id.
-   * @param {object} programData - data needed for creation of program.
+   * @param {object} data - data needed for creation of program.
    * @param {object} solutionData - data needed for creation of solution.
    * @returns {Array} - Created user program and solution.
    */
@@ -3143,8 +3180,14 @@ module.exports = class SolutionsHelper {
    * Solution lists.
    * @method
    * @name list
-   * @param {String} solutionIds - solution ids.
-   * @returns {String} - message.
+   * @param {String} type - solution type.
+   * @param {String} subType - solution sub type.
+   * @param {Object} filter  - filter objecr
+   * @param {String} pageNo - Page no.
+   * @param {String} pageSize - Page size.
+   * @param {String} searchText - search text.
+   * @param {Array}  projection
+   * @returns {String} -        -list of solutions
    */
 
   static list(type, subType, filter = {}, pageNo, pageSize, searchText, projection) {
@@ -3403,6 +3446,7 @@ module.exports = class SolutionsHelper {
    * @name detailsBasedOnRoleAndLocation
    * @param {String} solutionId - solution Id.
    * @param {Object} bodyData - Requested body data.
+   * @param {String} type -Type of solution
    * @returns {JSON} - Details of solution based on role and location.
    */
 
@@ -3846,7 +3890,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} consists of solution id.
    */
 
-  static questions(solutionIds, userToken) {
+  static questions(solutionIds) {
     return new Promise(async (resolve, reject) => {
       try {
         let response = {
@@ -3855,12 +3899,6 @@ module.exports = class SolutionsHelper {
         };
 
         let solutionId = solutionIds;
-        let userId = userToken;
-
-        if (userId == '') {
-          throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
-        }
-
         let solutionDocumentProjectionFields = await observationHelper.solutionDocumentProjectionFieldsForDetailsAPI();
         let solutionDocument = await solutionsQueries
           .findOne({ _id: solutionId }, solutionDocumentProjectionFields);

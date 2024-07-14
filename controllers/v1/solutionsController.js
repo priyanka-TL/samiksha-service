@@ -202,12 +202,7 @@ module.exports = class Solutions extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.details(
-          req.params._id,
-          req.body,
-          req.userDetails.userId,
-          req.userDetails.userToken,
-        );
+        let solutionData = await solutionsHelper.details(req.params._id, req.body, req.userDetails.userId);
 
         return resolve(solutionData);
       } catch (error) {
@@ -501,7 +496,6 @@ module.exports = class Solutions extends Abstract {
           req.body,
           req.userDetails.userId,
           true, //checkDate
-          req.userDetails.userToken,
         );
         return resolve(solutionData);
       } catch (error) {
@@ -1338,48 +1332,6 @@ module.exports = class Solutions extends Abstract {
   }
 
   /**
-  * @api {get} /samiksha/v1/solutions/fetchLink/:solutionId
-  * @apiVersion 1.0.0
-  * @apiName Get link by solution id
-  * @apiGroup Solutions
-  * @apiSampleRequest /samiksha/v1/solutions/5fa28620b6bd9b757dc4e932
-  * @apiHeader {String} X-authenticated-user-token Authenticity token  
-  * @apiUse successBody
-  * @apiUse errorBody
-  * @apiParamExample {json} Response:
-  * {
-    "message": "Solution Link generated successfully",
-    "status": 200,
-    "result": "https://samiksha/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
-    }
-  */
-
-  /**
-   * Get link by solution id.
-   * @method
-   * @name fetchLink
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution Id
-   * @returns {Array}
-   */
-
-  async fetchLink(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let solutionData = await solutionsHelper.fetchLink(req.params._id, req.userDetails.userId);
-
-        return resolve(solutionData);
-      } catch (error) {
-        return reject({
-          status: error.status || httpStatusCode.internal_server_error.status,
-          message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error,
-        });
-      }
-    });
-  }
-
-  /**
   * @api {get} /samiksha/v1/solutions/delete/{{solutionId}} Delete solution .
   * @apiVersion 1.0.0
   * @apiName Delete Solution.
@@ -1717,7 +1669,7 @@ module.exports = class Solutions extends Abstract {
           req.body,
           req.userDetails.userId,
           req.userDetails.userToken,
-          req.query.hasOwnProperty('createProject') ? gen.utils.convertStringToBoolean(req.query.createProject) : true,
+          true, // createProject condition
         );
 
         return resolve(solutionData);
@@ -2046,7 +1998,7 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         //passing {true} for checkDate params in helper
-        let solutionData = await solutionsHelper.createSolution(req.body, true , req.userDetails.userToken);
+        let solutionData = await solutionsHelper.createSolution(req.body, true);
 
         solutionData['result'] = solutionData.data;
 

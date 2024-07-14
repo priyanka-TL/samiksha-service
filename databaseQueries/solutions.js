@@ -17,7 +17,7 @@ module.exports = class Solutions {
    * find Solution .
    * @method
    * @name solutionDocuments
-   * @param {Array} [filterData = "all"] - solutions filter query.
+   * @param {Object} [filterData = "all"] - solutions filter query.
    * @param {Array} [fieldsArray = "all"] - projected fields.
    * @param {Array} [skipFields = "none"] - field not to include
    * @returns {Array} solutions details.
@@ -52,10 +52,9 @@ module.exports = class Solutions {
    * findOne Solution .
    * @method
    * @name findOne
-   * @param {Array} [filterData = "all"] - solutions filter query.
-   * @param {Array} [fieldsArray = "all"] - projected fields.
-   * @param {Array} [skipFields = "none"] - field not to include
-   * @returns {Array} solutions details.
+   * @param {Object} [filterData = "all"]  - match query.
+   * @param {Array} [fieldsArray = "all"]  - projection details.
+   * @returns {Array}                      -solutions details.
    */
 
   static findOne(filterData = 'all', fieldsArray) {
@@ -75,9 +74,11 @@ module.exports = class Solutions {
    * Update solution document.
    * @method
    * @name updateSolutionDocument
-   * @param {Object} query - query to find document
+   * @param {Object} query        - query to find document
    * @param {Object} updateObject - fields to update
-   * @returns {String} - message.
+   * @param {Object} returnData   - Options for the update operation, default is { new: false }
+   * @returns {Promise<Object>}   - The updated document 
+   * 
    */
 
   static updateSolutionDocument(query = {}, updateObject = {}, returnData = { new: false }) {

@@ -21,5 +21,5 @@ module.exports = {
   GET_SCHOOL_DATA: '/v1/entities/listByLocationIds',
   USER_CONSENT_API: '/v1/user/consent/update',
   GET_TEMPLATE_DETAILS: '/v1/project/templates/details',
-  USER_READ_V5:"/v1/user/read"
+  USER_READ:"/v1/user/read"
 };

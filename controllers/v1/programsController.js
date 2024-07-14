@@ -150,7 +150,6 @@ module.exports = class Programs extends Abstract {
         let programCreationData = await programsHelper.create(
           req.body,
           true, // checkDate
-          req.userDetails.userToken,
         );
 
         return resolve({
@@ -239,7 +238,6 @@ module.exports = class Programs extends Abstract {
         req.body,
         req.userDetails.userId,
         true, //checkDate
-        req.userDetails.userToken,
       );
 
       programUpdationData.result = programUpdationData.data;
@@ -337,7 +335,6 @@ module.exports = class Programs extends Abstract {
         let programUpdated = await programsHelper.addEntitiesInScope(
           req.params._id,
           req.body.entities,
-          req.userDetails.userToken,
         );
 
         return resolve(programUpdated);

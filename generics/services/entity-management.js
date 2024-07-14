@@ -27,7 +27,6 @@ const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL
 
 const locationSearch = function (
     filterData,
-    token,
     pageSize = '',
     pageNo = '',
     searchKey = '',
@@ -60,7 +59,7 @@ const locationSearch = function (
         const options = {
           headers: {
             'content-type': 'application/json',
-            "x-authenticated-token": token,
+            "x-authenticated-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJuYW1lIjoiTmV2aWwiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6MywidGl0bGUiOiJtZW50ZWUiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsInZpc2libGl0eSI6IlBVQkxJQyIsIm9yZ2FuaXphdGlvbl9pZCI6IjEifV19LCJpYXQiOjE3MjA5ODAyNTcsImV4cCI6MTcyMTA2NjY1N30.q9H3Oyb8y8p7zbuWJN56c3mwrtWN_7rkxgHz1v6xNBo",
             "internal-access-token":process.env.INTERNAL_ACCESS_TOKEN
           },
           json: bodyData,
