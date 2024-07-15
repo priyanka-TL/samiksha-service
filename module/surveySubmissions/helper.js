@@ -415,14 +415,13 @@ module.exports = class SurveySubmissionsHelper {
 
         if (filter && filter !== '') {
           if (filter === messageConstants.common.CREATED_BY_ME) {
-            matchQuery['$match']['isAPrivateProgram'] = {
+            submissionMatchQuery['$match']['isAPrivateProgram'] = {
               $ne: false,
             };
           } else if (filter === messageConstants.common.ASSIGN_TO_ME) {
-            matchQuery['$match']['isAPrivateProgram'] = false;
+            submissionMatchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
-
         let surveySubmissions = await database.models.surveySubmissions.aggregate([
           submissionMatchQuery,
           {
@@ -440,7 +439,7 @@ module.exports = class SurveySubmissionsHelper {
           {
             $facet: {
               totalCount: [{ $count: 'count' }],
-              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize?pageSize:100 }],
             },
           },
           {
@@ -544,6 +543,7 @@ module.exports = class SurveySubmissionsHelper {
             solutionMatchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
+        const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 
         let result = await solutionsHelper.solutionDocumentsByAggregateQuery([
           solutionMatchQuery,
@@ -559,7 +559,7 @@ module.exports = class SurveySubmissionsHelper {
           {
             $facet: {
               totalCount: [{ $count: 'count' }],
-              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize ? pageSize :100}],
             },
           },
           {

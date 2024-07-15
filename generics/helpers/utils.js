@@ -1,4 +1,4 @@
-const uuid = require('uuid/v4');
+const { validate: uuidValidate, v4: uuid } = require("uuid");
 const md5 = require('md5');
 
 function camelCaseToTitleCase(in_camelCaseString) {
@@ -175,17 +175,17 @@ function valueParser(dataToBeParsed) {
  */
 
 function filterLocationIdandCode(dataArray) {
-  let entityId = [];
+  let locationIds = [];
   let locationCodes = [];
   dataArray.forEach((element) => {
-    if (this.isValidMongoId(element)) {
-      entityId.push(element);
+    if (this.checkValidUUID(element)) {
+      locationIds.push(element);
     } else {
       locationCodes.push(element);
     }
   });
   return {
-    ids: entityId,
+    ids: locationIds,
     codes: locationCodes,
   };
 }
@@ -302,6 +302,113 @@ function convertStringToObjectId(id) {
 
   return id;
 }
+/**
+ * Returns endDate if time is not passed it will add default time with offset to utc
+ * @function
+ * @name getEndDate
+ * @returns {date} returns date and time with offset
+ * example:
+ * input = 2024-06-16, +05:30
+ * output = Sun Jun 16 2024 18:29:59 GMT+0000 (Coordinated Universal Time)
+ */
+function getEndDate(date, timeZoneDifference) {
+  let endDate = date.split(' ');
+  if (endDate[1] === '' || endDate[1] === undefined) {
+    date = endDate[0] + ' 23:59:59';
+  }
+  date = new Date(date);
+  date = addOffsetToDateTime(date, timeZoneDifference);
+  return date;
+}
+
+/**
+ * Returns startDate if time is not passed it will add default time with offset to utc
+ * @function
+ * @name getStartDate
+ * @returns {date} returns date and time with offset
+ * example:
+ * input = 2022-06-01, +05:30
+ * output = Wed Jan 31 2001 18:30:00 GMT+0000 (Coordinated Universal Time)
+ */
+function getStartDate(date, timeZoneDifference) {
+  let startDate = date.split(' ');
+  if (startDate[1] === '' || startDate[1] === undefined) {
+    date = startDate[0] + ' 00:00:00';
+  }
+  date = new Date(date);
+  date = addOffsetToDateTime(date, timeZoneDifference);
+  return date;
+}
+/**
+ * Returns date and time with offset
+ * @function
+ * @name addOffsetToDateTime
+ * @returns {date} returns date and time with offset
+ * example:
+ * input = Sun Jun 16 2024 23:59:59 GMT+0000 (Coordinated Universal Time), +05:30
+ * output = Sun Jun 16 2024 18:29:59 GMT+0000 (Coordinated Universal Time)
+ */
+
+function addOffsetToDateTime(time, timeZoneDifference) {
+  //get the offset time from env with respect UTC
+  let localTimeZone = timeZoneDifference;
+  //convert offset time to minutes
+  let localTime = localTimeZone.split(":");
+  let localHourDifference = Number(localTime[0]);
+  let getTimeDiffInMinutes =
+    localHourDifference * 60 +
+    (localHourDifference / Math.abs(localHourDifference)) *
+      Number(localTime[1]);
+  //get server offset time w.r.t. UTC time
+  let timeDifference = new Date().getTimezoneOffset();
+  //get actual time difference in minutes
+  let differenceWithLocal = timeDifference + getTimeDiffInMinutes;
+  // if its 0 then return same time
+  if (differenceWithLocal === 0) {
+    return time;
+  } else {
+    // set time difference
+    let getMinutes = differenceWithLocal % 60;
+    let getHours = (differenceWithLocal - getMinutes) / 60;
+    time.setHours(time.getHours() - getHours);
+    time.setMinutes(time.getMinutes() - getMinutes);
+    return time;
+  }
+}
+
+/**
+ * check whether string is valid uuid.
+ * @function
+ * @name checkValidUUID
+ * @param {String} uuids
+ * @returns {Boolean} returns a Boolean value true/false
+ */
+
+function checkValidUUID(uuids) {
+  var validateUUID = true;
+  if (Array.isArray(uuids)) {
+    for (var i = 0; uuids.length > i; i++) {
+      if (!uuidValidate(uuids[i])) {
+        validateUUID = false;
+      }
+    }
+  } else {
+    validateUUID = uuidValidate(uuids);
+  }
+  return validateUUID;
+}
+
+/**
+ * check whether string contains only number
+ * @function
+ * @name checkIfStringIsNumber
+ * @returns {Boolean} returns a Boolean value true/false
+ */
+
+function checkIfStringIsNumber(str) {
+  return /^[0-9]+$/.test(str);
+}
+
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
   lowerCase: lowerCase,
@@ -317,6 +424,7 @@ module.exports = {
   assessmentRoles: assessmentRoles,
   arrayIdsTobjectIds: arrayIdsTobjectIds,
   checkIfEnvDataExistsOrNot: checkIfEnvDataExistsOrNot,
+  checkIfStringIsNumber:checkIfStringIsNumber,
   fetchAssessorsLeadAssessorRole: fetchAssessorsLeadAssessorRole,
   epochTime: epochTime,
   isValidMongoId: isValidMongoId,
@@ -325,5 +433,8 @@ module.exports = {
   removeDuplicatesFromArray: removeDuplicatesFromArray,
   convertStringToBoolean: convertStringToBoolean,
   filterLocationIdandCode: filterLocationIdandCode,
+  checkValidUUID:checkValidUUID,
   convertStringToObjectId: convertStringToObjectId,
+  getEndDate: getEndDate,
+  getStartDate: getStartDate,
 };

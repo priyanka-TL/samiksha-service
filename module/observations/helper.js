@@ -13,7 +13,7 @@ const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
 const slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications');
 const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
 const chunkOfObservationSubmissionsLength = 500;
-const solutionHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const solutionHelper = require(MODULES_BASE_PATH +'/solutions/helper');
 const kendraService = require(ROOT_PATH + '/generics/services/kendra');
 const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
@@ -22,10 +22,11 @@ const appsPortalBaseUrl =
     ? process.env.APP_PORTAL_BASE_URL + '/'
     : 'https://apps.shikshalokam.org/';
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
-const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 
 /**
  * ObservationsHelper
@@ -918,24 +919,81 @@ module.exports = class ObservationsHelper {
    * @returns {details} observation details.
    */
 
-  static details(observationId) {
+  // static details(observationId) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let observationDocument = await this.observationDocuments({
+  //         _id: observationId,
+  //       });
+
+  //       if (!observationDocument[0]) {
+  //         throw new Error(messageConstants.apiResponses.OBSERVATION_NOT_FOUND);
+  //       }
+
+  //       if (observationDocument[0].entities.length > 0) {
+  //         let entitiesDocument = await entitiesHelper.entityDocuments({
+  //           _id: { $in: observationDocument[0].entities },
+  //         });
+
+  //         observationDocument[0]['count'] = entitiesDocument.length;
+  //         observationDocument[0].entities = entitiesDocument;
+  //       }
+
+  //       return resolve(observationDocument[0]);
+  //     } catch (error) {
+  //       return reject(error);
+  //     }
+  //   });
+  // }
+  static details(observationId = "", solutionId = "", userId = "",token) {
     return new Promise(async (resolve, reject) => {
       try {
-        let observationDocument = await this.observationDocuments({
-          _id: observationId,
-        });
+        if (observationId == "" && solutionId == "") {
+          throw {
+            message:
+              messageConstants.apiResponses.OBSERVATION_OR_SOLUTION_CHECK,
+            status: httpStatusCode["bad_request"].status,
+          };
+        }
+
+        let filterQuery = {};
+        if (observationId && observationId != "") {
+          filterQuery._id = observationId;
+        }
+
+        if (solutionId && solutionId != "" && userId && userId != "") {
+          filterQuery.solutionId = ObjectId(solutionId);
+          filterQuery.createdBy = userId;
+        }
+
+        let observationDocument = await this.observationDocuments(filterQuery);
 
         if (!observationDocument[0]) {
           throw new Error(messageConstants.apiResponses.OBSERVATION_NOT_FOUND);
         }
 
         if (observationDocument[0].entities.length > 0) {
-          let entitiesDocument = await entitiesHelper.entityDocuments({
-            _id: { $in: observationDocument[0].entities },
-          });
+          let filterData = {
+            "registryDetails.code": {$in:observationDocument[0].entities},
+          };
 
-          observationDocument[0]['count'] = entitiesDocument.length;
-          observationDocument[0].entities = entitiesDocument;
+          let entitiesDocument = await entityManagementService.locationSearch(
+            filterData,
+            token,
+            "",
+            "",
+            "",
+            true,
+            false
+          );
+
+          if (entitiesDocument.success) {
+            observationDocument[0].entities = entitiesDocument.data;
+            observationDocument[0].count = entitiesDocument.count;
+          } else {
+            observationDocument[0].entities = [];
+            observationDocument[0].count = 0;
+          }
         }
 
         return resolve(observationDocument[0]);
@@ -957,8 +1015,8 @@ module.exports = class ObservationsHelper {
       return resolve({
         name: 1,
         externalId: 1,
-        // programId: 1,
-        // programExternalId: 1,
+        programId: 1,
+        programExternalId: 1,
         description: 1,
         themes: 1,
         entityProfileFieldsPerEntityTypes: 1,
@@ -1004,7 +1062,7 @@ module.exports = class ObservationsHelper {
         'isRubricDriven',
         'pageHeading',
         'criteriaLevelReport',
-        'isAPrivateProgram',
+        // 'isAPrivateProgram',
       ]);
     });
   }
@@ -1416,7 +1474,7 @@ module.exports = class ObservationsHelper {
           'programExternalId',
         ];
 
-        let solutionDocument = await solutionsHelper.solutionDocuments(solutionQuery, solutionProjection);
+        let solutionDocument = await solutionHelper.solutionDocuments(solutionQuery, solutionProjection);
 
         if (!solutionDocument.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
@@ -1591,7 +1649,7 @@ module.exports = class ObservationsHelper {
 
         facetQuery['$facet']['totalCount'] = [{ $count: 'count' }];
 
-        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }];
+        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize?pageSize:100 }];
 
         let projection2 = {};
         projection2['$project'] = {
@@ -1613,7 +1671,6 @@ module.exports = class ObservationsHelper {
         );
 
         let result = await database.models.observations.aggregate(aggregateData);
-
         if (result[0].data.length > 0) {
           let solutionIds = [];
 
@@ -1621,7 +1678,7 @@ module.exports = class ObservationsHelper {
             solutionIds.push(resultedData.solutionId);
           });
 
-          let solutionDocuments = await solutionHelper.solutionDocuments(
+          let solutionDocuments = await solutionsQueries.solutionDocuments(
             {
               _id: { $in: solutionIds },
             },
