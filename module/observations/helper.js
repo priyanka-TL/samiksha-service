@@ -168,7 +168,7 @@ module.exports = class ObservationsHelper {
       try {
         if (validateEntities == 'ON') {
           if (data.entities) {
-            let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solution.entityTypeId);
+            let entitiesToAdd = await entityManagementService.validateEntities(data.entities, solution.entityTypeId);
             data.entities = entitiesToAdd.entityIds;
           }
         }
