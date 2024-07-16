@@ -945,7 +945,7 @@ module.exports = class ObservationsHelper {
   //     }
   //   });
   // }
-  static details(observationId = "", solutionId = "", userId = "",token) {
+  static details(observationId = "", solutionId = "", userId = "") {
     return new Promise(async (resolve, reject) => {
       try {
         if (observationId == "" && solutionId == "") {
@@ -974,17 +974,11 @@ module.exports = class ObservationsHelper {
 
         if (observationDocument[0].entities.length > 0) {
           let filterData = {
-            "registryDetails.code": {$in:observationDocument[0].entities},
+           _id: {$in:observationDocument[0].entities},
           };
 
-          let entitiesDocument = await entityManagementService.locationSearch(
-            filterData,
-            token,
-            "",
-            "",
-            "",
-            true,
-            false
+          let entitiesDocument = await entityManagementService.entityDocuments(
+            filterData
           );
 
           if (entitiesDocument.success) {
