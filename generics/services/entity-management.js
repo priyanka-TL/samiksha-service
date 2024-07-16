@@ -166,9 +166,58 @@ async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result,to
     return uniqueEntities;    
   }
 
+  /**
+   * validate entities.
+   * @method
+   * @name validateEntities
+   * @param {String} entityTypeId - Entity type id.
+   * @param {Array} entityIds - Array of entity ids.
+   */
+
+  async function validateEntities(entityIds, entityTypeId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let ids = [];
+
+        // let entitiesDocuments = await database.models.entities
+        //   .find(
+        //     {
+        //       _id: { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
+        //       entityTypeId: entityTypeId,
+        //     },
+        //     {
+        //       _id: 1,
+        //     },
+        //   )
+        //   .lean();
+
+
+
+		///
+		  let bodyData = {
+			_id : { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
+			entityTypeId: entityTypeId,
+		  };
+		let entityData = await entityManagementService.entityDocuments(bodyData);
+
+		console.log(entityData,'entityData from entity management')
+		
+        if (entitiesDocuments.length > 0) {
+          ids = entitiesDocuments.map((entityId) => entityId._id);
+        }
+
+        return resolve({
+          entityIds: ids,
+        });
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 
 module.exports = {
   entityDocuments: entityDocuments,
 	entityTypeDocuments: entityTypeDocuments,
   getSubEntitiesBasedOnEntityType: getSubEntitiesBasedOnEntityType,
+  validateEntities:validateEntities
 }
