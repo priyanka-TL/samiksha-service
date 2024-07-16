@@ -124,7 +124,8 @@ module.exports = class ObservationsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           };
         }
-
+        console.log(solutionData);
+      //  console.log(stoppp)
         if (solutionData[0].isReusable) {
           solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
             solutionId,
@@ -197,6 +198,8 @@ module.exports = class ObservationsHelper {
           }),
         );
 
+        console.log(observationData,'observationData')
+        
         if (!observationData._id) {
           throw {
             status: httpStatusCode.bad_request.status,

@@ -95,11 +95,17 @@ module.exports = class ObservationSubmissions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        console.log({
+          _id: req.params._id,
+          // createdBy: req.userDetails.userId,
+          // status: { $ne: 'inactive' },
+          // entities: req.query.entityId,
+        });
         let observationDocument = await observationsHelper.observationDocuments({
           _id: req.params._id,
-          createdBy: req.userDetails.userId,
-          status: { $ne: 'inactive' },
-          entities: req.query.entityId,
+          // createdBy: req.userDetails.userId,
+          // status: { $ne: 'inactive' },
+          // entities: req.query.entityId,
         });
 
         if (!observationDocument[0]) {
@@ -163,6 +169,8 @@ module.exports = class ObservationSubmissions extends Abstract {
           ],
         );
 
+        console.log(solutionDocument,'solutionDocument')
+        //console.log(stopppp)
         if (!solutionDocument[0]) {
           return resolve({
             status: httpStatusCode.bad_request.status,
@@ -288,7 +296,11 @@ module.exports = class ObservationSubmissions extends Abstract {
         });
 
         submissionDocument.evidences = submissionDocumentEvidences;
+<<<<<<< Updated upstream
         //need to verify this code
+=======
+        console.log(submissionDocumentEvidences,'submissionDocumentEvidences')
+>>>>>>> Stashed changes
         try{
           submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
         }catch(error){

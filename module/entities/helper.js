@@ -981,6 +981,14 @@ module.exports = class EntitiesHelper {
       try {
         let ids = [];
 
+        console.log(            {
+          _id: { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
+          entityTypeId: entityTypeId,
+        },
+        {
+          _id: 1,
+        },'validate entities')
+
         let entitiesDocuments = await database.models.entities
           .find(
             {
