@@ -6,12 +6,11 @@
  */
 
 //dependencies
-const request = require('request')
+const request = require('request');
 
-const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL
+const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL;
 
-
-  /**
+/**
  * List of entity data.
  * @function
  * @name entityDocuments
@@ -22,49 +21,49 @@ const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL
 
 // Function to find entity documents based on the given filter and projection
 const entityDocuments = function (filterData = 'all', projection = 'all') {
-	return new Promise(async (resolve, reject) => {
-		try {
-			// Function to find entity documents based on the given filter and projection
-			const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_DOCUMENTS
-			// Set the options for the HTTP POST request
-			const options = {
-				headers: {
-					'content-type': 'application/json',
-					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-				},
-				json: {
-					query: filterData,
-					projection: projection,
-				},
-			}
-			// Make the HTTP POST request to the entity management service
-			request.post(url, options, requestCallBack)
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Function to find entity documents based on the given filter and projection
+      const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_DOCUMENTS;
+      // Set the options for the HTTP POST request
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+        },
+        json: {
+          query: filterData,
+          projection: projection,
+        },
+      };
+      // Make the HTTP POST request to the entity management service
+      request.post(url, options, requestCallBack);
 
-			// Callback functioCopy as Expressionn to handle the response from the HTTP POST request
-			function requestCallBack(err, data) {
-				let result = {
-					success: true,
-				}
+      // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
+      function requestCallBack(err, data) {
+        let result = {
+          success: true,
+        };
 
-				if (err) {
-					result.success = false
-				} else {
-					let response = data.body
-					// Check if the response status is OK (HTTP 200)
-					if (response.status === httpStatusCode['ok'].status) {
-						result['data'] = response.result
-					} else {
-						result.success = false
-					}
-				}
+        if (err) {
+          result.success = false;
+        } else {
+          let response = data.body;
+          // Check if the response status is OK (HTTP 200)
+          if (response.status === httpStatusCode['ok'].status) {
+            result['data'] = response.result;
+          } else {
+            result.success = false;
+          }
+        }
 
-				return resolve(result)
-			}
-		} catch (error) {
-			return reject(error)
-		}
-	})
-}
+        return resolve(result);
+      }
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
 
 /**
  * List of entityType data.
@@ -77,98 +76,53 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
 
 // Function to find entity type documents based on the given filter, projection, and user token
 const entityTypeDocuments = function (filterData = 'all', projection = 'all', userToken) {
-	return new Promise(async (resolve, reject) => {
-		try {
-			// Construct the URL for the entity management service
-			const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_TYPE_DOCUMENTS
-			// Set the options for the HTTP POST request
-			const options = {
-				headers: {
-					'content-type': 'application/json',
-					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-					'x-authenticated-token': userToken,
-				},
-				json: {
-					query: filterData,
-					projection: projection,
-				},
-			}
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Construct the URL for the entity management service
+      const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_TYPE_DOCUMENTS;
+      // Set the options for the HTTP POST request
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+          'x-authenticated-token': userToken,
+        },
+        json: {
+          query: filterData,
+          projection: projection,
+        },
+      };
 
-			// Make the HTTP POST request to the entity management service
-			request.post(url, options, requestCallBack)
+      // Make the HTTP POST request to the entity management service
+      request.post(url, options, requestCallBack);
 
-			// Callback function to handle the response from the HTTP POST request
-			function requestCallBack(err, data) {
-				let result = {
-					success: true,
-				}
+      // Callback function to handle the response from the HTTP POST request
+      function requestCallBack(err, data) {
+        let result = {
+          success: true,
+        };
 
-				if (err) {
-					result.success = false
-				} else {
-					let response = data.body
-					// Check if the response status is OK (HTTP 200)
-					if (response.status === messageConstants.common.OK) {
-						result['data'] = response.result
-					} else {
-						result.success = false
-					}
-				}
+        if (err) {
+          result.success = false;
+        } else {
+          let response = data.body;
+          // Check if the response status is OK (HTTP 200)
+          if (response.status === messageConstants.common.OK) {
+            result['data'] = response.result;
+          } else {
+            result.success = false;
+          }
+        }
 
-				return resolve(result)
-			}
-		} catch (error) {
-			return reject(error)
-		}
-	})
-}
-
-  
-/**
-  * get subEntities of matching type by recursion.
-  * @method
-  * @name getSubEntitiesBasedOnEntityType
-  * @param parentIds {Array} - Array of entity Ids- for which we are finding sub entities of given entityType
-  * @param entityType {string} - EntityType.
-  * @returns {Array} - Sub entities matching the type .
-*/
-
-async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result,token ) {
-
-    if( !(parentIds.length > 0) ){
-        return result;
+        return resolve(result);
+      }
+    } catch (error) {
+      return reject(error);
     }
-    let bodyData={
-        // "parentId" : parentIds
-        "registryDetails.code":{$in:parentIds}
-    };
-  
-    let entityDetails = await locationSearch(bodyData,token);
-    if( !entityDetails.success ) {
-        return (result);
-    }
-  
-    let entityData = entityDetails.data;
-    let parentEntities = [];
-    entityData.map(entity => {
-    if( entity.entityType == entityType ) {
-        result.push(entity.registryDetails.locationId)
-    } else {
-        parentEntities.push(entity.registryDetails.locationId)
-    }
-    });
-    
-    if( parentEntities.length > 0 ){
-        await getSubEntitiesBasedOnEntityType(parentEntities,entityType,result,token)
-    } 
-    
-    let uniqueEntities = _.uniq(result);
-    return uniqueEntities;    
-  }
-
+  });
+};
 
 module.exports = {
   entityDocuments: entityDocuments,
-	entityTypeDocuments: entityTypeDocuments,
-  getSubEntitiesBasedOnEntityType: getSubEntitiesBasedOnEntityType,
-}
+  entityTypeDocuments: entityTypeDocuments,
+};

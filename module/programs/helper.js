@@ -298,20 +298,20 @@ module.exports = class ProgramsHelper {
 
         // If the request body has roles set to "all", add "all" as a role; otherwise, get the roles from userRoles to update scope.roles
         if (Array.isArray(roles) && roles.length > 0) {
-          let userRoles = await userRolesHelper.roleDocuments(
-            {
-              code: { $in: roles },
-            },
-            ['_id', 'code'],
-          );
+          let currentRoles = await programsQueries.programDocuments({ _id: programId }, ['scope.roles'])
+					currentRoles = currentRoles[0].scope.roles
 
-          if (!(userRoles.length > 0)) {
-            return resolve({
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.INVALID_ROLE_CODE,
-            });
-          }
+					let currentRolesSet = new Set(currentRoles)
+					let rolesSet = new Set(roles)
 
+					rolesSet.forEach((role) => {
+						if (role != '' && role != 'all') currentRolesSet.add(role)
+					})
+
+					currentRoles = Array.from(currentRolesSet)
+					
+        
+          
           // remove the "all" from the scope.roles and update the new roles
           await programsQueries.findOneAndUpdate(
             {
@@ -324,7 +324,7 @@ module.exports = class ProgramsHelper {
           );
 
           updateQuery['$addToSet'] = {
-            'scope.roles': { $each: userRoles },
+            'scope.roles': { $each: currentRoles },
           };
         } else {
           // set  "all" as the roles and update the scope.roles
@@ -390,42 +390,27 @@ module.exports = class ProgramsHelper {
         }
 
         let entityIds = [];
-        let bodyData = {};
-        let locationData = gen.utils.filterLocationIdandCode(entities);
+        
 
-        if (locationData.ids.length > 0) {
-          bodyData = {
-            'registryDetails.code': { $in: locationData.ids },
+        let entitiesData = await entityManagementService.entityDocuments(
+          {
+            _id: { $in: entities },
             entityType: programData[0].scope.entityType,
-          };
-          let entityData = await entityManagementService.locationSearch(bodyData);
-          if (entityData.success) {
-            entityData.data.forEach((entity) => {
-              // entityIds.push(entity._id);
-              entityIds.push(entity.registryDetails.locationId);
-            });
-          }
-        }
+          },
+          ['_id'],
+        );
 
-        if (locationData.codes.length > 0) {
-          let filterData = {
-            'registryDetails.code': locationData.codes,
-            entityType: programData[0].scope.entityType,
-          };
-          let entityDetails = await entityManagementService.locationSearch(filterData);
-
-          if (entityDetails.success) {
-            entityDetails.data.forEach((entity) => {
-              entityIds.push(entity.externalId);
-            });
-          }
-        }
-
-        if (!(entityIds.length > 0)) {
+        if (!(entitiesData. success)) {
           throw {
             message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
           };
         }
+
+        entitiesData = entitiesData.data;
+
+        entitiesData.forEach((entity) => {
+          entityIds.push(entity._id);
+        });
 
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
@@ -483,34 +468,27 @@ module.exports = class ProgramsHelper {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
           });
         }
-
-        let userRoles = await userRolesHelper.roleDocuments(
-          {
-            code: { $in: roles },
-          },
-          ['_id', 'code'],
-        );
-
-        if (!(userRoles.length > 0)) {
+        // Check if roles array
+        if (Array.isArray(roles) && roles.length > 0) {
+          let updateProgram = await programsQueries.findOneAndUpdate(
+            {
+              _id: programId,
+            },
+            {
+              $pull: { 'scope.roles': { $in: roles } },
+            },
+            { new: true },
+          );
+          if (!updateProgram || !updateProgram._id) {
+            throw {
+              message: messageConstants.apiResponses.PROGRAM_NOT_UPDATED,
+            };
+          }
+        } else {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.INVALID_ROLE_CODE,
           });
-        }
-
-        let updateProgram = await programsQueries.findOneAndUpdate(
-          {
-            _id: programId,
-          },
-          {
-            $pull: { 'scope.roles': { $in: userRoles } },
-          },
-          { new: true },
-        );
-        if (!updateProgram || !updateProgram._id) {
-          throw {
-            message: messageConstants.apiResponses.PROGRAM_NOT_UPDATED,
-          };
         }
 
         return resolve({
@@ -842,110 +820,125 @@ module.exports = class ProgramsHelper {
         let scope = {};
         // check if validate entity on or off
         if (validateEntity !== messageConstants.common.OFF) {
+
+          let scopeDatas = Object.keys(scopeData)
+				let scopeDataIndex = scopeDatas.map((index) => {
+					return `scope.${index}`
+				})
+
+				let programIndex = await programsQueries.listIndexesFunc()
+				let indexes = programIndex.map((indexedKeys) => {
+					return Object.keys(indexedKeys.key)[0]
+				})
+				let keysNotIndexed = _.differenceWith(scopeDataIndex, indexes)
+        if (keysNotIndexed.length > 0) {
+					let keysCannotBeAdded = keysNotIndexed.map((keys) => {
+						return keys.split('.')[1]
+					})
+					scopeData = _.omit(scopeData, keysCannotBeAdded)
+				}
           // If the scope to update or set has entityType
-          if (scopeData.entityType) {
-            // Get entity details of type {scopeData.entityType}
-            let bodyData = {
-              entityType: scopeData.entityType,
-            };
-            let entityTypeData = await entityManagementService.locationSearch(bodyData, token);
+          // if (scopeData.entityType) {
+          //   // Get entity details of type {scopeData.entityType}
+          //   let bodyData = {
+          //     entityType: scopeData.entityType,
+          //   };
+          //   let entityTypeData = await entityManagementService.locationSearch(bodyData, token);
 
-            if (!entityTypeData.success) {
-              return resolve({
-                status: httpStatusCode.bad_request.status,
-                message: messageConstants.apiResponses.ENTITY_TYPES_NOT_FOUND,
-              });
-            }
+          //   if (!entityTypeData.success) {
+          //     return resolve({
+          //       status: httpStatusCode.bad_request.status,
+          //       message: messageConstants.apiResponses.ENTITY_TYPES_NOT_FOUND,
+          //     });
+          //   }
 
-            scope['entityType'] = entityTypeData.data[0].entityType;
-          }
+          //   scope['entityType'] = entityTypeData.data[0].entityType;
+          // }
           // If the scope to update or set has  entities
 
-          if (scopeData.entities && scopeData.entities.length > 0) {
-            //call learners api for search
-            let entityIds = [];
-            let bodyData = {};
-            let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
+          // if (scopeData.entities && scopeData.entities.length > 0) {
+          //   //call learners api for search
+          //   let entityIds = [];
+          //   let bodyData = {};
+          //   let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
 
-            //locationIds contain id of location data.
-            if (locationData.ids.length > 0) {
-              bodyData = {
-                // id: locationData.ids,
-                'registryDetails.code': { $in: locationData.ids },
-                entityType: scopeData.entityType,
-              };
-              let entityData = await entityManagementService.locationSearch(bodyData);
-              if (entityData.success) {
-                entityData.data.forEach((entity) => {
-                  // entityIds.push(entity._id);
-                  entityIds.push(entity.registryDetails.locationId);
-                });
-              }
-            }
+          //   //locationIds contain id of location data.
+          //   if (locationData.ids.length > 0) {
+          //     bodyData = {
+          //       // id: locationData.ids,
+          //       'registryDetails.code': { $in: locationData.ids },
+          //       entityType: scopeData.entityType,
+          //     };
+          //     let entityData = await entityManagementService.locationSearch(bodyData);
+          //     if (entityData.success) {
+          //       entityData.data.forEach((entity) => {
+          //         // entityIds.push(entity._id);
+          //         entityIds.push(entity.registryDetails.locationId);
+          //       });
+          //     }
+          //   }
 
-            if (locationData.codes.length > 0) {
-              let filterData = {
-                // code: locationData.codes,
-                'registryDetails.code': locationData.codes,
-                entityType: scopeData.entityType,
-              };
-              let entityDetails = await entityManagementService.locationSearch(filterData, token);
+          //   if (locationData.codes.length > 0) {
+          //     let filterData = {
+          //       // code: locationData.codes,
+          //       'registryDetails.code': locationData.codes,
+          //       entityType: scopeData.entityType,
+          //     };
+          //     let entityDetails = await entityManagementService.locationSearch(filterData, token);
 
-              if (entityDetails.success) {
-                let entitiesData = entityDetails.data;
-                entitiesData.forEach((entity) => {
-                  // entityIds.push(entity._id);
-                  entityIds.push(entity.registryDetails.locationId);
-                });
-              }
-            }
+          //     if (entityDetails.success) {
+          //       let entitiesData = entityDetails.data;
+          //       entitiesData.forEach((entity) => {
+          //         // entityIds.push(entity._id);
+          //         entityIds.push(entity.registryDetails.locationId);
+          //       });
+          //     }
+          //   }
 
-            if (!(entityIds.length > 0)) {
-              throw {
-                message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-              };
-            }
-            scope['entities'] = entityIds;
-          }
+          //   if (!(entityIds.length > 0)) {
+          //     throw {
+          //       message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+          //     };
+          //   }
+          //   scope['entities'] = entityIds;
+          // }
           // If the scope to update or set has role
 
-          if (scopeData.roles) {
-            if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
-              let userRoles = await userRolesHelper.roleDocuments(
-                {
-                  code: { $in: scopeData.roles },
-                },
-                ['_id', 'code'],
-              );
+          // if (scopeData.roles) {
+          //   if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
+          //     let userRoles = await userRolesHelper.roleDocuments(
+          //       {
+          //         code: { $in: scopeData.roles },
+          //       },
+          //       ['_id', 'code'],
+          //     );
 
-              if (!(userRoles.length > 0)) {
-                return resolve({
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.INVALID_ROLE_CODE,
-                });
-              }
+          //     if (!(userRoles.length > 0)) {
+          //       return resolve({
+          //         status: httpStatusCode.bad_request.status,
+          //         message: messageConstants.apiResponses.INVALID_ROLE_CODE,
+          //       });
+          //     }
 
-              scope['roles'] = userRoles;
-            } else {
-              if (scopeData.roles === messageConstants.common.ALL_ROLES) {
-                scope['roles'] = [
-                  {
-                    code: messageConstants.common.ALL_ROLES,
-                  },
-                ];
-              }
-            }
-          }
-        } else {
-          scope = scopeData;
-        }
+          //     scope['roles'] = userRoles;
+          //   } else {
+          //     if (scopeData.roles === messageConstants.common.ALL_ROLES) {
+          //       scope['roles'] = [
+          //         {
+          //           code: messageConstants.common.ALL_ROLES,
+          //         },
+          //       ];
+          //     }
+          //   }
+          // }
+        } 
 
         //Updating or set scope in program document
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
             _id: programId,
           },
-          { $set: { scope: scope } },
+          { $set: { scope: scopeData } },
           { new: true },
         );
         if (!updateProgram._id) {
