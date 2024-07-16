@@ -286,9 +286,9 @@ module.exports = class Programs extends Abstract {
   async addRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programUpdated = await programsHelper.addRolesInScope(req.params._id, req.body.roles);
+        let programDetails = await programsHelper.addRolesInScope(req.params._id, req.body.roles);
 
-        return resolve(programUpdated);
+        return resolve(programDetails);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
@@ -332,12 +332,12 @@ module.exports = class Programs extends Abstract {
   async addEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programUpdated = await programsHelper.addEntitiesInScope(
+        let programDetails = await programsHelper.addEntitiesInScope(
           req.params._id,
           req.body.entities,
         );
 
-        return resolve(programUpdated);
+        return resolve(programDetails);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
@@ -381,9 +381,9 @@ module.exports = class Programs extends Abstract {
   async removeRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programUpdated = await programsHelper.removeRolesInScope(req.params._id, req.body.roles);
+        let programDetails = await programsHelper.removeRolesInScope(req.params._id, req.body.roles);
 
-        return resolve(programUpdated);
+        return resolve(programDetails);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
@@ -427,9 +427,9 @@ module.exports = class Programs extends Abstract {
   async removeEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programUpdated = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities);
+        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities);
 
-        return resolve(programUpdated);
+        return resolve(programDetails);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
