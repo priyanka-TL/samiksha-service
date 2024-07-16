@@ -751,7 +751,7 @@ module.exports = class ProgramsHelper {
         update['$set'] = programUsersData;
 
         // add record to programUsers collection
-        let joinProgram = await programUsersHelper.update(query, update, {
+        let joinProgram = await programUsersQueries.updateProgramUserDocument(query, update, {
           new: true,
           upsert: true,
         });
@@ -763,7 +763,7 @@ module.exports = class ProgramsHelper {
           };
         }
 
-        let joinProgramDetails = joinProgram.toObject();
+        let joinProgramDetails = joinProgram;
 
         // if (pushProgramUsersDetailsToKafka) {
         //   joinProgramDetails.programName = programData[0].name;
