@@ -61,6 +61,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
 				return resolve(result)
 			}
 		} catch (error) {
+			console.log(error,'ERRORRRRR')
 			return reject(error)
 		}
 	})
@@ -198,7 +199,7 @@ async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result,to
 			_id : { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
 			entityTypeId: entityTypeId,
 		  };
-		let entityData = await entityManagementService.entityDocuments(bodyData);
+		let entityData = await this.entityDocuments(bodyData);
 
 		console.log(entityData,'entityData from entity management')
 		
@@ -214,7 +215,7 @@ async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result,to
       }
     });
   }
-  
+
 module.exports = {
   entityDocuments: entityDocuments,
 	entityTypeDocuments: entityTypeDocuments,

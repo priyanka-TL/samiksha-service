@@ -101,7 +101,7 @@ module.exports = class ObservationsHelper {
         //     userId
         //   );
 
-        let solutionData = await solutionHelper.solutionDocuments(
+        let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
           },
@@ -117,6 +117,8 @@ module.exports = class ObservationsHelper {
             'isAPrivateProgram',
           ],
         );
+
+        console.log(solutionData[0],'checl********')
 
         if (!solutionData.length > 0) {
           throw {

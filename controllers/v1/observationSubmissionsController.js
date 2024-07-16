@@ -296,15 +296,7 @@ module.exports = class ObservationSubmissions extends Abstract {
         });
 
         submissionDocument.evidences = submissionDocumentEvidences;
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         //need to verify this code
-=======
-        console.log(submissionDocumentEvidences,'submissionDocumentEvidences')
->>>>>>> Stashed changes
-=======
-        console.log(submissionDocumentEvidences,'submissionDocumentEvidences')
->>>>>>> Stashed changes
         try{
           submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
         }catch(error){
