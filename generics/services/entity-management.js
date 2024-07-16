@@ -11,144 +11,118 @@ const request = require('request')
 const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL
 
 
-/**
- *
+  /**
+ * List of entity data.
  * @function
- * @name locationSearch
- * @param {object} filterData -  contain filter object.
- * @param {String} pageSize -  requested page size.
- * @param {String} pageNo -  requested page number.
- * @param {String} searchKey -  search string.
- * @param {Boolean} formatResult - format result
- * @param {Boolean} returnObject - return object or array.
- * @param {Boolean} resultForSearchEntities - format result for searchEntities api call.
- * @returns {Promise} returns a promise.
+ * @name entityDocuments
+ * @param {Object} filterData - Filter data.
+ * @param {Array} projection - Projected data.
+ * @returns {JSON} - List of entity data.
  */
 
-const locationSearch = function (
-    filterData,
-    pageSize = '',
-    pageNo = '',
-    searchKey = '',
-    formatResult = false,
-    returnObject = false,
-    resultForSearchEntities = false,
-  ) {
-    return new Promise(async (resolve, reject) => {
-      try {
-  
-        let bodyData = {};
-        bodyData['request'] = {};
-        // bodyData['request']['filters'] = filterData;
-        bodyData['query'] = filterData;
-  
-        if (pageSize !== '') {
-          bodyData['request']['limit'] = pageSize;
-        }
-  
-        if (pageNo !== '') {
-          let offsetValue = pageSize * (pageNo - 1);
-          bodyData['request']['offset'] = offsetValue;
-        }
-  
-        if (searchKey !== '') {
-          bodyData['request']['query'] = searchKey;
-        }
-  
-        const url = entityManagementServiceUrl + messageConstants.endpoints.GET_LOCATION_DATA;
-        const options = {
-          headers: {
-            'content-type': 'application/json',
-            "x-authenticated-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJuYW1lIjoiTmV2aWwiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6MywidGl0bGUiOiJtZW50ZWUiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsInZpc2libGl0eSI6IlBVQkxJQyIsIm9yZ2FuaXphdGlvbl9pZCI6IjEifV19LCJpYXQiOjE3MjA5ODAyNTcsImV4cCI6MTcyMTA2NjY1N30.q9H3Oyb8y8p7zbuWJN56c3mwrtWN_7rkxgHz1v6xNBo",
-            "internal-access-token":process.env.INTERNAL_ACCESS_TOKEN
-          },
-          json: bodyData,
-        };
-        request.post(url, options, requestCallback);
-  
-        let result = {
-          success: true,
-        };
-  
-        function requestCallback(err, data) {
-          if (err) {
-            result.success = false;
-          } else {
-            let response = data.body;
-            if (
-              // response.responseCode === messageConstants.common.OK &&
-              response.result 
-              // response.result.response &&
-              // response.result.response.length > 0
-              // response.result.length > 0
-  
-            ) {
-              // format result if true
-              if (formatResult) {
-                let entityDocument = [];
-                response.result.map((entityData) => {
-                  let data = {};
-                  // data._id = entityData.id;
-                  // data.entityType = entityData.type;
-                  // data.metaInformation = {};
-                  // data.metaInformation.name = entityData.name;
-                  // data.metaInformation.externalId = entityData.code;
-                  // data.registryDetails = {};
-                  // data.registryDetails.locationId = entityData.id;
-                  // data.registryDetails.code = entityData.code;
-                  data._id = entityData._id;
-                  data.entityType = entityData.entityType;
-                  data.metaInformation = {};
-                  data.metaInformation.name = entityData.metaInformation.name;
-                  data.metaInformation.externalId = entityData.metaInformation.code;
-                  data.registryDetails = {};
-                  data.registryDetails.locationId = entityData.registryDetails.locationId ;
-                  data.registryDetails.code = entityData.registryDetails.code ;
-                  entityDocument.push(data);
-                });
-                if (returnObject) {
-                  result['data'] = entityDocument[0];
-                  result['count'] = response.result.count;
-                } else {
-                  result['data'] = entityDocument;
-                  result['count'] = response.result.count;
-                }
-              } else if (resultForSearchEntities) {
-                let entityDocument = [];
-                response.result.response.map((entityData) => {
-                  let data = {};
-                  data._id = entityData._id;
-                  data.name = entityData.name;
-                  data.externalId = entityData.registryDetails.code;
-                  entityDocument.push(data);
-                });
-                result['data'] = entityDocument;
-                result['count'] = response.result.count;
-              } else {
-                // result['data'] = response.result.response;
-                result['data'] = response.result;
-  
-                // result['count'] = response.result.count;
-              }
-            } else {
-              result.success = false;
-            }
-          }
-          return resolve(result);
-        }
-  
-        // setTimeout(function () {
-        //   return resolve(
-        //     (result = {
-        //       success: false,
-        //     }),
-        //   );
-        // }, messageConstants.common.SERVER_TIME_OUT);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  };
+// Function to find entity documents based on the given filter and projection
+const entityDocuments = function (filterData = 'all', projection = 'all') {
+	return new Promise(async (resolve, reject) => {
+		try {
+			// Function to find entity documents based on the given filter and projection
+			const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_DOCUMENTS
+			// Set the options for the HTTP POST request
+			const options = {
+				headers: {
+					'content-type': 'application/json',
+					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+				},
+				json: {
+					query: filterData,
+					projection: projection,
+				},
+			}
+			// Make the HTTP POST request to the entity management service
+			request.post(url, options, requestCallBack)
+
+			// Callback functioCopy as Expressionn to handle the response from the HTTP POST request
+			function requestCallBack(err, data) {
+				let result = {
+					success: true,
+				}
+
+				if (err) {
+					result.success = false
+				} else {
+					let response = data.body
+					// Check if the response status is OK (HTTP 200)
+					if (response.status === httpStatusCode['ok'].status) {
+						result['data'] = response.result
+					} else {
+						result.success = false
+					}
+				}
+
+				return resolve(result)
+			}
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
+/**
+ * List of entityType data.
+ * @function
+ * @name entityTypeDocuments
+ * @param {Object} filterData - Filter data.
+ * @param {Array} projection - Projected data.
+ * @returns {JSON} - List of entity data.
+ */
+
+// Function to find entity type documents based on the given filter, projection, and user token
+const entityTypeDocuments = function (filterData = 'all', projection = 'all', userToken) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			// Construct the URL for the entity management service
+			const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_TYPE_DOCUMENTS
+			// Set the options for the HTTP POST request
+			const options = {
+				headers: {
+					'content-type': 'application/json',
+					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+					'x-authenticated-token': userToken,
+				},
+				json: {
+					query: filterData,
+					projection: projection,
+				},
+			}
+
+			// Make the HTTP POST request to the entity management service
+			request.post(url, options, requestCallBack)
+
+			// Callback function to handle the response from the HTTP POST request
+			function requestCallBack(err, data) {
+				let result = {
+					success: true,
+				}
+
+				if (err) {
+					result.success = false
+				} else {
+					let response = data.body
+					// Check if the response status is OK (HTTP 200)
+					if (response.status === messageConstants.common.OK) {
+						result['data'] = response.result
+					} else {
+						result.success = false
+					}
+				}
+
+				return resolve(result)
+			}
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
   
 /**
   * get subEntities of matching type by recursion.
@@ -194,6 +168,7 @@ async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result,to
 
 
 module.exports = {
-	locationSearch: locationSearch,
-	getSubEntitiesBasedOnEntityType: getSubEntitiesBasedOnEntityType,
+  entityDocuments: entityDocuments,
+	entityTypeDocuments: entityTypeDocuments,
+  getSubEntitiesBasedOnEntityType: getSubEntitiesBasedOnEntityType,
 }

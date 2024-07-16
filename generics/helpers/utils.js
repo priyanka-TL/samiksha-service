@@ -1,4 +1,4 @@
-const { validate: uuidValidate, v4: uuid } = require("uuid");
+const { validate: uuidValidate, v4: uuid } = require('uuid');
 const md5 = require('md5');
 
 function camelCaseToTitleCase(in_camelCaseString) {
@@ -168,6 +168,17 @@ function valueParser(dataToBeParsed) {
 }
 
 /**
+ * check the uuid is valid
+ * @function
+ * @name checkIfValidUUID
+ * @returns {String} returns boolean.
+ */
+
+ function checkIfValidUUID(value) {
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+  return regexExp.test(value);
+ }
+/**
  * filter out location id and code
  * @function
  * @name filterLocationIdandCode
@@ -178,7 +189,7 @@ function filterLocationIdandCode(dataArray) {
   let locationIds = [];
   let locationCodes = [];
   dataArray.forEach((element) => {
-    if (this.checkValidUUID(element)) {
+    if (this.checkIfValidUUID(element)) {
       locationIds.push(element);
     } else {
       locationCodes.push(element);
@@ -353,12 +364,10 @@ function addOffsetToDateTime(time, timeZoneDifference) {
   //get the offset time from env with respect UTC
   let localTimeZone = timeZoneDifference;
   //convert offset time to minutes
-  let localTime = localTimeZone.split(":");
+  let localTime = localTimeZone.split(':');
   let localHourDifference = Number(localTime[0]);
   let getTimeDiffInMinutes =
-    localHourDifference * 60 +
-    (localHourDifference / Math.abs(localHourDifference)) *
-      Number(localTime[1]);
+    localHourDifference * 60 + (localHourDifference / Math.abs(localHourDifference)) * Number(localTime[1]);
   //get server offset time w.r.t. UTC time
   let timeDifference = new Date().getTimezoneOffset();
   //get actual time difference in minutes
@@ -398,6 +407,7 @@ function checkValidUUID(uuids) {
   return validateUUID;
 }
 
+ 
 /**
  * check whether string contains only number
  * @function
@@ -424,7 +434,7 @@ module.exports = {
   assessmentRoles: assessmentRoles,
   arrayIdsTobjectIds: arrayIdsTobjectIds,
   checkIfEnvDataExistsOrNot: checkIfEnvDataExistsOrNot,
-  checkIfStringIsNumber:checkIfStringIsNumber,
+  checkIfStringIsNumber: checkIfStringIsNumber,
   fetchAssessorsLeadAssessorRole: fetchAssessorsLeadAssessorRole,
   epochTime: epochTime,
   isValidMongoId: isValidMongoId,
@@ -433,8 +443,9 @@ module.exports = {
   removeDuplicatesFromArray: removeDuplicatesFromArray,
   convertStringToBoolean: convertStringToBoolean,
   filterLocationIdandCode: filterLocationIdandCode,
-  checkValidUUID:checkValidUUID,
+  checkValidUUID: checkValidUUID,
   convertStringToObjectId: convertStringToObjectId,
   getEndDate: getEndDate,
   getStartDate: getStartDate,
+  checkIfValidUUID:checkIfValidUUID
 };
