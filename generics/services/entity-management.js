@@ -214,7 +214,7 @@ async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result,to
       }
     });
   }
-
+  
 module.exports = {
   entityDocuments: entityDocuments,
 	entityTypeDocuments: entityTypeDocuments,
