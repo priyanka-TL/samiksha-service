@@ -126,7 +126,7 @@ module.exports = class ObservationsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           };
         }
-        console.log(solutionData);
+        console.log(solutionData,'solndata');
       //  console.log(stoppp)
         if (solutionData[0].isReusable) {
           solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
@@ -182,7 +182,22 @@ module.exports = class ObservationsHelper {
         }
         
         console.log(data,'data')
-
+        console.log(data, {
+          solutionId: solution._id,
+          solutionExternalId: solution.externalId,
+          programId: solution.programId ? solution.programId : undefined,
+          programExternalId: solution.programExternalId ? solution.programExternalId :undefined,
+          frameworkId: solution.frameworkId,
+          frameworkExternalId: solution.frameworkExternalId,
+          entityTypeId: solution.entityTypeId,
+          entityType: solution.entityType,
+          updatedBy: userId,
+          createdBy: userId,
+          createdFor: userId,
+          // rootOrganisations:
+          // organisationAndRootOrganisation.rootOrganisations,
+          isAPrivateProgram: solution.isAPrivateProgram,
+        },'<--',typeof solution.programId)
         let observationData = await database.models.observations.create(
           _.merge(data, {
             solutionId: solution._id,
