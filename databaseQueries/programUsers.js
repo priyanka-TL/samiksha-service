@@ -49,5 +49,35 @@ module.exports = class programUsers {
        }
      });
    }
- 
+  
+   /**
+   * Update programUsers document.
+   * @method
+   * @name updateProgramUserDocument
+   * @param {Object} query        - query to find document
+   * @param {Object} updateObject - fields to update
+   * @param {Object} returnData   - Options for the update operation, default is { new: false }
+   * @returns {Promise<Object>}   - The updated document 
+   * 
+   */
+
+  static updateProgramUserDocument(query = {}, updateObject = {}, returnData = { new: false }) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (Object.keys(query).length == 0) {
+          throw new Error(messageConstants.apiResponses.UPDATE_QUERY_REQUIRED);
+        }
+
+        if (Object.keys(updateObject).length == 0) {
+          throw new Error(messageConstants.apiResponses.UPDATE_OBJECT_REQUIRED);
+        }
+
+        let updateResponse = await database.models.programUsers.findOneAndUpdate(query, updateObject, returnData).lean();
+
+        return resolve(updateResponse);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
  };

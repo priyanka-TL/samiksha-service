@@ -84,4 +84,7 @@ module.exports = {
   CREATE_OBSERVATION: "/create-observation/",
   CREATE_PROJECT: "/create-project/",
 
+  PRIVATE: 'private',
+	WRITE_PERMISSION: 'w',
+	READ_PERMISSION: 'r',
 };

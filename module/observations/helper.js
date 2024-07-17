@@ -180,6 +180,8 @@ module.exports = class ObservationsHelper {
           data.project._id = ObjectId(data.project._id);
           data.referenceFrom = messageConstants.common.PROJECT;
         }
+        
+        console.log(data,'data')
 
         let observationData = await database.models.observations.create(
           _.merge(data, {

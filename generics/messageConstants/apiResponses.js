@@ -397,4 +397,6 @@ module.exports = {
   PROJECT_TEMPLATE_ID_NOT_FOUND: 'Project templates not exists in solution',
   SOLUTION_TYPE_INVALID: 'Solution type is invalid',
   SURVEY_SUBMISSION_FOUND: 'Survey submission fetched successfully',
+  FAILED_TO_CREATE_DOWNLOADABLEURL: 'Failed to generate downloadableUrl',
+  CLOUD_SERVICE_SUCCESS_MESSAGE: "Url's generated successfully",
 };
