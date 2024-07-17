@@ -129,6 +129,8 @@ module.exports = class ObservationsHelper {
         console.log(solutionData,'solndata');
       //  console.log(stoppp)
         if (solutionData[0].isReusable) {
+
+          //need to handle this
           solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
             solutionId,
             //   {
@@ -198,26 +200,42 @@ module.exports = class ObservationsHelper {
           // organisationAndRootOrganisation.rootOrganisations,
           isAPrivateProgram: solution.isAPrivateProgram,
         },'<--',typeof solution.programId)
-        let observationData = await database.models.observations.create(
-          _.merge(data, {
-            solutionId: solution._id,
-            solutionExternalId: solution.externalId,
-            programId: solution.programId ? solution.programId : undefined,
-            programExternalId: solution.programExternalId ? solution.programExternalId :undefined,
-            frameworkId: solution.frameworkId,
-            frameworkExternalId: solution.frameworkExternalId,
-            entityTypeId: solution.entityTypeId,
-            entityType: solution.entityType,
-            updatedBy: userId,
-            createdBy: userId,
-            createdFor: userId,
-            // rootOrganisations:
-            // organisationAndRootOrganisation.rootOrganisations,
-            isAPrivateProgram: solution.isAPrivateProgram,
-          }),
+
+        let observationData = _.merge(data, {
+          solutionId: solution._id,
+          solutionExternalId: solution.externalId,
+          programId: solution.programId,
+          programExternalId: solution.programExternalId,
+          frameworkId: solution.frameworkId,
+          frameworkExternalId: solution.frameworkExternalId,
+          entityTypeId: solution.entityTypeId,
+          entityType: solution.entityType,
+          updatedBy: userId,
+          createdBy: userId,
+          createdFor: userId,
+          isAPrivateProgram: solution.isAPrivateProgram,
+        });
+          // Remove keys with undefined values
+        observationData = removeUndefinedKeys(observationData);
+
+
+        function removeUndefinedKeys(obj) {
+          return Object.keys(obj).reduce((acc, key) => {
+            if (obj[key] !== undefined) {
+              acc[key] = obj[key];
+            }
+            return acc;
+          }, {});
+        }
+
+        console.log('observation data passed',observationData,typeof observationData.solutionId)
+       // console.log(stopp)
+
+        let observationDataEntry = await database.models.observations.create(
+          observationData
         );
 
-        console.log(observationData,'observationData')
+        console.log(observationDataEntry,'observationDataEntry')
         
         if (!observationData._id) {
           throw {
