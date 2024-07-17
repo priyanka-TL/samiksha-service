@@ -1536,6 +1536,7 @@ module.exports = class SurveysHelper {
         };
 
         if (surveyReportPage === '' || gen.utils.convertStringToBoolean(surveyReportPage)) {
+          // List of created survey solutions by user.
           surveySolutions = await surveySubmissionsHelper.surveySolutions(userId, pageNo, pageSize, search, filter);
         }
 
@@ -1552,7 +1553,7 @@ module.exports = class SurveysHelper {
             });
           }
         }
-
+        // Getting List of surveys for user
         let surveySubmissions = await surveySubmissionsHelper.surveyList(
           userId,
           pageNo,

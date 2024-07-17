@@ -18,8 +18,7 @@ module.exports = {
   GET_PROJECT_TEMPLATE_LISTS: 'api/v1/project/templates/listByIds',
   DOWNLOADABLE_FILE_URL: 'api/v1/cloud-services/files/getDownloadableUrl',
   FIND_ENTITY_DOCUMENTS: '/v1/entities/find',
-  GET_SCHOOL_DATA: '/v1/entities/listByLocationIds',
-  USER_CONSENT_API: '/v1/user/consent/update',
+	FIND_ENTITY_TYPE_DOCUMENTS: '/v1/entityTypes/find',
   GET_TEMPLATE_DETAILS: '/v1/project/templates/details',
   USER_READ:"/v1/user/read"
 };
