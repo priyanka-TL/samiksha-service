@@ -153,7 +153,7 @@ module.exports = class SolutionsHelper {
           );
         }
         // adding scope to the solution document
-        if (!solutionData.excludeScope && solutionData.programExternalId && programData[0].scope) {
+        if (!solutionData.excludeScope ) {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
@@ -1989,6 +1989,7 @@ module.exports = class SolutionsHelper {
           if (data.scope && Object.keys(data.scope).length > 0) {
             await this.setScope(
               // newSolutionDocument.programId,
+              newSolutionDocument.programId?newSolutionDocument.programId:"",
               duplicateSolutionDocument._id,
               data.scope,
             );

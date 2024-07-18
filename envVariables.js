@@ -247,6 +247,15 @@ let enviromentVariables = {
 		optional: true,
 		default: 300,
 	},
+  USER_SERVICE_URL:{
+    message: 'Required userservice service url',
+    optional: false,
+  },
+  ENTITY_MANAGEMENT_SERVICE_URL:{
+    message: 'Required entitymanagement service url',
+    optional: false,
+  }
+
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
   //   message: 'ON/OFF',
   //   optional: false,
