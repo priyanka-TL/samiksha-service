@@ -282,7 +282,7 @@ module.exports = async function (req, res, next) {
   // let userDetails = await getUserDetails(decodedToken)
   req.userDetails = {
     userToken: token,
-    userId: decodedToken.data.id,
+    userId: JSON.stringify(decodedToken.data.id),
     userName: decodedToken.data.name,
     // email: decodedToken.data.email,
     firstName: decodedToken.data.name,

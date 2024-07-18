@@ -399,7 +399,7 @@ module.exports = class SurveySubmissionsHelper {
           data: [],
           count: 0,
         };
-
+        //Constructing the match query 
         let submissionMatchQuery = { $match: { createdBy: userId } };
 
         if (gen.utils.convertStringToBoolean(surveyReportPage)) {
@@ -415,14 +415,13 @@ module.exports = class SurveySubmissionsHelper {
 
         if (filter && filter !== '') {
           if (filter === messageConstants.common.CREATED_BY_ME) {
-            matchQuery['$match']['isAPrivateProgram'] = {
+            submissionMatchQuery['$match']['isAPrivateProgram'] = {
               $ne: false,
             };
           } else if (filter === messageConstants.common.ASSIGN_TO_ME) {
-            matchQuery['$match']['isAPrivateProgram'] = false;
+            submissionMatchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
-
         let surveySubmissions = await database.models.surveySubmissions.aggregate([
           submissionMatchQuery,
           {
@@ -440,7 +439,7 @@ module.exports = class SurveySubmissionsHelper {
           {
             $facet: {
               totalCount: [{ $count: 'count' }],
-              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+              data: [{ $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) }, { $limit: pageSize? pageSize: messageConstants.common.DEFAULT_PAGE_SIZE}],
             },
           },
           {
@@ -452,7 +451,7 @@ module.exports = class SurveySubmissionsHelper {
             },
           },
         ]);
-
+        //update the status and information of survey in results
         if (surveySubmissions[0].data && surveySubmissions[0].data.length > 0) {
           surveySubmissions[0].data.forEach(async (surveySubmission) => {
             let submissionStatus = surveySubmission.status;
@@ -468,7 +467,7 @@ module.exports = class SurveySubmissionsHelper {
             surveySubmission._id = surveySubmission.surveyId;
             delete surveySubmission.surveyId;
             delete surveySubmission['surveyInformation'];
-
+            // 
             if (!surveyReportPage) {
               if (submissionStatus === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
                 result.data.push(surveySubmission);
@@ -544,7 +543,8 @@ module.exports = class SurveySubmissionsHelper {
             solutionMatchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
-
+        const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+       // finding  list of created survey solutions by user
         let result = await solutionsHelper.solutionDocumentsByAggregateQuery([
           solutionMatchQuery,
           {
@@ -559,7 +559,7 @@ module.exports = class SurveySubmissionsHelper {
           {
             $facet: {
               totalCount: [{ $count: 'count' }],
-              data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+              data: [{ $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) }, { $limit: pageSize ? pageSize :messageConstants.common.DEFAULT_PAGE_SIZE}],
             },
           },
           {

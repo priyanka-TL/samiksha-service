@@ -1,56 +1,70 @@
 module.exports = {
-  name: 'programs',
+  name: "programs",
   schema: {
-    externalId: {
-      type: String,
-      index: true,
-      unique: true,
+    externalId: String,
+    name: {
+      type : String,
+      index : true
     },
-    name: String,
-    description: String,
+    description: {
+      type : String,
+      index : true
+    },
     owner: String,
-    createdBy: {
-      type: String,
-      index: true,
-    },
+    createdBy: String,
     updatedBy: String,
-    status: String,
+    status: {
+      type : String,
+      index : true
+    },
+    startDate:{
+      type: Date, 
+      index: true,
+      require:true
+    },
+    endDate: {
+      type : Date,
+      index : true,
+      require: true
+    },
     resourceType: [String],
     language: [String],
     keywords: [String],
-    concepts: ['json'],
-    createdFor: [String],
+    concepts: ["json"],
     imageCompression: {},
-    components: ['json'],
-    components: ['json'],
-    isAPrivateProgram: {
-      default: false,
-      type: Boolean,
+    components: ["json"],
+    components: ["json"],
+    isAPrivateProgram : {
+      default : false,
+      type : Boolean,
+      index : true
     },
-    rootOrganisations: {
-      type: [String],
-      default: [],
+    scope : {
+      type: Object,
+      entityType : String,
+      entities : {
+        type : Array,
+        index : true
+      },
+      roles : [{
+        _id : "ObjectId",
+        code : {
+          type : String,
+          index : true
+        }
+      }]
     },
     isDeleted: {
-      default: false,
-      type: Boolean,
+      default : false,
+      type : Boolean,
+      index : true
     },
-    scope: {
-      entityType: String,
-      entityTypeId: 'ObjectId',
-      entities: {
-        type: Array,
-        index: true,
-      },
-      roles: [
-        {
-          _id: 'ObjectId',
-          code: {
-            type: String,
-            index: true,
-          },
-        },
-      ],
+    requestForPIIConsent: Boolean,
+    metaInformation: Object,
+    rootOrganisations : {
+      type : Array,
+      require : true
     },
-  },
+    createdFor : Array
+  }
 };

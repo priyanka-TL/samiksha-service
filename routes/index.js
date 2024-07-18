@@ -7,7 +7,7 @@ const fs = require('fs');
 const inputValidator = require(ROOT_PATH + '/generics/middleware/validator');
 
 module.exports = function (app) {
-  const applicationBaseUrl = process.env.APPLICATION_BASE_URL || '/assessment/';
+  const applicationBaseUrl = process.env.APPLICATION_BASE_URL || '/samiksha/';
 
   app.use(applicationBaseUrl, authenticator);
   app.use(applicationBaseUrl, pagination);
