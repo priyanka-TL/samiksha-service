@@ -17,6 +17,7 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const assessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 /**
  * Observations
  * @class
@@ -88,7 +89,7 @@ module.exports = class Observations extends Abstract {
         matchQuery['$match']['$or'].push(
           { name: new RegExp(req.searchText, 'i') },
           { description: new RegExp(req.searchText, 'i') },
-          { keywords: new RegExp(req.searchText, 'i') },
+          { keywords: new RegExp(req.searchText, 'i') }
         );
 
         let solutionDocument = await solutionsHelper.search(matchQuery, req.pageSize, req.pageNo);
@@ -197,7 +198,7 @@ module.exports = class Observations extends Abstract {
             },
             {
               observationMetaFormKey: 1,
-            },
+            }
           )
           .lean();
 
@@ -217,7 +218,7 @@ module.exports = class Observations extends Abstract {
                   ? solutionsData.observationMetaFormKey
                   : 'defaultObservationMetaForm',
             },
-            { value: 1 },
+            { value: 1 }
           )
           .lean();
 
@@ -270,7 +271,7 @@ module.exports = class Observations extends Abstract {
           req.query.solutionId,
           req.body.data,
           req.userDetails.userId,
-          req.userDetails.userToken,
+          req.userDetails.userToken
           // req.query.programId
         );
 
@@ -429,7 +430,7 @@ module.exports = class Observations extends Abstract {
         let result = await observationsHelper.removeEntityFromObservation(
           req.params._id,
           req.body.data,
-          req.userDetails.id,
+          req.userDetails.id
         );
 
         return resolve(result);
@@ -470,12 +471,16 @@ module.exports = class Observations extends Abstract {
       try {
         let response = {};
         if (req.method === 'POST') {
-          response = await observationsHelper.addEntityToObservation(req.params._id, req.body.data, req.userDetails.id);
+          response = await observationsHelper.addEntityToObservation(
+            req.params._id,
+            req.body.data,
+            req.userDetails.userId
+          );
         } else if (req.method === 'DELETE') {
           response = await observationsHelper.removeEntityFromObservation(
             req.params._id,
-            req.body.data,
-            req.userDetails.id,
+            req.body.data ? req.body.data : (req.query.entityId ? req.query.entityId.split(',') : []),
+            req.userDetails.userId
           );
         }
 
@@ -527,7 +532,7 @@ module.exports = class Observations extends Abstract {
    * @returns {JSON} List of entities in observations.
    */
 
-  async searchEntities(req) {
+  async searchEntitiesOld(req) {
     return new Promise(async (resolve, reject) => {
       try {
         let response = {
@@ -544,7 +549,7 @@ module.exports = class Observations extends Abstract {
             {
               entityTypeId: 1,
               entities: 1,
-            },
+            }
           )
           .lean();
 
@@ -565,18 +570,37 @@ module.exports = class Observations extends Abstract {
           });
         }
 
-        let entityDocuments = await entitiesHelper.search(
-          observationDocument.entityTypeId,
-          req.searchText,
-          req.pageSize,
-          req.pageNo,
-          false,
-          tags,
-        );
+        // let entityDocuments = await entitiesHelper.search(
+        //   observationDocument.entityTypeId,
+        //   req.searchText,
+        //   req.pageSize,
+        //   req.pageNo,
+        //   false,
+        //   tags,
+        // );
 
+        // let entityDocument = await entityManagementService.search(
+        //   observationDocument.entityTypeId,
+        //   req.searchText,
+        //   req.pageSize,
+        //   req.pageNo,
+        //   false,
+        //   tags,
+
+        // )
+
+        let filterData = {
+          entityTypeId: observationDocument.entityTypeId,
+        };
+
+        console.log('API CALL START');
+        let entitiesDocument = await entityManagementService.entityDocuments(filterData);
+
+        console.log('API CALL STOP');
+        console.log(entitiesDocument, 'entitiesDocument');
         let observationEntityIds = observationDocument.entities.map((entity) => entity.toString());
 
-        entityDocuments[0].data.forEach((eachMetaData) => {
+        entitiesDocument[0].data.forEach((eachMetaData) => {
           eachMetaData.selected = observationEntityIds.includes(eachMetaData._id.toString()) ? true : false;
           if (eachMetaData.districtName && eachMetaData.districtName != '') {
             eachMetaData.name += ', ' + eachMetaData.districtName;
@@ -597,6 +621,219 @@ module.exports = class Observations extends Abstract {
 
         return resolve(response);
       } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  async searchEntities(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let formatForSearchEntities = true;
+        let response = {
+          result: {},
+        };
+        
+        let userId = req.userDetails.userId;
+        let result;
+
+        let projection = [];
+
+        if (!req.query.observationId && !req.query.solutionId) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.OBSERVATION_SOLUTION_ID_REQUIRED,
+          };
+        }
+
+        if (req.query.observationId) {
+          let findObject = {
+            _id: req.query.observationId,
+            createdBy: userId,
+          };
+
+          projection.push('entities', 'entityType','entityTypeId');
+
+          let observationDocument = await observationsHelper.observationDocuments(findObject, projection);
+          result = observationDocument[0];
+        }
+
+        if (req.query.solutionId) {
+          let findQuery = {
+            _id: ObjectId(req.query.solutionId),
+          };
+          projection.push('entityType','entityTypeId');
+
+          let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projection);
+          result = _.merge(solutionDocument[0]);
+        }
+
+        let userAllowedEntities = new Array;
+        let messageData = messageConstants.apiResponses.ENTITY_FETCHED;
+
+        if(req.query.parentEntityId ) {
+
+            let entityType = entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP+"."+result.entityType;
+
+            console.log(entityType,'entityType***')
+
+            let entitiesData = await entitiesHelper.entityDocuments({
+                _id:req.query.parentEntityId
+              }, [
+                entityType,
+                "entityType",
+                "metaInformation.name",
+                "metaInformation.addressLine1",
+                "metaInformation.addressLine2",
+                "metaInformation.externalId",
+                "metaInformation.districtName"
+              ]);
+
+              let filterData = {
+                _id: req.query.parentEntityId
+              };
+      
+              console.log('API CALL START');
+              let entitiesDocumentAPICall = await entityManagementService.entityDocuments(filterData);
+              let entitiesDocument = entitiesDocumentAPICall.data;
+              console.log(entitiesData)
+              console.log(entitiesDocument,'entitiesDocument')
+
+              console.log(entitiesData[0].groups,{type:result.entityType})
+            //  console.log(stoppp)
+
+            if( entitiesData.length > 0 && entitiesData[0].groups && entitiesData[0].groups[result.entityType]  ) {
+                userAllowedEntities = 
+                entitiesData[0][entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP][result.entityType];
+            } else {
+              console.log('else block..........')
+                response.result = [];
+                if( entitiesData[0] && entitiesData[0].entityType === result.entityType ) {
+
+                    if( entitiesData[0].metaInformation ) {
+                        
+                        if( entitiesData[0].metaInformation.name ) {
+                            entitiesData[0]["name"] = entitiesData[0].metaInformation.name;
+                        }
+
+                        if( entitiesData[0].metaInformation.externalId ) {
+                            entitiesData[0]["externalId"] = entitiesData[0].metaInformation.externalId;
+                        }
+
+                        if( entitiesData[0].metaInformation.addressLine1 ) {
+                            entitiesData[0]["addressLine1"] = entitiesData[0].metaInformation.addressLine1;
+                        }
+
+                        if( entitiesData[0].metaInformation.addressLine2 ) {
+                            entitiesData[0]["addressLine2"] = entitiesData[0].metaInformation.addressLine2;
+                        }
+
+                        if( entitiesData[0].metaInformation.districtName ) {
+                            entitiesData[0]["districtName"] = entitiesData[0].metaInformation.districtName;
+                        }
+
+                        entitiesData[0] = _.pick(
+                            entitiesData[0],
+                            ["_id","name","externalId","addressLine1","addressLine2","districtName"]
+                        )
+                    }
+
+                    let data = 
+                    await entitiesHelper.observationSearchEntitiesResponse(
+                        entitiesData,
+                        result.entities
+                    );
+                    console.log(data,'<3')
+                    response["message"] = messageData;
+
+                    response.result.push({
+                        "count" : 1,
+                        "data" : data
+                    });
+
+                } else {
+                    response["message"] = 
+                    messageConstants.apiResponses.ENTITY_NOT_FOUND;
+                    
+                    response.result.push({
+                        "count":0,
+                        "data" : []
+                    });
+                }  
+
+                return resolve(response);
+            }
+        }
+
+        let userAclInformation = await userExtensionHelper.userAccessControlList(
+            userId
+        );
+        let tags = [];
+        
+        if( 
+            userAclInformation.success && 
+            Object.keys(userAclInformation.acl).length > 0 
+        ) {
+            Object.values(userAclInformation.acl).forEach(acl=>{
+                tags = tags.concat(acl);
+            })
+        }
+
+        let filterData = {
+          entityTypeId: result.entityTypeId
+        };
+
+        console.log(result,'result')
+       // console.log(stopp)
+        let entitiesDocumentAPICall = await entityManagementService.listByEntityType(
+          result.entityTypeId,
+          req.userDetails.userToken,
+          req.pageSize,
+          req.pageNo
+        );
+        console.log(entitiesDocumentAPICall,'entitiesDocumentAPICall')
+
+        if(!entitiesDocumentAPICall.success){
+          //API call failed
+          throw new Error();
+        }
+
+        let entityDocuments = entitiesDocumentAPICall;
+
+        // let entityDocuments = await entitiesHelper.search(
+        //     result.entityTypeId, 
+        //     req.searchText, 
+        //     req.pageSize, 
+        //     req.pageNo, 
+            
+        //     userAllowedEntities && userAllowedEntities.length > 0 ? 
+        //     userAllowedEntities : 
+        //     false,
+        //     tags
+        // );
+
+        let data = 
+        await entitiesHelper.observationSearchEntitiesResponse(
+            entityDocuments.data,
+            result.entities
+        )
+
+        entityDocuments.data = data;
+
+        if ( entityDocuments.data.length <= 0 ) {
+            entityDocuments.count = 0;
+            messageData = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+        }
+        response.result = entityDocuments.data;
+        response["message"] = messageData;
+
+        return resolve(response);
+      } catch (error) {
+        console.log(error, 'ERROR');
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
@@ -637,6 +874,13 @@ module.exports = class Observations extends Abstract {
           message: messageConstants.apiResponses.ASSESSMENT_FETCHED,
           result: {},
         };
+
+        console.log({
+          _id: req.params._id,
+          createdBy: req.userDetails.userId,
+          status: { $ne: 'inactive' },
+          entities: req.query.entityId,
+        },'<----')
 
         let observationDocument = await database.models.observations
           .findOne({
@@ -857,7 +1101,7 @@ module.exports = class Observations extends Abstract {
               keywords: 0,
               concepts: 0,
               createdFor: 0,
-            },
+            }
           )
           .lean();
 
@@ -951,7 +1195,7 @@ module.exports = class Observations extends Abstract {
           entityDocumentQuestionGroup,
           submissionDoc.result.evidences,
           solutionDocument && solutionDocument.questionSequenceByEcm ? solutionDocument.questionSequenceByEcm : false,
-          entityDocument.metaInformation,
+          entityDocument.metaInformation
         );
 
         assessment.evidences = parsedAssessment.evidences;
@@ -1006,7 +1250,7 @@ module.exports = class Observations extends Abstract {
             $set: {
               status: 'completed',
             },
-          },
+          }
         );
 
         return resolve({
@@ -1094,7 +1338,7 @@ module.exports = class Observations extends Abstract {
             if (newCriteriaId._id) {
               solutionCriteriaToFrameworkCriteriaMap[criteria._id.toString()] = newCriteriaId._id;
             }
-          }),
+          })
         );
 
         let updateThemes = function (themes) {
@@ -1240,7 +1484,7 @@ module.exports = class Observations extends Abstract {
         if (Object.keys(usersKeycloakIdMap).length > 0) {
           let userOrganisationDetails = await observationsHelper.getUserOrganisationDetails(
             Object.keys(usersKeycloakIdMap),
-            req.rspObj.userToken,
+            req.rspObj.userToken
           );
 
           usersKeycloakIdMap = userOrganisationDetails.data;
@@ -1360,7 +1604,7 @@ module.exports = class Observations extends Abstract {
               userId,
               solution,
               entityDocument,
-              userOrganisations,
+              userOrganisations
             );
             status = observationHelperData.status;
           } catch (error) {
@@ -1423,7 +1667,7 @@ module.exports = class Observations extends Abstract {
               createdBy: req.userDetails.userId,
               status: { $ne: 'inactive' },
             },
-            updateQuery,
+            updateQuery
           )
           .lean();
 
@@ -1475,7 +1719,7 @@ module.exports = class Observations extends Abstract {
             $set: {
               status: 'inactive',
             },
-          },
+          }
         );
 
         return resolve({
@@ -1582,7 +1826,7 @@ module.exports = class Observations extends Abstract {
       try {
         let completedObservationDocuments = await observationsHelper.completedObservations(
           req.query.fromDate,
-          req.query.toDate,
+          req.query.toDate
         );
 
         return resolve({
@@ -1779,7 +2023,7 @@ module.exports = class Observations extends Abstract {
         let submissionDocument = await observationsHelper.submissionStatus(
           req.params._id,
           req.query.entityId,
-          req.userDetails.userId,
+          req.userDetails.userId
         );
 
         submissionDocument.result = submissionDocument.data;
@@ -1853,7 +2097,7 @@ module.exports = class Observations extends Abstract {
           req.userDetails.userToken,
           req.pageSize,
           req.pageNo,
-          req.searchText,
+          req.searchText
         );
 
         observations['result'] = observations.data;
@@ -1918,7 +2162,7 @@ module.exports = class Observations extends Abstract {
           req.pageNo,
           req.pageSize,
           req.searchText,
-          req.query.filter,
+          req.query.filter
         );
 
         observations['result'] = observations.data;
@@ -1982,7 +2226,7 @@ module.exports = class Observations extends Abstract {
           req.rspObj.userToken,
           req.params._id ? req.params._id : '',
           req.query.solutionId,
-          req.body,
+          req.body
         );
 
         observations['result'] = observations.data;

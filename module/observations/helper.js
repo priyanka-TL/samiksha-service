@@ -179,28 +179,10 @@ module.exports = class ObservationsHelper {
         }
 
         if (data.project) {
-          data.project._id = ObjectId(data.project._id);
+          data.project._id = new ObjectId(data.project._id);
           data.referenceFrom = messageConstants.common.PROJECT;
         }
         
-        console.log(data,'data')
-        console.log(data, {
-          solutionId: solution._id,
-          solutionExternalId: solution.externalId,
-          programId: solution.programId ? solution.programId : undefined,
-          programExternalId: solution.programExternalId ? solution.programExternalId :undefined,
-          frameworkId: solution.frameworkId,
-          frameworkExternalId: solution.frameworkExternalId,
-          entityTypeId: solution.entityTypeId,
-          entityType: solution.entityType,
-          updatedBy: userId,
-          createdBy: userId,
-          createdFor: userId,
-          // rootOrganisations:
-          // organisationAndRootOrganisation.rootOrganisations,
-          isAPrivateProgram: solution.isAPrivateProgram,
-        },'<--',typeof solution.programId)
-
         let observationData = _.merge(data, {
           solutionId: solution._id,
           solutionExternalId: solution.externalId,
@@ -215,21 +197,6 @@ module.exports = class ObservationsHelper {
           createdFor: userId,
           isAPrivateProgram: solution.isAPrivateProgram,
         });
-          // Remove keys with undefined values
-        observationData = removeUndefinedKeys(observationData);
-
-
-        function removeUndefinedKeys(obj) {
-          return Object.keys(obj).reduce((acc, key) => {
-            if (obj[key] !== undefined) {
-              acc[key] = obj[key];
-            }
-            return acc;
-          }, {});
-        }
-
-        console.log('observation data passed',observationData,typeof observationData.solutionId)
-       // console.log(stopp)
 
         let observationDataEntry = await database.models.observations.create(
           observationData
@@ -237,14 +204,14 @@ module.exports = class ObservationsHelper {
 
         console.log(observationDataEntry,'observationDataEntry')
         
-        if (!observationData._id) {
+        if (!observationDataEntry._id) {
           throw {
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.OBSERVATION_NOT_CREATED,
           };
         }
 
-        return resolve(observationData);
+        return resolve(observationDataEntry);
       } catch (error) {
         return reject(error);
       }
@@ -2080,15 +2047,15 @@ module.exports = class ObservationsHelper {
           });
         }
 
-        let entitiesToAdd = await entitiesHelper.validateEntities(requestedData, observationDocument[0].entityTypeId);
-
+        let entitiesToAdd =  await entityManagementService.validateEntities(requestedData,observationDocument[0].entityTypeId);
+        console.log(entitiesToAdd,'entitiesToAdd')
         if (entitiesToAdd.entityIds.length > 0) {
           await database.models.observations.updateOne(
             {
               _id: observationDocument[0]._id,
             },
             {
-              $addToSet: { entities: entitiesToAdd.entityIds },
+              $addToSet: { entities: { $each: entitiesToAdd.entityIds } },
             },
           );
         }
@@ -2123,17 +2090,20 @@ module.exports = class ObservationsHelper {
   static removeEntityFromObservation(observationId, requestedData, userId) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        console.log(observationId,userId)
+        console.log(gen.utils.arrayIdsTobjectIds(requestedData),'gen.utils.arrayIdsTobjectIds(requestedData)')
         await database.models.observations.updateOne(
           {
-            _id: ObjectId(observationId),
+            _id:observationId,
             status: { $ne: 'completed' },
             createdBy: userId,
           },
           {
             $pull: {
-              entities: { $in: gen.utils.arrayIdsTobjectIds(requestedData) },
-            },
-          },
+                entities: { $in: requestedData }
+            }
+        }
         );
 
         return resolve({

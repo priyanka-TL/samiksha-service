@@ -138,13 +138,14 @@ module.exports = async function (req, res, next) {
   var token = req.headers['x-authenticated-user-token'];
   if (!req.rspObj) req.rspObj = {};
   var rspObj = req.rspObj;
-
+//note commenting solutions/addentities below for time being
+//note need to discuss 
   let internalAccessApiPaths = [
     'createGesture',
     'createEmoji',
     'solutionDetails',
     'solutions/updateSolutions',
-    'solutions/addEntities',
+    // 'solutions/addEntities',
     'frameworks/delete/',
     'questions/delete/',
     'observationSubmissions/disable/',

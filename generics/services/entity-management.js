@@ -124,34 +124,19 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', us
   });
 };
 
-async function validateEntities(entityIds, entityTypeId) {
+const validateEntities = async function (entityIds, entityTypeId) {
     return new Promise(async (resolve, reject) => {
       try {
         let ids = [];
 
-        // let entitiesDocuments = await database.models.entities
-        //   .find(
-        //     {
-        //       _id: { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
-        //       entityTypeId: entityTypeId,
-        //     },
-        //     {
-        //       _id: 1,
-        //     },
-        //   )
-        //   .lean();
-
-
-
-		///
 		  let bodyData = {
 			_id : { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
 			entityTypeId: entityTypeId,
 		  };
-		let entitiesDocuments = await this.entityDocuments(bodyData);
 
-		console.log(entitiesDocuments,'entityData from entity management')
-		
+		  let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
+      let entitiesDocuments = entitiesDocumentsAPIData.data;
+
         if (entitiesDocuments.length > 0) {
           ids = entitiesDocuments.map((entityId) => entityId._id);
         }
@@ -164,9 +149,55 @@ async function validateEntities(entityIds, entityTypeId) {
       }
     });
   }
+const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Function to find entity documents based on the given filter and projection
+        const url = entityManagementServiceUrl + messageConstants.endpoints.LIST_BY_ENTITY_TYPE+'/'+entityTypeId + `?page=${pageNo}&limit=${pageSize}`;
+        // Set the options for the HTTP POST request
+        const options = {
+          headers: {
+            'content-type': 'application/json',
+            'x-auth-token':userToken
+          },
+          json: {
+            type:entityTypeId
+          },
+        };
+      console.log(url,'url')
+        // Make the HTTP POST request to the entity management service
+        request.post(url, options, requestCallBack);
+  
+        // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
+        function requestCallBack(err, data) {
+      console.log(err,data,'err & data')
+          let result = {
+            success: true,
+          };
+  
+          if (err) {
+            result.success = false;
+          } else {
+            let response = data.body;
+            // Check if the response status is OK (HTTP 200)
+            if (response.status === httpStatusCode['ok'].status) {
+              result['data'] = response.result;
+            } else {
+              result.success = false;
+            }
+          }
+  
+          return resolve(result);
+        }
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
-  validateEntities:validateEntities
+  validateEntities:validateEntities,
+  listByEntityType:listByEntityType
 };
