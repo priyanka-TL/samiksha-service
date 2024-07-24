@@ -3188,9 +3188,7 @@ module.exports = class SolutionsHelper {
           },
           ['_id'],
         );
-
-        console.log(entitiesDocument,'entitiesDocument')
-
+        
         if (!entitiesDocument.success) {
           throw {
             message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
