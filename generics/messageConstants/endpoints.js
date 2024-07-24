@@ -19,6 +19,7 @@ module.exports = {
   DOWNLOADABLE_FILE_URL: 'api/v1/cloud-services/files/getDownloadableUrl',
   FIND_ENTITY_DOCUMENTS: '/v1/entities/find',
   LIST_BY_ENTITY_TYPE: '/v1/entities/listByEntityType',
+  FIND_ENTITY_TYPE_DOCUMENTS :'/v1/entityTypes/find',
   GET_SCHOOL_DATA: '/v1/entities/listByLocationIds',
   USER_CONSENT_API: '/v1/user/consent/update',
   GET_TEMPLATE_DETAILS: '/v1/project/templates/details',

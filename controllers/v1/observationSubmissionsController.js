@@ -16,6 +16,9 @@ const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
 const scoringHelper = require(MODULES_BASE_PATH + '/scoring/helper');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
+const solutionQueries = require(DB_QUERY_BASE_PATH+'/solutions');
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+
 /**
  * ObservationSubmissions
  * @class
@@ -95,17 +98,12 @@ module.exports = class ObservationSubmissions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log({
-          _id: req.params._id,
-          // createdBy: req.userDetails.userId,
-          // status: { $ne: 'inactive' },
-          // entities: req.query.entityId,
-        });
+
         let observationDocument = await observationsHelper.observationDocuments({
           _id: req.params._id,
-          // createdBy: req.userDetails.userId,
-          // status: { $ne: 'inactive' },
-          // entities: req.query.entityId,
+          createdBy: req.userDetails.userId,
+          status: { $ne: 'inactive' },
+          entities: req.query.entityId,
         });
 
         if (!observationDocument[0]) {
@@ -119,18 +117,21 @@ module.exports = class ObservationSubmissions extends Abstract {
 
         let entityDocument = { metaInformation: {} };
         if (validateEntities == 'ON') {
-          let entityQueryObject = {
+
+          let filterData = {
             _id: req.query.entityId,
             entityType: observationDocument.entityType,
-          };
-          entityDocument = await database.models.entities
-            .findOne(entityQueryObject, {
-              metaInformation: 1,
-              entityTypeId: 1,
-              entityType: 1,
-              registryDetails: 1,
-            })
-            .lean();
+           };
+ 
+           let entitiesDocument = await entityManagementService.entityDocuments(
+             filterData
+           );
+
+           if(!entitiesDocument.success){
+            throw new Error();
+           }
+
+           entityDocument = entitiesDocument.data[0];
 
           if (!entityDocument) {
             let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
@@ -145,7 +146,7 @@ module.exports = class ObservationSubmissions extends Abstract {
           entityDocument.metaInformation.registryDetails = entityDocument.registryDetails;
         }
 
-        let solutionDocument = await solutionsHelper.solutionDocuments(
+        let solutionDocument = await solutionQueries.solutionDocuments(
           {
             _id: observationDocument.solutionId,
             status: 'active',
@@ -169,8 +170,6 @@ module.exports = class ObservationSubmissions extends Abstract {
           ],
         );
 
-        console.log(solutionDocument,'solutionDocument')
-        //console.log(stopppp)
         if (!solutionDocument[0]) {
           return resolve({
             status: httpStatusCode.bad_request.status,
@@ -179,12 +178,24 @@ module.exports = class ObservationSubmissions extends Abstract {
         }
 
         solutionDocument = solutionDocument[0];
+
         if (validateEntities == 'ON') {
-          let entityProfileForm = await database.models.entityTypes
-            .findOne(solutionDocument.entityTypeId, {
-              profileForm: 1,
-            })
-            .lean();
+
+          let filterData = {
+            _id: solutionDocument.entityTypeId
+           };
+ 
+           let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments(
+             filterData,
+             {profileForm:1},
+             req.userDetails.userToken
+           );
+
+           if(!entityTypeDocumentsAPICall.success){
+            throw new Error();
+           }
+
+          let entityProfileForm = entityTypeDocumentsAPICall.data[0];
 
           if (!entityProfileForm) {
             return resolve({
@@ -276,7 +287,7 @@ module.exports = class ObservationSubmissions extends Abstract {
 
         let submissionDocumentEvidences = {};
         let submissionDocumentCriterias = [];
-        //need to verify this code 
+
         solutionDocument.evidenceMethods !== undefined && Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
           if (!(solutionDocument.evidenceMethods[solutionEcm].isActive === false)) {
             solutionDocument.evidenceMethods[solutionEcm].startTime = '';
@@ -296,7 +307,7 @@ module.exports = class ObservationSubmissions extends Abstract {
         });
 
         submissionDocument.evidences = submissionDocumentEvidences;
-        //need to verify this code
+  
         try{
           submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
         }catch(error){

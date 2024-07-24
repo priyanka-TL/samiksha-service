@@ -36,13 +36,13 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           projection: projection,
         },
       };
-	  console.log(url,'url')
+	  
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
 
       // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
       function requestCallBack(err, data) {
-		console.log(err,data,'err & data')
+		
         let result = {
           success: true,
         };
@@ -109,13 +109,13 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', us
         } else {
           let response = data.body;
           // Check if the response status is OK (HTTP 200)
-          if (response.status === messageConstants.common.OK) {
+          if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
           } else {
             result.success = false;
           }
         }
-
+        
         return resolve(result);
       }
     } catch (error) {
@@ -164,13 +164,13 @@ const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo)
             type:entityTypeId
           },
         };
-      console.log(url,'url')
+      
         // Make the HTTP POST request to the entity management service
         request.post(url, options, requestCallBack);
   
         // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
         function requestCallBack(err, data) {
-      console.log(err,data,'err & data')
+      
           let result = {
             success: true,
           };

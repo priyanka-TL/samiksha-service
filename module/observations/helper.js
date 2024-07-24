@@ -118,19 +118,16 @@ module.exports = class ObservationsHelper {
           ],
         );
 
-        console.log(solutionData[0],'checl********')
-
         if (!solutionData.length > 0) {
           throw {
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           };
         }
-        console.log(solutionData,'solndata');
-      //  console.log(stoppp)
+
         if (solutionData[0].isReusable) {
 
-          //need to handle this
+
           solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
             solutionId,
             //   {
@@ -202,8 +199,6 @@ module.exports = class ObservationsHelper {
           observationData
         );
 
-        console.log(observationDataEntry,'observationDataEntry')
-        
         if (!observationDataEntry._id) {
           throw {
             status: httpStatusCode.bad_request.status,
@@ -509,11 +504,11 @@ module.exports = class ObservationsHelper {
         }
 
         if (typeof observationId == 'string') {
-          observationId = ObjectId(observationId);
+          observationId = new ObjectId(observationId);
         }
 
         if (typeof entityId == 'string') {
-          entityId = ObjectId(entityId);
+          entityId = new ObjectId(entityId);
         }
 
         let submissionDocument = await database.models.observationSubmissions
@@ -2048,7 +2043,7 @@ module.exports = class ObservationsHelper {
         }
 
         let entitiesToAdd =  await entityManagementService.validateEntities(requestedData,observationDocument[0].entityTypeId);
-        console.log(entitiesToAdd,'entitiesToAdd')
+
         if (entitiesToAdd.entityIds.length > 0) {
           await database.models.observations.updateOne(
             {
@@ -2090,9 +2085,6 @@ module.exports = class ObservationsHelper {
   static removeEntityFromObservation(observationId, requestedData, userId) {
     return new Promise(async (resolve, reject) => {
       try {
-
-        console.log(observationId,userId)
-        console.log(gen.utils.arrayIdsTobjectIds(requestedData),'gen.utils.arrayIdsTobjectIds(requestedData)')
         await database.models.observations.updateOne(
           {
             _id:observationId,
