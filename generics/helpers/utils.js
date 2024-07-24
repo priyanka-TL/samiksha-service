@@ -202,7 +202,6 @@ function filterLocationIdandCode(dataArray) {
 }
 
 function arrayIdsTobjectIds(ids) {
-  console.log(ids,'ids')
   return ids.map((id) => {
     return new ObjectId(id)
   });
