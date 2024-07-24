@@ -917,8 +917,10 @@ module.exports = class ObservationsHelper {
    * observation details.
    * @method
    * @name details
-   * @param  {String} observationId observation id.
-   * @returns {details} observation details.
+   * @param  {String} observationId -observation id.
+   * @param  {String} solutionId    -solutionId.
+   * @param  {String} userId        -user id.
+   * @returns {Object}              observation details.
    */
 
   // static details(observationId) {
@@ -950,6 +952,7 @@ module.exports = class ObservationsHelper {
   static details(observationId = "", solutionId = "", userId = "") {
     return new Promise(async (resolve, reject) => {
       try {
+        //Check for observation or soultion ID
         if (observationId == "" && solutionId == "") {
           throw {
             message:
@@ -967,7 +970,8 @@ module.exports = class ObservationsHelper {
           filterQuery.solutionId = ObjectId(solutionId);
           filterQuery.createdBy = userId;
         }
-
+        
+        //find the Obserations documents from the observation collections
         let observationDocument = await this.observationDocuments(filterQuery);
 
         if (!observationDocument[0]) {
@@ -978,11 +982,12 @@ module.exports = class ObservationsHelper {
           let filterData = {
            _id: {$in:observationDocument[0].entities},
           };
-
+        
+         //Retrieving the entity from the Entity Management Service
           let entitiesDocument = await entityManagementService.entityDocuments(
             filterData
           );
-
+          // Adding the entity and count on the observation response document
           if (entitiesDocument.success) {
             observationDocument[0].entities = entitiesDocument.data;
             observationDocument[0].count = entitiesDocument.count;
@@ -1609,6 +1614,7 @@ module.exports = class ObservationsHelper {
   static userAssigned(userId, pageNo, pageSize, search, filter = '') {
     return new Promise(async (resolve, reject) => {
       try {
+        //Constructing the match query for assigned solutions
         let matchQuery = {
           $match: {
             createdBy: userId,
@@ -1630,7 +1636,7 @@ module.exports = class ObservationsHelper {
             matchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
-
+      //Constructing the projection 
         let projection1 = {
           $project: {
             name: 1,
@@ -1645,7 +1651,7 @@ module.exports = class ObservationsHelper {
 
         facetQuery['$facet']['totalCount'] = [{ $count: 'count' }];
 
-        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize?pageSize:100 }];
+        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) }, { $limit: pageSize ? pageSize: messageConstants.common.DEFAULT_PAGE_SIZE }];
 
         let projection2 = {};
         projection2['$project'] = {
@@ -1665,7 +1671,8 @@ module.exports = class ObservationsHelper {
           facetQuery,
           projection2,
         );
-
+        
+       //Retrieve the matching documents from the observation collection
         let result = await database.models.observations.aggregate(aggregateData);
         if (result[0].data.length > 0) {
           let solutionIds = [];
@@ -1680,7 +1687,7 @@ module.exports = class ObservationsHelper {
             },
             ['language', 'creator'],
           );
-
+        //Adding creator and language to the observation document fetched from the solution documents
           solutionDocuments.forEach((solutionDocument) => {
             let solution = result[0].data.find(
               (resultData) => resultData.solutionId.toString() === solutionDocument._id.toString(),

@@ -3,9 +3,6 @@ module.exports = (req) => {
     uploadThemes: function () {
       req.checkParams('_id').exists().withMessage('required solution id');
     },
-    update: function () {
-      // req.checkQuery('solutionExternalId').exists().withMessage('required solution externalId');
-    },
     questionList: function () {
       req.checkParams('_id').exists().withMessage('required solution id');
     },
@@ -53,6 +50,46 @@ module.exports = (req) => {
         .withMessage('criteriaIds should be array')
         .notEmpty()
         .withMessage('criteriaIds cannot be empty');
+    },
+    create: function () {
+      req.checkBody('externalId').exists().withMessage('required solution externalId');
+      req.checkBody('name').exists().withMessage('required solution name');
+      req.checkBody('type').exists().withMessage('required solution type');
+      req.checkBody('subType').exists().withMessage('required solution subType');
+    },
+    update: function () {
+      req.checkParams('_id').exists().withMessage('required solution id');
+    },
+    isTargetedBasedOnUserProfile: function () {
+      req.checkParams('_id').exists().withMessage('Required solution id');
+    },
+    detailsBasedOnRoleAndLocation: function () {
+      req.checkParams('_id').exists().withMessage('Required solution id');
+    },
+    addRolesInScope: function () {
+      req.checkParams('_id').exists().withMessage('required program id');
+      req.checkBody('roles').exists().withMessage('required program roles to be added');
+    },
+    addEntitiesInScope: function () {
+      req.checkParams('_id').exists().withMessage('required program id');
+      req.checkBody('entities').exists().withMessage('required entities to be added');
+    },
+    removeRolesInScope: function () {
+      req.checkParams('_id').exists().withMessage('required program id');
+      req.checkBody('roles').exists().withMessage('required program roles to be added');
+    },
+    removeEntitiesInScope: function () {
+      req.checkParams('_id').exists().withMessage('required program id');
+      req.checkBody('entities').exists().withMessage('required entities to be added');
+    },
+    getDetails: function () {
+      req.checkQuery('_id').exists().withMessage('required solution id');
+    },
+    fetchLink: function () {
+      req.checkParams('_id').exists().withMessage('required solution id');
+    },
+    verifyLink: function () {
+      req.checkParams('_id').exists().withMessage('required solution link');
     },
   };
 

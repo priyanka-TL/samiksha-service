@@ -78,7 +78,6 @@ module.exports = class SolutionsHelper {
             let entityData = await entityManagementService.entityDocuments(bodyData);
             if (entityData.success) {
               entityData.data.forEach((entity) => {
-                // entityIds.push(entity.id);
                 entityIds.push(entity._id);
               });
             }
@@ -154,7 +153,7 @@ module.exports = class SolutionsHelper {
           );
         }
         // adding scope to the solution document
-        if (!solutionData.excludeScope && solutionData.programExternalId && programData[0].scope) {
+        if (!solutionData.excludeScope ) {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
@@ -199,6 +198,7 @@ module.exports = class SolutionsHelper {
   ) {
     return new Promise(async (resolve, reject) => {
       try {
+      //fetch the assigned solutions for the user
         let assignedSolutions = await this.assignedUserSolutions(
           solutionType,
           userId,
@@ -284,7 +284,7 @@ module.exports = class SolutionsHelper {
         } else if (gen.utils.convertStringToBoolean(surveyReportPage) === true) {
           getTargetedSolution = false;
         }
-
+        // solutions based on role and location
         if (getTargetedSolution) {
           targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search);
         }
@@ -318,7 +318,7 @@ module.exports = class SolutionsHelper {
 
         return resolve({
           success: true,
-          message: messageConstants.apiResponses.TARGETED_OBSERVATION_FETCHED,
+          message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
           data: {
             data: mergedData,
             count: totalCount,
@@ -351,6 +351,7 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let userAssignedSolutions = {};
+        //Checking for user assigned solutions based on solutionType
         if (solutionType === messageConstants.common.OBSERVATION) {
           userAssignedSolutions = await observationHelper.userAssigned(
             userId,
@@ -360,8 +361,6 @@ module.exports = class SolutionsHelper {
             filter,
           );
         } else if (solutionType === messageConstants.common.SURVEY) {
-          // Ml-core it will available IN survey service
-
           userAssignedSolutions = await surveyHelper.userAssigned(
             userId,
             '', //Page No
@@ -538,7 +537,7 @@ module.exports = class SolutionsHelper {
         }
 
         matchQuery['startDate'] = { $lte: new Date() };
-
+        //listing the solution based on type and query
         let targetedSolutions = await this.list(type, subType, matchQuery, pageNo, pageSize, searchText, [
           'name',
           'description',
@@ -1990,6 +1989,7 @@ module.exports = class SolutionsHelper {
           if (data.scope && Object.keys(data.scope).length > 0) {
             await this.setScope(
               // newSolutionDocument.programId,
+              newSolutionDocument.programId?newSolutionDocument.programId:"",
               duplicateSolutionDocument._id,
               data.scope,
             );
@@ -2376,7 +2376,7 @@ module.exports = class SolutionsHelper {
           isATargetedSolution: false,
           link: link,
         };
-
+        // find the solution document based on the link
         let solutionDetails = await solutionsQueries.solutionDocuments({ link: link }, [
           'type',
           '_id',
@@ -2401,6 +2401,7 @@ module.exports = class SolutionsHelper {
           'name',
           'projectTemplateId',
         ]);
+        // Check the user is targeted to the solution or not
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
           response.solutionId = solutionDetails[0]._id;
           response.type = solutionDetails[0].type;
@@ -2816,13 +2817,14 @@ module.exports = class SolutionsHelper {
           isATargetedSolution: false,
           _id: solutionId,
         };
-
+        //get the query based on the roles and locations
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData);
         if (!queryData.success) {
           return resolve(queryData);
         }
         queryData.data['_id'] = solutionId;
         let matchQuery = queryData.data;
+        //Check solutions collection based on rolesandLocation query
         let solutionData = await solutionsQueries.solutionDocuments(matchQuery, ['_id', 'type', 'programId', 'name']);
 
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
@@ -3559,6 +3561,7 @@ module.exports = class SolutionsHelper {
   static addRolesInScope(solutionId, roles) {
     return new Promise(async (resolve, reject) => {
       try {
+        //Retrive the solution to update the role
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
@@ -3577,7 +3580,7 @@ module.exports = class SolutionsHelper {
         }
 
         let updateQuery = {};
-
+        // Check the roles array from the req body and update the roles accordingly
         if (Array.isArray(roles) && roles.length > 0) {
           // let userRoles = await userRolesHelper.roleDocuments(
           //   {
@@ -3599,6 +3602,7 @@ module.exports = class SolutionsHelper {
           // updateQuery['$set'] = {
           // 	'scope.roles': currentRoles,
           // }
+          // if there is an role array removing all from the value of roles
           await solutionsQueries.updateSolutionDocument(
             {
               _id: solutionId,
@@ -3619,7 +3623,7 @@ module.exports = class SolutionsHelper {
             };
           }
         }
-
+        //update the solutions document
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
@@ -3950,6 +3954,7 @@ module.exports = class SolutionsHelper {
 
         let solutionId = solutionIds;
         let solutionDocumentProjectionFields = await observationHelper.solutionDocumentProjectionFieldsForDetailsAPI();
+        //Retrive the solution document based on the solution id
         let solutionDocument = await solutionsQueries.findOne({ _id: solutionId }, solutionDocumentProjectionFields);
 
         if (!solutionDocument) {
@@ -3972,6 +3977,7 @@ module.exports = class SolutionsHelper {
 
         let criteriaId = new Array();
         let criteriaObject = {};
+        //get criteria weightage and criteriaId from themes
         let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
 
         criteriaIdArray.forEach((eachCriteriaId) => {
@@ -3980,7 +3986,7 @@ module.exports = class SolutionsHelper {
             weightage: eachCriteriaId.weightage,
           };
         });
-
+        //find creteria documents based on the criteria ID
         let criteriaQuestionDocument = await database.models.criteriaQuestions
           .find(
             { _id: { $in: criteriaId } },
@@ -4054,7 +4060,7 @@ module.exports = class SolutionsHelper {
           : ['A1'];
         assessment.evidences = [];
         const assessmentsHelper = require(MODULES_BASE_PATH + '/assessments/helper');
-
+        // getting evidences and submissions for the assessment
         const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
           Object.values(evidenceMethodArray),
           entityDocumentQuestionGroup,
