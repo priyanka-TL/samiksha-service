@@ -76,8 +76,8 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
  * @returns {JSON} - List of entity data.
  */
 
-// Function to find entity type documents based on the given filter, projection, and user token
-const entityTypeDocuments = function (filterData = 'all', projection = 'all', userToken) {
+// Function to find entity type documents based on the given filter, projection
+const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the entity management service
@@ -87,7 +87,6 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', us
         headers: {
           'content-type': 'application/json',
           'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-          'x-authenticated-token': userToken,
         },
         json: {
           query: filterData,
