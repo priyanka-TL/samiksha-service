@@ -3237,11 +3237,11 @@ module.exports = class SolutionsHelper {
           matchQuery.status = messageConstants.common.ACTIVE_STATUS;
         }
 
-        if (type !== '') {
+        if (type && type !== '') {
           matchQuery['type'] = type;
         }
 
-        if (subType !== '') {
+        if (subType && subType !== '') {
           matchQuery['subType'] = subType;
         }
 
@@ -3883,12 +3883,14 @@ module.exports = class SolutionsHelper {
           });
         }
         let entitiesData = [];
-        entitiesData = solutionData[0].scope.entities;
+        entitiesData = solutionData[0].scope.entities ? solutionData[0].scope.entities : [];
+
         if (!(entitiesData.length > 0)) {
           throw {
             message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
           };
         }
+
 
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
