@@ -531,12 +531,12 @@ module.exports = class SurveysHelper {
           survey['description'] = solution.description;
           survey['isAPrivateProgram'] = solution.isAPrivateProgram;
 
-          //   if (solution.programId) {
-          //     survey["programId"] = solution.programId;
-          //   }
-          //   if (solution.programExternalId) {
-          //     survey["programExternalId"] = solution.programExternalId;
-          //   }
+          if (solution.programId) {
+            survey["programId"] = solution.programId;
+          }
+          if (solution.programExternalId) {
+            survey["programExternalId"] = solution.programExternalId;
+          }
 
           surveyDocument = await this.create(survey);
 
@@ -803,23 +803,23 @@ module.exports = class SurveysHelper {
 
         solutionDocument = solutionDocument[0];
 
-        // let programDocument = [];
+        let programDocument = [];
 
-        // if (surveyDocument.programId) {
-        //   let programQueryObject = {
-        //     _id: surveyDocument.programId,
-        //     status: messageConstants.common.ACTIVE_STATUS,
-        //     components: { $in: [ObjectId(surveyDocument.solutionId)] },
-        //   };
+        if (surveyDocument.programId) {
+            let programQueryObject = {
+              _id: surveyDocument.programId,
+              status: messageConstants.common.ACTIVE_STATUS,
+              components: { $in: [ObjectId(surveyDocument.solutionId)] },
+            };
 
-        //   programDocument = await programsHelper.list(programQueryObject, [
-        //     'externalId',
-        //     'name',
-        //     'description',
-        //     'imageCompression',
-        //     'isAPrivateProgram',
-        //   ]);
-        // }
+           programDocument = await programsHelper.list(programQueryObject, [
+             'externalId',
+             'name',
+             'description',
+             'imageCompression',
+             'isAPrivateProgram',
+           ]);
+         }
 
         let solutionDocumentFieldList = await this.solutionDocumentFieldListInResponse();
 
@@ -827,9 +827,29 @@ module.exports = class SurveysHelper {
 
         result.solution = await _.pick(solutionDocument, solutionDocumentFieldList);
 
-        // if (programDocument.length > 0) {
-        //   result.program = programDocument[0];
-        // }
+        if (programDocument.length > 0) {
+          result.program = programDocument[0];
+          /*
+          //Check data present in programUsers collection.
+          //checkForUserJoinedProgramAndConsentShared will returns an object which contain joinProgram and consentShared status.
+          let programJoinStatus =
+            await programUsersHelper.checkForUserJoinedProgramAndConsentShared(
+              programDocument[0]._id,
+              userId
+            );
+          
+          // if programJoined key is false, user not joined the program.
+          result.programJoined = programJoinStatus.joinProgram;
+          result.consentShared = programJoinStatus.consentShared;
+          result.rootOrganisations = programDocument[0].rootOrganisations
+            ? programDocument[0].rootOrganisations[0]
+            : "";
+          if (programDocument[0].hasOwnProperty("requestForPIIConsent")) {
+            result.requestForPIIConsent =
+              programDocument[0].requestForPIIConsent;
+          }
+          */
+        }
 
         let assessment = {};
 
@@ -912,6 +932,9 @@ module.exports = class SurveysHelper {
 
           submissionDocumentEvidences = surveySubmissionDocument[0].evidences;
         } else {
+
+          //program join code here...
+
           let submissionDocument = {
             solutionId: solutionDocument._id,
             solutionExternalId: solutionDocument.externalId,
@@ -939,15 +962,16 @@ module.exports = class SurveysHelper {
             submissionDocument.userRoleInformation = roleInformation;
           }
 
-          // if (programDocument.length > 0) {
-          //   submissionDocument.programId = programDocument[0]._id;
-          //   submissionDocument.programExternalId = programDocument[0].externalId;
-          // }
+          if (programDocument.length > 0) {
+            submissionDocument.programId = programDocument[0]._id;
+            submissionDocument.programExternalId = programDocument[0].externalId;
+          }
 
           let submissionDoc = await database.models.surveySubmissions.create(submissionDocument);
 
           if (submissionDoc._id) {
             assessment.submissionId = submissionDoc._id;
+             //add report infromation to survey solution code
           }
         }
 
