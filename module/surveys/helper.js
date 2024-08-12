@@ -879,7 +879,7 @@ module.exports = class SurveysHelper {
           'concepts',
           'createdFor',
         ]);
-
+     
         let evidenceMethodArray = {};
         let submissionDocumentEvidences = {};
         let submissionDocumentCriterias = [];
@@ -1450,8 +1450,10 @@ module.exports = class SurveysHelper {
           if (surveyDocument.length > 0) {
             surveyId = surveyDocument[0]._id;
           } else {
-            let solutionData = solutionDocument[0];
-              await solutionsHelper.detailsBasedOnRoleAndLocation(
+            // let solutionData = solutionDocument[0];
+            const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+
+           let solutionData=await solutionsHelper.detailsBasedOnRoleAndLocation(
                 solutionId,
                 bodyData,
                 messageConstants.common.SURVEY
@@ -1488,7 +1490,7 @@ module.exports = class SurveysHelper {
             //   );
             // }
 
-            let createSurveyDocument = await this.createSurveyDocument(userId, solutionData, userId);
+            let createSurveyDocument = await this.createSurveyDocument(userId, solutionData.data, userId);
 
             if (!createSurveyDocument.success) {
               throw new Error(messageConstants.apiResponses.SURVEY_CREATION_FAILED);
@@ -1655,7 +1657,6 @@ module.exports = class SurveysHelper {
           },
           ['link'],
         );
-
         if (!surveyData.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
         }
