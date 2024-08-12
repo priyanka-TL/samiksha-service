@@ -34,7 +34,7 @@ module.exports = class ProgramsHelper {
    * @returns {Object} - Programs list.
    */
 
-  static list(pageNo = '', pageSize = '', searchText, filter = {}, projection) {
+  static list(filter = {}, projection,pageNo = '', pageSize = '', searchText ) {
     return new Promise(async (resolve, reject) => {
       try {
         let programDocument = [];
@@ -970,14 +970,11 @@ module.exports = class ProgramsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let programsData = await this.list(
-          '',
-          '',
-          '',
           {
             createdBy: userId,
             isAPrivateProgram: true,
           },
-          ['name', 'externalId', 'description', '_id'],
+          ['name', 'externalId', 'description', '_id'],     
         );
 
         if (!programsData.length > 0) {
@@ -1050,9 +1047,6 @@ module.exports = class ProgramsHelper {
 
         if (Array.isArray(programIds) && programIds.length > 0) {
           programsData = await this.list(
-            '',
-            '',
-            '',
             {
               _id: { $in: programIds },
             },
@@ -1096,7 +1090,7 @@ module.exports = class ProgramsHelper {
   static removeSolutions(programId, solutionIds) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programsData = await this.list('', '', '', { _id: programId }, ['_id']);
+        let programsData = await this.list({ _id: programId }, ['_id']);
 
         if (!programsData.length > 0) {
           throw {

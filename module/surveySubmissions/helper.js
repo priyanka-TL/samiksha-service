@@ -267,6 +267,7 @@ module.exports = class SurveySubmissionsHelper {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
+        const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 
         let getSurveyList = [
           solutionsHelper.solutionDocumentsByAggregateQuery([

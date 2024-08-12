@@ -950,9 +950,9 @@ module.exports = class SolutionsHelper {
             },
             isRubricDriven: true,
           },
-          {
-            scoringSystem: 1,
-          },
+          [
+            "scoringSystem"
+          ],
         );
         return resolve(solutionDocument);
       } catch (error) {
@@ -2124,6 +2124,33 @@ module.exports = class SolutionsHelper {
             if (!isSolutionActive) {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
+
+              // user is not targeted and privateSolutionCreation required
+              /**
+               * function privateProgramAndSolutionDetails
+               * Request:
+               * @param {solutionData} solution data
+               * @param {userToken} for UserId
+               * @response private solutionId
+               */
+              
+              let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
+                solutionData,
+                userId,
+                userToken,
+              );
+              if (!privateProgramAndSolutionDetails.success) {
+                throw {
+                  status: httpStatusCode.bad_request.status,
+                  message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+                };
+              }
+              // Replace public solutionId with private solutionId.
+              if (privateProgramAndSolutionDetails.result != '') {
+                checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
+              }
+            
+            
           }
         } else if (solutionData.type === messageConstants.common.SURVEY) {
           // Get survey submissions of user
@@ -2150,6 +2177,8 @@ module.exports = class SolutionsHelper {
             ]
           }       
            */
+          // Targeted solution
+          if (checkForTargetedSolution.result.isATargetedSolution) {
           let surveySubmissionDetails = await userHelper.surveySubmissions(userId, solutionData.solutionId);
           let surveySubmissionData = surveySubmissionDetails.data;
           if (surveySubmissionData.length > 0) {
@@ -2163,6 +2192,36 @@ module.exports = class SolutionsHelper {
           } else if (!isSolutionActive) {
             throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
           }
+        }else {
+          if (!isSolutionActive) {
+            throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+          }
+
+            // user is not targeted and privateSolutionCreation required
+            /**
+             * function privateProgramAndSolutionDetails
+             * Request:
+             * @param {solutionData} solution data
+             * @param {userToken} for UserId
+             * @response private solutionId
+             */
+            
+            let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
+              solutionData,
+              userId,
+              userToken,
+            );
+            if (!privateProgramAndSolutionDetails.success) {
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+              };
+            }
+            // Replace public solutionId with private solutionId.
+            if (privateProgramAndSolutionDetails.result != '') {
+              checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
+            }
+        }
         }
         // else if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
         //   // Targeted solution
@@ -2679,6 +2738,9 @@ module.exports = class SolutionsHelper {
               'description',
               'certificateTemplateId',
               'projectTemplateId',
+              'themes',
+              "evidenceMethods",
+              "sections"
             ],
           );
 
@@ -2707,8 +2769,10 @@ module.exports = class SolutionsHelper {
               duplicateSolution.subType,
               userId,
               duplicateSolution.projectTemplateId,
+              duplicateSolution.themes,
+              duplicateSolution.evidenceMethods,
+              duplicateSolution.sections
             );
-
             _.merge(duplicateSolution, solutionCreationData);
             _.merge(duplicateSolution, solutionDataToBeUpdated);
 
@@ -2758,6 +2822,11 @@ module.exports = class SolutionsHelper {
             data.type ? data.type : messageConstants.common.ASSESSMENT,
             data.subType ? data.subType : messageConstants.common.INSTITUTIONAL,
             userId,
+            '',
+            data.themes,
+            data.evidenceMethods,
+            data.sections
+
           );
           _.merge(solutionDataToBeUpdated, createSolutionData);
           solution = await this.create(solutionDataToBeUpdated);
@@ -4123,7 +4192,7 @@ function _createProgramData(
   userId,
   startDate,
   endDate,
-  createdBy = '',
+  createdBy = ''
 ) {
   let programData = {};
   programData.name = name;
@@ -4158,6 +4227,9 @@ function _createSolutionData(
   subType = '',
   updatedBy = '',
   projectTemplateId = '',
+  themes=[],
+  evidenceMethods={},
+  sections={}
 ) {
   let solutionData = {};
   solutionData.name = name;
@@ -4184,6 +4256,15 @@ function _createSolutionData(
   if (projectTemplateId) {
     solutionData.projectTemplateId = projectTemplateId;
   }
-
+  if(themes){
+    solutionData.themes = themes
+  }
+  if(evidenceMethods){
+    solutionData.evidenceMethods = evidenceMethods
+  }
+  if(sections){
+    solutionData.sections = sections
+  }
+  
   return solutionData;
 }
