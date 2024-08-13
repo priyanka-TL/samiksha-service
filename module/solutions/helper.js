@@ -2126,17 +2126,9 @@ module.exports = class SolutionsHelper {
             }
 
               // user is not targeted and privateSolutionCreation required
-              /**
-               * function privateProgramAndSolutionDetails
-               * Request:
-               * @param {solutionData} solution data
-               * @param {userToken} for UserId
-               * @response private solutionId
-               */
-              
               let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
-                solutionData,
-                userId,
+                solutionData,  //solution data
+                userId,        //User Id
                 userToken,
               );
               if (!privateProgramAndSolutionDetails.success) {

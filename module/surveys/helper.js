@@ -19,7 +19,6 @@ const appsPortalBaseUrl =
     ? process.env.APP_PORTAL_BASE_URL + '/'
     : 'https://apps.shikshalokam.org/';
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
-const kendraService = require(ROOT_PATH + '/generics/services/kendra');
 const surveySolutionTemplate = '-SURVEY-TEMPLATE';
 const surveyAndFeedback = 'SF';
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
@@ -1638,12 +1637,6 @@ module.exports = class SurveysHelper {
         if (!surveyData.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
         }
-        // Commenting the appDetails for now
-        // let appDetails = await kendraService.getAppDetails(appName);
-
-        // if (appDetails.result === false) {
-        //   throw new Error(messageConstants.apiResponses.APP_NOT_FOUND);
-        // }
 
         let link = appsPortalBaseUrl + appName + messageConstants.common.TAKE_SURVEY + surveyData[0].link;
 
