@@ -505,7 +505,9 @@ module.exports = class SubmissionsHelper {
             // Push updated submission to kafka for reporting/tracking.
             observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(updatedSubmissionDocument._id);
           } else if (modelName == messageConstants.common.SURVEY_SUBMISSIONS) {
-            // Push updated submission to kafka for reporting/tracking.
+            // Push updated submission to kafka for reporting/tracking."
+            const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
+
             surveySubmissionsHelper.pushInCompleteSurveySubmissionForReporting(updatedSubmissionDocument._id);
           }
 

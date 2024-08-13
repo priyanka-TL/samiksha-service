@@ -25,6 +25,7 @@ const surveyAndFeedback = 'SF';
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const surveyQueries = require(DB_QUERY_BASE_PATH + '/surveys');
 
 /**
  * SurveysHelper
@@ -45,30 +46,7 @@ module.exports = class SurveysHelper {
   static surveyDocuments(surveyFilter = 'all', fieldsArray = 'all', sortedData = 'all', skipFields = 'none') {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = surveyFilter != 'all' ? surveyFilter : {};
-
-        let projection = {};
-
-        if (fieldsArray != 'all') {
-          fieldsArray.forEach((field) => {
-            projection[field] = 1;
-          });
-        }
-
-        if (skipFields !== 'none') {
-          skipFields.forEach((field) => {
-            projection[field] = 0;
-          });
-        }
-
-        let surveyDocuments;
-
-        if (sortedData !== 'all') {
-          surveyDocuments = await database.models.surveys.find(queryObject, projection).sort(sortedData).lean();
-        } else {
-          surveyDocuments = await database.models.surveys.find(queryObject, projection).lean();
-        }
-
+       let surveyDocuments = await surveyQueries.surveyDocuments(surveyFilter,fieldsArray,sortedData,skipFields)
         return resolve(surveyDocuments);
       } catch (error) {
         return resolve({
@@ -91,7 +69,7 @@ module.exports = class SurveysHelper {
   static create(data = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveyData = await database.models.surveys.create(data);
+        let surveyData = await surveyQueries.create(data);
 
         return resolve(surveyData);
       } catch (error) {

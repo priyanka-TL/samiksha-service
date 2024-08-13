@@ -9,6 +9,8 @@
 const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
 const slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications');
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const surveySubmissionQueries = require(DB_QUERY_BASE_PATH + '/surveySubmissions');
+const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 
 /**
  * SurveySubmissionsHelper
@@ -34,33 +36,8 @@ module.exports = class SurveySubmissionsHelper {
   ) {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = surveySubmissionFilter != 'all' ? surveySubmissionFilter : {};
-
-        let projection = {};
-
-        if (fieldsArray != 'all') {
-          fieldsArray.forEach((field) => {
-            projection[field] = 1;
-          });
-        }
-
-        if (skipFields !== 'none') {
-          skipFields.forEach((field) => {
-            projection[field] = 0;
-          });
-        }
-
-        let surveySubmissionDocuments;
-
-        if (sortedData !== 'all') {
-          surveySubmissionDocuments = await database.models.surveySubmissions
-            .find(queryObject, projection)
-            .sort(sortedData)
-            .lean();
-        } else {
-          surveySubmissionDocuments = await database.models.surveySubmissions.find(queryObject, projection).lean();
-        }
-
+        
+        let surveySubmissionDocuments = await surveySubmissionQueries.surveySubmissionDocuments(surveySubmissionFilter,fieldsArray,sortedData,skipFields)
         return resolve(surveySubmissionDocuments);
       } catch (error) {
         return resolve({
@@ -289,7 +266,7 @@ module.exports = class SurveySubmissionsHelper {
             },
             { $sort: { createdAt: -1 } },
           ]),
-          database.models.surveySubmissions.aggregate([
+          surveySubmissionQueries.getAggregate([
             { $match: { createdBy: userId } },
             {
               $project: {
@@ -423,7 +400,7 @@ module.exports = class SurveySubmissionsHelper {
             submissionMatchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
-        let surveySubmissions = await database.models.surveySubmissions.aggregate([
+        let surveySubmissions = await surveySubmissionQueries.getAggregate([
           submissionMatchQuery,
           {
             $project: {
@@ -589,4 +566,83 @@ module.exports = class SurveySubmissionsHelper {
       }
     });
   }
+
+     /**
+   * update survey submissions.
+   * @method
+   * @name update
+   * @param {Object} req -request data.
+   * @returns {JSON} - survey submissions creation.
+   */
+
+   static update(req) {
+      return new Promise(async (resolve, reject) => {
+  
+        try {
+          // Check if the survey has already been submitted
+          let isSubmissionAllowed = await this.isAllowed
+          (
+            req.params._id,
+            req.body.evidence.externalId,
+            req.userDetails.userId
+          ) 
+  
+          if ((isSubmissionAllowed.data.allowed && isSubmissionAllowed.data.allowed == false) || !isSubmissionAllowed.data) {
+              throw new Error(messageConstants.apiResponses.MULTIPLE_SUBMISSIONS_NOT_ALLOWED)
+          }
+  
+          if( req.headers.deviceid ) {
+            req.body.evidence["deviceId"] = req.headers.deviceid;
+          }
+  
+          if( req.headers["user-agent"] ) {
+            req.body.evidence["userAgent"] = req.headers["user-agent"];
+          }
+          // creating evidence and adding answers in the Submission documents
+          let response = await submissionsHelper.createEvidencesInSubmission
+          (  
+            req,
+            messageConstants.common.SURVEY_SUBMISSIONS, 
+            false
+          );
+          if (response.result.status && response.result.status === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
+              await this.pushCompletedSurveySubmissionForReporting(req.params._id);
+          }
+  
+          let appInformation = {};
+  
+          if( req.headers["x-app-id"] || req.headers.appname ) {
+            appInformation["appName"] = 
+            req.headers["x-app-id"] ? req.headers["x-app-id"] :
+            req.headers.appname;
+          } 
+  
+          if( req.headers["x-app-ver"] || req.headers.appversion ) {
+            appInformation["appVersion"] = 
+            req.headers["x-app-ver"] ? req.headers["x-app-ver"] :
+            req.headers.appversion;
+          }
+  
+          if( Object.keys(appInformation).length > 0 ) {
+            await submissionsHelper.addAppInformation(
+              req.params._id,
+              appInformation,
+              messageConstants.common.SURVEY_SUBMISSIONS
+            );
+          }
+          
+          return resolve(response)
+  
+        } catch (error) {
+  
+          return reject({
+            status: error.status || httpStatusCode.internal_server_error.status,
+            message: error.message || httpStatusCode.internal_server_error.message,
+            errorObject: error
+          });
+  
+        }
+  
+      })
+    }
 };
