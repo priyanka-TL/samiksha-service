@@ -773,20 +773,40 @@ module.exports = class Surveys extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let validateSurvey = await surveysHelper.validateSurvey(req.params._id, req.userDetails.userId);
+        // Check valid mongodb id or not
+        let validateSurveyId = gen.utils.isValidMongoId(req.params._id);
 
-        if (!validateSurvey.success) {
-          return resolve({
-            message: validateSurvey.message,
-            result: validateSurvey.data,
-          });
+        let surveyDetails = {};
+         //getting survey details by id or link
+        if( validateSurveyId || req.query.solutionId ) {
+            
+            let surveyId = req.params._id ? req.params._id : "";
+   
+            surveyDetails = await surveysHelper.detailsV3
+            (   
+                req.body,
+                surveyId,
+                req.query.solutionId,
+                req.userDetails.userId,
+                req.userDetails.userToken,
+                // appVersion,
+                // appName
+            );
+            
+        } else {
+
+            let bodyData = req.body ? req.body : {};
+
+            surveyDetails = await surveysHelper.getDetailsByLink(
+                req.params._id,
+                req.userDetails.userId,
+                req.userDetails.userToken,
+                bodyData,
+                "",                //version
+                // appVersion,
+                // appName
+            );
         }
-
-        let surveyDetails = await surveysHelper.details(
-          req.params._id,
-          req.userDetails.userId,
-          validateSurvey.data.submissionId,
-        );
 
         return resolve({
           message: surveyDetails.message,
