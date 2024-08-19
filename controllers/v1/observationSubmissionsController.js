@@ -99,6 +99,15 @@ module.exports = class ObservationSubmissions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
 
+        // changes
+
+        let createObservationStatus = await observationsHelper.createNewObservation(req)
+
+        return resolve(createObservationStatus);
+
+        // changes
+
+
         let observationDocument = await observationsHelper.observationDocuments({
           _id: req.params._id,
           createdBy: req.userDetails.userId,
