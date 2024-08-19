@@ -11,6 +11,11 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const reportsHelper = require(MODULES_BASE_PATH + '/reports/helper');
 let imageBaseUrl = '';
+const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
+const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const helperFunc = require('../../helper/chart_data');
+const filesHelper = require('../../common/files_helper');
 // "https://storage.cloud.google.com/sl-" +
 // (process.env.NODE_ENV == "production" ? "prod" : "dev") +
 // "-storage/";
@@ -3012,4 +3017,238 @@ module.exports = class Reports {
       }
     });
   }
+/**
+ * Get submission report.
+ * @method
+ * @name submissionReport
+ * @param {Object} req - requested data.
+ * @param {String} req.query.submissionId - The ID of the submission.
+ * @returns {JSON} JSON response consisting of submission report details.
+ */
+
+/**
+ * Sample Response:
+ * {
+ *   "message": [
+ *     {
+ *       "order": "TSD001_1604483265440-1610349652538",
+ *       "question": "Is electrical wiring / boards closed and insulated?",
+ *       "responseType": "radio",
+ *       "answers": ["R2"],
+ *       "chart": {},
+ *       "instanceQuestions": [],
+ *       "criteriaName": "Survey and Feedback",
+ *       "criteriaId": "5ffbfc5469a1847d4286dfd0",
+ *       "optionsAvailableForUser": [
+ *         { "value": "R1", "label": "Yes" },
+ *         { "value": "R2", "label": "No" }
+ *       ]
+ *     },
+ *     {
+ *       "order": "TSD002_1604483265440-1610349652539",
+ *       "question": "Name of the school?",
+ *       "responseType": "text",
+ *       "answers": ["t"],
+ *       "chart": {},
+ *       "instanceQuestions": [],
+ *       "criteriaName": "Survey and Feedback",
+ *       "criteriaId": "5ffbfc5469a1847d4286dfd0"
+ *     }
+ *   ],
+ *   "status": 200
+ * }
+ */
+
+submissionReport = async function (req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      if (!req.query.submissionId) {
+        let response = {
+          result: false,
+          message: 'submissionId is a required field',
+        };
+        res.send(response);
+      } else {
+        let submissionId = req.query.submissionId;
+
+        let surveySubmissionsDocumentArray = await surveySubmissionsHelper.surveySubmissionDocuments({
+          _id: submissionId,
+          status: 'completed',
+        });
+
+        let surveySubmissionsDocument = surveySubmissionsDocumentArray[0];
+
+        if (!surveySubmissionsDocument) {
+          throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
+        }
+
+        //adding question options, externalId to answers array
+        if (surveySubmissionsDocument.answers && Object.keys(surveySubmissionsDocument.answers).length > 0) {
+          surveySubmissionsDocument = await questionsHelper.addOptionsToSubmission(surveySubmissionsDocument);
+        }
+
+        let solutionDocument = await solutionsHelper.solutionDocuments(
+          {
+            _id: surveySubmissionsDocument.solutionId,
+          },
+          ['name', 'scoringSystem', 'description', 'questionSequenceByEcm']
+        );
+
+        if (!solutionDocument.length) {
+          throw messageConstants.apiResponses.SOLUTION_NOT_FOUND;
+        }
+
+        solutionDocument = solutionDocument[0];
+        surveySubmissionsDocument['solutionInfo'] = solutionDocument;
+
+        if (surveySubmissionsDocument.programId && surveySubmissionsDocument.programId != '') {
+          let programDocument = await programsHelper.list(
+            {
+              _id: surveySubmissionsDocument.programId,
+            },
+            ['name', 'description']
+          );
+
+          if (!programDocument[0]) {
+            throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+          }
+          surveySubmissionsDocument['programInfo'] = programDocument[0];
+        }
+        let data = surveySubmissionsDocument;
+
+        let transformedData = transformData(data);
+
+        let chartData = await helperFunc.instanceReportChart(transformedData, filesHelper.survey);
+        chartData.solutionName = data.solutionExternalId;
+
+        let surveyAnswers = data.answers;
+
+        let evidenceData = formateEvidenceData(surveyAnswers, chartData);
+
+        let responseObj;
+
+        if (evidenceData.length > 0) {
+          responseObj = await helperFunc.evidenceChartObjectCreation(
+            chartData,
+            evidenceData
+          );
+        } else {
+          responseObj = chartData;
+        }
+
+        return resolve({
+          status: httpStatusCode.ok.status,
+          message: responseObj.response,
+        });
+      }
+    } catch (err) {
+
+      let response = {
+        result: false,
+        message: err.message || 'INTERNAL_SERVER_ERROR',
+      };
+      return resolve(response);
+    }
+  });
 };
+
+};
+
+function transformData(data) {
+
+  //custom function return to mimic druid response from data source
+  let singleQuestionAnswerDataPerSolutionArr = [];
+
+  let solutionExternalId = data.solutionExternalId;
+
+  let solutionId = data.solutionId;
+  let solutionName = data.solutionInfo.name;
+
+  let surveyId = data.surveyId;
+  let surveySubmissionId = data._id;
+  let createdAt = data.createdAt;
+  let completedAt = data.completedDate;
+  let createdBy = data.createdBy;
+
+  let criteriaExternalId = data.criteria[0].externalId;
+  let criteriaId = data.criteria[0]._id;
+  let criteriaName = data.criteria[0].name;
+  let isAPrivateProgram = data.isAPrivateProgram;
+
+  let answersObject = data.answers;
+
+  let answerKeys = Object.keys(answersObject);
+
+  answerKeys.forEach((key) => {
+    let singleAnswerObj = answersObject[key];
+
+    singleQuestionAnswerDataPerSolutionArr.push({
+      event: {
+        solutionExternalId,
+        solutionId,
+        solutionName,
+        surveyId,
+        surveySubmissionId,
+        createdAt,
+        completedAt,
+        createdBy,
+        criteriaExternalId,
+        criteriaId,
+        criteriaName,
+        isAPrivateProgram,
+        questionAnswer: singleAnswerObj.value[0],
+        questionECM: singleAnswerObj.evidenceMethod,
+        questionExternalId: singleAnswerObj.externalId,
+        questionId: singleAnswerObj.qid,
+        questionName: singleAnswerObj.question[0],
+        questionResponseLabel: singleAnswerObj.value,
+        //questionResponseLabel_number:,
+        questionResponseType: singleAnswerObj.responseType,
+        // question_response_number
+        answerOptions: singleAnswerObj.options ? singleAnswerObj.options : undefined,
+      },
+    });
+  });
+
+  return singleQuestionAnswerDataPerSolutionArr;
+  //return data;
+}
+
+function formateEvidenceData(surveyAnswers, chartData) {
+
+  //custom formateEvidenceData to mimic formatting of evidence data which was previously done using druid
+
+  let evidenceArray = [];
+
+  // Loop through each item in chartData.response
+  chartData.response.forEach((chartItem) => {
+    const externalId = chartItem.order;
+
+    // Find the corresponding survey answer using the externalId
+    const surveyAnswer = surveyAnswers[externalId];
+
+    for (let key in surveyAnswers) {
+      let record = surveyAnswers[key];
+
+      if (record.externalId == externalId) {
+        if (record.fileName && record.fileName.length > 0) {
+          let sourcePathArray = record.fileName.map((fileInfo) => {
+            return fileInfo.sourcePath;
+          });
+
+          const evidenceObject = {
+            event: {
+              questionExternalId: externalId,
+              fileSourcePath: sourcePathArray.join(','),
+            },
+          };
+
+          // Add the evidence object to the evidenceArray
+          evidenceArray.push(evidenceObject);
+        }
+      }
+    }
+  });
+
+  return evidenceArray;
+}

@@ -193,6 +193,9 @@ function filterLocationIdandCode(dataArray) {
 function arrayIdsTobjectIds(ids) {
   return ids.map((id) => ObjectId(id));
 }
+function arrayIdsTobjectIdsNew(ids) {
+  return ids.map((id) => new ObjectId(id));
+}
 
 function checkIfEnvDataExistsOrNot(data) {
   let value;
@@ -323,4 +326,5 @@ module.exports = {
   convertStringToBoolean: convertStringToBoolean,
   filterLocationIdandCode: filterLocationIdandCode,
   convertStringToObjectId: convertStringToObjectId,
+  arrayIdsTobjectIdsNew: arrayIdsTobjectIdsNew
 };
