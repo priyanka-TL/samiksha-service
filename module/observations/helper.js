@@ -13,7 +13,7 @@ const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
 const slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications');
 const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
 const chunkOfObservationSubmissionsLength = 500;
-const solutionHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const solutionHelper = require(MODULES_BASE_PATH +'/solutions/helper');
 const kendraService = require(ROOT_PATH + '/generics/services/kendra');
 const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
@@ -22,10 +22,11 @@ const appsPortalBaseUrl =
     ? process.env.APP_PORTAL_BASE_URL + '/'
     : 'https://apps.shikshalokam.org/';
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
-const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 
 /**
  * ObservationsHelper
@@ -914,28 +915,84 @@ module.exports = class ObservationsHelper {
    * observation details.
    * @method
    * @name details
-   * @param  {String} observationId observation id.
-   * @returns {details} observation details.
+   * @param  {String} observationId -observation id.
+   * @param  {String} solutionId    -solutionId.
+   * @param  {String} userId        -user id.
+   * @returns {Object}              observation details.
    */
 
-  static details(observationId) {
+  // static details(observationId) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       let observationDocument = await this.observationDocuments({
+  //         _id: observationId,
+  //       });
+
+  //       if (!observationDocument[0]) {
+  //         throw new Error(messageConstants.apiResponses.OBSERVATION_NOT_FOUND);
+  //       }
+
+  //       if (observationDocument[0].entities.length > 0) {
+  //         let entitiesDocument = await entitiesHelper.entityDocuments({
+  //           _id: { $in: observationDocument[0].entities },
+  //         });
+
+  //         observationDocument[0]['count'] = entitiesDocument.length;
+  //         observationDocument[0].entities = entitiesDocument;
+  //       }
+
+  //       return resolve(observationDocument[0]);
+  //     } catch (error) {
+  //       return reject(error);
+  //     }
+  //   });
+  // }
+  static details(observationId = "", solutionId = "", userId = "") {
     return new Promise(async (resolve, reject) => {
       try {
-        let observationDocument = await this.observationDocuments({
-          _id: observationId,
-        });
+        //Check for observation or soultion ID
+        if (observationId == "" && solutionId == "") {
+          throw {
+            message:
+              messageConstants.apiResponses.OBSERVATION_OR_SOLUTION_CHECK,
+            status: httpStatusCode["bad_request"].status,
+          };
+        }
+
+        let filterQuery = {};
+        if (observationId && observationId != "") {
+          filterQuery._id = observationId;
+        }
+
+        if (solutionId && solutionId != "" && userId && userId != "") {
+          filterQuery.solutionId = ObjectId(solutionId);
+          filterQuery.createdBy = userId;
+        }
+        
+        //find the Obserations documents from the observation collections
+        let observationDocument = await this.observationDocuments(filterQuery);
 
         if (!observationDocument[0]) {
           throw new Error(messageConstants.apiResponses.OBSERVATION_NOT_FOUND);
         }
 
         if (observationDocument[0].entities.length > 0) {
-          let entitiesDocument = await entitiesHelper.entityDocuments({
-            _id: { $in: observationDocument[0].entities },
-          });
-
-          observationDocument[0]['count'] = entitiesDocument.length;
-          observationDocument[0].entities = entitiesDocument;
+          let filterData = {
+           _id: {$in:observationDocument[0].entities},
+          };
+        
+         //Retrieving the entity from the Entity Management Service
+          let entitiesDocument = await entityManagementService.entityDocuments(
+            filterData
+          );
+          // Adding the entity and count on the observation response document
+          if (entitiesDocument.success) {
+            observationDocument[0].entities = entitiesDocument.data;
+            observationDocument[0].count = entitiesDocument.count;
+          } else {
+            observationDocument[0].entities = [];
+            observationDocument[0].count = 0;
+          }
         }
 
         return resolve(observationDocument[0]);
@@ -957,8 +1014,8 @@ module.exports = class ObservationsHelper {
       return resolve({
         name: 1,
         externalId: 1,
-        // programId: 1,
-        // programExternalId: 1,
+        programId: 1,
+        programExternalId: 1,
         description: 1,
         themes: 1,
         entityProfileFieldsPerEntityTypes: 1,
@@ -1004,7 +1061,7 @@ module.exports = class ObservationsHelper {
         'isRubricDriven',
         'pageHeading',
         'criteriaLevelReport',
-        'isAPrivateProgram',
+        // 'isAPrivateProgram',
       ]);
     });
   }
@@ -1416,7 +1473,7 @@ module.exports = class ObservationsHelper {
           'programExternalId',
         ];
 
-        let solutionDocument = await solutionsHelper.solutionDocuments(solutionQuery, solutionProjection);
+        let solutionDocument = await solutionHelper.solutionDocuments(solutionQuery, solutionProjection);
 
         if (!solutionDocument.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
@@ -1555,6 +1612,7 @@ module.exports = class ObservationsHelper {
   static userAssigned(userId, pageNo, pageSize, search, filter = '') {
     return new Promise(async (resolve, reject) => {
       try {
+        //Constructing the match query for assigned solutions
         let matchQuery = {
           $match: {
             createdBy: userId,
@@ -1576,7 +1634,7 @@ module.exports = class ObservationsHelper {
             matchQuery['$match']['isAPrivateProgram'] = false;
           }
         }
-
+      //Constructing the projection 
         let projection1 = {
           $project: {
             name: 1,
@@ -1591,7 +1649,7 @@ module.exports = class ObservationsHelper {
 
         facetQuery['$facet']['totalCount'] = [{ $count: 'count' }];
 
-        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }];
+        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) }, { $limit: pageSize ? pageSize: messageConstants.common.DEFAULT_PAGE_SIZE }];
 
         let projection2 = {};
         projection2['$project'] = {
@@ -1611,9 +1669,9 @@ module.exports = class ObservationsHelper {
           facetQuery,
           projection2,
         );
-
+        
+       //Retrieve the matching documents from the observation collection
         let result = await database.models.observations.aggregate(aggregateData);
-
         if (result[0].data.length > 0) {
           let solutionIds = [];
 
@@ -1621,13 +1679,13 @@ module.exports = class ObservationsHelper {
             solutionIds.push(resultedData.solutionId);
           });
 
-          let solutionDocuments = await solutionHelper.solutionDocuments(
+          let solutionDocuments = await solutionsQueries.solutionDocuments(
             {
               _id: { $in: solutionIds },
             },
             ['language', 'creator'],
           );
-
+        //Adding creator and language to the observation document fetched from the solution documents
           solutionDocuments.forEach((solutionDocument) => {
             let solution = result[0].data.find(
               (resultData) => resultData.solutionId.toString() === solutionDocument._id.toString(),

@@ -29,7 +29,7 @@ module.exports = class Programs extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/programs/list List all the programs
+  * @api {get} /samiksha/v1/programs/list List all the programs
   * @apiVersion 1.0.0
   * @apiName Fetch Program List
   * @apiGroup Program
@@ -58,59 +58,503 @@ module.exports = class Programs extends Abstract {
    * List programs.
    * @method
    * @name list
-   * @returns {JSON} - List of programs
+   * @param {Object} req - Requested data.
+   * @param {Array} req.query.page - Page number.
+   * @param {Array} req.query.limit - Page Limit.
+   * @param {Array} req.query.search - Search text.
+   * @returns {JSON} List programs data.
    */
 
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programDocument = await database.models.programs.aggregate([
-          {
-            $lookup: {
-              from: 'solutions',
-              localField: 'components',
-              foreignField: '_id',
-              as: 'assessments',
-            },
-          },
-          {
-            $project: {
-              externalId: 1,
-              name: 1,
-              description: 1,
-              'assessments._id': 1,
-              'assessments.externalId': 1,
-              'assessments.name': 1,
-              'assessments.description': 1,
-            },
-          },
-        ]);
+        let listOfPrograms = await programsHelper.list(
+          "",          //filter
+          "",          // projection
+          req.pageNo, //middleware convert req.params.page as req.PageNo
+          req.pageSize, //middleware convert req.params.linit as req.PageSize
+          req.query.searchText,
+        );
 
-        if (!programDocument) {
-          return reject({
-            status: httpStatusCode.not_found.status,
-            message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
-          });
-        }
+        listOfPrograms['result'] = listOfPrograms.data;
 
-        let response = { message: messageConstants.apiResponses.PROGRAM_LIST, result: programDocument };
-
-        return resolve(response);
+        return resolve(listOfPrograms);
       } catch (error) {
-        return reject({ message: error });
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
       }
     });
   }
 
   /**
-  * @api {get} /assessment/api/v1/programs/entityList?solutionId=""&search="" Fetch Entity List
+  * @api {post} /samiksha/v1/programs/create Create Program
+  * @apiVersion 1.0.0
+  * @apiName create
+  * @apiGroup Programs
+  * @apiSampleRequest /samiksha/v1/programs/create
+  * @apiHeader {String} X-authenticated-user-token Authenticity token 
+  * @apiParamExample {json} Request-Body:
+  * {
+      "externalId" : "PROGID01",
+      "name" : "DCPCR School Development Index 2018-19",
+      "description" : "DCPCR School Development Index 2018-19",
+      "isDeleted" : false,
+      "resourceType" : [ 
+          "program"
+      ],
+      "language" : [ 
+          "English"
+      ],
+      "keywords" : [],
+      "concepts" : [],
+      "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
+      "imageCompression" : {
+          "quality" : 10
+      },
+      "components" : [ 
+          "5b98fa069f664f7e1ae7498c"
+      ],
+      "scope" : {
+          "entityType" : "state",
+          "entities" : ["5d6609ef81a57a6173a79e78"],
+          "roles" : ["HM"]
+      }
+      "startDate" : "2023-04-06T09:35:00.000Z",
+      "endDate" : ""2024-04-06T09:35:00.000Z" // optional
+    }
+  * @apiParamExample {json} Response:
+   {
+    "message": "Program created successfully",
+    "status": 200,
+    "result": {
+        "_id": "5ff09aa4a43c952a32279234"
+    }
+   } 
+  * @apiUse successBody
+  * @apiUse errorBody
+  */
+
+  /**
+   * Create program.
+   * @method {POST}
+   * @name create
+   * @param {Object} req - requested data.
+   * @returns {JSON} - created program document.
+   */
+
+  async create(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        req.body.userId = req.userDetails.userId;
+        let programCreationData = await programsHelper.create(
+          req.body,
+          true, // checkDate
+        );
+
+        return resolve({
+          message: messageConstants.apiResponses.PROGRAMS_CREATED,
+          result: _.pick(programCreationData, ['_id']),
+        });
+      } catch (error) {
+        reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+  * @api {post} /samiksha/v1/programs/update/:programId Update Program
+  * @apiVersion 1.0.0
+  * @apiName Update
+  * @apiGroup Programs
+  * @apiSampleRequest /samiksha/v1/programs/update/5ff09aa4a43c952a32279234
+  * @apiHeader {String} X-authenticated-user-token Authenticity token 
+  * @apiParamExample {json} Request-Body:
+  * {
+      "externalId" : "PROGID01",
+      "name" : "DCPCR School Development Index 2018-19",
+      "description" : "DCPCR School Development Index 2018-19",
+      "isDeleted" : false,
+      "resourceType" : [ 
+          "program"
+      ],
+      "language" : [ 
+          "English"
+      ],
+      "keywords" : [],
+      "concepts" : [],
+      "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
+      "imageCompression" : {
+          "quality" : 10
+      },
+      "components" : [ 
+          "5b98fa069f664f7e1ae7498c"
+      ],
+      "scope" : {
+          "entityType" : "state",
+          "entities" : ["5d6609ef81a57a6173a79e78"],
+          "roles" : ["HM"]
+      }
+      "startDate" : "2023-04-06T09:35:00.000Z",
+      "endDate" : ""2024-04-06T09:35:00.000Z" // optional
+    }
+  * @apiParamExample {json} Response:
+  {
+    "message": "Program updated successfully",
+    "status": 200,
+    "result": {
+        "_id": "5ff09aa4a43c952a32279234"
+    }
+   } 
+  * @apiUse successBody
+  * @apiUse errorBody
+  */
+
+  /**
+   * Update program.
+   * @method
+   * @name update
+   * @param {Object} req - requested data.
+   * @param {Object}
+   * @returns {JSON} -
+   */
+  /**
+   * Update program.
+   * @method
+   * @name update
+   * @param {Object} req - requested data.
+   * @param {Object}
+   * @returns {JSON} -
+   */
+
+  async update(req) {
+    try {
+      let programUpdationData = await programsHelper.update(
+        req.params._id,
+        req.body,
+        req.userDetails.userId,
+        true, //checkDate
+      );
+
+      programUpdationData.result = programUpdationData.data;
+      return programUpdationData;
+    } catch (error) {
+      throw {
+        status: error.status || httpStatusCode.internal_server_error.status,
+        message: error.message || httpStatusCode.internal_server_error.message,
+        errorObject: error,
+      };
+    }
+  }
+
+  /**
+    * @api {post} /samiksha/v1/programs/addRolesInScope/:programId Add roles in programs
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Programs
+    * @apiParamExample {json} Request-Body:
+    * {
+    * "roles" : ["DEO","SPD"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/programs/addRolesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully added roles in program scope",
+        "status": 200
+      }
+    */
+
+  /**
+
+  /**
+   * Add roles in program scope
+   * @method
+   * @name addRolesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.roles - Roles to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+  async addRolesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programDetails = await programsHelper.addRolesInScope(req.params._id, req.body.roles);
+
+        return resolve(programDetails);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+    * @api {post} /samiksha/v1/programs/addEntitiesInScope/:programId Add roles in programs
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Programs
+    * @apiParamExample {json} Request-Body:
+    * {
+      "entities" : ["5f33c3d85f637784791cd830"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/programs/addEntitiesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully added entities in program scope",
+        "status": 200
+      }
+    */
+
+  /**
+   * Add entities in program scope
+   * @method
+   * @name addEntitiesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.entities - Entities to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+  async addEntitiesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programDetails = await programsHelper.addEntitiesInScope(
+          req.params._id,
+          req.body.entities,
+        );
+
+        return resolve(programDetails);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+    * @api {post} /samiksha/v1/programs/removeRolesInScope/:programId Add roles in programs
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Programs
+    * @apiParamExample {json} Request-Body:
+    * {
+    * "roles" : ["DEO","SPD"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/programs/removeRolesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully removed roles in program scope",
+        "status": 200
+      }
+    */
+
+  /**
+   * Remove roles in program scope
+   * @method
+   * @name removeRolesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.roles - Roles to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+  async removeRolesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programDetails = await programsHelper.removeRolesInScope(req.params._id, req.body.roles);
+
+        return resolve(programDetails);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+    * @api {post} /samiksha/v1/programs/removeEntitiesInScope/:programId Add roles in programs
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Programs
+    * @apiParamExample {json} Request-Body:
+    * {
+      "entities" : ["5f33c3d85f637784791cd830"]
+    }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/programs/removeEntitiesInScope/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully removed entities in program scope",
+        "status": 200
+      }
+    */
+
+  /**
+   * Remove entities in program scope
+   * @method
+   * @name removeEntitiesInScope
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @param {Array} req.body.entities - Entities to be added.
+   * @returns {Array} Program scope roles.
+   */
+
+  async removeEntitiesInScope(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities);
+
+        return resolve(programDetails);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+    * @api {get} /samiksha/v1/programs/details/:programId Program Details
+    * @apiVersion 1.0.0
+    * @apiName Program Details
+    * @apiGroup Programs
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /samiksha/v1/programs/details/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+    "message": "Program details fetched successfully",
+    "status": 200,
+    "result": {
+
+      }
+    }
+    */
+
+  /**
+   * Details of the program
+   * @method
+   * @name details
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @returns {Array} Program scope roles.
+   */
+
+  async details(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programData = await programsHelper.details(req.params._id);
+
+        programData['result'] = programData.data;
+
+        return resolve(programData);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+    * @api {get} /samiksha/v1/programs/join/:programId 
+    * @apiVersion 1.0.0
+    * @apiName Program Join
+    * @apiGroup Programs
+    * @apiParamExample {Json} RequestBody
+    * {
+         "userRoleInformation": {
+               "district": "2f76dcf5-e43b-4f71-a3f2-c8f19e1fce03",
+                "block": "966c3be4-c125-467d-aaff-1eb1cd525923",
+                "state": "bc75cc99-9205-463e-a722-5326857838f8",
+                "school": "28226200910",
+                "role": "HM,DEO,MEO,CRP,Complex HM,SPD"
+          },
+         "isResource": true,
+         "consentShared": true
+      }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiHeader {String} X-App-Ver Appversion
+    * @apiSampleRequest /samiksha/v1/programs/join/5ffbf8909259097d48017bbf
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * 
+    */
+
+  /**
+   * join program
+   * @method
+   * @name join
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @returns {Object} Program join status.
+   */
+
+  async join(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programJoin = await programsHelper.join(
+          req.params._id,
+          req.body,
+          req.userDetails.userId,
+          req.userDetails.userToken,
+          req.headers['x-app-id'] ? req.headers['x-app-id'] : req.headers.appname ? req.headers.appname : '',
+          req.headers['x-app-ver'] ? req.headers['x-app-ver'] : req.headers.appversion ? req.headers.appversion : '',
+          req.headers['internal-access-token'] ? true : req.headers.internalAccessToken ? true : false,
+        );
+        programJoin['result'] = programJoin.data;
+        return resolve(programJoin);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+  /**
+  * @api {get} /samiksha/v1/programs/entityList?solutionId=""&search="" Fetch Entity List
   * @apiVersion 1.0.0
   * @apiName Fetch Entity List 
   * @apiGroup Program
   * @apiParam {String} solutionId Solution ID.
   * @apiParam {String} Page Page.
   * @apiParam {String} Limit Limit.
-  * @apiSampleRequest /assessment/api/v1/programs/entityList?solutionId=5c5693fd28466d82967b9429&search=
+  * @apiSampleRequest /samiksha/v1/programs/entityList?solutionId=5c5693fd28466d82967b9429&search=
   * @apiParamExample {json} Response:
     "result": {
         "totalCount": 54,
@@ -205,14 +649,14 @@ module.exports = class Programs extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/programs/userEntityList?solutionId="" Fetch User Entity List
+  * @api {get} /samiksha/v1/programs/userEntityList?solutionId="" Fetch User Entity List
   * @apiVersion 1.0.0
   * @apiName Fetch User Entity List 
   * @apiGroup Program
   * @apiParam {String} SolutionId Solution ID.
   * @apiParam {String} Page Page.
   * @apiParam {String} Limit Limit.
-  * @apiSampleRequest /assessment/api/v1/programs/userEntityList?solutionId=5b98fa069f664f7e1ae7498c
+  * @apiSampleRequest /samiksha/v1/programs/userEntityList?solutionId=5b98fa069f664f7e1ae7498c
   * @apiParamExample {json} Response:
   * "result": {
         "entities": [
@@ -333,14 +777,14 @@ module.exports = class Programs extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/programs/userList?solutionId=:solutionInternalId&search=:searchText&page=:page&limit=:limit Fetch User List
+  * @api {get} /samiksha/v1/programs/userList?solutionId=:solutionInternalId&search=:searchText&page=:page&limit=:limit Fetch User List
   * @apiVersion 1.0.0
   * @apiName Fetch User Entity List 
   * @apiGroup Program
   * @apiParam {String} ProgramId Program ID.
   * @apiParam {String} Page Page.
   * @apiParam {String} Limit Limit.
-  * @apiSampleRequest /assessment/api/v1/programs/userList?solutionId=5b98fa069f664f7e1ae7498c&search=&page=1&limit=1
+  * @apiSampleRequest /samiksha/v1/programs/userList?solutionId=5b98fa069f664f7e1ae7498c&search=&page=1&limit=1
   * @apiParamExample {json} Response:
     "result": {
       "totalCount": 3055,
@@ -459,14 +903,14 @@ module.exports = class Programs extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/programs/entityBlocks?solutionId="" Fetch Zone
+  * @api {get} /samiksha/v1/programs/entityBlocks?solutionId="" Fetch Zone
   * @apiVersion 1.0.0
   * @apiName Fetch Zone 
   * @apiGroup Program
   * @apiParam {String} SolutionId Solution ID.
   * @apiParam {String} Page Page.
   * @apiParam {String} Limit Limit.
-  * @apiSampleRequest /assessment/api/v1/programs/entityBlocks?solutionId=5b98fa069f664f7e1ae7498c
+  * @apiSampleRequest /samiksha/v1/programs/entityBlocks?solutionId=5b98fa069f664f7e1ae7498c
   * @apiParamExample {json} Response:
   * "result": {
       "zones": [
@@ -539,14 +983,14 @@ module.exports = class Programs extends Abstract {
   }
 
   /**
-  * @api {get} /assessment/api/v1/programs/blockEntity?solutionId=""&blockId="" Block Entity
+  * @api {get} /samiksha/v1/programs/blockEntity?solutionId=""&blockId="" Block Entity
   * @apiVersion 1.0.0
   * @apiName Block Entity 
   * @apiGroup Program
   * @apiParam {String} SolutionId Solution ID.
   * @apiParam {String} Page Page.
   * @apiParam {String} Limit Limit.
-  * @apiSampleRequest /assessment/api/v1/programs/blockEntity?solutionId=5b98fa069f664f7e1ae7498c&blockId=1
+  * @apiSampleRequest /samiksha/v1/programs/blockEntity?solutionId=5b98fa069f664f7e1ae7498c&blockId=1
   * @apiParamExample {json} Response:
   * "result": {
       "entities": [
@@ -661,7 +1105,7 @@ module.exports = class Programs extends Abstract {
   }
 
   /**
-  * @api {post} /assessment/api/v1/programs/listByIds List programs by ids
+  * @api {post} /samiksha/v1/programs/listByIds List programs by ids
   * @apiVersion 1.0.0
   * @apiName List programs by ids
   * @apiGroup Program
@@ -669,7 +1113,7 @@ module.exports = class Programs extends Abstract {
   * {
   *   "programIds" : ["5b98d7b6d4f87f317ff615ee"]
   * }
-  * @apiSampleRequest /assessment/api/v1/programs/listByIds
+  * @apiSampleRequest /samiksha/v1/programs/listByIds
   * @apiParamExample {json} Response:
   * {
     "message": "Program information list fetched successfully.",
@@ -739,11 +1183,11 @@ module.exports = class Programs extends Abstract {
   }
 
   /**
-   * @api {post} /assessment/api/v1/programs/removeSolutions/:programId Remove solutions from Program
+   * @api {post} /samiksha/v1/programs/removeSolutions/:programId Remove solutions from Program
    * @apiVersion 1.0.0
    * @apiName removeSolution
    * @apiGroup Program
-   * @apiSampleRequest /assessment/api/v1/programs/removeSolutions/5fbe2b964006cc174d10960c
+   * @apiSampleRequest /samiksha/v1/programs/removeSolutions/5fbe2b964006cc174d10960c
    * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @apiUse successBody
    * @apiUse errorBody

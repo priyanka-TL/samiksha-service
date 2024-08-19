@@ -19,11 +19,12 @@ const appsPortalBaseUrl =
     ? process.env.APP_PORTAL_BASE_URL + '/'
     : 'https://apps.shikshalokam.org/';
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
-const kendraService = require(ROOT_PATH + '/generics/services/kendra');
 const surveySolutionTemplate = '-SURVEY-TEMPLATE';
 const surveyAndFeedback = 'SF';
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
+const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const surveyQueries = require(DB_QUERY_BASE_PATH + '/surveys');
 
 /**
  * SurveysHelper
@@ -44,30 +45,7 @@ module.exports = class SurveysHelper {
   static surveyDocuments(surveyFilter = 'all', fieldsArray = 'all', sortedData = 'all', skipFields = 'none') {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = surveyFilter != 'all' ? surveyFilter : {};
-
-        let projection = {};
-
-        if (fieldsArray != 'all') {
-          fieldsArray.forEach((field) => {
-            projection[field] = 1;
-          });
-        }
-
-        if (skipFields !== 'none') {
-          skipFields.forEach((field) => {
-            projection[field] = 0;
-          });
-        }
-
-        let surveyDocuments;
-
-        if (sortedData !== 'all') {
-          surveyDocuments = await database.models.surveys.find(queryObject, projection).sort(sortedData).lean();
-        } else {
-          surveyDocuments = await database.models.surveys.find(queryObject, projection).lean();
-        }
-
+       let surveyDocuments = await surveyQueries.surveyDocuments(surveyFilter,fieldsArray,sortedData,skipFields)
         return resolve(surveyDocuments);
       } catch (error) {
         return resolve({
@@ -90,7 +68,7 @@ module.exports = class SurveysHelper {
   static create(data = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveyData = await database.models.surveys.create(data);
+        let surveyData = await surveyQueries.create(data);
 
         return resolve(surveyData);
       } catch (error) {
@@ -131,7 +109,7 @@ module.exports = class SurveysHelper {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
-
+        // Adding details of the survey
         let newSolutionDocument = {};
         newSolutionDocument.type = messageConstants.common.SURVEY;
         newSolutionDocument.subType = messageConstants.common.SURVEY;
@@ -186,7 +164,7 @@ module.exports = class SurveysHelper {
           keywords: ['Keyword 1', 'Keyword 2'],
           frameworkCriteriaId: null,
         };
-
+        //Creating new criteria
         let newCriteria = await criteriaHelper.create(criteriaDocument);
 
         if (newCriteria._id) {
@@ -197,10 +175,10 @@ module.exports = class SurveysHelper {
             },
           ];
         }
-
+        // Adding criteria in solution documents
         newSolutionDocument.themes = themes;
 
-        let newSolution = await solutionsHelper.create(_.omit(newSolutionDocument, ['_id']));
+        let newSolution = await solutionsQueries.createSolution(_.omit(newSolutionDocument, ['_id']));
 
         if (newSolution._id) {
           return resolve({
@@ -247,8 +225,8 @@ module.exports = class SurveysHelper {
         if (appName == '') {
           throw new Error(messageConstants.apiResponses.APP_NAME_FIELD_REQUIRED);
         }
-
-        let solutionDocument = await solutionsHelper.solutionDocuments({
+        //Getting the solution documents
+        let solutionDocument = await solutionsQueries.solutionDocuments({
           _id: solutionId,
         });
 
@@ -266,10 +244,11 @@ module.exports = class SurveysHelper {
           _id: criteriaId[0],
         });
 
+        // Update the external ID of the criteria to reflect the new solution
         solutionCriteria[0].externalId = solutionExternalId + '-' + surveyAndFeedback;
-
+        // Duplicate the questions associated with the criteria
         let duplicateQuestionsResponse = await questionsHelper.duplicate([solutionCriteria[0]._id]);
-
+        // If the duplication was successful and there are new questions, update the criteria with the new question ID
         if (
           duplicateQuestionsResponse.success &&
           Object.keys(duplicateQuestionsResponse.data.questionIdMap).length > 0
@@ -286,6 +265,7 @@ module.exports = class SurveysHelper {
         ) {
           questionExternalIdMap = duplicateQuestionsResponse.data.questionExternalIdMap;
         }
+      // Update the question sequence in the solution document if it exists
 
         if (
           newSolutionDocument['questionSequenceByEcm'] &&
@@ -309,6 +289,8 @@ module.exports = class SurveysHelper {
 
         let newCriteriaId = await criteriaHelper.create(_.omit(solutionCriteria[0], ['_id']));
 
+      // If the new criteria is created successfully, update the solution's theme with the new criteria
+
         if (newCriteriaId._id) {
           newSolutionDocument.themes[0].criteria = [
             {
@@ -326,12 +308,13 @@ module.exports = class SurveysHelper {
         newSolutionDocument.createdAt = new Date();
         newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
 
-        let newSolution = await solutionsHelper.create(newSolutionDocument);
+        let newSolution = await solutionsQueries.createSolution(newSolutionDocument);
+      // If the new solution is created successfully, generate a link for the solution
 
         if (newSolution._id) {
           let link = await gen.utils.md5Hash(userId + '###' + newSolution._id);
 
-          await solutionsHelper.updateSolutionDocument(
+          await solutionsQueries.updateSolutionDocument(
             { _id: newSolution._id },
             {
               $set: { link: link },
@@ -392,7 +375,7 @@ module.exports = class SurveysHelper {
           },
           ['externalId', 'name', 'description'],
         );
-
+        programDocument = programDocument.data.data
         if (!programDocument.length) {
           throw new Error(messageConstants.apiResponses.PROGRAM_NOT_FOUND);
         }
@@ -403,8 +386,8 @@ module.exports = class SurveysHelper {
         updateSolutionData.programName = programDocument[0].name;
         updateSolutionData.programDescription = programDocument[0].description;
         updateSolutionData.programExternalId = programDocument[0].externalId;
-
-        await solutionsHelper.updateSolutionDocument(
+        //Updating solution Document with programDetails
+        await solutionsQueries.updateSolutionDocument(
           { _id: solutionId },
           {
             $set: updateSolutionData,
@@ -412,9 +395,9 @@ module.exports = class SurveysHelper {
         );
 
         if (typeof solutionId == 'string') {
-          solutionId = ObjectId(solutionId);
+          solutionId = new ObjectId(solutionId);
         }
-
+        // Adding solutionId in the program douments under components 
         await programsHelper.updateProgramDocument(
           {
             _id: programDocument[0]._id,
@@ -497,7 +480,7 @@ module.exports = class SurveysHelper {
         let status;
         let surveyId = '';
         let date = new Date();
-
+      // Check if the survey exists or not
         let surveyDocument = await this.surveyDocuments(
           {
             solutionExternalId: solution.externalId,
@@ -531,13 +514,13 @@ module.exports = class SurveysHelper {
           survey['description'] = solution.description;
           survey['isAPrivateProgram'] = solution.isAPrivateProgram;
 
-          //   if (solution.programId) {
-          //     survey["programId"] = solution.programId;
-          //   }
-          //   if (solution.programExternalId) {
-          //     survey["programExternalId"] = solution.programExternalId;
-          //   }
-
+          if (solution.programId) {
+            survey["programId"] = solution.programId;
+          }
+          if (solution.programExternalId) {
+            survey["programExternalId"] = solution.programExternalId;
+          }
+        // Create a survey with solution and program details
           surveyDocument = await this.create(survey);
 
           if (surveyDocument._id) {
@@ -653,7 +636,7 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
         }
 
-        let solutionDocument = await solutionsHelper.solutionDocuments(
+        let solutionDocument = await solutionsQueries.solutionDocuments(
           {
             link: link,
           },
@@ -686,7 +669,7 @@ module.exports = class SurveysHelper {
             throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
           }
         }
-
+        // Check if the survey exists 
         let surveyDocument = await this.surveyDocuments({ solutionId: solutionDocument[0]._id, createdBy: userId }, [
           '_id',
         ]);
@@ -695,19 +678,21 @@ module.exports = class SurveysHelper {
 
         if (surveyDocument.length > 0) {
           surveyId = surveyDocument[0]._id;
-        } else {
-          let userOrgDetails = await this.getUserOrganisationDetails([userId], token);
+        } 
+        else {
+          
+          // let userOrgDetails = await this.getUserOrganisationDetails([userId], token);
 
-          userOrgDetails = userOrgDetails.data;
+          // userOrgDetails = userOrgDetails.data;
 
-          if (
-            !userOrgDetails[userId] ||
-            !Array.isArray(userOrgDetails[userId].rootOrganisations) ||
-            userOrgDetails[userId].rootOrganisations.length < 1
-          ) {
-            throw new Error(messageConstants.apiResponses.ORGANISATION_DETAILS_NOT_FOUND_FOR_USER);
-          }
-
+          // if (
+          //   !userOrgDetails[userId] ||
+          //   !Array.isArray(userOrgDetails[userId].rootOrganisations) ||
+          //   userOrgDetails[userId].rootOrganisations.length < 1
+          // ) {
+          //   throw new Error(messageConstants.apiResponses.ORGANISATION_DETAILS_NOT_FOUND_FOR_USER);
+          // }
+          // creating the suvery without the organization
           let createSurveyDocument = await this.createSurveyDocument(
             userId,
             solutionDocument[0],
@@ -730,7 +715,7 @@ module.exports = class SurveysHelper {
         if (!validateSurvey.success) {
           return resolve(validateSurvey);
         }
-
+       // Get the details of the survey
         let surveyDetails = await this.details(surveyId, userId, validateSurvey.data.submissionId, roleInformation);
 
         if (!surveyDetails.success) {
@@ -758,12 +743,15 @@ module.exports = class SurveysHelper {
    * @name details
    * @param  {String} surveyId - survey id.
    * @param {String} userId - userId
+   * @param {String} submissionId - submission id
+   * @param {Object} roleInformation 
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
   static details(surveyId = '', userId = '', submissionId = '', roleInformation = {}) {
     return new Promise(async (resolve, reject) => {
       try {
+        // Condition to check for surveyId and userId
         if (surveyId == '') {
           throw new Error(messageConstants.apiResponses.SURVEY_ID_REQUIRED);
         }
@@ -771,7 +759,8 @@ module.exports = class SurveysHelper {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
-
+        
+        //Get the surveyDetails based on the surveyId and status
         let surveyDocument = await this.surveyDocuments({
           _id: surveyId,
           status: messageConstants.common.PUBLISHED,
@@ -789,10 +778,10 @@ module.exports = class SurveysHelper {
           status: messageConstants.common.ACTIVE_STATUS,
           isDeleted: false,
         };
-
+        //getting the projectionFields for the solution
         let solutionDocumentProjectionFields = await this.solutionDocumentProjectionFieldsForDetailsAPI();
-
-        let solutionDocument = await solutionsHelper.solutionDocuments(
+      
+        let solutionDocument = await solutionsQueries.solutionDocuments(
           solutionQueryObject,
           solutionDocumentProjectionFields,
         );
@@ -803,23 +792,23 @@ module.exports = class SurveysHelper {
 
         solutionDocument = solutionDocument[0];
 
-        // let programDocument = [];
+        let programDocument = [];
+        // if programId is present, getting the program details
+        if (surveyDocument.programId) {
+            let programQueryObject = {
+              _id: surveyDocument.programId,
+              status: messageConstants.common.ACTIVE_STATUS,
+              components: { $in: [new ObjectId(surveyDocument.solutionId)] },
+            };
 
-        // if (surveyDocument.programId) {
-        //   let programQueryObject = {
-        //     _id: surveyDocument.programId,
-        //     status: messageConstants.common.ACTIVE_STATUS,
-        //     components: { $in: [ObjectId(surveyDocument.solutionId)] },
-        //   };
-
-        //   programDocument = await programsHelper.list(programQueryObject, [
-        //     'externalId',
-        //     'name',
-        //     'description',
-        //     'imageCompression',
-        //     'isAPrivateProgram',
-        //   ]);
-        // }
+           programDocument = await programsHelper.list(programQueryObject, [
+             'externalId',
+             'name',
+             'description',
+             'imageCompression',
+             'isAPrivateProgram',
+           ]);
+         }
 
         let solutionDocumentFieldList = await this.solutionDocumentFieldListInResponse();
 
@@ -827,9 +816,29 @@ module.exports = class SurveysHelper {
 
         result.solution = await _.pick(solutionDocument, solutionDocumentFieldList);
 
-        // if (programDocument.length > 0) {
-        //   result.program = programDocument[0];
-        // }
+        if (programDocument.length > 0) {
+          result.program = programDocument[0];
+          /*
+          //Check data present in programUsers collection.
+          //checkForUserJoinedProgramAndConsentShared will returns an object which contain joinProgram and consentShared status.
+          let programJoinStatus =
+            await programUsersHelper.checkForUserJoinedProgramAndConsentShared(
+              programDocument[0]._id,
+              userId
+            );
+          
+          // if programJoined key is false, user not joined the program.
+          result.programJoined = programJoinStatus.joinProgram;
+          result.consentShared = programJoinStatus.consentShared;
+          result.rootOrganisations = programDocument[0].rootOrganisations
+            ? programDocument[0].rootOrganisations[0]
+            : "";
+          if (programDocument[0].hasOwnProperty("requestForPIIConsent")) {
+            result.requestForPIIConsent =
+              programDocument[0].requestForPIIConsent;
+          }
+          */
+        }
 
         let assessment = {};
 
@@ -839,7 +848,7 @@ module.exports = class SurveysHelper {
 
         let criteriaId = solutionDocument.themes[0].criteria[0].criteriaId;
         let weightage = solutionDocument.themes[0].criteria[0].weightage;
-
+        // Get the criteriaQuestionDocument
         let criteriaQuestionDocument = await criteriaQuestionsHelper.list({ _id: criteriaId }, 'all', [
           'resourceType',
           'language',
@@ -847,7 +856,7 @@ module.exports = class SurveysHelper {
           'concepts',
           'createdFor',
         ]);
-
+     
         let evidenceMethodArray = {};
         let submissionDocumentEvidences = {};
         let submissionDocumentCriterias = [];
@@ -866,7 +875,7 @@ module.exports = class SurveysHelper {
         criteria.weightage = weightage;
 
         submissionDocumentCriterias.push(_.omit(criteria, ['evidences']));
-
+        // Adding the criteria evidences to the submission document
         criteria.evidences.forEach((evidenceMethod) => {
           if (evidenceMethod.code) {
             if (!evidenceMethodArray[evidenceMethod.code]) {
@@ -912,6 +921,9 @@ module.exports = class SurveysHelper {
 
           submissionDocumentEvidences = surveySubmissionDocument[0].evidences;
         } else {
+
+          //program join code here...
+
           let submissionDocument = {
             solutionId: solutionDocument._id,
             solutionExternalId: solutionDocument.externalId,
@@ -939,17 +951,19 @@ module.exports = class SurveysHelper {
             submissionDocument.userRoleInformation = roleInformation;
           }
 
-          // if (programDocument.length > 0) {
-          //   submissionDocument.programId = programDocument[0]._id;
-          //   submissionDocument.programExternalId = programDocument[0].externalId;
-          // }
+          if (programDocument.length > 0) {
+            submissionDocument.programId = programDocument[0]._id;
+            submissionDocument.programExternalId = programDocument[0].externalId;
+          }
 
           let submissionDoc = await database.models.surveySubmissions.create(submissionDocument);
 
           if (submissionDoc._id) {
             assessment.submissionId = submissionDoc._id;
+             //add report infromation to survey solution code
           }
         }
+        let assessmentsHelper = require(MODULES_BASE_PATH + '/assessments/helper');
 
         const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
           Object.values(evidenceMethodArray),
@@ -1091,7 +1105,7 @@ module.exports = class SurveysHelper {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
-
+        
         let surveySubmissionDocument = await surveySubmissionsHelper.surveySubmissionDocuments(
           {
             surveyId: surveyId,
@@ -1104,7 +1118,7 @@ module.exports = class SurveysHelper {
 
         if (surveySubmissionDocument.length > 0) {
           submissionId = surveySubmissionDocument[0]._id;
-
+          //Validate submission of the user
           if (validateSurveySubmission) {
             if (surveySubmissionDocument[0].status == messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
               return resolve({
@@ -1115,7 +1129,7 @@ module.exports = class SurveysHelper {
                 },
               });
             }
-
+         
             if (new Date() > new Date(surveySubmissionDocument[0].surveyInformation.endDate)) {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
@@ -1245,7 +1259,7 @@ module.exports = class SurveysHelper {
             mergedData.forEach((surveyData) => {
               surveyData.isCreator = true;
               if (surveyData.solutionId) {
-                solutionIds.push(ObjectId(surveyData.solutionId));
+                solutionIds.push(new ObjectId(surveyData.solutionId));
               }
             });
           }
@@ -1264,7 +1278,7 @@ module.exports = class SurveysHelper {
           surveySubmissions.data.data.forEach((surveyData) => {
             surveyData.isCreator = false;
             if (surveyData.solutionId) {
-              solutionIds.push(ObjectId(surveyData.solutionId));
+              solutionIds.push(new ObjectId(surveyData.solutionId));
             }
           });
 
@@ -1276,8 +1290,7 @@ module.exports = class SurveysHelper {
           bodyData['filter']['skipSolutions'] = solutionIds;
         }
 
-        let targetedSolutions = await kendraService.solutionBasedOnRoleAndLocation(
-          token,
+        let targetedSolutions = await solutionsHelper.forUserRoleAndLocation(
           bodyData,
           messageConstants.common.SURVEY,
           search,
@@ -1397,7 +1410,7 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN);
         }
 
-        let solutionDocument = await solutionsHelper.solutionDocuments({
+        let solutionDocument = await solutionsQueries.solutionDocuments({
           _id: solutionId,
           // author: userId,
         });
@@ -1414,18 +1427,28 @@ module.exports = class SurveysHelper {
           if (surveyDocument.length > 0) {
             surveyId = surveyDocument[0]._id;
           } else {
-            let solutionData = solutionDocument[0];
-            //   await kendraService.solutionDetailsBasedOnRoleAndLocation(
-            //     token,
-            //     bodyData,
-            //     solutionId
-            //   );
+            // let solutionData = solutionDocument[0];
+            const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 
-            // if (!solutionData.success) {
-            //   throw new Error(
-            //     messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND
-            //   );
-            // }
+           let solutionData=await solutionsHelper.detailsBasedOnRoleAndLocation(
+                solutionId,
+                bodyData,
+                messageConstants.common.SURVEY
+              );
+
+            if (!solutionData.success) {
+              throw new Error(
+                messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND
+              );
+            }
+            
+
+            if (
+              solutionData.data.hasOwnProperty("endDate") &&
+              new Date(solutionData.data.endDate) < new Date()
+            ) {
+              throw new Error(messageConstants.apiResponses.SOLUTION_EXPIRED);
+            }
 
             // let userOrgDetails = await this.getUserOrganisationDetails(
             //   [userId],
@@ -1444,7 +1467,7 @@ module.exports = class SurveysHelper {
             //   );
             // }
 
-            let createSurveyDocument = await this.createSurveyDocument(userId, solutionData, userId);
+            let createSurveyDocument = await this.createSurveyDocument(userId, solutionData.data, userId);
 
             if (!createSurveyDocument.success) {
               throw new Error(messageConstants.apiResponses.SURVEY_CREATION_FAILED);
@@ -1494,7 +1517,7 @@ module.exports = class SurveysHelper {
         if (!validateSurvey.success) {
           return resolve(validateSurvey);
         }
-
+        //Getting details of the survey
         let surveyDetails = await this.details(surveyData.data, userId, validateSurvey.data.submissionId, bodyData);
 
         if (!surveyDetails.success) {
@@ -1536,6 +1559,7 @@ module.exports = class SurveysHelper {
         };
 
         if (surveyReportPage === '' || gen.utils.convertStringToBoolean(surveyReportPage)) {
+          // List of created survey solutions by user.
           surveySolutions = await surveySubmissionsHelper.surveySolutions(userId, pageNo, pageSize, search, filter);
         }
 
@@ -1552,7 +1576,7 @@ module.exports = class SurveysHelper {
             });
           }
         }
-
+        // Getting List of surveys for user
         let surveySubmissions = await surveySubmissionsHelper.surveyList(
           userId,
           pageNo,
@@ -1602,7 +1626,7 @@ module.exports = class SurveysHelper {
   static getLink(solutionId, appName) {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveyData = await solutionsHelper.solutionDocuments(
+        let surveyData = await solutionsQueries.solutionDocuments(
           {
             externalId: solutionId,
             isReusable: false,
@@ -1610,15 +1634,8 @@ module.exports = class SurveysHelper {
           },
           ['link'],
         );
-
         if (!surveyData.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
-        }
-
-        let appDetails = await kendraService.getAppDetails(appName);
-
-        if (appDetails.result === false) {
-          throw new Error(messageConstants.apiResponses.APP_NOT_FOUND);
         }
 
         let link = appsPortalBaseUrl + appName + messageConstants.common.TAKE_SURVEY + surveyData[0].link;

@@ -22,6 +22,7 @@ module.exports = function () {
   global.ROOT_PATH = path.join(__dirname, '..');
   global.GENERIC_HELPERS_PATH = ROOT_PATH + '/generics/helpers';
   global.MODULES_BASE_PATH = ROOT_PATH + '/module';
+  global.DB_QUERY_BASE_PATH = ROOT_PATH + "/databaseQueries";
   global.log = new Log(global.config.log);
   global._ = require('lodash');
   gen.utils = require(ROOT_PATH + '/generics/helpers/utils');

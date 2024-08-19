@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const uuid = require('uuid/v1');
+const {v4:uuid} = require('uuid');
 /**
  * SharedLink
  * @class

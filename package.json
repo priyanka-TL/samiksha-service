@@ -63,7 +63,7 @@
     "path": "^0.12.7",
     "request": "^2.88.2",
     "require-all": "^2.2.0",
-    "uuid": "^3.4.0",
+    "uuid": "^8.3.2",
     "yaml-js": "^0.1.5"
   },
   "devDependencies": {

@@ -216,37 +216,56 @@ let enviromentVariables = {
     message: 'Notification Topic',
     optional: false,
   },
-  CLOUD_STORAGE_PROVIDER:{
-    message : "Require cloud storage provider",
-    optional:false
+  CLOUD_STORAGE_PROVIDER: {
+    message: 'Require cloud storage provider',
+    optional: false,
   },
-  CLOUD_STORAGE_SECRET:{
-    message:"Require client storage secret",
-    optional:false
+  CLOUD_STORAGE_SECRET: {
+    message: 'Require client storage secret',
+    optional: false,
   },
-  CLOUD_STORAGE_BUCKETNAME:{
-    message:"Require client storage bucket name",
-    optional:false
+  CLOUD_STORAGE_BUCKETNAME: {
+    message: 'Require client storage bucket name',
+    optional: false,
   },
   CLOUD_STORAGE_ACCOUNTNAME: {
-		message: 'Require client storage account name',
-		optional: false,
-	},
+    message: 'Require client storage account name',
+    optional: false,
+  },
   CLOUD_STORAGE_BUCKET_TYPE: {
-		message: 'Require client storage bucket type',
-		optional: false,
-	},
-  	// signedUrl and downloadAble url expiry durations
-	DOWNLOADABLE_URL_EXPIRY_IN_SECONDS: {
-		message: 'Required downloadable url expiration time',
-		optional: true,
-		default: 300,
-	},
+    message: 'Require client storage bucket type',
+    optional: false,
+  },
+  // signedUrl and downloadAble url expiry durations
+  DOWNLOADABLE_URL_EXPIRY_IN_SECONDS: {
+    message: 'Required downloadable url expiration time',
+    optional: true,
+    default: 300,
+  },
   PRESIGNED_URL_EXPIRY_IN_SECONDS: {
-		message: 'Required presigned url expiration time',
-		optional: true,
-		default: 300,
-	},
+    message: 'Required presigned url expiration time',
+    optional: true,
+    default: 300,
+  },
+  USER_SERVICE_URL: {
+    message: 'Required userservice service url',
+    optional: false,
+  },
+  ENTITY_MANAGEMENT_SERVICE_URL: {
+    message: 'Required entitymanagement service url',
+    optional: false,
+  },
+  VALIDATE_ENTITIES: {
+    message: 'Requires Validate Entity Key for validating Entities',
+    optional: false,
+    default: 'ON',
+  },
+  TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC: {
+    message: 'Timezone diffrence required',
+    optional: true,
+    default: '+05:30',
+  },
+
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
   //   message: 'ON/OFF',
   //   optional: false,
