@@ -135,7 +135,8 @@ module.exports = async function (req, res, next) {
     'observationSubmissions/disable/',
   ];
 
-  var token = req.headers['x-authenticated-user-token'];
+  var token = req.headers['x-auth-token'];
+
   if (!req.rspObj) req.rspObj = {};
   var rspObj = req.rspObj;
 
