@@ -5,7 +5,17 @@ const default_no_of_assessment_submissions_threshold = 3;
 const default_entity_score_api_threshold = 5;
 const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
 
-//function for instance observation final response creation
+/**
+ * Creates a structured report from the provided data based on the report type.
+ *
+ * Processes various question types (text, slider, radio, etc.) to generate a 
+ * report object. Adjusts structure for surveys or observations and groups 
+ * multiselect and matrix questions.
+ *
+ * @param {Array<Object>} data - The input data to process.
+ * @param {string} [reportType=""] - Optional, specifies if the report is for a survey.
+ * @returns {Object} - The generated report.
+ */
 exports.instanceReportChart = async function (data, reportType = "") {
     let result;
     let multiSelectArray = [];
@@ -1872,24 +1882,6 @@ async function insertEvidenceArrayToChartObject(chartData, downloadableUrls, que
     return chartData;
 }
 
-
-// Extract fileSourcePath, get the downloadable url from kendra service
-async function getDownloadableUrlFromKendra(filesArray, token) {
-
-    return new Promise(async function (resolve, reject) {
-
-        try {
-            let downloadableUrl = await kendraService.getDownloadableUrl(filesArray, token);
-
-            return resolve(downloadableUrl);
-
-        } catch (error) {
-            return reject(error);
-        }
-    })
-}
-
-
 // Response object creation for allEvidences API
 exports.evidenceResponseCreateFunc = async function (result) {
 
@@ -2776,7 +2768,16 @@ const getChartObject = async function (data, submissionCount) {
 
 }
 
-
+/**
+ * Converts a given date to Indian Standard Time (IST) format.
+ *
+ * This function takes a date, converts it to IST by adding 5 hours and 30 
+ * minutes, and returns the date as a formatted string with the format 
+ * `DD-MM-YYYY HH:MM:SS AM/PM`.
+ *
+ * @param {string|Date} date - The date to be converted to IST.
+ * @returns {Promise<string>} - The formatted date string in IST.
+ */
 const getISTDate = async function(date) {
     let d = new Date(date);
     d.setUTCHours(d.getUTCHours() + 5);

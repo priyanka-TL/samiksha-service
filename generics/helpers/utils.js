@@ -202,6 +202,9 @@ function filterLocationIdandCode(dataArray) {
 }
 
 function arrayIdsTobjectIds(ids) {
+  /**
+ * Converts an array of IDs into an array of `ObjectId` instances.
+ */
   return ids.map((id) => ObjectId(id));
 }
 function arrayIdsTobjectIdsNew(ids) {

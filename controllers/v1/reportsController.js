@@ -15,7 +15,7 @@ const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const helperFunc = require('../../helper/chart_data');
-const filesHelper = require('../../common/files_helper');
+const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 // "https://storage.cloud.google.com/sl-" +
 // (process.env.NODE_ENV == "production" ? "prod" : "dev") +
 // "-storage/";
@@ -3059,90 +3059,15 @@ module.exports = class Reports {
  * }
  */
 
-submissionReport = async function (req, res) {
+submissionReport = async function (req) {
   return new Promise(async function (resolve, reject) {
     try {
-      if (!req.query.submissionId) {
-        let response = {
-          result: false,
-          message: 'submissionId is a required field',
-        };
-        res.send(response);
-      } else {
-        let submissionId = req.query.submissionId;
 
-        let surveySubmissionsDocumentArray = await surveySubmissionsHelper.surveySubmissionDocuments({
-          _id: submissionId,
-          status: 'completed',
-        });
+      let generateSubmissionReport = await reportsHelper.surveySubmissionReport(req);
+      resolve(generateSubmissionReport);
 
-        let surveySubmissionsDocument = surveySubmissionsDocumentArray[0];
-
-        if (!surveySubmissionsDocument) {
-          throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
-        }
-
-        //adding question options, externalId to answers array
-        if (surveySubmissionsDocument.answers && Object.keys(surveySubmissionsDocument.answers).length > 0) {
-          surveySubmissionsDocument = await questionsHelper.addOptionsToSubmission(surveySubmissionsDocument);
-        }
-
-        let solutionDocument = await solutionsHelper.solutionDocuments(
-          {
-            _id: surveySubmissionsDocument.solutionId,
-          },
-          ['name', 'scoringSystem', 'description', 'questionSequenceByEcm']
-        );
-
-        if (!solutionDocument.length) {
-          throw messageConstants.apiResponses.SOLUTION_NOT_FOUND;
-        }
-
-        solutionDocument = solutionDocument[0];
-        surveySubmissionsDocument['solutionInfo'] = solutionDocument;
-
-        if (surveySubmissionsDocument.programId && surveySubmissionsDocument.programId != '') {
-          let programDocument = await programsHelper.list(
-            {
-              _id: surveySubmissionsDocument.programId,
-            },
-            ['name', 'description']
-          );
-
-          if (!programDocument[0]) {
-            throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
-          }
-          surveySubmissionsDocument['programInfo'] = programDocument[0];
-        }
-        let data = surveySubmissionsDocument;
-
-        let transformedData = transformData(data);
-
-        let chartData = await helperFunc.instanceReportChart(transformedData, filesHelper.survey);
-        chartData.solutionName = data.solutionExternalId;
-
-        let surveyAnswers = data.answers;
-
-        let evidenceData = formateEvidenceData(surveyAnswers, chartData);
-
-        let responseObj;
-
-        if (evidenceData.length > 0) {
-          responseObj = await helperFunc.evidenceChartObjectCreation(
-            chartData,
-            evidenceData
-          );
-        } else {
-          responseObj = chartData;
-        }
-
-        return resolve({
-          status: httpStatusCode.ok.status,
-          message: responseObj.response,
-        });
-      }
     } catch (err) {
-
+      console.log(err)
       let response = {
         result: false,
         message: err.message || 'INTERNAL_SERVER_ERROR',
