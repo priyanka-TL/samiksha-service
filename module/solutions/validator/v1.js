@@ -83,7 +83,7 @@ module.exports = (req) => {
       req.checkBody('entities').exists().withMessage('required entities to be added');
     },
     getDetails: function () {
-      req.checkQuery('_id').exists().withMessage('required solution id');
+      req.checkParams('_id').exists().withMessage('required solution id');
     },
     fetchLink: function () {
       req.checkParams('_id').exists().withMessage('required solution id');
