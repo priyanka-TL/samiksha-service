@@ -2121,268 +2121,276 @@ module.exports = class ObservationsHelper {
 
   static async createNewObservation(req){
 
-    let observationDocument = await this.observationDocuments({
-      _id: req.params._id,
-      createdBy: req.userDetails.userId,
-      status: { $ne: 'inactive' },
-      entities: req.query.entityId,
-    });
+    return new Promise(async (resolve, reject)=>{
 
-    //add httpsStatusCode
-    //add messageConstants
-    if (!observationDocument[0]) {
-      return resolve({
-        status: httpStatusCode.bad_request.status,
-        message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND,
+      let observationDocument = await this.observationDocuments({
+        _id: req.params._id,
+        createdBy: req.userDetails.userId,
+        status: { $ne: 'inactive' },
+        entities: { '$in': [req.query.entityId]}
       });
-    }
 
-    observationDocument = observationDocument[0];
-    let entityDocument = { metaInformation: {} };
-
-    if (validateEntities == 'ON') {
-
-      let filterData = {
-        _id: req.query.entityId,
-        entityType: observationDocument.entityType,
-       };
-
-       let entitiesDocument = await entityManagementService.entityDocuments(
-         filterData
-       );
-
-       if(!entitiesDocument.success){
-        throw new Error({
-          message:'Entity Not found.'
-        });
-       }
-
-       entityDocument = entitiesDocument.data[0];
-
-      if (!entityDocument) {
-        let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+      console.log(observationDocument,'observationDocument')
+  
+      //add httpsStatusCode
+      //add messageConstants
+      if (!observationDocument[0]) {
         return resolve({
           status: httpStatusCode.bad_request.status,
-          message: responseMessage,
+          message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND,
         });
       }
-    }
+  
+      observationDocument = observationDocument[0];
+      let entityDocument = { metaInformation: {} };
+  
+      if (validateEntities == 'ON') {
+  
+        let filterData = {
+          _id: req.query.entityId,
+          entityType: observationDocument.entityType,
+         };
+  
+         let entitiesDocument = await entityManagementService.entityDocuments(
+           filterData
+         );
 
-    if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {
-      entityDocument.metaInformation.registryDetails = entityDocument.registryDetails;
-    }
-
-    let solutionDocument = await solutionsQueries.solutionDocuments(
-      {
-        _id: observationDocument.solutionId,
-        status: 'active',
-      },
-      [
-        'externalId',
-        'themes',
-        'frameworkId',
-        'frameworkExternalId',
-        'evidenceMethods',
-        'entityTypeId',
-        'entityType',
-        'programId',
-        'programExternalId',
-        'isAPrivateProgram',
-        'scoringSystem',
-        'isRubricDriven',
-        'project',
-        'referenceFrom',
-        'criteriaLevelReport',
-      ],
-    );
-
-    if (!solutionDocument[0]) {
-      return resolve({
-        status: httpStatusCode.bad_request.status,
-        message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-      });
-    }
-
-    solutionDocument = solutionDocument[0];
-
-    if (validateEntities == 'ON') {
-
-      let filterData = {
-        _id: solutionDocument.entityTypeId
-       };
-
-       let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments(
-         filterData,
-         {profileForm:1},
-         req.userDetails.userToken
-       );
-
-       if(!entityTypeDocumentsAPICall.success){
-        throw new Error({
-          message:'Entity Not found.'
-        });
-       }
-
-      let entityProfileForm = entityTypeDocumentsAPICall.data[0];
-
-      if (!entityProfileForm) {
-        return resolve({
-          status: httpStatusCode.bad_request.status,
-          message: messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND,
-        });
+         if(!entitiesDocument.success){
+          throw new Error({
+            message:'Entity Not found.'
+          });
+         }
+  
+         entityDocument = entitiesDocument.data[0];
+  
+        if (!entityDocument) {
+          let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: responseMessage,
+          });
+        }
       }
-    }
-
-    let lastSubmissionNumber = 0;
-
-    const lastSubmissionForObservationEntity = await this.findLastSubmissionForObservationEntity(
-      req.params._id,
-      req.query.entityId,
-    );
-
-    if (!lastSubmissionForObservationEntity.success) {
-      throw new Error(lastSubmissionForObservationEntity.message);
-    }
-
-    lastSubmissionNumber = lastSubmissionForObservationEntity.result + 1;
-
-    let submissionDocument = {
-      entityId: entityDocument._id,
-      entityExternalId: entityDocument.metaInformation.externalId ? entityDocument.metaInformation.externalId : '',
-      entityInformation: entityDocument.metaInformation,
-      solutionId: solutionDocument._id,
-      solutionExternalId: solutionDocument.externalId,
-      programId: solutionDocument.programId ? solutionDocument.programId :undefined,
-      programExternalId: solutionDocument.programExternalId ? solutionDocument.programExternalId: undefined ,
-      isAPrivateProgram: solutionDocument.isAPrivateProgram,
-      frameworkId: solutionDocument.frameworkId,
-      frameworkExternalId: solutionDocument.frameworkExternalId,
-      entityTypeId: solutionDocument.entityTypeId,
-      entityType: solutionDocument.entityType,
-      observationId: observationDocument._id,
-      observationInformation: {
-        ..._.omit(observationDocument, ['_id', 'entities', 'deleted', '__v']),
-      },
-      createdBy: observationDocument.createdBy,
-      evidenceSubmissions: [],
-      entityProfile: {},
-      status: 'started',
-      scoringSystem: solutionDocument.scoringSystem,
-      isRubricDriven: solutionDocument.isRubricDriven,
-    };
-
-    if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
-      submissionDocument['criteriaLevelReport'] = solutionDocument['criteriaLevelReport'];
-    }
-
-    if (req.body && req.body.role) {
-      submissionDocument.userRoleInformation = req.body;
-    }
-
-    if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
-      submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
-      submissionDocument['project'] = solutionDocument.project;
-    }
-
-    let criteriaId = new Array();
-    let criteriaObject = {};
-    let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
-
-    criteriaIdArray.forEach((eachCriteriaId) => {
-      criteriaId.push(eachCriteriaId.criteriaId);
-      criteriaObject[eachCriteriaId.criteriaId.toString()] = {
-        weightage: eachCriteriaId.weightage,
-      };
-    });
-
-    let criteriaDocuments = await database.models.criteria
-      .find(
-        { _id: { $in: criteriaId } },
+  
+      if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {
+        entityDocument.metaInformation.registryDetails = entityDocument.registryDetails;
+      }
+  
+      let solutionDocument = await solutionsQueries.solutionDocuments(
         {
-          evidences: 0,
-          resourceType: 0,
-          language: 0,
-          keywords: 0,
-          concepts: 0,
-          createdFor: 0,
-          updatedAt: 0,
-          createdAt: 0,
-          frameworkCriteriaId: 0,
-          __v: 0,
+          _id: observationDocument.solutionId,
+          status: 'active',
         },
-      )
-      .lean();
-
-    let submissionDocumentEvidences = {};
-    let submissionDocumentCriterias = [];
-
-    solutionDocument.evidenceMethods !== undefined && Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
-      if (!(solutionDocument.evidenceMethods[solutionEcm].isActive === false)) {
-        solutionDocument.evidenceMethods[solutionEcm].startTime = '';
-        solutionDocument.evidenceMethods[solutionEcm].endTime = '';
-        solutionDocument.evidenceMethods[solutionEcm].isSubmitted = false;
-        solutionDocument.evidenceMethods[solutionEcm].submissions = new Array();
-      } else {
-        delete solutionDocument.evidenceMethods[solutionEcm];
+        [
+          'externalId',
+          'themes',
+          'frameworkId',
+          'frameworkExternalId',
+          'evidenceMethods',
+          'entityTypeId',
+          'entityType',
+          'programId',
+          'programExternalId',
+          'isAPrivateProgram',
+          'scoringSystem',
+          'isRubricDriven',
+          'project',
+          'referenceFrom',
+          'criteriaLevelReport',
+        ],
+      );
+  
+      if (!solutionDocument[0]) {
+        return resolve({
+          status: httpStatusCode.bad_request.status,
+          message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+        });
       }
-    });
-    submissionDocumentEvidences = solutionDocument.evidenceMethods;
+  
+      solutionDocument = solutionDocument[0];
+  
+      if (validateEntities == 'ON') {
+  
+        let filterData = {
+          _id: solutionDocument.entityTypeId
+         };
+  
+         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments(
+           filterData,
+           {profileForm:1},
+           req.userDetails.userToken
+         );
+  
+         if(!entityTypeDocumentsAPICall.success){
+          throw new Error({
+            message:'Entity Not found.'
+          });
+         }
+  
+        let entityProfileForm = entityTypeDocumentsAPICall.data[0];
+  
+        if (!entityProfileForm) {
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND,
+          });
+        }
+      }
+  
+      let lastSubmissionNumber = 0;
+  
+      const lastSubmissionForObservationEntity = await this.findLastSubmissionForObservationEntity(
+        req.params._id,
+        req.query.entityId,
+      );
 
-    criteriaDocuments.forEach((criteria) => {
-      criteria.weightage = criteriaObject[criteria._id.toString()].weightage;
+      if (!lastSubmissionForObservationEntity.success) {
+        throw new Error(lastSubmissionForObservationEntity.message);
+      }
+  
+      lastSubmissionNumber = lastSubmissionForObservationEntity.result + 1;
+  
+      let submissionDocument = {
+        entityId: entityDocument._id,
+        entityExternalId: entityDocument.metaInformation.externalId ? entityDocument.metaInformation.externalId : '',
+        entityInformation: entityDocument.metaInformation,
+        solutionId: solutionDocument._id,
+        solutionExternalId: solutionDocument.externalId,
+        programId: solutionDocument.programId ? solutionDocument.programId :undefined,
+        programExternalId: solutionDocument.programExternalId ? solutionDocument.programExternalId: undefined ,
+        isAPrivateProgram: solutionDocument.isAPrivateProgram,
+        frameworkId: solutionDocument.frameworkId,
+        frameworkExternalId: solutionDocument.frameworkExternalId,
+        entityTypeId: solutionDocument.entityTypeId,
+        entityType: solutionDocument.entityType,
+        observationId: observationDocument._id,
+        observationInformation: {
+          ..._.omit(observationDocument, ['_id', 'entities', 'deleted', '__v']),
+        },
+        createdBy: observationDocument.createdBy,
+        evidenceSubmissions: [],
+        entityProfile: {},
+        status: 'started',
+        scoringSystem: solutionDocument.scoringSystem,
+        isRubricDriven: solutionDocument.isRubricDriven,
+      };
+  
+      if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
+        submissionDocument['criteriaLevelReport'] = solutionDocument['criteriaLevelReport'];
+      }
+  
+      if (req.body && req.body.role) {
+        submissionDocument.userRoleInformation = req.body;
+      }
+  
+      if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
+        submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
+        submissionDocument['project'] = solutionDocument.project;
+      }
+  
+      let criteriaId = new Array();
+      let criteriaObject = {};
+      let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
+  
+      criteriaIdArray.forEach((eachCriteriaId) => {
+        criteriaId.push(eachCriteriaId.criteriaId);
+        criteriaObject[eachCriteriaId.criteriaId.toString()] = {
+          weightage: eachCriteriaId.weightage,
+        };
+      });
+  
+      let criteriaDocuments = await database.models.criteria
+        .find(
+          { _id: { $in: criteriaId } },
+          {
+            evidences: 0,
+            resourceType: 0,
+            language: 0,
+            keywords: 0,
+            concepts: 0,
+            createdFor: 0,
+            updatedAt: 0,
+            createdAt: 0,
+            frameworkCriteriaId: 0,
+            __v: 0,
+          },
+        )
+        .lean();
+  
+      let submissionDocumentEvidences = {};
+      let submissionDocumentCriterias = [];
+  
+      solutionDocument.evidenceMethods !== undefined && Object.keys(solutionDocument.evidenceMethods).forEach((solutionEcm) => {
+        if (!(solutionDocument.evidenceMethods[solutionEcm].isActive === false)) {
+          solutionDocument.evidenceMethods[solutionEcm].startTime = '';
+          solutionDocument.evidenceMethods[solutionEcm].endTime = '';
+          solutionDocument.evidenceMethods[solutionEcm].isSubmitted = false;
+          solutionDocument.evidenceMethods[solutionEcm].submissions = new Array();
+        } else {
+          delete solutionDocument.evidenceMethods[solutionEcm];
+        }
+      });
+      submissionDocumentEvidences = solutionDocument.evidenceMethods;
+  
+      criteriaDocuments.forEach((criteria) => {
+        criteria.weightage = criteriaObject[criteria._id.toString()].weightage;
+  
+        submissionDocumentCriterias.push(_.omit(criteria, ['evidences']));
+      });
+  
+      submissionDocument.evidences = submissionDocumentEvidences;
+  
+      try{
+        submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
+      }catch(error){
+        submissionDocument.evidencesStatus = []
+      }
+  
+      submissionDocument.criteria = submissionDocumentCriterias;
+      submissionDocument.submissionNumber = lastSubmissionNumber;
+  
+      submissionDocument['appInformation'] = {};
+  
+      if (req.headers['x-app-id'] || req.headers.appname) {
+        submissionDocument['appInformation']['appName'] = req.headers['x-app-id']
+          ? req.headers['x-app-id']
+          : req.headers.appname;
+      }
+  
+      if (req.headers['x-app-ver'] || req.headers.appversion) {
+        submissionDocument['appInformation']['appVersion'] = req.headers['x-app-ver']
+          ? req.headers['x-app-ver']
+          : req.headers.appversion;
+      }
+  
+      let newObservationSubmissionDocument = await database.models.observationSubmissions.create(submissionDocument);
+  
+      // if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
+      //   await observationSubmissionsHelper.pushSubmissionToImprovementService(
+      //     _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
+      //   );
+      // }
+  
+      // Push new observation submission to kafka for reporting/tracking.
+      //commenting as no dependency on druid currently
+      // observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(
+      //   newObservationSubmissionDocument._id,
+      // );
+  
+      let observations = new Array();
+  
+      observations = await this.listV2(req.userDetails.userId);
 
-      submissionDocumentCriterias.push(_.omit(criteria, ['evidences']));
-    });
+      let responseMessage = messageConstants.apiResponses.OBSERVATION_SUBMISSION_CREATED;
+  
+      return resolve({
+        message: responseMessage,
+        result: observations,
+      });
 
-    submissionDocument.evidences = submissionDocumentEvidences;
 
-    try{
-      submissionDocument.evidencesStatus = Object.values(submissionDocumentEvidences);
-    }catch(error){
-      submissionDocument.evidencesStatus = []
-    }
-
-    submissionDocument.criteria = submissionDocumentCriterias;
-    submissionDocument.submissionNumber = lastSubmissionNumber;
-
-    submissionDocument['appInformation'] = {};
-
-    if (req.headers['x-app-id'] || req.headers.appname) {
-      submissionDocument['appInformation']['appName'] = req.headers['x-app-id']
-        ? req.headers['x-app-id']
-        : req.headers.appname;
-    }
-
-    if (req.headers['x-app-ver'] || req.headers.appversion) {
-      submissionDocument['appInformation']['appVersion'] = req.headers['x-app-ver']
-        ? req.headers['x-app-ver']
-        : req.headers.appversion;
-    }
-
-    let newObservationSubmissionDocument = await database.models.observationSubmissions.create(submissionDocument);
-
-    // if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-    //   await observationSubmissionsHelper.pushSubmissionToImprovementService(
-    //     _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
-    //   );
-    // }
-
-    // Push new observation submission to kafka for reporting/tracking.
-    //commenting as no dependency on druid currently
-    // observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(
-    //   newObservationSubmissionDocument._id,
-    // );
-
-    let observations = new Array();
-
-    observations = await this.listV2(req.userDetails.userId);
-
-    let responseMessage = messageConstants.apiResponses.OBSERVATION_SUBMISSION_CREATED;
-
-    return resolve({
-      message: responseMessage,
-      result: observations,
-    });
+    })
+  
 
   }
 };

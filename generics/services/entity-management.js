@@ -51,6 +51,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           result.success = false;
         } else {
           let response = data.body;
+          console.log(response,'<--resp')
           // Check if the response status is OK (HTTP 200)
           if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
@@ -62,6 +63,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
         return resolve(result);
       }
     } catch (error) {
+      console.log(error)
       return reject(error);
     }
   });
