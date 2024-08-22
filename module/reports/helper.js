@@ -66,7 +66,7 @@ module.exports = class ReportsHelper {
         result: false,
         message: 'submissionId is a required field',
       };
-      res.send(response);
+      return response;
     } else {
       let submissionId = req.query.submissionId;
 
@@ -154,7 +154,6 @@ module.exports = class ReportsHelper {
  *                            question's response with associated metadata.
  */
 function transformData(data) {
-
   //custom function return to mimic druid response from data source
   let singleQuestionAnswerDataPerSolutionArr = [];
 

@@ -495,7 +495,7 @@ module.exports = class SurveysHelper {
         } else {
           let survey = {};
 
-          if (userOrganisations.createdFor) {
+          if (userOrganisations && userOrganisations.createdFor) {
             survey['createdFor'] = userOrganisations;
           }
           //   }
@@ -538,6 +538,7 @@ module.exports = class SurveysHelper {
           },
         });
       } catch (error) {
+        console.log(error)
         return resolve({
           success: false,
           message: error.message,
@@ -696,7 +697,7 @@ module.exports = class SurveysHelper {
           let createSurveyDocument = await this.createSurveyDocument(
             userId,
             solutionDocument[0],
-            userOrgDetails[userId],
+            // userOrgDetails[userId],
           );
 
           if (!createSurveyDocument.success) {
@@ -1437,6 +1438,7 @@ module.exports = class SurveysHelper {
               );
 
             if (!solutionData.success) {
+              console.log('here2')
               throw new Error(
                 messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND
               );
