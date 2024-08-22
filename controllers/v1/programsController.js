@@ -1222,11 +1222,11 @@ module.exports = class Programs extends Abstract {
 
 
   /**
-   * List of solutions and targetted ones.
+   * List of Programs and targetted ones.
    * @method
    * @name targetedPrograms
    * @param {Object} req - request data.
-   * @returns {JSON} List of solutions with targetted ones.
+   * @returns {JSON} List of Programs with targetted ones.
    */
 
   async targetedPrograms(req) {
@@ -1239,7 +1239,6 @@ module.exports = class Programs extends Abstract {
           req.pageNo,
           req.searchText,
           req.query.filter,
-          req.query.surveyReportPage ? req.query.surveyReportPage : '',
         );
 
         programs['result'] = programs.data;
