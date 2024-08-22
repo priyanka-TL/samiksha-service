@@ -1219,4 +1219,39 @@ module.exports = class Programs extends Abstract {
       }
     });
   }
+
+
+  /**
+   * List of solutions and targetted ones.
+   * @method
+   * @name targetedPrograms
+   * @param {Object} req - request data.
+   * @returns {JSON} List of solutions with targetted ones.
+   */
+
+  async targetedPrograms(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programs = await programsHelper.targetedPrograms(
+          req.body,
+          req.userDetails.userId,
+          req.pageSize,
+          req.pageNo,
+          req.searchText,
+          req.query.filter,
+          req.query.surveyReportPage ? req.query.surveyReportPage : '',
+        );
+
+        programs['result'] = programs.data;
+
+        return resolve(programs);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

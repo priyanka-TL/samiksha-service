@@ -34,7 +34,7 @@ module.exports = class ProgramsHelper {
    * @returns {Object} - Programs list.
    */
 
-  static list(filter = {}, projection,pageNo = '', pageSize = '', searchText ) {
+  static list(filter = {}, projection, pageNo = '', pageSize = '', searchText) {
     return new Promise(async (resolve, reject) => {
       try {
         let programDocument = [];
@@ -56,7 +56,7 @@ module.exports = class ProgramsHelper {
             },
             {
               description: new RegExp(searchText, 'i'),
-            },
+            }
           );
         }
 
@@ -229,7 +229,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
           },
           { $set: _.omit(data, ['scope']) },
-          { new: true },
+          { new: true }
         );
 
         if (!program) {
@@ -284,7 +284,7 @@ module.exports = class ProgramsHelper {
             scope: { $exists: true },
             isAPrivateProgram: false,
           },
-          ['_id'],
+          ['_id']
         );
 
         if (!(programData.length > 0)) {
@@ -298,20 +298,18 @@ module.exports = class ProgramsHelper {
 
         // If the request body has roles set to "all", add "all" as a role; otherwise, get the roles from userRoles to update scope.roles
         if (Array.isArray(roles) && roles.length > 0) {
-          let currentRoles = await programsQueries.programDocuments({ _id: programId }, ['scope.roles'])
-					currentRoles = currentRoles[0].scope.roles
+          let currentRoles = await programsQueries.programDocuments({ _id: programId }, ['scope.roles']);
+          currentRoles = currentRoles[0].scope.roles;
 
-					let currentRolesSet = new Set(currentRoles)
-					let rolesSet = new Set(roles)
+          let currentRolesSet = new Set(currentRoles);
+          let rolesSet = new Set(roles);
 
-					rolesSet.forEach((role) => {
-						if (role != '' && role != 'all') currentRolesSet.add(role)
-					})
+          rolesSet.forEach((role) => {
+            if (role != '' && role != 'all') currentRolesSet.add(role);
+          });
 
-					currentRoles = Array.from(currentRolesSet)
-					
-        
-          
+          currentRoles = Array.from(currentRolesSet);
+
           // remove the "all" from the scope.roles and update the new roles
           await programsQueries.findOneAndUpdate(
             {
@@ -320,7 +318,7 @@ module.exports = class ProgramsHelper {
             {
               $pull: { 'scope.roles': { code: messageConstants.common.ALL_ROLES } },
             },
-            { new: true },
+            { new: true }
           );
 
           updateQuery['$addToSet'] = {
@@ -340,7 +338,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
           },
           updateQuery,
-          { new: true },
+          { new: true }
         );
         if (!updateProgram || !updateProgram._id) {
           throw {
@@ -380,7 +378,7 @@ module.exports = class ProgramsHelper {
             scope: { $exists: true },
             isAPrivateProgram: false,
           },
-          ['_id', 'scope.entityType'],
+          ['_id', 'scope.entityType']
         );
 
         if (!(programData.length > 0)) {
@@ -390,17 +388,16 @@ module.exports = class ProgramsHelper {
         }
 
         let entityIds = [];
-        
 
         let entitiesData = await entityManagementService.entityDocuments(
           {
             _id: { $in: entities },
             entityType: programData[0].scope.entityType,
           },
-          ['_id'],
+          ['_id']
         );
 
-        if (!(entitiesData. success)) {
+        if (!entitiesData.success) {
           throw {
             message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
           };
@@ -419,7 +416,7 @@ module.exports = class ProgramsHelper {
           {
             $addToSet: { 'scope.entities': { $each: entityIds } },
           },
-          { new: true },
+          { new: true }
         );
         if (!updateProgram || !updateProgram._id) {
           throw {
@@ -459,7 +456,7 @@ module.exports = class ProgramsHelper {
             scope: { $exists: true },
             isAPrivateProgram: false,
           },
-          ['_id'],
+          ['_id']
         );
 
         if (!(programData.length > 0)) {
@@ -477,7 +474,7 @@ module.exports = class ProgramsHelper {
             {
               $pull: { 'scope.roles': { $in: roles } },
             },
-            { new: true },
+            { new: true }
           );
           if (!updateProgram || !updateProgram._id) {
             throw {
@@ -523,7 +520,7 @@ module.exports = class ProgramsHelper {
             scope: { $exists: true },
             isAPrivateProgram: false,
           },
-          ['_id', 'scope.entities'],
+          ['_id', 'scope.entities']
         );
 
         if (!(programData.length > 0)) {
@@ -547,7 +544,7 @@ module.exports = class ProgramsHelper {
           {
             $pull: { 'scope.entities': { $in: entities } },
           },
-          { new: true },
+          { new: true }
         );
         if (!updateProgram || !updateProgram._id) {
           throw {
@@ -632,7 +629,7 @@ module.exports = class ProgramsHelper {
             status: messageConstants.common.ACTIVE_STATUS,
             isDeleted: false,
           },
-          ['name', 'externalId', 'requestForPIIConsent', 'rootOrganisations'],
+          ['name', 'externalId', 'requestForPIIConsent', 'rootOrganisations']
         );
 
         if (!(programData.length > 0)) {
@@ -650,7 +647,7 @@ module.exports = class ProgramsHelper {
             userId: userId,
             programId: programId,
           },
-          ['_id', 'consentShared'],
+          ['_id', 'consentShared']
         );
         // if user not joined for program. we have add more key values to programUsersData
         if (!(programUsersDetails.length > 0)) {
@@ -820,23 +817,22 @@ module.exports = class ProgramsHelper {
         let scope = {};
         // check if validate entity on or off
         if (validateEntity !== messageConstants.common.OFF) {
+          let scopeDatas = Object.keys(scopeData);
+          let scopeDataIndex = scopeDatas.map((index) => {
+            return `scope.${index}`;
+          });
 
-          let scopeDatas = Object.keys(scopeData)
-				let scopeDataIndex = scopeDatas.map((index) => {
-					return `scope.${index}`
-				})
-
-				let programIndex = await programsQueries.listIndexesFunc()
-				let indexes = programIndex.map((indexedKeys) => {
-					return Object.keys(indexedKeys.key)[0]
-				})
-				let keysNotIndexed = _.differenceWith(scopeDataIndex, indexes)
-        if (keysNotIndexed.length > 0) {
-					let keysCannotBeAdded = keysNotIndexed.map((keys) => {
-						return keys.split('.')[1]
-					})
-					scopeData = _.omit(scopeData, keysCannotBeAdded)
-				}
+          let programIndex = await programsQueries.listIndexesFunc();
+          let indexes = programIndex.map((indexedKeys) => {
+            return Object.keys(indexedKeys.key)[0];
+          });
+          let keysNotIndexed = _.differenceWith(scopeDataIndex, indexes);
+          if (keysNotIndexed.length > 0) {
+            let keysCannotBeAdded = keysNotIndexed.map((keys) => {
+              return keys.split('.')[1];
+            });
+            scopeData = _.omit(scopeData, keysCannotBeAdded);
+          }
           // If the scope to update or set has entityType
           // if (scopeData.entityType) {
           //   // Get entity details of type {scopeData.entityType}
@@ -931,7 +927,7 @@ module.exports = class ProgramsHelper {
           //     }
           //   }
           // }
-        } 
+        }
 
         //Updating or set scope in program document
         let updateProgram = await programsQueries.findOneAndUpdate(
@@ -939,7 +935,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
           },
           { $set: { scope: scopeData } },
-          { new: true },
+          { new: true }
         );
         if (!updateProgram._id) {
           throw {
@@ -974,7 +970,7 @@ module.exports = class ProgramsHelper {
             createdBy: userId,
             isAPrivateProgram: true,
           },
-          ['name', 'externalId', 'description', '_id'],     
+          ['name', 'externalId', 'description', '_id']
         );
 
         if (!programsData.length > 0) {
@@ -1051,7 +1047,7 @@ module.exports = class ProgramsHelper {
               _id: { $in: programIds },
             },
             'all',
-            ['components', 'imageCompression', 'updatedAt', 'createdAt', 'startDate', 'endDate', 'updatedBy'],
+            ['components', 'imageCompression', 'updatedAt', 'createdAt', 'startDate', 'endDate', 'updatedBy']
           );
 
           if (!programsData.length > 0) {
@@ -1109,7 +1105,7 @@ module.exports = class ProgramsHelper {
             $pull: {
               components: { $in: updateSolutionIds },
             },
-          },
+          }
         );
 
         return resolve({
@@ -1166,7 +1162,7 @@ module.exports = class ProgramsHelper {
             },
             {
               description: new RegExp(search, 'i'),
-            },
+            }
           );
         }
 
@@ -1192,6 +1188,210 @@ module.exports = class ProgramsHelper {
         return resolve(programDocuments);
       } catch (error) {
         return reject(error);
+      }
+    });
+  }
+   
+  /**
+   * List of programs and targeted ones.
+   * @method
+   * @name targetedPrograms
+   * @param {Object} requestedData   - req bidy.
+   * @param {String} userId         - logged in user id.
+   * @param {Number} pageNo         - Recent page no.
+   * @param {Number} pageSize       - Size of page.
+   * @param {String} search         - search text.
+   * @param {String} [ filter = ""] - filter text.
+   * @returns {Object} - Details of the program.
+   */
+  static targetedPrograms(requestedData, userId, pageSize, pageNo, search, filter) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        //fetch the assigned programs for the user
+        let assignedPrograms = await this.assignedUserPrograms(userId);
+        let mergedData = [];
+        let programIds = [];
+        if (assignedPrograms.success && assignedPrograms.data) {
+          mergedData = assignedPrograms.data.data;
+
+          mergedData.forEach((mergeProgramData) => {
+            if (mergeProgramData.programId) {
+              programIds.push(mergeProgramData.programId);
+            }
+          });
+        }
+        let targetedPrograms = {
+          success: false,
+        };
+
+        let getTargetedProgram = true;
+
+        if (filter === messageConstants.common.DISCOVERED_BY_ME) {
+          getTargetedProgram = false;
+        }
+        // programs based on role and location
+        if (getTargetedProgram) {
+          targetedPrograms = await this.forUserRoleAndLocation(
+            requestedData,
+            programIds,
+            filter,
+            pageSize,
+            pageNo,
+            search
+          );
+        }
+
+        return resolve(getTargetedProgram ? targetedPrograms : assignedPrograms);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  /**
+   * Assigned programs details.
+   * @method
+   * @name assignedUserPrograms
+   * @param {String} userId         - logged in user id.
+   * @returns {Object} - Details of the program.
+   */
+
+  static assignedUserPrograms(userId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        //Checking for user assigned programs based on userId
+
+        let userAssignedPrograms = await programUsersQueries.programUsersDocument(
+          { userId: userId } // find query
+        );
+
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.USER_ASSIGNED_SURVEY_FETCHED,
+          data: {
+            data: userAssignedPrograms,
+            count: userAssignedPrograms.length,
+          },
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  static forUserRoleAndLocation(bodyData, programIds, filter, pageSize, pageNo, searchText = '') {
+    return new Promise(async (resolve, reject) => {
+      try {
+        //Getting query based on roles and entity
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData);
+        if (!queryData.success) {
+          return resolve(queryData);
+        }
+        //Check for whether its a privateProgram or not
+        if (filter && filter !== '') {
+          if (filter === messageConstants.common.CREATED_BY_ME) {
+            matchQuery['isAPrivateProgram'] = { $ne: false };
+          } else if (filter === messageConstants.common.ASSIGN_TO_ME) {
+            matchQuery['isAPrivateProgram'] = false;
+          }
+        }
+        let matchQuery = queryData.data;
+        //adding programIds array to matchQuery
+        matchQuery['_id'] = { $in: programIds };
+        let projection = [
+          'name',
+          'description',
+          'externalId',
+          'owner',
+          'createdBy',
+          'status',
+          'components',
+          'resourceType',
+        ];
+        //listing the solution based on type and query
+        let targetedPrograms = await this.list(matchQuery, projection, pageNo, pageSize, searchText);
+        return resolve({
+          success: true,
+          message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+          data: targetedPrograms.data,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          message: error.message,
+          data: {},
+        });
+      }
+    });
+  }
+
+  /**
+   * Auto targeted query field.
+   * @method
+   * @name queryBasedOnRoleAndLocation
+   * @param {String} data - Requested body data.
+   * @param {String} type - type of solutions.
+   * @returns {JSON} - Auto targeted solutions query.
+   */
+
+  static queryBasedOnRoleAndLocation(data) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let entities = [];
+        let entityTypes = [];
+        let filterQuery = {
+          isDeleted: false,
+        };
+        //Check for validate entities ON or OFF
+        if (validateEntity !== messageConstants.common.OFF) {
+          // Getting entities and entity types from request body
+          Object.keys(_.omit(data, ['filter', 'role', 'factors'])).forEach((requestedDataKey) => {
+            if (requestedDataKey == 'entities') entities.push(...data[requestedDataKey]);
+            if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
+          });
+          if (!(entities.length > 0)) {
+            throw {
+              message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
+            };
+          }
+
+          // filterQuery['scope.roles.code'] = {
+          //   $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
+          // };
+          filterQuery['scope.roles'] = {
+            $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
+          };
+          filterQuery['scope.entities'] = { $in: entities };
+          filterQuery['scope.entityType'] = { $in: entityTypes };
+        } else {
+          let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role']);
+          let userRoleKeys = Object.keys(userRoleInfo);
+          userRoleKeys.forEach((entities) => {
+            filterQuery['scope.' + entities] = {
+              $in: userRoleInfo[entities].split(','),
+            };
+          });
+        }
+
+        return resolve({
+          success: true,
+          data: filterQuery,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+          message: error.message,
+          data: {},
+        });
       }
     });
   }
