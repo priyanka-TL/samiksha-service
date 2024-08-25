@@ -1438,7 +1438,6 @@ module.exports = class SurveysHelper {
               );
 
             if (!solutionData.success) {
-              console.log('here2')
               throw new Error(
                 messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND
               );
