@@ -13,7 +13,6 @@ const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const programsHelper = require(MODULES_BASE_PATH+'/programs/helper');
 const helperFunc = require('../../helper/chart_data')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
-const filesCloudHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
 
 /**
  * ReportsHelper
