@@ -13,6 +13,8 @@ const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const programsHelper = require(MODULES_BASE_PATH+'/programs/helper');
 const helperFunc = require('../../helper/chart_data')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const filesCloudHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
+
 /**
  * ReportsHelper
  * @class
@@ -110,26 +112,14 @@ module.exports = class ReportsHelper {
 
         surveySubmissionsDocument['programInfo'] = programDocument[0];
       }
-      let data = surveySubmissionsDocument;
 
-      let transformedData = transformData(data);
+      let report = await helperFunc.generateSubmissionReportWithoutDruid(surveySubmissionsDocument);
 
-      let chartData = await helperFunc.instanceReportChart(transformedData,messageConstants.common.SURVEY);
-      chartData.solutionName = data.solutionExternalId;
+      let responseObj= {};
 
-      let surveyAnswers = data.answers;
-
-      let evidenceData = formateEvidenceData(surveyAnswers, chartData);
-
-      let responseObj;
-
-      if (evidenceData.length > 0) {
-        responseObj = await helperFunc.evidenceChartObjectCreation(
-          chartData,
-          evidenceData
-        );
-      } else {
-        responseObj = chartData;
+      responseObj.response = {
+        surveyName:surveySubmissionsDocument.surveyInformation.name,
+        report:report
       }
 
       return {
@@ -140,122 +130,3 @@ module.exports = class ReportsHelper {
   }
 };
 
-/**
- * Transforms survey submission data into a custom format resembling a Druid response.
- *
- * This function processes the input `data` and extracts key details about the 
- * survey, solution, criteria, and answers. It then constructs an array of 
- * objects, where each object represents the response to a single question, 
- * including metadata such as solution and criteria details, answer, response type, 
- * and associated options.
- *
- * @param {Object} data - The survey submission data to be transformed.
- * @returns {Array<Object>} - An array of objects, each representing a single 
- *                            question's response with associated metadata.
- */
-function transformData(data) {
-  //custom function return to mimic druid response from data source
-  let singleQuestionAnswerDataPerSolutionArr = [];
-
-  let solutionExternalId = data.solutionExternalId;
-
-  let solutionId = data.solutionId;
-  let solutionName = data.solutionInfo.name;
-
-  let surveyId = data.surveyId;
-  let surveySubmissionId = data._id;
-  let createdAt = data.createdAt;
-  let completedAt = data.completedDate;
-  let createdBy = data.createdBy;
-
-  let criteriaExternalId = data.criteria[0].externalId;
-  let criteriaId = data.criteria[0]._id;
-  let criteriaName = data.criteria[0].name;
-  let isAPrivateProgram = data.isAPrivateProgram;
-
-  let answersObject = data.answers;
-
-  let answerKeys = Object.keys(answersObject);
-
-  answerKeys.forEach((key) => {
-    let singleAnswerObj = answersObject[key];
-
-    singleQuestionAnswerDataPerSolutionArr.push({
-      event: {
-        solutionExternalId,
-        solutionId,
-        solutionName,
-        surveyId,
-        surveySubmissionId,
-        createdAt,
-        completedAt,
-        createdBy,
-        criteriaExternalId,
-        criteriaId,
-        criteriaName,
-        isAPrivateProgram,
-        questionAnswer: singleAnswerObj.value[0],
-        questionECM: singleAnswerObj.evidenceMethod,
-        questionExternalId: singleAnswerObj.externalId,
-        questionId: singleAnswerObj.qid,
-        questionName: singleAnswerObj.question[0],
-        questionResponseLabel: singleAnswerObj.value,
-        //questionResponseLabel_number:,
-        questionResponseType: singleAnswerObj.responseType,
-        // question_response_number
-        answerOptions: singleAnswerObj.options ? singleAnswerObj.options : undefined,
-      },
-    });
-  });
-
-  return singleQuestionAnswerDataPerSolutionArr;
-  //return data;
-}
-
-/**
- * Formats evidence data by matching survey answers with chart data.
- *
- * This function takes `surveyAnswers` and `chartData`, matches them based on 
- * the `externalId`, and extracts file paths from the survey answers. It 
- * returns an array of evidence objects containing the `questionExternalId` and 
- * concatenated `fileSourcePath`.
- *
- * @param {Object} surveyAnswers - The survey answers containing evidence details.
- * @param {Object} chartData - The chart data with response information.
- * @returns {Array<Object>} - An array of formatted evidence objects.
- */
-function formateEvidenceData(surveyAnswers, chartData) {
-
-  //custom formateEvidenceData to mimic formatting of evidence data which was previously done using druid
-
-  let evidenceArray = [];
-
-  // Loop through each item in chartData.response
-  chartData.response.forEach((chartItem) => {
-    const externalId = chartItem.order;
-
-    for (let key in surveyAnswers) {
-      let record = surveyAnswers[key];
-
-      if (record.externalId == externalId) {
-        if (record.fileName && record.fileName.length > 0) {
-          let sourcePathArray = record.fileName.map((fileInfo) => {
-            return fileInfo.sourcePath;
-          });
-
-          const evidenceObject = {
-            event: {
-              questionExternalId: externalId,
-              fileSourcePath: sourcePathArray.join(','),
-            },
-          };
-
-          // Add the evidence object to the evidenceArray
-          evidenceArray.push(evidenceObject);
-        }
-      }
-    }
-  });
-
-  return evidenceArray;
-}
