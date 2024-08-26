@@ -457,6 +457,13 @@ module.exports = class FilesHelper {
 						actionPermission // read/write
 					)
 
+          response.getDownloadableUrl = await cloudClient.getSignedUrl(
+            bucket,         // bucket name
+            file,           // file path
+            expireIn, // expire
+            messageConstants.common.READ_PERMISSION  // read/write
+          );
+
 					response.url = Array.isArray(response.url) ? response.url[0] : response.url
 
 					return response
