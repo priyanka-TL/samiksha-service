@@ -3175,14 +3175,6 @@ module.exports = class SolutionsHelper {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
         }
         
-        // let entitiesDocument = await entitiesHelper.entityDocuments(
-        //   {
-        //     _id: { $in: entityIds },
-        //     entityType: solutionDocument[0].entityType,
-        //   },
-        //   ['_id'],
-        // );
-
         let entitiesDocument = await entityManagementService.entityDocuments(
           {
             _id: { $in: entityIds },
