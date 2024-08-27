@@ -17,7 +17,7 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const assessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
-const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+
 /**
  * Observations
  * @class
@@ -549,7 +549,7 @@ module.exports = class Observations extends Abstract {
             {
               entityTypeId: 1,
               entities: 1,
-            }
+            },
           )
           .lean();
 
@@ -570,37 +570,18 @@ module.exports = class Observations extends Abstract {
           });
         }
 
-        // let entityDocuments = await entitiesHelper.search(
-        //   observationDocument.entityTypeId,
-        //   req.searchText,
-        //   req.pageSize,
-        //   req.pageNo,
-        //   false,
-        //   tags,
-        // );
+        let entityDocuments = await entitiesHelper.search(
+          observationDocument.entityTypeId,
+          req.searchText,
+          req.pageSize,
+          req.pageNo,
+          false,
+          tags,
+        );
 
-        // let entityDocument = await entityManagementService.search(
-        //   observationDocument.entityTypeId,
-        //   req.searchText,
-        //   req.pageSize,
-        //   req.pageNo,
-        //   false,
-        //   tags,
-
-        // )
-
-        let filterData = {
-          entityTypeId: observationDocument.entityTypeId,
-        };
-
-        
-        let entitiesDocument = await entityManagementService.entityDocuments(filterData);
-
-        
-        
         let observationEntityIds = observationDocument.entities.map((entity) => entity.toString());
 
-        entitiesDocument[0].data.forEach((eachMetaData) => {
+        entityDocuments[0].data.forEach((eachMetaData) => {
           eachMetaData.selected = observationEntityIds.includes(eachMetaData._id.toString()) ? true : false;
           if (eachMetaData.districtName && eachMetaData.districtName != '') {
             eachMetaData.name += ', ' + eachMetaData.districtName;
