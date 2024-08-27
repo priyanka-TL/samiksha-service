@@ -51,7 +51,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           result.success = false;
         } else {
           let response = data.body;
-          console.log(response,'<--resp')
+          
           // Check if the response status is OK (HTTP 200)
           if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
@@ -63,7 +63,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
         return resolve(result);
       }
     } catch (error) {
-      console.log(error)
+      
       return reject(error);
     }
   });
@@ -124,7 +124,13 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
     }
   });
 };
-
+/**
+ * Validates entities based on provided entity IDs and entity type ID.
+ * @param {string[]} entityIds - An array of entity IDs to validate.
+ * @param {string} entityTypeId - The ID of the entity type to check against.
+ * @returns {Promise<{entityIds: string[]}>} A promise that resolves to an object containing validated entity IDs.
+ * @throws {Error} If there's an error during validation.
+ */
 const validateEntities = async function (entityIds, entityTypeId) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -150,6 +156,15 @@ const validateEntities = async function (entityIds, entityTypeId) {
       }
     });
   }
+/**
+ * Lists entities by entity type with pagination.
+ * @param {string} entityTypeId - The ID of the entity type to list.
+ * @param {string} userToken - The authentication token of the user making the request.
+ * @param {number} pageSize - The number of items per page.
+ * @param {number} pageNo - The page number to retrieve.
+ * @returns {Promise<{success: boolean, data?: any}>} A promise that resolves to an object containing the success status and, if successful, the retrieved data.
+ * @throws {Error} If there's an error during the request.
+ */
 const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo) {
     return new Promise(async (resolve, reject) => {
       try {

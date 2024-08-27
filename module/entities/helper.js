@@ -1415,7 +1415,16 @@ module.exports = class EntitiesHelper {
     });
   }
 
-
+/**
+ * Searches entities based on observation, solution, or parent entity criteria.
+ * @param {Object} req - Request object with query params and user details.
+ * @param {Object} req.query - Search query parameters.
+ * @param {Object} req.userDetails - User information for authentication.
+ * @param {number} req.pageSize - Results per page.
+ * @param {number} req.pageNo - Page number to fetch.
+ * @returns {Promise<Object>} Promise resolving to search results and metadata.
+ * @throws {Error} If search process fails.
+ */
   static searchEntitiesHelper(req){
     return new Promise(async (resolve, reject) => {
       try {
