@@ -207,9 +207,17 @@ function arrayIdsTobjectIds(ids) {
  */
   return ids.map((id) => ObjectId(id));
 }
+/**
+ * Converts an array of string IDs to an array of ObjectId instances
+ * 
+ * This function is created as a new implementation that uses the 'new' keyword
+ * with ObjectId. It's separate from the original arrayIdsTobjectIds function
+ * to avoid affecting other parts of the codebase that rely on the original implementation.
+ * 
+ * @param {string[]} ids - An array of string IDs to be converted
+ * @returns {ObjectId[]} An array of ObjectId instances
+ */
 function arrayIdsTobjectIdsNew(ids) {
-  //function created as it requires new keyword 
-  //avoided modifying arrayIdsTobjectIds as its used at various places and might affect other parts
   return ids.map((id) => new ObjectId(id));
 }
 

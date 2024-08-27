@@ -11,11 +11,6 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const reportsHelper = require(MODULES_BASE_PATH + '/reports/helper');
 let imageBaseUrl = '';
-const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
-const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
-const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
-const helperFunc = require('../../helper/chart_data');
-const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 // "https://storage.cloud.google.com/sl-" +
 // (process.env.NODE_ENV == "production" ? "prod" : "dev") +
 // "-storage/";
@@ -3067,7 +3062,6 @@ submissionReport = async function (req) {
       resolve(generateSubmissionReport);
 
     } catch (err) {
-      console.log(err)
       let response = {
         result: false,
         message: err.message || 'INTERNAL_SERVER_ERROR',
