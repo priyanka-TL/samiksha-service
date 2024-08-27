@@ -495,7 +495,7 @@ module.exports = class SurveysHelper {
         } else {
           let survey = {};
 
-          if (userOrganisations.createdFor) {
+          if (userOrganisations && userOrganisations.createdFor) {
             survey['createdFor'] = userOrganisations;
           }
           //   }
@@ -538,6 +538,7 @@ module.exports = class SurveysHelper {
           },
         });
       } catch (error) {
+        console.log(error)
         return resolve({
           success: false,
           message: error.message,
