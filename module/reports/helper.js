@@ -8,7 +8,7 @@
 // Dependencies
 let moment = require('moment');
 const filesHelper = require(MODULES_BASE_PATH + '/files/helper');
-
+const observationSubmissionsHelper = require(MODULES_BASE_PATH+ '/observationSubmissions/helper')
 /**
  * ReportsHelper
  * @class
@@ -54,4 +54,24 @@ module.exports = class ReportsHelper {
       }
     });
   }
+static observationReport(req) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const observationSubmissionId = req.query.observationSubmissionId;
+
+      let submissionDocumentResult = await observationSubmissionsHelper.observationSubmissionsDocument(
+        {_id:observationSubmissionId}
+      );
+
+      const submissionDocument = submissionDocumentResult[0]
+
+      console.log(submissionDocument,'submissionDoc')
+      console.log(observationSubmissionId,'observationSubmissionId')
+      console.log('API is working....')
+      return resolve(submissionDocument);
+    } catch (error) {
+      return reject(error);
+    }
+  });
+}
 };

@@ -58,11 +58,13 @@ module.exports = class ObservationSubmissionsHelper {
         let submissionDocuments;
 
         if (sortedData !== 'all') {
+          console.log({queryObject, projection})
           submissionDocuments = await database.models.observationSubmissions
             .find(queryObject, projection)
             .sort(sortedData)
             .lean();
         } else {
+          console.log({queryObject, projection})
           submissionDocuments = await database.models.observationSubmissions.find(queryObject, projection).lean();
         }
 

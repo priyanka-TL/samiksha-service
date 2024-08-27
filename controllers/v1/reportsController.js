@@ -3012,4 +3012,64 @@ module.exports = class Reports {
       }
     });
   }
+  /**
+ * Get observation report.
+ * @method
+ * @name observationReport
+ * @param {Object} req - requested data.
+ * @param {String} req.query.observationId - The ID of the observation.
+ * @returns {JSON} JSON response consisting of observation report details.
+ */
+
+/**
+ * Sample Response:
+ * {
+ *   "message": [
+ *     {
+ *       "order": "TSD001_1604483265440-1610349652538",
+ *       "question": "Is electrical wiring / boards closed and insulated?",
+ *       "responseType": "radio",
+ *       "answers": ["R2"],
+ *       "chart": {},
+ *       "instanceQuestions": [],
+ *       "criteriaName": "Survey and Feedback",
+ *       "criteriaId": "5ffbfc5469a1847d4286dfd0",
+ *       "optionsAvailableForUser": [
+ *         { "value": "R1", "label": "Yes" },
+ *         { "value": "R2", "label": "No" }
+ *       ]
+ *     },
+ *     {
+ *       "order": "TSD002_1604483265440-1610349652539",
+ *       "question": "Name of the school?",
+ *       "responseType": "text",
+ *       "answers": ["t"],
+ *       "chart": {},
+ *       "instanceQuestions": [],
+ *       "criteriaName": "Survey and Feedback",
+ *       "criteriaId": "5ffbfc5469a1847d4286dfd0"
+ *     }
+ *   ],
+ *   "status": 200
+ * }
+ */
+
+observationReport = async function (req) {
+  return new Promise(async function (resolve, reject) {
+    try {
+
+      let generateobservationReport = await reportsHelper.observationReport(req);
+      resolve(generateobservationReport);
+
+    } catch (err) {
+      console.log(err,'err')
+      let response = {
+        result: false,
+        message: err.message || 'INTERNAL_SERVER_ERROR',
+      };
+      return resolve(response);
+    }
+  });
+};
+
 };
