@@ -2118,7 +2118,19 @@ module.exports = class ObservationsHelper {
     });
   }
 
-
+/**
+ * Create a new observation submission
+ * @param {Object} req - The request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params._id - Observation ID
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.entityId - Entity ID
+ * @param {Object} req.userDetails - User details
+ * @param {string} req.userDetails.userId - User ID
+ * @param {Object} req.body - Request body
+ * @param {Object} req.headers - Request headers
+ * @returns {Promise<Object>} - A promise that resolves to an object containing the result of the operation
+ */
   static async createNewObservation(req){
 
     return new Promise(async (resolve, reject)=>{
@@ -2130,10 +2142,6 @@ module.exports = class ObservationsHelper {
         entities: { '$in': [req.query.entityId]}
       });
 
-      console.log(observationDocument,'observationDocument')
-  
-      //add httpsStatusCode
-      //add messageConstants
       if (!observationDocument[0]) {
         return resolve({
           status: httpStatusCode.bad_request.status,
