@@ -10,7 +10,9 @@ const entityTypesHelper = require(MODULES_BASE_PATH + '/entityTypes/helper');
 const elasticSearch = require(ROOT_PATH + '/generics/helpers/elasticSearch');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 const FileStream = require(ROOT_PATH + '/generics/fileStream');
-
+const observationsHelper = require(MODULES_BASE_PATH + '/observations/helper');
+const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 /**
  * EntitiesHelper
  * @class
@@ -1412,6 +1414,211 @@ module.exports = class EntitiesHelper {
       }
     });
   }
+
+
+  static searchEntitiesHelper(req){
+    return new Promise(async (resolve, reject) => {
+      try {
+        let formatForSearchEntities = true;
+        let response = {
+          result: {},
+        };
+        
+        let userId = req.userDetails.userId;
+        let result;
+
+        let projection = [];
+
+        if (!req.query.observationId && !req.query.solutionId) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.OBSERVATION_SOLUTION_ID_REQUIRED,
+          };
+        }
+
+        if (req.query.observationId) {
+          let findObject = {
+            _id: req.query.observationId,
+            createdBy: userId,
+          };
+
+          projection.push('entities', 'entityType','entityTypeId');
+
+          let observationDocument = await observationsHelper.observationDocuments(findObject, projection);
+          result = observationDocument[0];
+        }
+
+        if (req.query.solutionId) {
+          let findQuery = {
+            _id: ObjectId(req.query.solutionId),
+          };
+          projection.push('entityType','entityTypeId');
+
+          let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projection);
+          result = _.merge(solutionDocument[0]);
+        }
+
+        let userAllowedEntities = new Array;
+        let messageData = messageConstants.apiResponses.ENTITY_FETCHED;
+
+        if(req.query.parentEntityId ) {
+
+            let entityType = entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP+"."+result.entityType;
+    
+            let entitiesData = await entitiesHelper.entityDocuments({
+                _id:req.query.parentEntityId
+              }, [
+                entityType,
+                "entityType",
+                "metaInformation.name",
+                "metaInformation.addressLine1",
+                "metaInformation.addressLine2",
+                "metaInformation.externalId",
+                "metaInformation.districtName"
+              ]);
+
+              let filterData = {
+                _id: req.query.parentEntityId
+              };
+      
+              
+            let entitiesDocumentAPICall = await entityManagementService.entityDocuments(filterData);
+
+            if(!entitiesDocumentAPICall.success){
+              throw new Error()
+            }
+
+            let entitiesDocument = entitiesDocumentAPICall.data;  
+
+            if( entitiesDocument.length > 0 && entitiesDocument[0].groups && entitiesDocument[0].groups[result.entityType]  ) {
+                userAllowedEntities = 
+                entitiesDocument[0][entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP][result.entityType];
+            } else {
+                response.result = [];
+                if( entitiesDocument[0] && entitiesDocument[0].entityType === result.entityType ) {
+
+                    if( entitiesDocument[0].metaInformation ) {
+                        
+                        if( entitiesDocument[0].metaInformation.name ) {
+                            entitiesDocument[0]["name"] = entitiesDocument[0].metaInformation.name;
+                        }
+
+                        if( entitiesDocument[0].metaInformation.externalId ) {
+                            entitiesDocument[0]["externalId"] = entitiesDocument[0].metaInformation.externalId;
+                        }
+
+                        if( entitiesDocument[0].metaInformation.addressLine1 ) {
+                            entitiesDocument[0]["addressLine1"] = entitiesDocument[0].metaInformation.addressLine1;
+                        }
+
+                        if( entitiesDocument[0].metaInformation.addressLine2 ) {
+                            entitiesDocument[0]["addressLine2"] = entitiesDocument[0].metaInformation.addressLine2;
+                        }
+
+                        if( entitiesDocument[0].metaInformation.districtName ) {
+                            entitiesDocument[0]["districtName"] = entitiesDocument[0].metaInformation.districtName;
+                        }
+
+                        entitiesDocument[0] = _.pick(
+                            entitiesDocument[0],
+                            ["_id","name","externalId","addressLine1","addressLine2","districtName"]
+                        )
+                    }
+
+                    let data = 
+                    await entitiesHelper.observationSearchEntitiesResponse(
+                        entitiesDocument,
+                        result.entities
+                    );
+
+                    response["message"] = messageData;
+
+                    response.result = data;
+
+                } else {
+                    response["message"] = 
+                    messageConstants.apiResponses.ENTITY_NOT_FOUND;
+                    
+                    response.result = []
+                }  
+
+                return resolve(response);
+            }
+        }
+
+        let userAclInformation = await userExtensionHelper.userAccessControlList(
+            userId
+        );
+
+        let tags = [];
+        
+        if( 
+            userAclInformation.success && 
+            Object.keys(userAclInformation.acl).length > 0 
+        ) {
+            Object.values(userAclInformation.acl).forEach(acl=>{
+                tags = tags.concat(acl);
+            })
+        }
+
+        let entitiesDocumentAPICall = await entityManagementService.listByEntityType(
+          result.entityTypeId,
+          req.userDetails.userToken,
+          req.pageSize,
+          req.pageNo
+        );
+
+        if(!entitiesDocumentAPICall.success){
+          //API call failed
+          throw new Error('Entity Management call failed.');
+        }
+
+        let entityDocuments = entitiesDocumentAPICall;
+        //adding logic to filter out entity records based on userAllowedEntities
+
+        let filteredRecordBasedOnUserAllowedEntities = [];
+
+        if(userAllowedEntities.length > 0)
+        {
+          for(let record of entityDocuments.data)
+            {
+              if(userAllowedEntities.includes(record._id)){
+                filteredRecordBasedOnUserAllowedEntities.push(record);
+              }    
+            }
+
+            entityDocuments.data = filteredRecordBasedOnUserAllowedEntities;
+        }
+
+        let data = 
+        await this.observationSearchEntitiesResponse(
+            entityDocuments.data,
+            result.entities
+        )
+
+        entityDocuments.data = data;
+
+        if ( entityDocuments.data.length <= 0 ) {
+            entityDocuments.count = 0;
+            messageData = messageConstants.apiResponses.ENTITY_NOT_FOUND;
+        }
+        response.result = entityDocuments.data;
+        response["message"] = messageData;
+
+        return resolve(response);
+      } catch (error) {
+        console.log(error, 'ERROR');
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+
+
+  }
+
 
   /**
    * Update user roles in entities elastic search
