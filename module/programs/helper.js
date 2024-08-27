@@ -298,8 +298,8 @@ module.exports = class ProgramsHelper {
 
         // If the request body has roles set to "all", add "all" as a role; otherwise, get the roles from userRoles to update scope.roles
         if (Array.isArray(roles) && roles.length > 0) {
-          let currentRoles = await programsQueries.programDocuments({ _id: programId }, ['scope.roles']);
-          currentRoles = currentRoles[0].scope.roles;
+          let programDocumentRecord = await programsQueries.programDocuments({ _id: programId }, ['scope.roles']);
+          let currentRoles = programDocumentRecord[0].scope.roles;
 
           let currentRolesSet = new Set(currentRoles);
           let rolesSet = new Set(roles);
@@ -1363,9 +1363,6 @@ module.exports = class ProgramsHelper {
             };
           }
 
-          // filterQuery['scope.roles.code'] = {
-          //   $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
-          // };
           filterQuery['scope.roles'] = {
             $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           };

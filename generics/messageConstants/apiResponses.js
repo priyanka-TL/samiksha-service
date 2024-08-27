@@ -399,4 +399,5 @@ module.exports = {
   SURVEY_SUBMISSION_FOUND: 'Survey submission fetched successfully',
   FAILED_TO_CREATE_DOWNLOADABLEURL: 'Failed to generate downloadableUrl',
   CLOUD_SERVICE_SUCCESS_MESSAGE: "Url's generated successfully",
+  USER_ROLES_NOT_FOUND: 'No user roles found',
 };
