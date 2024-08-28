@@ -1227,6 +1227,68 @@ module.exports = class Programs extends Abstract {
    * @name targetedPrograms
    * @param {Object} req - request data.
    * @returns {JSON} List of Programs with targetted ones.
+   * @apiParamExample {json} Request:
+   * {
+   *    "role": "mentee,admin,org_admin,session_manager,public,cluster_academic_coordinator,block_education_officer,district_education_officer"
+   * }
+   * @apiParamExample {json} Response:
+   *{
+    "message": "Successfully targeted programs fetched",
+    "status": 200,
+    "result": {
+        "data": [
+            {
+                "_id": "669652d5d652fd358878c327",
+                "externalId": "TESTING_BY_DEV_TEAM_7",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            },
+            {
+                "_id": "669416ca370c5dc57fbfa60f",
+                "externalId": "TESTING_BY_DEV_TEAM_11",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            },
+            {
+                "_id": "666b37db325b16f72031da39",
+                "externalId": "TESTING_BY_DEV_TEAM_7",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            },
+            {
+                "_id": "66618ae29c879e018e9ead88",
+                "externalId": "TESTING_BY_DEV_TEAM_7",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            }
+        ],
+        "count": 4
+    }
+}
    */
 
   async targetedPrograms(req) {

@@ -2251,14 +2251,12 @@ module.exports = class SolutionsHelper {
              * function privateProgramAndSolutionDetails
              * Request:
              * @param {solutionData} solution data
-             * @param {userToken} for UserId
              * @response private solutionId
              */
 
             let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
               solutionData,
-              userId,
-              userToken
+              userId
             );
             if (!privateProgramAndSolutionDetails.success) {
               throw {
@@ -2272,106 +2270,7 @@ module.exports = class SolutionsHelper {
             }
           }
         }
-        // else if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
-        //   // Targeted solution
-        //   if (checkForTargetedSolution.result.isATargetedSolution && createProject) {
-        //     //targeted user with project creation
-
-        //     let projectDetailFromLink = await improvementProjectService.getProjectDetail(
-        //       solutionData.solutionId,
-        //       userToken,
-        //       bodyData,
-        //     );
-
-        //     if (!projectDetailFromLink || !projectDetailFromLink.data) {
-        //       return resolve(projectDetailFromLink);
-        //     }
-        //     if (projectDetailFromLink.data.length < 1 && !isSolutionActive) {
-        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-        //     }
-
-        //     checkForTargetedSolution.result['projectId'] = projectDetailFromLink.data._id
-        //       ? projectDetailFromLink.data._id
-        //       : '';
-        //   } else
-        //   if (checkForTargetedSolution.result.isATargetedSolution && !createProject) {
-        //     //targeted user with no project creation
-        //     let findQuery = {
-        //       userId: userId,
-        //       projectTemplateId: solutionData.projectTemplateId,
-        //       referenceFrom: {
-        //         $ne: messageConstants.common.LINK,
-        //       },
-        //       isDeleted: false,
-        //     };
-
-        //     let checkTargetedProjectExist = await improvementProjectService.projectDocuments(userToken, findQuery, [
-        //       '_id',
-        //     ]);
-
-        //     if (
-        //       checkTargetedProjectExist.success &&
-        //       checkTargetedProjectExist.data &&
-        //       checkTargetedProjectExist.data.length > 0 &&
-        //       checkTargetedProjectExist.data[0]._id != ''
-        //     ) {
-        //       checkForTargetedSolution.result['projectId'] = checkTargetedProjectExist.data[0]._id;
-        //     } else if (!isSolutionActive) {
-        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-        //     }
-        //   } else {
-        //     if (!isSolutionActive) {
-        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-        //     }
-
-        //     // check if private-Project already exists
-        //     let checkIfUserProjectExistsQuery = {
-        //       createdBy: userId,
-        //       referenceFrom: messageConstants.common.LINK,
-        //       link: link,
-        //     };
-        //     let checkForProjectExist = await improvementProjectService.projectDocuments(
-        //       userToken,
-        //       checkIfUserProjectExistsQuery,
-        //       ['_id'],
-        //     );
-        //     if (
-        //       checkForProjectExist.success &&
-        //       checkForProjectExist.data &&
-        //       checkForProjectExist.data.length > 0 &&
-        //       checkForProjectExist.data[0]._id != ''
-        //     ) {
-        //       checkForTargetedSolution.result['projectId'] = checkForProjectExist.data[0]._id;
-        //     }
-        //     // If project not found and createPrivateSolutionIfNotTargeted := true
-        //     // By default will be false for old version of app
-        //     if (!checkForTargetedSolution.result['projectId'] || checkForTargetedSolution.result['projectId'] === '') {
-        //       // user is not targeted and privateSolutionCreation required
-        //       /**
-        //        * function privateProgramAndSolutionDetails
-        //        * Request:
-        //        * @param {solutionData} solution data
-        //        * @param {userToken} for UserId
-        //        * @response private solutionId
-        //        */
-        //       let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
-        //         solutionData,
-        //         userId,
-        //         userToken,
-        //       );
-        //       if (!privateProgramAndSolutionDetails.success) {
-        //         throw {
-        //           status: httpStatusCode.bad_request.status,
-        //           message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
-        //         };
-        //       }
-        //       // Replace public solutionId with private solutionId.
-        //       if (privateProgramAndSolutionDetails.result != '') {
-        //         checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
-        //       }
-        //     }
-        //   }
-        // }
+       
         delete checkForTargetedSolution.result['status'];
         return resolve(checkForTargetedSolution);
       } catch (error) {
@@ -2553,11 +2452,10 @@ module.exports = class SolutionsHelper {
    * @name PrivateProgramAndSolutionDetails
    * @param {Object} solutionData - solution data.
    * @param {String} userId - user Id.
-   * @param {String} userToken - user token.
    * @returns {Object} - Details of the private solution.
    */
 
-  static privateProgramAndSolutionDetails(solutionData, userId = '', userToken = '') {
+  static privateProgramAndSolutionDetails(solutionData, userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
         // Check if a private program and private solution already exist or not for this user.
@@ -2588,7 +2486,6 @@ module.exports = class SolutionsHelper {
           let solutionAndProgramCreation = await this.createProgramAndSolution(
             userId,
             programAndSolutionData,
-            userToken,
             'true' // create duplicate solution
           );
 
@@ -2629,7 +2526,7 @@ module.exports = class SolutionsHelper {
    * @returns {Array} - Created user program and solution.
    */
 
-  static createProgramAndSolution(userId, data, userToken, createADuplicateSolution = '') {
+  static createProgramAndSolution(userId, data, createADuplicateSolution = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let userPrivateProgram = {};
@@ -2912,8 +2809,6 @@ module.exports = class SolutionsHelper {
    * @name verifySolution
    * @param {String} solutionId - solution Id.
    * @param {String} userId - user Id.
-   * @param {String} userToken - user token.
-   * @param {Boolean} createProject - create project.
    * @param {Object} bodyData - Req Body.
    * @returns {Object} - Details of the solution.
    * Takes SolutionId and userRoleInformation as parameters.
