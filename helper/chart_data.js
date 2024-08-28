@@ -90,6 +90,7 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
     } else {
       let valueKey = Array.isArray(answerInstanceObj.value) ? answerInstanceObj.value : [answerInstanceObj.value];
 
+      console.log(answerInstanceObj,'answerInstanceObj')
       newObj = {
         order: answerInstanceObj.externalId,
         question: answerInstanceObj.question[0],

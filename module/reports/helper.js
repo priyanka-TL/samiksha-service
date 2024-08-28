@@ -13,7 +13,7 @@ const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const programsHelper = require(MODULES_BASE_PATH+'/programs/helper');
 const helperFunc = require('../../helper/chart_data')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
-
+const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
 /**
  * ReportsHelper
  * @class
@@ -126,6 +126,33 @@ module.exports = class ReportsHelper {
         message: responseObj.response,
       };
     }
+  }
+  static async entityObservationReport(req){
+
+    let entityId = req.body.entityId;
+    let observationId = req.body.observationId;
+
+    let queryObject = {
+      entityId:entityId,
+      observationId:observationId,
+    };
+
+    let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(
+      queryObject
+    );
+
+    let submissionDocument = submissionDocumentArr[0];
+    require('fs').writeFileSync('data.txt',JSON.stringify(submissionDocument))
+    console.log(submissionDocument,'submissionDocument')
+
+    let answers = submissionDocument.answers;
+
+    console.log(answers,'<--answer')
+
+    let result = await helperFunc.generateSubmissionReportWithoutDruid({answers})
+
+    console.log(result,'reuslt')
+    return result
   }
 };
 

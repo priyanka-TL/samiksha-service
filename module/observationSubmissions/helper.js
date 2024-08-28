@@ -56,7 +56,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         let submissionDocuments;
-
+        console.log({queryObject},'<---')
         if (sortedData !== 'all') {
           console.log({queryObject, projection})
           submissionDocuments = await database.models.observationSubmissions
