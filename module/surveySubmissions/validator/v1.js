@@ -1,6 +1,6 @@
 module.exports = (req) => {
   let surveySubmissionsValidator = {
-    make: function () {
+    update: function () {
       req.checkBody('evidence').exists().withMessage('request body is required');
     },
     isAllowed: function () {

@@ -137,7 +137,7 @@ const validateEntities = async function (entityIds, entityTypeId) {
         let ids = [];
 
 		  let bodyData = {
-			_id : { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
+			_id : { $in: gen.utils.arrayIdsTobjectIdsNew(entityIds) },
 			entityTypeId: entityTypeId,
 		  };
 
