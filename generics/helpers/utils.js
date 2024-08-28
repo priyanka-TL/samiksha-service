@@ -200,9 +200,27 @@ function filterLocationIdandCode(dataArray) {
     codes: locationCodes,
   };
 }
-
+  /**
+ * Converts an array of IDs into an array of `ObjectId` instances.
+ */
 function arrayIdsTobjectIds(ids) {
+  /**
+ * Converts an array of IDs into an array of `ObjectId` instances.
+ */
   return ids.map((id) => ObjectId(id));
+}
+/**
+ * Converts an array of string IDs to an array of ObjectId instances
+ * 
+ * This function is created as a new implementation that uses the 'new' keyword
+ * with ObjectId. It's separate from the original arrayIdsTobjectIds function
+ * to avoid affecting other parts of the codebase that rely on the original implementation.
+ * 
+ * @param {string[]} ids - An array of string IDs to be converted
+ * @returns {ObjectId[]} An array of ObjectId instances
+ */
+function arrayIdsTobjectIdsNew(ids) {
+  return ids.map((id) => new ObjectId(id));
 }
 
 function checkIfEnvDataExistsOrNot(data) {
@@ -442,6 +460,7 @@ module.exports = {
   filterLocationIdandCode: filterLocationIdandCode,
   checkValidUUID: checkValidUUID,
   convertStringToObjectId: convertStringToObjectId,
+  arrayIdsTobjectIdsNew: arrayIdsTobjectIdsNew,
   getEndDate: getEndDate,
   getStartDate: getStartDate,
   checkIfValidUUID:checkIfValidUUID

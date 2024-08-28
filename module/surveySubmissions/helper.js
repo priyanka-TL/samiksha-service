@@ -599,8 +599,7 @@ module.exports = class SurveySubmissionsHelper {
             req.body.evidence["userAgent"] = req.headers["user-agent"];
           }
           // creating evidence and adding answers in the Submission documents
-          let response = await submissionsHelper.createEvidencesInSubmission
-          (  
+          let response = await submissionsHelper.createEvidencesInSubmission(  
             req,
             messageConstants.common.SURVEY_SUBMISSIONS, 
             false

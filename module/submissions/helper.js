@@ -20,7 +20,6 @@ const entityAssessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/help
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
 const kendraService = require(ROOT_PATH + '/generics/services/kendra');
 const path = require('path');
-const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
 
 /**
  * SubmissionsHelper

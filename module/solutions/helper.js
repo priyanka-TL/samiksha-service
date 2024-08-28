@@ -3291,16 +3291,22 @@ module.exports = class SolutionsHelper {
         if (!solutionDocument.length > 0) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
         }
-
-        let entitiesDocument = await entitiesHelper.entityDocuments(
+        
+        let entitiesDocument = await entityManagementService.entityDocuments(
           {
             _id: { $in: entityIds },
             entityType: solutionDocument[0].entityType,
           },
           ['_id']
         );
+        
+        if (!entitiesDocument.success) {
+          throw {
+            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+          };
+        }
 
-        let updateEntityIds = entitiesDocument.map((entity) => entity._id);
+        let updateEntityIds = entitiesDocument.data.map((entity) => entity._id);
 
         if (entityIds.length != updateEntityIds.length) {
           responseMessage = messageConstants.apiResponses.ENTITIES_NOT_UPDATE;
@@ -3600,15 +3606,20 @@ module.exports = class SolutionsHelper {
    */
 
   static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '') {
+    
     return new Promise(async (resolve, reject) => {
       try {
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
+
+        
 
         if (!queryData.success) {
           return resolve(queryData);
         }
 
         queryData.data['_id'] = solutionId;
+
+        
         let targetedSolutionDetails = await solutionsQueries.solutionDocuments(queryData.data, [
           'name',
           'externalId',
@@ -3640,6 +3651,7 @@ module.exports = class SolutionsHelper {
           data: targetedSolutionDetails[0],
         });
       } catch (error) {
+        console.log(error)
         return resolve({
           success: false,
           message: error.message,

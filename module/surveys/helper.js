@@ -538,6 +538,7 @@ module.exports = class SurveysHelper {
           },
         });
       } catch (error) {
+        console.log(error)
         return resolve({
           success: false,
           message: error.message,
