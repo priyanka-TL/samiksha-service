@@ -611,14 +611,13 @@ module.exports = class ProgramsHelper {
    * @param {String} programId - Program Id.
    * @param {Object} data - body data (can include isResourse flag && userRoleInformation).
    * @param {String} userId - Logged in user id.
-   * @param {String} userToken - User token.
    * @param {String} [appName = ""] - App Name.
    * @param {String} [appVersion = ""] - App Version.
    * @param {Boolean} callConsetAPIOnBehalfOfUser - required to call consent api or not
    * @returns {Object} - Details of the program join.
    */
 
-  static join(programId, data, userId, userToken, appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false) {
+  static join(programId, data, userId, appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false) {
     return new Promise(async (resolve, reject) => {
       try {
         let pushProgramUsersDetailsToKafka = false;
@@ -833,101 +832,7 @@ module.exports = class ProgramsHelper {
             });
             scopeData = _.omit(scopeData, keysCannotBeAdded);
           }
-          // If the scope to update or set has entityType
-          // if (scopeData.entityType) {
-          //   // Get entity details of type {scopeData.entityType}
-          //   let bodyData = {
-          //     entityType: scopeData.entityType,
-          //   };
-          //   let entityTypeData = await entityManagementService.locationSearch(bodyData, token);
-
-          //   if (!entityTypeData.success) {
-          //     return resolve({
-          //       status: httpStatusCode.bad_request.status,
-          //       message: messageConstants.apiResponses.ENTITY_TYPES_NOT_FOUND,
-          //     });
-          //   }
-
-          //   scope['entityType'] = entityTypeData.data[0].entityType;
-          // }
-          // If the scope to update or set has  entities
-
-          // if (scopeData.entities && scopeData.entities.length > 0) {
-          //   //call learners api for search
-          //   let entityIds = [];
-          //   let bodyData = {};
-          //   let locationData = gen.utils.filterLocationIdandCode(scopeData.entities);
-
-          //   //locationIds contain id of location data.
-          //   if (locationData.ids.length > 0) {
-          //     bodyData = {
-          //       // id: locationData.ids,
-          //       'registryDetails.code': { $in: locationData.ids },
-          //       entityType: scopeData.entityType,
-          //     };
-          //     let entityData = await entityManagementService.locationSearch(bodyData);
-          //     if (entityData.success) {
-          //       entityData.data.forEach((entity) => {
-          //         // entityIds.push(entity._id);
-          //         entityIds.push(entity.registryDetails.locationId);
-          //       });
-          //     }
-          //   }
-
-          //   if (locationData.codes.length > 0) {
-          //     let filterData = {
-          //       // code: locationData.codes,
-          //       'registryDetails.code': locationData.codes,
-          //       entityType: scopeData.entityType,
-          //     };
-          //     let entityDetails = await entityManagementService.locationSearch(filterData, token);
-
-          //     if (entityDetails.success) {
-          //       let entitiesData = entityDetails.data;
-          //       entitiesData.forEach((entity) => {
-          //         // entityIds.push(entity._id);
-          //         entityIds.push(entity.registryDetails.locationId);
-          //       });
-          //     }
-          //   }
-
-          //   if (!(entityIds.length > 0)) {
-          //     throw {
-          //       message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-          //     };
-          //   }
-          //   scope['entities'] = entityIds;
-          // }
-          // If the scope to update or set has role
-
-          // if (scopeData.roles) {
-          //   if (Array.isArray(scopeData.roles) && scopeData.roles.length > 0) {
-          //     let userRoles = await userRolesHelper.roleDocuments(
-          //       {
-          //         code: { $in: scopeData.roles },
-          //       },
-          //       ['_id', 'code'],
-          //     );
-
-          //     if (!(userRoles.length > 0)) {
-          //       return resolve({
-          //         status: httpStatusCode.bad_request.status,
-          //         message: messageConstants.apiResponses.INVALID_ROLE_CODE,
-          //       });
-          //     }
-
-          //     scope['roles'] = userRoles;
-          //   } else {
-          //     if (scopeData.roles === messageConstants.common.ALL_ROLES) {
-          //       scope['roles'] = [
-          //         {
-          //           code: messageConstants.common.ALL_ROLES,
-          //         },
-          //       ];
-          //     }
-          //   }
-          // }
-        }
+                  }
 
         //Updating or set scope in program document
         let updateProgram = await programsQueries.findOneAndUpdate(
@@ -1263,10 +1168,13 @@ module.exports = class ProgramsHelper {
   static assignedUserPrograms(userId) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        let projection =["_id","programId","userId"]
         //Checking for user assigned programs based on userId
 
         let userAssignedPrograms = await programUsersQueries.programUsersDocument(
-          { userId: userId } // find query
+          { userId: userId } ,
+          projection// find query
         );
 
         return resolve({
@@ -1295,6 +1203,7 @@ module.exports = class ProgramsHelper {
         if (!queryData.success) {
           return resolve(queryData);
         }
+        let matchQuery = queryData.data
         //Check for whether its a privateProgram or not
         if (filter && filter !== '') {
           if (filter === messageConstants.common.CREATED_BY_ME) {
@@ -1303,7 +1212,6 @@ module.exports = class ProgramsHelper {
             matchQuery['isAPrivateProgram'] = false;
           }
         }
-        let matchQuery = queryData.data;
         //adding programIds array to matchQuery
         matchQuery['_id'] = { $in: programIds };
         let projection = [
@@ -1313,14 +1221,13 @@ module.exports = class ProgramsHelper {
           'owner',
           'createdBy',
           'status',
-          'components',
           'resourceType',
         ];
         //listing the solution based on type and query
         let targetedPrograms = await this.list(matchQuery, projection, pageNo, pageSize, searchText);
         return resolve({
           success: true,
-          message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+          message: messageConstants.apiResponses.TARGETED_PROGRAM_FETCHED,
           data: targetedPrograms.data,
         });
       } catch (error) {
@@ -1350,32 +1257,85 @@ module.exports = class ProgramsHelper {
         let filterQuery = {
           isDeleted: false,
         };
+        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type'])).forEach((key) => {
+					data[key] = data[key].split(',')
+				})
         //Check for validate entities ON or OFF
         if (validateEntity !== messageConstants.common.OFF) {
           // Getting entities and entity types from request body
-          Object.keys(_.omit(data, ['filter', 'role', 'factors'])).forEach((requestedDataKey) => {
+          Object.keys(_.omit(data, ['filter', 'role', 'factors',"type"])).forEach((requestedDataKey) => {
             if (requestedDataKey == 'entities') entities.push(...data[requestedDataKey]);
-            if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
+            if (requestedDataKey == 'entityType') entityTypes.push(requestedDataKey);
           });
           if (!(entities.length > 0)) {
             throw {
               message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
             };
           }
+          if (!data.role) {
+						throw {
+							message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+						}
+					}
 
           filterQuery['scope.roles'] = {
             $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           };
-          filterQuery['scope.entities'] = { $in: entities };
+          // filterQuery['scope.entities'] = { $in: entities };
+          filterQuery.$or = []
+					Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((key) => {
+						filterQuery.$or.push({
+							[`scope.${key}`]: { $in: data[key] },
+						})
+					})
           filterQuery['scope.entityType'] = { $in: entityTypes };
         } else {
           let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role']);
           let userRoleKeys = Object.keys(userRoleInfo);
-          userRoleKeys.forEach((entities) => {
-            filterQuery['scope.' + entities] = {
-              $in: userRoleInfo[entities].split(','),
-            };
-          });
+
+          let queryFilter = []
+
+          // if factors are passed or query has to be build based on the keys passed
+					if (data.hasOwnProperty('factors') && data.factors.length > 0) {
+						let factors = data.factors
+						// Build query based on each key
+						factors.forEach((factor) => {
+							let scope = 'scope.' + factor
+							let values = userRoleInfo[factor]
+							if (factor === 'role') {
+								queryFilter.push({
+									['scope.roles']: { $in: [CONSTANTS.common.ALL_ROLES, ...data.role.split(',')] },
+								})
+							} else if (!Array.isArray(values)) {
+								queryFilter.push({ [scope]: { $in: values.split(',') } })
+							} else {
+								queryFilter.push({ [scope]: { $in: [...values] } })
+							}
+						})
+						// append query filter
+						filterQuery['$or'] = queryFilter
+					} else {
+						userRoleKeys.forEach((key) => {
+							let scope = 'scope.' + key
+							let values = userRoleInfo[key]
+							if (!Array.isArray(values)) {
+								queryFilter.push({ [scope]: { $in: values.split(',') } })
+							} else {
+								queryFilter.push({ [scope]: { $in: [...values] } })
+							}
+						})
+
+						if (data.role) {
+							queryFilter.push({
+								['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
+							})
+						}
+
+						// append query filter
+            if(queryFilter.length > 0){
+						filterQuery['$and'] = queryFilter
+            }
+					}
         }
 
         return resolve({
