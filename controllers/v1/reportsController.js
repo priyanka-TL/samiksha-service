@@ -3012,13 +3012,13 @@ module.exports = class Reports {
       }
     });
   }
-  /**
- * Get observation report.
+/**
+ * Get submission report.
  * @method
- * @name observationReport
+ * @name submissionReport
  * @param {Object} req - requested data.
- * @param {String} req.query.observationId - The ID of the observation.
- * @returns {JSON} JSON response consisting of observation report details.
+ * @param {String} req.query.submissionId - The ID of the submission.
+ * @returns {JSON} JSON response consisting of submission report details.
  */
 
 /**
@@ -3054,12 +3054,45 @@ module.exports = class Reports {
  * }
  */
 
-observationReport = async function (req) {
+submissionReport = async function (req) {
   return new Promise(async function (resolve, reject) {
     try {
 
-      let generateobservationReport = await reportsHelper.observationReport(req);
-      resolve(generateobservationReport);
+      let generateSubmissionReport = await reportsHelper.surveySubmissionReport(req);
+      resolve(generateSubmissionReport);
+
+    } catch (err) {
+      let response = {
+        result: false,
+        message: err.message || 'INTERNAL_SERVER_ERROR',
+      };
+      return resolve(response);
+    }
+  });
+};
+fetch = async function (req) {
+  return new Promise(async function (resolve, reject) {
+    try {
+
+        //  submission observation report
+        if (req.body.submissionId && req.body.observation == true ) {
+          console.log({instaceObservationReport: 'executed'});
+         let response = await reportsHelper.instaceObservationReport(req);
+         res.send(response);
+
+      } else if (req.body.entityId && req.body.observationId && req.body.observation == true) {    // entity observation report
+          let response = await reportsHelper.entityObservationReport(req);
+          res.send(response);
+          console.log("Response:",{ resp: response });
+
+      } else {
+          console.log("Response:",{ resp: "Report can't be generated for the given invalid request" });
+          let response = {
+            result: false,
+            message:'INTERNAL_SERVER_ERROR',
+          };
+          return resolve(response);
+      }
 
     } catch (err) {
       console.log(err,'err')

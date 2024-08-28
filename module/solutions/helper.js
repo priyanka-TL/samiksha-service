@@ -3544,15 +3544,20 @@ module.exports = class SolutionsHelper {
    */
 
   static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '') {
+    
     return new Promise(async (resolve, reject) => {
       try {
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
+
+        
 
         if (!queryData.success) {
           return resolve(queryData);
         }
 
         queryData.data['_id'] = solutionId;
+
+        
         let targetedSolutionDetails = await solutionsQueries.solutionDocuments(queryData.data, [
           'name',
           'externalId',
@@ -3584,6 +3589,7 @@ module.exports = class SolutionsHelper {
           data: targetedSolutionDetails[0],
         });
       } catch (error) {
+        console.log(error)
         return resolve({
           success: false,
           message: error.message,

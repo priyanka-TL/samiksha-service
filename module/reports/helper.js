@@ -8,7 +8,12 @@
 // Dependencies
 let moment = require('moment');
 const filesHelper = require(MODULES_BASE_PATH + '/files/helper');
-const observationSubmissionsHelper = require(MODULES_BASE_PATH+ '/observationSubmissions/helper')
+const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
+const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
+const programsHelper = require(MODULES_BASE_PATH+'/programs/helper');
+const helperFunc = require('../../helper/chart_data')
+const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+
 /**
  * ReportsHelper
  * @class
@@ -54,24 +59,73 @@ module.exports = class ReportsHelper {
       }
     });
   }
-static observationReport(req) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const observationSubmissionId = req.query.observationSubmissionId;
 
-      let submissionDocumentResult = await observationSubmissionsHelper.observationSubmissionsDocument(
-        {_id:observationSubmissionId}
+  static async surveySubmissionReport(req,res){
+
+    if (!req.query.submissionId) {
+      let response = {
+        result: false,
+        message: 'submissionId is a required field',
+      };
+      return response;
+    } else {
+      let submissionId = req.query.submissionId;
+
+      let surveySubmissionsDocumentArray = await surveySubmissionsHelper.surveySubmissionDocuments({
+        _id: submissionId,
+        status: 'completed',
+      });
+
+      let surveySubmissionsDocument = surveySubmissionsDocumentArray[0];
+
+      if (!surveySubmissionsDocument) {
+        throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
+      }
+
+      //adding question options, externalId to answers array
+      if (surveySubmissionsDocument.answers && Object.keys(surveySubmissionsDocument.answers).length > 0) {
+        surveySubmissionsDocument = await questionsHelper.addOptionsToSubmission(surveySubmissionsDocument);
+      }
+
+      let solutionDocument = await solutionsQueries.solutionDocuments(
+        {
+          _id: surveySubmissionsDocument.solutionId,
+        },
+        ['name', 'scoringSystem', 'description', 'questionSequenceByEcm']
       );
 
-      const submissionDocument = submissionDocumentResult[0]
+      if (!solutionDocument.length) {
+        throw messageConstants.apiResponses.SOLUTION_NOT_FOUND;
+      }
 
-      console.log(submissionDocument,'submissionDoc')
-      console.log(observationSubmissionId,'observationSubmissionId')
-      console.log('API is working....')
-      return resolve(submissionDocument);
-    } catch (error) {
-      return reject(error);
+      solutionDocument = solutionDocument[0];
+      surveySubmissionsDocument['solutionInfo'] = solutionDocument;
+
+      if (surveySubmissionsDocument.programId && surveySubmissionsDocument.programId != '') {
+        let programDocument = await programsHelper.list(
+          {
+            _id: surveySubmissionsDocument.programId,
+          },
+          ['name', 'description']
+        );
+
+        surveySubmissionsDocument['programInfo'] = programDocument[0];
+      }
+
+      let report = await helperFunc.generateSubmissionReportWithoutDruid(surveySubmissionsDocument);
+
+      let responseObj= {};
+
+      responseObj.response = {
+        surveyName:surveySubmissionsDocument.surveyInformation.name,
+        report:report
+      }
+
+      return {
+        status: httpStatusCode.ok.status,
+        message: responseObj.response,
+      };
     }
-  });
-}
+  }
 };
+
