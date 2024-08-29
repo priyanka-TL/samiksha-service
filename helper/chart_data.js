@@ -80,7 +80,8 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         responseType: answerInstanceObj.responseType,
         chart: {},
         instanceQuestions: [],
-        criteriaName: data.criteria[0].name,
+        // criteriaName: data.criteria[0].name,
+        criteriaName:'placeholder',
         criteriaId: answerInstanceObj.criteriaId,
         optionsAvailableForUser: answerInstanceObj.options ? answerInstanceObj.options : undefined,
         instanceQuestions: valueArr,
@@ -142,4 +143,167 @@ function getKeysToBeDeletedFromAnswers(data){
 
     
    return keysToBeDeletedFromAnswers;
+  }
+
+  exports.generateObservationReportWithoutDruid = async function (data) {
+    let keysToBeDeletedFromAnswers = getKeysToBeDeletedFromAnswers(data);
+  
+    let answers = data.answers;
+  
+    for (let answerInstanceKey in answers) {
+      if (keysToBeDeletedFromAnswers.includes(answerInstanceKey)) {
+        delete answers[answerInstanceKey];
+      }
+    }
+  
+    let newReport = [];
+  
+    for (let key in answers) {
+      let answerInstanceObj = answers[key];
+      let evidences = [];
+  
+      let fileName = answerInstanceObj.fileName;
+  
+      if (fileName && fileName.length > 0) {
+        for (let fileObj of fileName) {
+          let sourcePath = await filesCloudHelper.getDownloadableUrl([fileObj.sourcePath]);
+  
+          evidences.push(sourcePath.result[0]);
+        }
+      }
+  
+      let newObj = {};
+      if (answerInstanceObj.responseType == 'matrix') {
+        let qid = answerInstanceObj.qid;
+  
+        let questionRecordArr = await questionsHelper.questionDocument({
+          _id: qid,
+        });
+  
+        let questionRecord = questionRecordArr[0];
+  
+        let instanceIdentifier = questionRecord.instanceIdentifier;
+  
+        let valueArr = answerInstanceObj.value;
+  
+        let indentifierCount = 1;
+        for (let value of valueArr) {
+          for (let key in value) {
+            let questionRecordArrNew = await questionsHelper.questionDocument({
+              _id: value[key].qid,
+            });
+  
+            value[key].optionsAvailableForUser = questionRecordArrNew[0].options
+              ? questionRecordArrNew[0].options
+              : undefined;
+            value[key].question = questionRecordArrNew[0].question[0];
+  
+            let valueKey = Array.isArray(value[key].value) ? value[key].value : [value[key].value];
+  
+            value[key].answers = valueKey;
+          }
+  
+          value.instanceIdentifier = instanceIdentifier + ' ' + indentifierCount;
+  
+          indentifierCount++;
+        }
+  
+        newObj = {
+          order: answerInstanceObj.externalId,
+          question: answerInstanceObj.payload.question[0],
+          responseType: answerInstanceObj.responseType,
+          chart: {},
+          instanceQuestions: [],
+          // criteriaName: data.criteria[0].name,
+          criteriaName:'placeholder',
+          criteriaId: answerInstanceObj.criteriaId,
+          optionsAvailableForUser: answerInstanceObj.options ? answerInstanceObj.options : undefined,
+          instanceQuestions: valueArr,
+          evidences,
+          instanceIdentifier,
+        };
+      } else {
+        let valueKey = Array.isArray(answerInstanceObj.value) ? answerInstanceObj.value : [answerInstanceObj.value];
+  
+        let chart = createChart(responseType,valueKey,)
+
+        console.log(answerInstanceObj,'answerInstanceObj')
+        newObj = {
+          order: answerInstanceObj.externalId,
+          question: answerInstanceObj.payload.question[0],
+          responseType: answerInstanceObj.responseType,
+          answers: valueKey,
+          chart: chart,
+          instanceQuestions: [],
+          // criteriaName: data.criteria[0].name,
+          criteriaId: answerInstanceObj.criteriaId,
+          optionsAvailableForUser: answerInstanceObj.options ? answerInstanceObj.options : undefined,
+          evidences,
+        };
+      }
+  
+      newReport.push(newObj);
+    }
+  
+    return newReport;
+  };
+
+
+  function createChart(responseType,answerArr){
+    let chart = {};
+
+    if(responseType == 'radio'){
+
+      chart  = {
+        "type": "pie",
+        "data": {
+            "labels": answerArr,
+            "datasets": [
+                {
+                    "backgroundColor": [
+                        "#FFA971",
+                        "#F6DB6C",
+                        "#98CBED",
+                        "#C9A0DA",
+                        "#5DABDC",
+                        "#88E5B0"
+                    ],
+                    "data": [
+                        100
+                    ]
+                }
+            ]
+        }
+
+
+    }
+
+  }else if(responseType == 'multiselect'){
+
+    chart  = {
+      "type": "horizontalBar",
+      "data": {
+          "labels": answerArr,
+          "datasets": [
+              {
+                  "backgroundColor": [
+                      "#FFA971",
+                      "#F6DB6C",
+                      "#98CBED",
+                      "#C9A0DA",
+                      "#5DABDC",
+                      "#88E5B0"
+                  ],
+                  "data": [
+                      100
+                  ]
+              }
+          ]
+      }
+
+
+  }
+
+}
+    return chart;
   }

@@ -141,16 +141,13 @@ module.exports = class ReportsHelper {
       queryObject
     );
 
+    console.log(submissionDocumentArr.length,'<---length')
+    console.log(stopppp)
     let submissionDocument = submissionDocumentArr[0];
-    require('fs').writeFileSync('data.txt',JSON.stringify(submissionDocument))
     console.log(submissionDocument,'submissionDocument')
-
     let answers = submissionDocument.answers;
-
     console.log(answers,'<--answer')
-
-    let result = await helperFunc.generateSubmissionReportWithoutDruid({answers})
-
+    let result = await helperFunc.generateObservationReportWithoutDruid({answers})
     console.log(result,'reuslt')
     return result
   }
