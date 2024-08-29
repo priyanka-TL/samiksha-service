@@ -1158,7 +1158,7 @@ module.exports = class ObservationsHelper {
   static getObservationLink(observationSolutionId, appName) {
     return new Promise(async (resolve, reject) => {
       try {
-        let observationData = await solutionHelper.solutionDocuments(
+        let observationData = await solutionsQueries.solutionDocuments(
           {
             externalId: observationSolutionId,
             isReusable: false,
@@ -1217,7 +1217,7 @@ module.exports = class ObservationsHelper {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
 
-        let observationSolutionData = await solutionHelper.solutionDocuments(
+        let observationSolutionData = await solutionsQueries.solutionDocuments(
           {
             link: link,
             type: messageConstants.common.OBSERVATION,
@@ -1257,7 +1257,7 @@ module.exports = class ObservationsHelper {
 
         if (new Date() > new Date(observationSolutionData[0].endDate)) {
           if (observationSolutionData[0].status == messageConstants.common.ACTIVE_STATUS) {
-            await solutionHelper.updateSolutionDocument(
+            await solutionsQueries.updateSolutionDocument(
               { link: link },
               { $set: { status: messageConstants.common.INACTIVE_STATUS } },
             );
@@ -1475,7 +1475,7 @@ module.exports = class ObservationsHelper {
           'programExternalId',
         ];
 
-        let solutionDocument = await solutionHelper.solutionDocuments(solutionQuery, solutionProjection);
+        let solutionDocument = await solutionsQueries.solutionDocuments(solutionQuery, solutionProjection);
 
         if (!solutionDocument.length) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
@@ -1855,7 +1855,7 @@ module.exports = class ObservationsHelper {
           if (observationData.length > 0) {
             observationId = observationData[0]._id;
           } else {
-            let solutionData = await solutionHelper.solutionDocuments({
+            let solutionData = await solutionsQueries.solutionDocuments({
               _id: solutionId,
             });
 
@@ -1906,7 +1906,7 @@ module.exports = class ObservationsHelper {
 
         let solutionData;
         if (observationData[0]) {
-          solutionData = await solutionHelper.solutionDocuments(
+          solutionData = await solutionsQueries.solutionDocuments(
             {
               _id: observationData[0].solutionId,
             },
