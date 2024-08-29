@@ -495,9 +495,9 @@ module.exports = class SurveysHelper {
         } else {
           let survey = {};
 
-          if (userOrganisations && userOrganisations.createdFor) {
-            survey['createdFor'] = userOrganisations;
-          }
+          // if (userOrganisations.createdFor) {
+          //   survey['createdFor'] = userOrganisations;
+          // }
           //   }
           //   if (userOrganisations.rootOrganisations) {
           //     survey["rootOrganisations"] = userOrganisations.rootOrganisations;
@@ -661,7 +661,7 @@ module.exports = class SurveysHelper {
         if (version === '') {
           if (new Date() > new Date(solutionDocument[0].endDate)) {
             if (solutionDocument[0].status == messageConstants.common.ACTIVE_STATUS) {
-              await solutionsHelper.updateSolutionDocument(
+              await solutionsQueries.updateSolutionDocument(
                 { link: link },
                 { $set: { status: messageConstants.common.INACTIVE_STATUS } },
               );
@@ -697,7 +697,7 @@ module.exports = class SurveysHelper {
           let createSurveyDocument = await this.createSurveyDocument(
             userId,
             solutionDocument[0],
-            userOrgDetails[userId],
+            // userOrgDetails[userId],
           );
 
           if (!createSurveyDocument.success) {

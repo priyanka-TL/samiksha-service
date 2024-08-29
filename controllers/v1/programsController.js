@@ -1219,4 +1219,100 @@ module.exports = class Programs extends Abstract {
       }
     });
   }
+
+
+  /**
+   * List of Programs and targetted ones.
+   * @method
+   * @name targetedPrograms
+   * @param {Object} req - request data.
+   * @returns {JSON} List of Programs with targetted ones.
+   * @apiParamExample {json} Request:
+   * {
+   *    "role": "mentee,admin,org_admin,session_manager,public,cluster_academic_coordinator,block_education_officer,district_education_officer"
+   * }
+   * @apiParamExample {json} Response:
+   *{
+    "message": "Successfully targeted programs fetched",
+    "status": 200,
+    "result": {
+        "data": [
+            {
+                "_id": "669652d5d652fd358878c327",
+                "externalId": "TESTING_BY_DEV_TEAM_7",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            },
+            {
+                "_id": "669416ca370c5dc57fbfa60f",
+                "externalId": "TESTING_BY_DEV_TEAM_11",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            },
+            {
+                "_id": "666b37db325b16f72031da39",
+                "externalId": "TESTING_BY_DEV_TEAM_7",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            },
+            {
+                "_id": "66618ae29c879e018e9ead88",
+                "externalId": "TESTING_BY_DEV_TEAM_7",
+                "name": "Testing by dev team ap",
+                "description": "testing by dev team",
+                "owner": "1",
+                "createdBy": "1",
+                "status": "active",
+                "resourceType": [
+                    "program"
+                ]
+            }
+        ],
+        "count": 4
+    }
+}
+   */
+
+  async targetedPrograms(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programs = await programsHelper.targetedPrograms(
+          req.body,
+          req.userDetails.userId,
+          req.pageSize,
+          req.pageNo,
+          req.searchText,
+          req.query.filter,
+        );
+
+        programs['result'] = programs.data;
+
+        return resolve(programs);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };
