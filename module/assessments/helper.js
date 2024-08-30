@@ -250,7 +250,7 @@ module.exports = class AssessmentsHelper {
         let attachmentsUrl = [];
 
         if (attachments.length > 0) {
-          attachmentsUrl = await filesHelper.downloadableUrls({
+          attachmentsUrl = await filesHelper.getDownloadableUrl({
             filePaths: attachments,
           });
 
