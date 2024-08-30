@@ -1508,9 +1508,7 @@ module.exports = class SubmissionsHelper {
 
         let filePathToURLMap = {};
         if (fileSourcePath.length > 0) {
-          let evidenceUrls = await filesHelper.getDownloadableUrl({
-            filePaths: fileSourcePath,
-          });
+          let evidenceUrls = await filesHelper.getDownloadableUrl(fileSourcePath);
           if (evidenceUrls.status == httpStatusCode.ok.status) {
             filePathToURLMap = _.keyBy(evidenceUrls.result, 'filePath');
           }

@@ -248,13 +248,10 @@ module.exports = class AssessmentsHelper {
         }
 
         let attachmentsUrl = [];
-
         if (attachments.length > 0) {
-          attachmentsUrl = await filesHelper.getDownloadableUrl({
-            filePaths: attachments,
-          });
-
-          if (attachmentsUrl.status !== httpStatusCode.ok.status) {
+          attachmentsUrl = await filesHelper.getDownloadableUrl(attachments);
+          
+          if (!attachmentsUrl.result.length > 0) {
             throw {
               status: httpStatusCode['bad_request'].status,
               message: messageConstants.apiResponses.ATTACHMENTS_URL_NOT_FOUND,
