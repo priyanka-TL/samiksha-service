@@ -18,7 +18,7 @@ const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityAssessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
-const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper/helper');
+const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper');
 const path = require('path');
 
 /**
