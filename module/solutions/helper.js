@@ -41,14 +41,14 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         //Get the program details to update on the new solution document
-        let programData=[];
+        let programData = [];
         //Condition for check solution falls under the program or not
         if (solutionData.programExternalId) {
           programData = await programsQueries.programDocuments(
             {
               externalId: solutionData.programExternalId,
             },
-            ['name', 'description', 'scope', 'endDate', 'startDate'],
+            ['name', 'description', 'scope', 'endDate', 'startDate']
           );
           if (!(programData.length > 0)) {
             throw {
@@ -121,13 +121,13 @@ module.exports = class SolutionsHelper {
         if (checkDate) {
           if (solutionData.hasOwnProperty('endDate')) {
             solutionData.endDate = gen.utils.getEndDate(solutionData.endDate, timeZoneDifference);
-            if (programData.length >0 && solutionData.endDate >  programData[0].endDate ) {
+            if (programData.length > 0 && solutionData.endDate > programData[0].endDate) {
               solutionData.endDate = programData[0].endDate;
             }
           }
           if (solutionData.hasOwnProperty('startDate')) {
             solutionData.startDate = gen.utils.getStartDate(solutionData.startDate, timeZoneDifference);
-            if (programData.length >0 && solutionData.startDate < programData[0].startDate ) {
+            if (programData.length > 0 && solutionData.startDate < programData[0].startDate) {
               solutionData.startDate = programData[0].startDate;
             }
           }
@@ -149,15 +149,15 @@ module.exports = class SolutionsHelper {
             },
             {
               $addToSet: { components: solutionCreation._id },
-            },
+            }
           );
         }
         // adding scope to the solution document
-        if (!solutionData.excludeScope ) {
+        if (!solutionData.excludeScope) {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
-            solutionData.scope ? solutionData.scope : {},
+            solutionData.scope ? solutionData.scope : {}
           );
         }
 
@@ -194,17 +194,17 @@ module.exports = class SolutionsHelper {
     pageNo,
     search,
     filter,
-    surveyReportPage = '',
+    surveyReportPage = ''
   ) {
     return new Promise(async (resolve, reject) => {
       try {
-      //fetch the assigned solutions for the user
+        //fetch the assigned solutions for the user
         let assignedSolutions = await this.assignedUserSolutions(
           solutionType,
           userId,
           search,
           filter,
-          surveyReportPage,
+          surveyReportPage
         );
         let totalCount = 0;
         let mergedData = [];
@@ -242,7 +242,7 @@ module.exports = class SolutionsHelper {
               {
                 _id: { $in: programIds },
               },
-              ['name'],
+              ['name']
             );
 
             if (programsData.length > 0) {
@@ -358,7 +358,7 @@ module.exports = class SolutionsHelper {
             '', //Page No
             '', //Page Size
             search,
-            filter,
+            filter
           );
         } else if (solutionType === messageConstants.common.SURVEY) {
           userAssignedSolutions = await surveyHelper.userAssigned(
@@ -367,7 +367,7 @@ module.exports = class SolutionsHelper {
             '', //Page Size
             search,
             filter,
-            surveyReportPage,
+            surveyReportPage
           );
         }
         // else {
@@ -405,12 +405,17 @@ module.exports = class SolutionsHelper {
           isReusable: false,
           isDeleted: false,
         };
-        //Check for validate entities ON or OFF
+
+        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type'])).forEach((key) => {
+          data[key] = data[key].split(',');
+        });
+        // If validate entity set to ON . strict scoping should be applied
         if (validateEntity !== messageConstants.common.OFF) {
           // Getting entities and entity types from request body
-          Object.keys(_.omit(data, ['filter', 'role', 'factors'])).forEach((requestedDataKey) => {
+          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((requestedDataKey) => {
             if (requestedDataKey == 'entities') entities.push(...data[requestedDataKey]);
-            if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
+            // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
+            if (requestedDataKey == 'entityType') entityTypes.push(requestedDataKey);
           });
           if (!(entities.length > 0)) {
             throw {
@@ -418,22 +423,79 @@ module.exports = class SolutionsHelper {
             };
           }
 
+          if (!data.role) {
+            throw {
+              message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+            };
+          }
           // filterQuery['scope.roles.code'] = {
           //   $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           // };
           filterQuery['scope.roles'] = {
             $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           };
-          filterQuery['scope.entities'] = { $in: entities };
+          // filterQuery['scope.entities'] = { $in: entities };
+          filterQuery.$or = [];
+          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((key) => {
+            filterQuery.$or.push({
+              [`scope.${key}`]: { $in: data[key] },
+            });
+          });
           filterQuery['scope.entityType'] = { $in: entityTypes };
         } else {
-          let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role']);
+          // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
+          // let userRoleKeys = Object.keys(userRoleInfo);
+          // userRoleKeys.forEach((entities) => {
+          //   filterQuery['scope.' + entities] = {
+          //     $in: userRoleInfo[entities].split(','),
+          //   };
+          // });
+
+          // Obtain userInfo
+          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type']);
           let userRoleKeys = Object.keys(userRoleInfo);
-          userRoleKeys.forEach((entities) => {
-            filterQuery['scope.' + entities] = {
-              $in: userRoleInfo[entities].split(','),
-            };
-          });
+          let queryFilter = [];
+
+          // if factors are passed or query has to be build based on the keys passed
+          if (data.hasOwnProperty('factors') && data.factors.length > 0) {
+            let factors = data.factors;
+            // Build query based on each key
+            factors.forEach((factor) => {
+              let scope = 'scope.' + factor;
+              let values = userRoleInfo[factor];
+              if (factor === 'role') {
+                queryFilter.push({
+                  ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
+                });
+              } else if (!Array.isArray(values)) {
+                queryFilter.push({ [scope]: { $in: values.split(',') } });
+              } else {
+                queryFilter.push({ [scope]: { $in: [...values] } });
+              }
+            });
+            // append query filter
+            filterQuery['$or'] = queryFilter;
+          } else {
+            userRoleKeys.forEach((key) => {
+              let scope = 'scope.' + key;
+              let values = userRoleInfo[key];
+              if (!Array.isArray(values)) {
+                queryFilter.push({ [scope]: { $in: values.split(',') } });
+              } else {
+                queryFilter.push({ [scope]: { $in: [...values] } });
+              }
+            });
+
+            if (data.role) {
+              queryFilter.push({
+                ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
+              });
+            }
+           if(queryFilter.length>0){
+            // append query filter
+            filterQuery['$and'] = queryFilter;
+           }
+          }
         }
 
         if (type === messageConstants.common.SURVEY) {
@@ -608,7 +670,7 @@ module.exports = class SolutionsHelper {
         }
 
         //if program documents has scope update the scope in solution document
-        let currentSolutionScope
+        let currentSolutionScope;
         if (programId && programData[0].scope) {
           let currentSolutionScope = JSON.parse(JSON.stringify(programData[0].scope));
         }
@@ -748,7 +810,7 @@ module.exports = class SolutionsHelper {
             _id: solutionId,
           },
           { $set: { scope: currentSolutionScope } },
-          { new: true },
+          { new: true }
         );
         if (!updateSolution._id) {
           throw {
@@ -806,7 +868,7 @@ module.exports = class SolutionsHelper {
             {
               _id: solutionDocument[0].programId,
             },
-            ['_id', 'endDate', 'startDate'],
+            ['_id', 'endDate', 'startDate']
           );
           if (!(programData.length > 0)) {
             throw {
@@ -841,18 +903,20 @@ module.exports = class SolutionsHelper {
           }
         }
 
+        
         let solutionUpdateData = solutionData;
         Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
           updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
         updateObject['$set']['updatedBy'] = userId;
+        updateObject['$set']['status'] = 'active';
         //updating solution document
         let solutionUpdatedData = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionDocument[0]._id,
           },
           updateObject,
-          { new: true },
+          { new: true }
         );
         if (!solutionUpdatedData._id) {
           throw {
@@ -865,7 +929,7 @@ module.exports = class SolutionsHelper {
           let solutionScope = await this.setScope(
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
-            solutionData.scope,
+            solutionData.scope
           );
 
           if (!solutionScope.success) {
@@ -950,9 +1014,7 @@ module.exports = class SolutionsHelper {
             },
             isRubricDriven: true,
           },
-          [
-            "scoringSystem"
-          ],
+          ['scoringSystem']
         );
         return resolve(solutionDocument);
       } catch (error) {
@@ -1041,7 +1103,7 @@ module.exports = class SolutionsHelper {
           },
           {
             entities: 1,
-          },
+          }
         );
 
         let allSubGroupEntityIdToParentMap = {};
@@ -1064,7 +1126,7 @@ module.exports = class SolutionsHelper {
               'metaInformation.name': 1,
               'metaInformation.externalId': 1,
               [groupType]: 1,
-            },
+            }
           )
           .lean();
 
@@ -1207,7 +1269,7 @@ module.exports = class SolutionsHelper {
               $set: {
                 themes: themesData,
               },
-            },
+            }
           );
         }
 
@@ -1247,7 +1309,7 @@ module.exports = class SolutionsHelper {
 
         const updateThemeRubricExpressionData = function (themeRow) {
           const themeIndex = themeRubricExpressionData.findIndex(
-            (row) => row.externalId === themeRow.externalId && row.name === themeRow.name,
+            (row) => row.externalId === themeRow.externalId && row.name === themeRow.name
           );
 
           if (themeIndex >= 0) {
@@ -1420,7 +1482,7 @@ module.exports = class SolutionsHelper {
               });
             }
             theme.immediateChildren.push(
-              _.omit(childTheme, ['children', 'rubric', 'criteria', 'hierarchyLevel', 'hierarchyTrack']),
+              _.omit(childTheme, ['children', 'rubric', 'criteria', 'hierarchyLevel', 'hierarchyTrack'])
             );
           });
 
@@ -1495,7 +1557,7 @@ module.exports = class SolutionsHelper {
             },
             {
               description: new RegExp(search, 'i'),
-            },
+            }
           );
         }
 
@@ -1707,7 +1769,7 @@ module.exports = class SolutionsHelper {
             {
               _id: solutionData.programId,
             },
-            ['rootOrganisations', 'requestForPIIConsent', 'name'],
+            ['rootOrganisations', 'requestForPIIConsent', 'name']
           );
 
           templateOrQuestionDetails.result.rootOrganisations = programData[0].rootOrganisations
@@ -1727,7 +1789,7 @@ module.exports = class SolutionsHelper {
         //checkForUserJoinedProgramAndConsentShared will returns an object which contain joinProgram and consentShared status
         let programJoinStatus = await programUsersHelper.checkForUserJoinedProgramAndConsentShared(
           solutionData.programId,
-          userId,
+          userId
         );
         templateOrQuestionDetails.result.programJoined = programJoinStatus.joinProgram;
         templateOrQuestionDetails.result.consentShared = programJoinStatus.consentShared;
@@ -1762,7 +1824,7 @@ module.exports = class SolutionsHelper {
     userId,
     solutionData,
     isAPrivateProgram = false,
-    createdFor = [],
+    createdFor = []
     // rootOrganisations = []
   ) {
     return new Promise(async (resolve, reject) => {
@@ -1792,7 +1854,7 @@ module.exports = class SolutionsHelper {
           // program._id.toString(),
           userId,
           solutionData,
-          createdFor,
+          createdFor
           // rootOrganisations
         );
 
@@ -1808,7 +1870,7 @@ module.exports = class SolutionsHelper {
             'entityType',
             'isAPrivateProgram',
             'entities',
-          ]),
+          ])
         );
       } catch (error) {
         return reject(error);
@@ -1833,7 +1895,7 @@ module.exports = class SolutionsHelper {
     // programId,
     userId,
     data,
-    createdFor = '',
+    createdFor = ''
     // rootOrganisations = ""
   ) {
     return new Promise(async (resolve, reject) => {
@@ -1989,9 +2051,9 @@ module.exports = class SolutionsHelper {
           if (data.scope && Object.keys(data.scope).length > 0) {
             await this.setScope(
               // newSolutionDocument.programId,
-              newSolutionDocument.programId?newSolutionDocument.programId:"",
+              newSolutionDocument.programId ? newSolutionDocument.programId : '',
               duplicateSolutionDocument._id,
-              data.scope,
+              data.scope
             );
           }
 
@@ -2000,7 +2062,7 @@ module.exports = class SolutionsHelper {
 
             await solutionsQueries.updateSolutionDocument(
               { _id: duplicateSolutionDocument._id },
-              { $set: { link: link } },
+              { $set: { link: link } }
             );
           }
 
@@ -2039,7 +2101,7 @@ module.exports = class SolutionsHelper {
             isReusable: false,
             isAPrivateProgram: false,
           },
-          ['link', 'type', 'author'],
+          ['link', 'type', 'author']
         );
 
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
@@ -2112,7 +2174,7 @@ module.exports = class SolutionsHelper {
               '',
               solutionData.solutionId,
               userId,
-              userToken,
+              userToken
             );
             if (observationDetailFromLink) {
               checkForTargetedSolution.result['observationId'] =
@@ -2125,24 +2187,22 @@ module.exports = class SolutionsHelper {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
 
-              // user is not targeted and privateSolutionCreation required
-              let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
-                solutionData,  //solution data
-                userId,        //User Id
-                userToken,
-              );
-              if (!privateProgramAndSolutionDetails.success) {
-                throw {
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
-                };
-              }
-              // Replace public solutionId with private solutionId.
-              if (privateProgramAndSolutionDetails.result != '') {
-                checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
-              }
-            
-            
+            // user is not targeted and privateSolutionCreation required
+            let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
+              solutionData, //solution data
+              userId, //User Id
+              userToken
+            );
+            if (!privateProgramAndSolutionDetails.success) {
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+              };
+            }
+            // Replace public solutionId with private solutionId.
+            if (privateProgramAndSolutionDetails.result != '') {
+              checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
+            }
           }
         } else if (solutionData.type === messageConstants.common.SURVEY) {
           // Get survey submissions of user
@@ -2171,37 +2231,35 @@ module.exports = class SolutionsHelper {
            */
           // Targeted solution
           if (checkForTargetedSolution.result.isATargetedSolution) {
-          let surveySubmissionDetails = await userHelper.surveySubmissions(userId, solutionData.solutionId);
-          let surveySubmissionData = surveySubmissionDetails.data;
-          if (surveySubmissionData.length > 0) {
-            checkForTargetedSolution.result.submissionId = surveySubmissionData[0]._id
-              ? surveySubmissionData[0]._id
-              : '';
-            checkForTargetedSolution.result.surveyId = surveySubmissionData[0].surveyId
-              ? surveySubmissionData[0].surveyId
-              : '';
-            checkForTargetedSolution.result.submissionStatus = surveySubmissionData[0].status;
-          } else if (!isSolutionActive) {
-            throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-          }
-        }else {
-          if (!isSolutionActive) {
-            throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-          }
+            let surveySubmissionDetails = await userHelper.surveySubmissions(userId, solutionData.solutionId);
+            let surveySubmissionData = surveySubmissionDetails.data;
+            if (surveySubmissionData.length > 0) {
+              checkForTargetedSolution.result.submissionId = surveySubmissionData[0]._id
+                ? surveySubmissionData[0]._id
+                : '';
+              checkForTargetedSolution.result.surveyId = surveySubmissionData[0].surveyId
+                ? surveySubmissionData[0].surveyId
+                : '';
+              checkForTargetedSolution.result.submissionStatus = surveySubmissionData[0].status;
+            } else if (!isSolutionActive) {
+              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+            }
+          } else {
+            if (!isSolutionActive) {
+              throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
+            }
 
             // user is not targeted and privateSolutionCreation required
             /**
              * function privateProgramAndSolutionDetails
              * Request:
              * @param {solutionData} solution data
-             * @param {userToken} for UserId
              * @response private solutionId
              */
-            
+
             let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
               solutionData,
-              userId,
-              userToken,
+              userId
             );
             if (!privateProgramAndSolutionDetails.success) {
               throw {
@@ -2213,108 +2271,9 @@ module.exports = class SolutionsHelper {
             if (privateProgramAndSolutionDetails.result != '') {
               checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
             }
+          }
         }
-        }
-        // else if (solutionData.type === messageConstants.common.IMPROVEMENT_PROJECT) {
-        //   // Targeted solution
-        //   if (checkForTargetedSolution.result.isATargetedSolution && createProject) {
-        //     //targeted user with project creation
-
-        //     let projectDetailFromLink = await improvementProjectService.getProjectDetail(
-        //       solutionData.solutionId,
-        //       userToken,
-        //       bodyData,
-        //     );
-
-        //     if (!projectDetailFromLink || !projectDetailFromLink.data) {
-        //       return resolve(projectDetailFromLink);
-        //     }
-        //     if (projectDetailFromLink.data.length < 1 && !isSolutionActive) {
-        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-        //     }
-
-        //     checkForTargetedSolution.result['projectId'] = projectDetailFromLink.data._id
-        //       ? projectDetailFromLink.data._id
-        //       : '';
-        //   } else
-        //   if (checkForTargetedSolution.result.isATargetedSolution && !createProject) {
-        //     //targeted user with no project creation
-        //     let findQuery = {
-        //       userId: userId,
-        //       projectTemplateId: solutionData.projectTemplateId,
-        //       referenceFrom: {
-        //         $ne: messageConstants.common.LINK,
-        //       },
-        //       isDeleted: false,
-        //     };
-
-        //     let checkTargetedProjectExist = await improvementProjectService.projectDocuments(userToken, findQuery, [
-        //       '_id',
-        //     ]);
-
-        //     if (
-        //       checkTargetedProjectExist.success &&
-        //       checkTargetedProjectExist.data &&
-        //       checkTargetedProjectExist.data.length > 0 &&
-        //       checkTargetedProjectExist.data[0]._id != ''
-        //     ) {
-        //       checkForTargetedSolution.result['projectId'] = checkTargetedProjectExist.data[0]._id;
-        //     } else if (!isSolutionActive) {
-        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-        //     }
-        //   } else {
-        //     if (!isSolutionActive) {
-        //       throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
-        //     }
-
-        //     // check if private-Project already exists
-        //     let checkIfUserProjectExistsQuery = {
-        //       createdBy: userId,
-        //       referenceFrom: messageConstants.common.LINK,
-        //       link: link,
-        //     };
-        //     let checkForProjectExist = await improvementProjectService.projectDocuments(
-        //       userToken,
-        //       checkIfUserProjectExistsQuery,
-        //       ['_id'],
-        //     );
-        //     if (
-        //       checkForProjectExist.success &&
-        //       checkForProjectExist.data &&
-        //       checkForProjectExist.data.length > 0 &&
-        //       checkForProjectExist.data[0]._id != ''
-        //     ) {
-        //       checkForTargetedSolution.result['projectId'] = checkForProjectExist.data[0]._id;
-        //     }
-        //     // If project not found and createPrivateSolutionIfNotTargeted := true
-        //     // By default will be false for old version of app
-        //     if (!checkForTargetedSolution.result['projectId'] || checkForTargetedSolution.result['projectId'] === '') {
-        //       // user is not targeted and privateSolutionCreation required
-        //       /**
-        //        * function privateProgramAndSolutionDetails
-        //        * Request:
-        //        * @param {solutionData} solution data
-        //        * @param {userToken} for UserId
-        //        * @response private solutionId
-        //        */
-        //       let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
-        //         solutionData,
-        //         userId,
-        //         userToken,
-        //       );
-        //       if (!privateProgramAndSolutionDetails.success) {
-        //         throw {
-        //           status: httpStatusCode.bad_request.status,
-        //           message: messageConstants.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
-        //         };
-        //       }
-        //       // Replace public solutionId with private solutionId.
-        //       if (privateProgramAndSolutionDetails.result != '') {
-        //         checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
-        //       }
-        //     }
-        //   }
-        // }
+       
         delete checkForTargetedSolution.result['status'];
         return resolve(checkForTargetedSolution);
       } catch (error) {
@@ -2360,7 +2319,7 @@ module.exports = class SolutionsHelper {
               $ne: messageConstants.common.INACTIVE_STATUS,
             },
           },
-          ['type', 'status', 'endDate'],
+          ['type', 'status', 'endDate']
         );
 
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
@@ -2384,7 +2343,7 @@ module.exports = class SolutionsHelper {
               {
                 status: messageConstants.common.INACTIVE_STATUS,
               },
-              userId,
+              userId
             );
           }
 
@@ -2496,11 +2455,10 @@ module.exports = class SolutionsHelper {
    * @name PrivateProgramAndSolutionDetails
    * @param {Object} solutionData - solution data.
    * @param {String} userId - user Id.
-   * @param {String} userToken - user token.
    * @returns {Object} - Details of the private solution.
    */
 
-  static privateProgramAndSolutionDetails(solutionData, userId = '', userToken = '') {
+  static privateProgramAndSolutionDetails(solutionData, userId = '') {
     return new Promise(async (resolve, reject) => {
       try {
         // Check if a private program and private solution already exist or not for this user.
@@ -2511,7 +2469,7 @@ module.exports = class SolutionsHelper {
             type: solutionData.type,
             isAPrivateProgram: true,
           },
-          ['_id', 'programId', 'programName'],
+          ['_id', 'programId', 'programName']
         );
 
         if (!(privateSolutionDetails.length > 0)) {
@@ -2531,8 +2489,7 @@ module.exports = class SolutionsHelper {
           let solutionAndProgramCreation = await this.createProgramAndSolution(
             userId,
             programAndSolutionData,
-            userToken,
-            'true', // create duplicate solution
+            'true' // create duplicate solution
           );
 
           if (!solutionAndProgramCreation.success) {
@@ -2572,7 +2529,7 @@ module.exports = class SolutionsHelper {
    * @returns {Array} - Created user program and solution.
    */
 
-  static createProgramAndSolution(userId, data, userToken, createADuplicateSolution = '') {
+  static createProgramAndSolution(userId, data, createADuplicateSolution = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let userPrivateProgram = {};
@@ -2613,7 +2570,7 @@ module.exports = class SolutionsHelper {
               userId,
               duplicateProgram.startDate,
               duplicateProgram.endDate,
-              userId,
+              userId
             );
             // set rootorganisation from parent program
             if (checkforProgramExist[0].hasOwnProperty('rootOrganisations')) {
@@ -2642,7 +2599,7 @@ module.exports = class SolutionsHelper {
             data.programDescription ? data.programDescription : data.programName,
             userId,
             startDate,
-            endDate,
+            endDate
           );
 
           if (data.rootOrganisations) {
@@ -2690,7 +2647,7 @@ module.exports = class SolutionsHelper {
 
           if (locationData.codes.length > 0) {
             let filterData = {
-              _id: {$in:locationData.codes},
+              _id: { $in: locationData.codes },
             };
             let entityDetails = await entityManagementService.entityDocuments(filterData);
             let entityDocuments = entityDetails.data;
@@ -2731,9 +2688,9 @@ module.exports = class SolutionsHelper {
               'certificateTemplateId',
               'projectTemplateId',
               'themes',
-              "evidenceMethods",
-              "sections"
-            ],
+              'evidenceMethods',
+              'sections',
+            ]
           );
 
           if (!(solutionData.length > 0)) {
@@ -2789,7 +2746,7 @@ module.exports = class SolutionsHelper {
               },
               {
                 new: true,
-              },
+              }
             );
           }
         } else {
@@ -2818,7 +2775,6 @@ module.exports = class SolutionsHelper {
             data.themes,
             data.evidenceMethods,
             data.sections
-
           );
           _.merge(solutionDataToBeUpdated, createSolutionData);
           solution = await this.create(solutionDataToBeUpdated);
@@ -2831,7 +2787,7 @@ module.exports = class SolutionsHelper {
             },
             {
               $addToSet: { components: new ObjectId(solution._id) },
-            },
+            }
           );
         }
 
@@ -2856,8 +2812,6 @@ module.exports = class SolutionsHelper {
    * @name verifySolution
    * @param {String} solutionId - solution Id.
    * @param {String} userId - user Id.
-   * @param {String} userToken - user token.
-   * @param {Boolean} createProject - create project.
    * @param {Object} bodyData - Req Body.
    * @returns {Object} - Details of the solution.
    * Takes SolutionId and userRoleInformation as parameters.
@@ -2944,7 +2898,7 @@ module.exports = class SolutionsHelper {
             $set: {
               roles: roles,
             },
-          },
+          }
         );
 
         return resolve(solutionRoles);
@@ -2982,7 +2936,7 @@ module.exports = class SolutionsHelper {
           },
           {
             $set: { isDeleted: true },
-          },
+          }
         );
 
         let reponseMessage = '';
@@ -3034,7 +2988,7 @@ module.exports = class SolutionsHelper {
           },
           {
             $set: { status: messageConstants.common.INACTIVE_STATUS },
-          },
+          }
         );
 
         let reponseMessage = '';
@@ -3086,7 +3040,7 @@ module.exports = class SolutionsHelper {
           },
           {
             $set: { status: messageConstants.common.ACTIVE_STATUS },
-          },
+          }
         );
 
         let reponseMessage = '';
@@ -3132,7 +3086,7 @@ module.exports = class SolutionsHelper {
             status: messageConstants.common.INACTIVE_STATUS,
             isDeleted: false,
           },
-          ['name'],
+          ['name']
         );
 
         return resolve({
@@ -3169,7 +3123,7 @@ module.exports = class SolutionsHelper {
           {
             _id: solutionId,
           },
-          ['_id'],
+          ['_id']
         );
 
         let reponseMessage = '';
@@ -3183,7 +3137,7 @@ module.exports = class SolutionsHelper {
             },
             {
               $addToSet: { removedFromHomeScreen: solutionData[0]._id },
-            },
+            }
           );
 
           if (!addRemovedSolutionToUser.success || !addRemovedSolutionToUser.data) {
@@ -3235,16 +3189,22 @@ module.exports = class SolutionsHelper {
         if (!solutionDocument.length > 0) {
           throw new Error(messageConstants.apiResponses.SOLUTION_NOT_FOUND);
         }
-
-        let entitiesDocument = await entitiesHelper.entityDocuments(
+        
+        let entitiesDocument = await entityManagementService.entityDocuments(
           {
             _id: { $in: entityIds },
             entityType: solutionDocument[0].entityType,
           },
-          ['_id'],
+          ['_id']
         );
+        
+        if (!entitiesDocument.success) {
+          throw {
+            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+          };
+        }
 
-        let updateEntityIds = entitiesDocument.map((entity) => entity._id);
+        let updateEntityIds = entitiesDocument.data.map((entity) => entity._id);
 
         if (entityIds.length != updateEntityIds.length) {
           responseMessage = messageConstants.apiResponses.ENTITIES_NOT_UPDATE;
@@ -3420,7 +3380,7 @@ module.exports = class SolutionsHelper {
         await solutionsQueries.updateSolutionDocument(
           solutionQuery,
           { $pull: { entities: { $in: updateEntityIds } } },
-          { multi: true },
+          { multi: true }
         );
 
         return resolve({
@@ -3488,7 +3448,7 @@ module.exports = class SolutionsHelper {
 
                 if (childCriteria && childCriteria != undefined) {
                   let criteriaTobeUpdated = childCriteria.filter(
-                    (eachCriteria) => eachCriteria.criteriaId != criteriaId,
+                    (eachCriteria) => eachCriteria.criteriaId != criteriaId
                   );
 
                   childKey.criteria = criteriaTobeUpdated;
@@ -3499,7 +3459,7 @@ module.exports = class SolutionsHelper {
                     let nestedCriteria = nestedKey.criteria;
                     if (nestedCriteria) {
                       let nestedCriteriaTobeUpdated = nestedCriteria.filter(
-                        (nested) => nested.criteriaId != criteriaId,
+                        (nested) => nested.criteriaId != criteriaId
                       );
 
                       nestedKey.criteria = nestedCriteriaTobeUpdated;
@@ -3513,7 +3473,7 @@ module.exports = class SolutionsHelper {
 
         let solutionUpdated = await solutionsQueries.updateSolutionDocument(
           { externalId: solutionExternalId },
-          { $set: { themes: themeData } },
+          { $set: { themes: themeData } }
         );
 
         let message = '';
@@ -3620,7 +3580,7 @@ module.exports = class SolutionsHelper {
             isReusable: false,
             isDeleted: false,
           },
-          ['_id'],
+          ['_id']
         );
 
         if (!(solutionData.length > 0)) {
@@ -3661,7 +3621,7 @@ module.exports = class SolutionsHelper {
             {
               $pull: { 'scope.roles': { code: messageConstants.common.ALL_ROLES } },
             },
-            { new: true },
+            { new: true }
           );
 
           updateQuery['$addToSet'] = {
@@ -3680,7 +3640,7 @@ module.exports = class SolutionsHelper {
             _id: solutionId,
           },
           updateQuery,
-          { new: true },
+          { new: true }
         );
         if (!updateSolution || !updateSolution._id) {
           throw {
@@ -3721,7 +3681,7 @@ module.exports = class SolutionsHelper {
             isReusable: false,
             isDeleted: false,
           },
-          ['_id', 'programId', 'scope.entityType'],
+          ['_id', 'programId', 'scope.entityType']
         );
 
         if (!(solutionData.length > 0)) {
@@ -3737,7 +3697,7 @@ module.exports = class SolutionsHelper {
             {
               _id: solutionData[0].programId,
             },
-            ['scope.entities', 'scope.entityType'],
+            ['scope.entities', 'scope.entityType']
           );
 
           if (!(programData.length > 0)) {
@@ -3752,7 +3712,7 @@ module.exports = class SolutionsHelper {
                 _id: programData[0].scope.entities,
                 [`groups.${solutionData[0].scope.entityType}`]: entities,
               },
-              ['_id'],
+              ['_id']
             );
             if (!(checkEntityInParent.length > 0)) {
               throw {
@@ -3761,14 +3721,14 @@ module.exports = class SolutionsHelper {
             }
           }
         }
-       
+
         let entityIds = [];
         let entitiesData = await entityManagementService.entityDocuments(
           {
             _id: { $in: entities },
             entityType: solutionData[0].scope.entityType,
           },
-          ['_id'],
+          ['_id']
         );
 
         if (!entitiesData.success) {
@@ -3782,38 +3742,6 @@ module.exports = class SolutionsHelper {
           entityIds.push(entity._id);
         });
 
-        // if (locationData.ids.length > 0) {
-        //   bodyData = {
-        //     // id: locationData.ids,
-        //     'registryDetails.code': { $in: locationData.ids },
-
-        //     // type: solutionData[0].scope.entityType,
-        //     entityType: solutionData[0].scope.entityType,
-        //   };
-        //   let entityData = await entityManagementService.locationSearch(bodyData, token);
-        //   if (entityData.success) {
-        //     entityData.data.forEach((entity) => {
-        //       entityIds.push(entity.registryDetails.locationId);
-        //     });
-        //   }
-        // }
-
-        // if (locationData.codes.length > 0) {
-        //   let filterData = {
-        //     // code: locationData.codes,
-        //     'registryDetails.code': { $in: locationData.ids },
-
-        //     type: solutionData[0].scope.entityType,
-        //   };
-        //   let entityDetails = await entityManagementService.locationSearch(filterData);
-
-        //   if (entityDetails.success) {
-        //     entityDetails.data.forEach((entity) => {
-        //       entityIds.push(entity.registryDetails.locationId);
-        //     });
-        //   }
-        // }
-
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
@@ -3821,7 +3749,7 @@ module.exports = class SolutionsHelper {
           {
             $addToSet: { 'scope.entities': { $each: entityIds } },
           },
-          { new: true },
+          { new: true }
         );
         if (!updateSolution || !updateSolution._id) {
           throw {
@@ -3862,7 +3790,7 @@ module.exports = class SolutionsHelper {
             isReusable: false,
             isDeleted: false,
           },
-          ['_id'],
+          ['_id']
         );
 
         if (!(solutionData.length > 0)) {
@@ -3893,7 +3821,7 @@ module.exports = class SolutionsHelper {
             {
               $pull: { 'scope.roles': { $in: roles } },
             },
-            { new: true },
+            { new: true }
           );
           if (!updateSolution || !updateSolution._id) {
             throw {
@@ -3940,7 +3868,7 @@ module.exports = class SolutionsHelper {
             isReusable: false,
             isDeleted: false,
           },
-          ['_id', 'scope.entities'],
+          ['_id', 'scope.entities']
         );
 
         if (!(solutionData.length > 0)) {
@@ -3964,7 +3892,7 @@ module.exports = class SolutionsHelper {
           {
             $pull: { 'scope.entities': { $in: entities } },
           },
-          { new: true },
+          { new: true }
         );
         if (!updateSolution || !updateSolution._id) {
           throw {
@@ -4046,7 +3974,7 @@ module.exports = class SolutionsHelper {
               language: 0,
               keywords: 0,
               concepts: 0,
-            },
+            }
           )
           .lean();
 
@@ -4117,7 +4045,7 @@ module.exports = class SolutionsHelper {
           entityDocumentQuestionGroup,
           submissionDocumentEvidences,
           solutionDocument && solutionDocument.questionSequenceByEcm ? solutionDocument.questionSequenceByEcm : false,
-          {},
+          {}
         );
         assessment.evidences = parsedAssessment.evidences;
         assessment.submissions = parsedAssessment.submissions;
@@ -4225,9 +4153,9 @@ function _createSolutionData(
   subType = '',
   updatedBy = '',
   projectTemplateId = '',
-  themes=[],
-  evidenceMethods={},
-  sections={}
+  themes = [],
+  evidenceMethods = {},
+  sections = {}
 ) {
   let solutionData = {};
   solutionData.name = name;
@@ -4254,15 +4182,15 @@ function _createSolutionData(
   if (projectTemplateId) {
     solutionData.projectTemplateId = projectTemplateId;
   }
-  if(themes){
-    solutionData.themes = themes
+  if (themes) {
+    solutionData.themes = themes;
   }
-  if(evidenceMethods){
-    solutionData.evidenceMethods = evidenceMethods
+  if (evidenceMethods) {
+    solutionData.evidenceMethods = evidenceMethods;
   }
-  if(sections){
-    solutionData.sections = sections
+  if (sections) {
+    solutionData.sections = sections;
   }
-  
+
   return solutionData;
 }
