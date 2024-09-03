@@ -248,6 +248,36 @@ function getKeysToBeDeletedFromAnswers(data){
     return newReport;
   };
 
+  exports.generateObservationReportForNonRubricWithoutDruid = async function(data){
+    console.log(data,'<---**data')
+
+
+    let answerArr = data.map((singleSurveySubmission)=>{
+      return singleSurveySubmission.evidences['OB'].submissions[0].answers
+    })
+
+    require('fs').writeFileSync('atest.json',JSON.stringify(answerArr));
+
+    let formattedCombinedAnswerArr = [];
+
+    for(let submissionInstance of answerArr){
+
+      let questionIdArr = Object.keys(submissionInstance);
+    
+      console.log(questionIdArr,'questionIdArr')
+      console.log(stoppp)
+    //  for(let )
+
+      // let object = formattedCombinedAnswerArr.find((obj)=>{
+      //   return obj.order = 
+      // })
+
+
+
+    }
+
+
+  }
 
   function createChart(responseType,answerArr){
     let chart = {};

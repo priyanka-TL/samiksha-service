@@ -135,19 +135,21 @@ module.exports = class ReportsHelper {
     let queryObject = {
       entityId:entityId,
       observationId:observationId,
+      status:"completed"
     };
 
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(
       queryObject
     );
 
+    console.log(submissionDocumentArr,'submissionDocumentArr')
     console.log(submissionDocumentArr.length,'<---length')
-    console.log(stopppp)
+    //console.log(stopppp)
     let submissionDocument = submissionDocumentArr[0];
     console.log(submissionDocument,'submissionDocument')
     let answers = submissionDocument.answers;
     console.log(answers,'<--answer')
-    let result = await helperFunc.generateObservationReportWithoutDruid({answers})
+    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr)
     console.log(result,'reuslt')
     return result
   }
