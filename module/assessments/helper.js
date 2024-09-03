@@ -12,7 +12,7 @@ const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
 let entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
-const kendraService = require(ROOT_PATH + '/generics/services/kendra');
+const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper');
 
 /**
  * AssessmentsHelper
@@ -248,13 +248,10 @@ module.exports = class AssessmentsHelper {
         }
 
         let attachmentsUrl = [];
-
         if (attachments.length > 0) {
-          attachmentsUrl = await kendraService.downloadableUrls({
-            filePaths: attachments,
-          });
-
-          if (attachmentsUrl.status !== httpStatusCode.ok.status) {
+          attachmentsUrl = await filesHelper.getDownloadableUrl(attachments);
+          
+          if (!attachmentsUrl.result.length > 0) {
             throw {
               status: httpStatusCode['bad_request'].status,
               message: messageConstants.apiResponses.ATTACHMENTS_URL_NOT_FOUND,

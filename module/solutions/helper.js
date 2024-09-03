@@ -598,7 +598,7 @@ module.exports = class SolutionsHelper {
           matchQuery['programId'] = ObjectId(programId);
         }
 
-        matchQuery['startDate'] = { $lte: new Date() };
+        //matchQuery['startDate'] = { $lte: new Date() };
         //listing the solution based on type and query
         let targetedSolutions = await this.list(type, subType, matchQuery, pageNo, pageSize, searchText, [
           'name',
@@ -903,11 +903,13 @@ module.exports = class SolutionsHelper {
           }
         }
 
+        
         let solutionUpdateData = solutionData;
         Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
           updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
         updateObject['$set']['updatedBy'] = userId;
+        updateObject['$set']['status'] = 'active';
         //updating solution document
         let solutionUpdatedData = await solutionsQueries.updateSolutionDocument(
           {
