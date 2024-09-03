@@ -491,9 +491,10 @@ module.exports = class SolutionsHelper {
                 ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
               });
             }
-
+           if(queryFilter.length>0){
             // append query filter
             filterQuery['$and'] = queryFilter;
+           }
           }
         }
 
