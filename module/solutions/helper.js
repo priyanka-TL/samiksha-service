@@ -902,11 +902,13 @@ module.exports = class SolutionsHelper {
           }
         }
 
+        
         let solutionUpdateData = solutionData;
         Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
           updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
         updateObject['$set']['updatedBy'] = userId;
+        updateObject['$set']['status'] = 'active';
         //updating solution document
         let solutionUpdatedData = await solutionsQueries.updateSolutionDocument(
           {
