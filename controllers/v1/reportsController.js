@@ -3078,12 +3078,11 @@ fetch = async function (req) {
         if (req.body.submissionId && req.body.observation == true ) {
           console.log({instaceObservationReport: 'executed'});
          let response = await reportsHelper.instaceObservationReport(req);
-         res.send(response);
+         resolve({message:response});
 
       } else if (req.body.entityId && req.body.observationId && req.body.observation == true) {    // entity observation report
           let response = await reportsHelper.entityObservationReport(req);
-          res.send(response);
-          console.log("Response:",{ resp: response });
+          resolve({message:response});
 
       } else {
           console.log("Response:",{ resp: "Report can't be generated for the given invalid request" });

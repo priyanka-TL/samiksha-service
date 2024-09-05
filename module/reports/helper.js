@@ -10,8 +10,8 @@ let moment = require('moment');
 const filesHelper = require(MODULES_BASE_PATH + '/files/helper');
 const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
-const programsHelper = require(MODULES_BASE_PATH+'/programs/helper');
-const helperFunc = require('../../helper/chart_data')
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const helperFunc = require('../../helper/chart_data');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
 /**
@@ -60,8 +60,7 @@ module.exports = class ReportsHelper {
     });
   }
 
-  static async surveySubmissionReport(req,res){
-
+  static async surveySubmissionReport(req, res) {
     if (!req.query.submissionId) {
       let response = {
         result: false,
@@ -114,12 +113,12 @@ module.exports = class ReportsHelper {
 
       let report = await helperFunc.generateSubmissionReportWithoutDruid(surveySubmissionsDocument);
 
-      let responseObj= {};
+      let responseObj = {};
 
       responseObj.response = {
-        surveyName:surveySubmissionsDocument.surveyInformation.name,
-        report:report
-      }
+        surveyName: surveySubmissionsDocument.surveyInformation.name,
+        report: report,
+      };
 
       return {
         status: httpStatusCode.ok.status,
@@ -127,31 +126,88 @@ module.exports = class ReportsHelper {
       };
     }
   }
-  static async entityObservationReport(req){
-
+  static async entityObservationReport(req) {
     let entityId = req.body.entityId;
     let observationId = req.body.observationId;
+    let criteriaWise = req.body.criteriaWise;
 
     let queryObject = {
-      entityId:entityId,
-      observationId:observationId,
-      status:"completed"
+      entityId: entityId,
+      observationId: observationId,
+      status: 'completed',
     };
 
-    let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(
-      queryObject
+    let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
+
+    let submissionDocument = submissionDocumentArr[0];
+
+    
+    let solutionDocument = await solutionsQueries.solutionDocuments(
+      {
+        _id: submissionDocument.solutionId,
+      }
     );
 
-    console.log(submissionDocumentArr,'submissionDocumentArr')
-    console.log(submissionDocumentArr.length,'<---length')
-    //console.log(stopppp)
+    let programDocument = await programsHelper.details(submissionDocument.programId);
+
+    let responseObject = {
+      result: true,
+      entityType: submissionDocument.entityType,
+      entityId: entityId,
+      entityName: submissionDocument.entityInformation.name,
+      solutionName:solutionDocument[0].name,
+      observationId: observationId,
+      programName: programDocument.data.name,
+      totalSubmissions: submissionDocumentArr.length,
+    };
+    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,false,criteriaWise);
+
+    responseObject.reportSections = result;
+    return responseObject;
+  }
+  static async instaceObservationReport(req) {
+
+    let submissionId = req.body.submissionId;
+    let entityType = req.body.entityType;
+
+    let queryObject = {
+      _id:submissionId,
+      entityType:entityType,
+      status: 'completed',
+    };
+
+    let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
+
     let submissionDocument = submissionDocumentArr[0];
-    console.log(submissionDocument,'submissionDocument')
-    let answers = submissionDocument.answers;
-    console.log(answers,'<--answer')
-    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr)
-    console.log(result,'reuslt')
-    return result
+
+    let solutionDocument = await solutionsQueries.solutionDocuments(
+      {
+        _id: submissionDocument.solutionId,
+      }
+    );
+
+    let programDocument = await programsHelper.details(submissionDocument.programId);
+
+    let responseObject = {
+      result: true,
+      entityType: submissionDocument.entityType,
+      entityId: submissionDocument.entityId,
+      entityName: submissionDocument.entityInformation.name,
+      solutionName:solutionDocument[0].name,
+      observationId: submissionDocument.observationId,
+      programName: programDocument.data.name,
+      totalSubmissions: submissionDocumentArr.length,
+    };
+
+
+    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
+
+    //attach file urls to evidences 
+
+    console.log(result);
+    console.log(stopppp)
+
+    responseObject.reportSections = result;
+    return responseObject;
   }
 };
-
