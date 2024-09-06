@@ -141,7 +141,6 @@ module.exports = class ReportsHelper {
 
     let submissionDocument = submissionDocumentArr[0];
 
-    
     let solutionDocument = await solutionsQueries.solutionDocuments(
       {
         _id: submissionDocument.solutionId,
@@ -160,7 +159,7 @@ module.exports = class ReportsHelper {
       programName: programDocument.data.name,
       totalSubmissions: submissionDocumentArr.length,
     };
-    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,false,criteriaWise);
+    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,true,criteriaWise);
 
     responseObject.reportSections = result;
     return responseObject;
@@ -201,12 +200,6 @@ module.exports = class ReportsHelper {
 
 
     let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
-
-    //attach file urls to evidences 
-
-    console.log(result);
-    console.log(stopppp)
-
     responseObject.reportSections = result;
     return responseObject;
   }

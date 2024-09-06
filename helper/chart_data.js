@@ -146,141 +146,249 @@ function getKeysToBeDeletedFromAnswers(data){
    return keysToBeDeletedFromAnswers;
   }
 
-  exports.generateObservationReportForNonRubricWithoutDruid = async function (data,generateChart=false,criteriaWise=false) {
-    let answerArr = data.map((singleSurveySubmission) => {
-      let domain = Object.keys(singleSurveySubmission.evidences);
-      return singleSurveySubmission.evidences[domain[0]].submissions[0].answers;
-    });
+/**
+ * Generates an observation report for non-rubric without Druid.
+ * @param {Array} data - Array of survey submissions.
+ * @param {boolean} [generateChart=false] - Flag to generate chart.
+ * @param {boolean} [criteriaWise=false] - Flag to create criteria-wise report.
+ * @returns {Promise<Array>} Formatted combined answer array.
+ */
+exports.generateObservationReportForNonRubricWithoutDruid = async function (data,generateChart=false,criteriaWise=false) {
+  const answerArr = extractAnswers(data);
+  const { questionRecordsIdArr, cachedCriteriaIdArr } = extractIds(answerArr);
 
-    let formattedCombinedAnswerArr = [];
-    let questionRecordsIdArr = [];
-    let cachedCriteriaIdArr = [];
+  const [criteriaInfoArr, questionRecordArr] = await Promise.all([
+    fetchCriteriaInfo(cachedCriteriaIdArr),
+    fetchQuestionRecords(questionRecordsIdArr)
+  ]);
 
-    for (let submissionInstance of answerArr) {
-      let questionIdArr = Object.keys(submissionInstance);
+  let formattedCombinedAnswerArr = await formatAnswers(answerArr, criteriaInfoArr, questionRecordArr);
 
-      for (let questionId of questionIdArr) {
-        let questionInstance = submissionInstance[questionId];
-
-        let criteriaId = questionInstance.criteriaId;
-        let qid = questionInstance.qid;
-
-        questionRecordsIdArr.push(qid);
-        cachedCriteriaIdArr.push(criteriaId);
-      }
-    }
-
-    let criteriaInfoArr = await criteriaHelper.criteriaDocument({
-      _id: {
-        $in: cachedCriteriaIdArr,
-      },
-    });
-
-    let questionRecordArr = await questionsHelper.questionDocument({
-      _id: {
-        $in: questionRecordsIdArr,
-      },
-    });
-
-    for (let submissionInstance of answerArr) {
-      let questionIdArr = Object.keys(submissionInstance);
-
-      for (let questionId of questionIdArr) {
-        let questionInstance = submissionInstance[questionId];
-
-        let questionRecordSingleElement = questionRecordArr.find((record) => record._id.equals(questionInstance.qid));
-        let criteriaInfo = criteriaInfoArr.find((record) => record._id.equals(questionInstance.criteriaId));
-
-        if (questionInstance.responseType == 'matrix') {
-          continue;
-        }
-
-        let options = questionRecordSingleElement.options;
-
-        const index = formattedCombinedAnswerArr.findIndex((obj) => {
-          return obj.order === questionInstance.qid;
-        });
-
-        if (index !== -1) {
-          // If found, modify the existing object
-          let existingAnswerArr = formattedCombinedAnswerArr[index].answers;
-          if (
-            Array.isArray(submissionInstance[questionId].value) &&
-            submissionInstance[questionId].responseType !== 'multiselect'
-          ) {
-            existingAnswerArr = existingAnswerArr.concat(submissionInstance[questionId].value);
-          } else if (
-            Array.isArray(submissionInstance[questionId].value) &&
-            submissionInstance[questionId].value &&
-            submissionInstance[questionId].responseType == 'multiselect'
-          ) {
-            existingAnswerArr = existingAnswerArr.push(submissionInstance[questionId].value);
-          } else {
-            existingAnswerArr.push(submissionInstance[questionId].value);
-          }
-        } else {
-          let newValue = {
-            order: questionRecordSingleElement.externalId,
-            question: submissionInstance[questionId].payload.question[0],
-            responseType: submissionInstance[questionId].responseType,
-            answers: [submissionInstance[questionId].value],
-            chart: {},
-            instanceQuestions: [],
-            options,
-            criteriaName: criteriaInfo.name,
-            criteriaId: questionInstance.criteriaId,
-          };
-          formattedCombinedAnswerArr.push(newValue);
-        }
-      }
-    }
-
-    if(generateChart){
-      formattedCombinedAnswerArr = createObservationChartWithoutRubric(formattedCombinedAnswerArr);
-
-    }
-    formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
-
-    if(criteriaWise){
-      formattedCombinedAnswerArr = await createCriteriaWiseReport(formattedCombinedAnswerArr);
-    }
-
-    return formattedCombinedAnswerArr;
-  };
-
-  async function createCriteriaWiseReport(reportData){
-    let finalResponseArray = []
-    let allCriterias = []
-    console.log(reportData,'reportData');
-    let groupByCriteria = groupDataByEntityId(reportData, "criteriaId");
-    console.log(groupByCriteria,'groupByCriteria')
-    
-    let criteriaKeys = Object.keys(groupByCriteria);
-
-    await Promise.all(criteriaKeys.map(ele => {
-
-        let criteriaObj = {
-
-            criteriaId: ele,
-            criteriaName: groupByCriteria[ele][0].criteriaName,
-            questionArray: groupByCriteria[ele]
-
-        }
-        
-        allCriterias.push({
-           _id: ele,
-           name: groupByCriteria[ele][0].criteriaName
-        })
-
-        finalResponseArray.push(criteriaObj);
-
-    }));
-
-    return finalResponseArray;
+  if (generateChart) {
+    formattedCombinedAnswerArr = createObservationChartWithoutRubric(formattedCombinedAnswerArr);
   }
-  // Function for grouping the array based on certain field name
+
+  formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
+
+  if (criteriaWise) {
+    formattedCombinedAnswerArr = await createCriteriaWiseReport(formattedCombinedAnswerArr);
+  }
+
+  return formattedCombinedAnswerArr;
+}
+
+/**
+ * Extracts answers from survey submissions.
+ * @param {Array} data - Array of survey submissions.
+ * @returns {Array} Extracted answers.
+ */
+function extractAnswers(data) {
+  return data.map((singleSurveySubmission) => {
+    const domain = Object.keys(singleSurveySubmission.evidences)[0];
+    const answers = singleSurveySubmission.evidences[domain].submissions[0].answers;
+    
+    Object.values(answers).forEach(answer => {
+      answer.submissionId = singleSurveySubmission._id;
+    });
+  
+    return answers;
+  });
+}
+
+/**
+ * Extracts question and criteria IDs from answers.
+ * @param {Array} answerArr - Array of answers.
+ * @returns {Object} Object containing arrays of question and criteria IDs.
+ */
+function extractIds(answerArr) {
+  const questionRecordsIdArr = new Set();
+  const cachedCriteriaIdArr = new Set();
+
+  answerArr.forEach(submissionInstance => {
+    Object.values(submissionInstance).forEach(questionInstance => {
+      questionRecordsIdArr.add(questionInstance.qid);
+      cachedCriteriaIdArr.add(questionInstance.criteriaId);
+    });
+  });
+
+  return {
+    questionRecordsIdArr: Array.from(questionRecordsIdArr),
+    cachedCriteriaIdArr: Array.from(cachedCriteriaIdArr)
+  };
+}
+
+/**
+ * Fetches criteria information.
+ * @param {Array} criteriaIds - Array of criteria IDs.
+ * @returns {Promise<Array>} Array of criteria documents.
+ */
+async function fetchCriteriaInfo(criteriaIds) {
+  return criteriaHelper.criteriaDocument({ _id: { $in: criteriaIds } });
+}
+
+/**
+ * Fetches question records.
+ * @param {Array} questionIds - Array of question IDs.
+ * @returns {Promise<Array>} Array of question documents.
+ */
+async function fetchQuestionRecords(questionIds) {
+  return questionsHelper.questionDocument({ _id: { $in: questionIds } });
+}
+
+/**
+ * Formats answers into a combined array.
+ * @param {Array} answerArr - Array of answers.
+ * @param {Array} criteriaInfoArr - Array of criteria information.
+ * @param {Array} questionRecordArr - Array of question records.
+ * @returns {Promise<Array>} Formatted combined answer array.
+ */
+async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr) {
+  const formattedCombinedAnswerArr = [];
+
+  for (const submissionInstance of answerArr) {
+    for (const [questionId, questionInstance] of Object.entries(submissionInstance)) {
+      if (questionInstance.responseType === 'matrix') continue;
+
+      const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(questionInstance.qid));
+      const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(questionInstance.criteriaId));
+
+      await updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo);
+    }
+  }
+
+  return formattedCombinedAnswerArr;
+}
+
+/**
+ * Updates an existing formatted answer or creates a new one.
+ * @param {Array} formattedCombinedAnswerArr - Array of formatted answers.
+ * @param {Object} questionInstance - Question instance.
+ * @param {Object} questionRecordSingleElement - Question record.
+ * @param {Object} criteriaInfo - Criteria information.
+ */
+async function updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo) {
+  const index = formattedCombinedAnswerArr.findIndex(obj => obj.qid === questionInstance.qid);
+
+  if (index !== -1) {
+    await updateExistingAnswer(formattedCombinedAnswerArr[index], questionInstance);
+  } else {
+    const newValue = await createNewFormattedAnswer(questionInstance, questionRecordSingleElement, criteriaInfo);
+    formattedCombinedAnswerArr.push(newValue);
+  }
+}
+
+/**
+ * Updates an existing formatted answer.
+ * @param {Object} existingAnswer - Existing formatted answer.
+ * @param {Object} questionInstance - Question instance.
+ */
+async function updateExistingAnswer(existingAnswer, questionInstance) {
+  if (questionInstance.fileName && questionInstance.fileName.length > 0) {
+    const newEvidences = await processFileEvidences(questionInstance.fileName, questionInstance.submissionId);
+    existingAnswer.evidences.push(...newEvidences);
+  }
+
+  updateAnswerValues(existingAnswer.answers, questionInstance);
+}
+
+/**
+ * Creates a new formatted answer.
+ * @param {Object} questionInstance - Question instance.
+ * @param {Object} questionRecordSingleElement - Question record.
+ * @param {Object} criteriaInfo - Criteria information.
+ * @returns {Promise<Object>} New formatted answer.
+ */
+async function createNewFormattedAnswer(questionInstance, questionRecordSingleElement, criteriaInfo) {
+  const evidence = await processFileEvidences(questionInstance.fileName, questionInstance.submissionId);
+
+  return {
+    qid: questionInstance.qid,
+    order: questionRecordSingleElement.externalId,
+    question: questionInstance.payload.question[0],
+    responseType: questionInstance.responseType,
+    answers: [questionInstance.value],
+    chart: {},
+    instanceQuestions: [],
+    options: questionRecordSingleElement.options,
+    criteriaName: criteriaInfo.name,
+    criteriaId: questionInstance.criteriaId,
+    evidences: evidence
+  };
+}
+
+/**
+ * Processes file evidences.
+ * @param {Array} fileNames - Array of file names.
+ * @param {string} submissionId - Submission ID.
+ * @returns {Promise<Array>} Processed evidences.
+ */
+async function processFileEvidences(fileNames, submissionId) {
+  if (!fileNames || fileNames.length === 0) return [];
+
+  const evidences = [];
+  for (const file of fileNames) {
+    const sourcePath = await filesCloudHelper.getDownloadableUrl([file.sourcePath]);
+    evidences.push({ ...file, fileUrl: sourcePath.result[0], submissionId });
+  }
+  return evidences;
+}
+
+/**
+ * Updates answer values.
+ * @param {Array} existingAnswers - Existing answers.
+ * @param {Object} questionInstance - Question instance.
+ */
+function updateAnswerValues(existingAnswers, questionInstance) {
+  if (Array.isArray(questionInstance.value) && questionInstance.responseType !== 'multiselect') {
+    existingAnswers.push(...questionInstance.value);
+  } else if (Array.isArray(questionInstance.value) && questionInstance.value && questionInstance.responseType === 'multiselect') {
+    existingAnswers.push(questionInstance.value);
+  } else {
+    existingAnswers.push(questionInstance.value);
+  }
+}
+
+/**
+ * Asynchronously creates a report grouped by criteria, processing report data
+ * and returning a structured response array.
+ * 
+ * @param {Array} reportData - The array of report data, each item containing criteria and question details.
+ * @returns {Promise<Array>} A promise that resolves to an array of objects where each object contains criteriaId, criteriaName, and questionArray.
+ */
+async function createCriteriaWiseReport(reportData) {
+  let finalResponseArray = [];
+  let allCriterias = [];
+  let groupByCriteria = groupDataByEntityId(reportData, "criteriaId");
+  let criteriaKeys = Object.keys(groupByCriteria);
+
+  await Promise.all(criteriaKeys.map(ele => {
+      let criteriaObj = {
+          criteriaId: ele,
+          criteriaName: groupByCriteria[ele][0].criteriaName,
+          questionArray: groupByCriteria[ele]
+      };
+
+      allCriterias.push({
+          _id: ele,
+          name: groupByCriteria[ele][0].criteriaName
+      });
+
+      finalResponseArray.push(criteriaObj);
+  }));
+
+  return finalResponseArray;
+}
+/**
+ * Groups an array of objects by a specific property, creating a dictionary
+ * where keys are the values of the specified property, and values are arrays
+ * of objects that share the same property value.
+ * 
+ * @param {Array} array - The array of objects to be grouped.
+ * @param {string} name - The name of the property to group by.
+ * @returns {Object} An object where the keys are unique values of the specified property, and the values are arrays of objects with matching property values.
+ */
 function groupDataByEntityId(array, name) {
-  result = array.reduce(function (r, a) {
+  let result = array.reduce(function (r, a) {
       r[a[name]] = r[a[name]] || [];
       r[a[name]].push(a);
       return r;
@@ -288,6 +396,7 @@ function groupDataByEntityId(array, name) {
 
   return result;
 }
+
   /**
  * Creates observation charts for specific response types in the provided report data.
  * 

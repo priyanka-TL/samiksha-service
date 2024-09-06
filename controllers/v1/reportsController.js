@@ -3076,7 +3076,7 @@ fetch = async function (req) {
 
         //  submission observation report
         if (req.body.submissionId && req.body.observation == true ) {
-          console.log({instaceObservationReport: 'executed'});
+
          let response = await reportsHelper.instaceObservationReport(req);
          resolve({message:response});
 
