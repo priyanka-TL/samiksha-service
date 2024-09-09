@@ -14,6 +14,8 @@ const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const helperFunc = require('../../helper/chart_data');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
+const pdfHelper = require('../../helper/pdfGeneration');
+
 /**
  * ReportsHelper
  * @class
@@ -201,6 +203,15 @@ module.exports = class ReportsHelper {
 
     let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
     responseObject.reportSections = result;
+
+    if(req.body.pdf){
+
+      let pdfGenerationStatus = await pdfHelper.pdfGeneration(responseObject);
+
+      console.log(pdfGenerationStatus,'pdfGenerationStatus')
+
+    }
+
     return responseObject;
   }
 };

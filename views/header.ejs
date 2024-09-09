@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <style>
+            .observation-header {
+                text-align: center;
+                font-size: 12rem;
+                font-weight: 500;
+                border-bottom: 1px solid #ccc;
+                width: 100%;
+                color: rgb(207, 207, 230);
+            }
+        </style>
+            <% if(data.observationName) { %> 
+            <h4 class="col-sm-12 observation-header">Observation Name : <%=  data.observationName %></h4>
+            <% } %>
+            <% if(data.solutionName) { %> 
+                <h4 class="col-sm-12 observation-header">Solution Name : <%=  data.solutionName %></h4>
+            <% } %>
+    </head>
+    
+    <!-- <body>
+        <p>
+            <span style="float: right;" class="pageNumber"></span> of <span class="totalPages"></span>
+        </p>
+    </body> -->
+</html>
