@@ -139,7 +139,7 @@ module.exports = async function (req, res, next) {
 
   if (!req.rspObj) req.rspObj = {};
   var rspObj = req.rspObj;
-
+ 
   let internalAccessApiPaths = [
     'createGesture',
     'createEmoji',

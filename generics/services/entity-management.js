@@ -36,11 +36,13 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           projection: projection,
         },
       };
+	  
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
 
       // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
       function requestCallBack(err, data) {
+		
         let result = {
           success: true,
         };
@@ -49,6 +51,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           result.success = false;
         } else {
           let response = data.body;
+          
           // Check if the response status is OK (HTTP 200)
           if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
@@ -60,6 +63,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
         return resolve(result);
       }
     } catch (error) {
+      
       return reject(error);
     }
   });
@@ -106,13 +110,13 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
         } else {
           let response = data.body;
           // Check if the response status is OK (HTTP 200)
-          if (response.status === messageConstants.common.OK) {
+          if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
           } else {
             result.success = false;
           }
         }
-
+        
         return resolve(result);
       }
     } catch (error) {
@@ -120,8 +124,96 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
     }
   });
 };
+/**
+ * Validates entities based on provided entity IDs and entity type ID.
+ * @param {string[]} entityIds - An array of entity IDs to validate.
+ * @param {string} entityTypeId - The ID of the entity type to check against.
+ * @returns {Promise<{entityIds: string[]}>} A promise that resolves to an object containing validated entity IDs.
+ * @throws {Error} If there's an error during validation.
+ */
+const validateEntities = async function (entityIds, entityTypeId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let ids = [];
+
+		  let bodyData = {
+			_id : { $in: gen.utils.arrayIdsTobjectIdsNew(entityIds) },
+			entityTypeId: entityTypeId,
+		  };
+
+		  let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
+      let entitiesDocuments = entitiesDocumentsAPIData.data;
+
+        if (entitiesDocuments.length > 0) {
+          ids = entitiesDocuments.map((entityId) => entityId._id);
+        }
+
+        return resolve({
+          entityIds: ids,
+        });
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+/**
+ * Lists entities by entity type with pagination.
+ * @param {string} entityTypeId - The ID of the entity type to list.
+ * @param {string} userToken - The authentication token of the user making the request.
+ * @param {number} pageSize - The number of items per page.
+ * @param {number} pageNo - The page number to retrieve.
+ * @returns {Promise<{success: boolean, data?: any}>} A promise that resolves to an object containing the success status and, if successful, the retrieved data.
+ * @throws {Error} If there's an error during the request.
+ */
+const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Function to find entity documents based on the given filter and projection
+        const url = entityManagementServiceUrl + messageConstants.endpoints.LIST_BY_ENTITY_TYPE+'/'+entityTypeId + `?page=${pageNo}&limit=${pageSize}`;
+        // Set the options for the HTTP POST request
+        const options = {
+          headers: {
+            'content-type': 'application/json',
+            'x-auth-token':userToken
+          },
+          json: {
+            type:entityTypeId
+          },
+        };
+      
+        // Make the HTTP POST request to the entity management service
+        request.post(url, options, requestCallBack);
+  
+        // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
+        function requestCallBack(err, data) {
+      
+          let result = {
+            success: true,
+          };
+  
+          if (err) {
+            result.success = false;
+          } else {
+            let response = data.body;
+            // Check if the response status is OK (HTTP 200)
+            if (response.status === httpStatusCode['ok'].status) {
+              result['data'] = response.result;
+            } else {
+              result.success = false;
+            }
+          }
+  
+          return resolve(result);
+        }
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
+  validateEntities:validateEntities,
+  listByEntityType:listByEntityType
 };

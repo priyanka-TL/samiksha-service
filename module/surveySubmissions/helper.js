@@ -600,8 +600,7 @@ module.exports = class SurveySubmissionsHelper {
           }
           const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
           // creating evidence and adding answers in the Submission documents
-          let response = await submissionsHelper.createEvidencesInSubmission
-          (  
+          let response = await submissionsHelper.createEvidencesInSubmission(  
             req,
             messageConstants.common.SURVEY_SUBMISSIONS, 
             false

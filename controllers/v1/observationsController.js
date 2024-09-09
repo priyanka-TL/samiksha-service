@@ -17,6 +17,7 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const assessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
+
 /**
  * Observations
  * @class
@@ -88,7 +89,7 @@ module.exports = class Observations extends Abstract {
         matchQuery['$match']['$or'].push(
           { name: new RegExp(req.searchText, 'i') },
           { description: new RegExp(req.searchText, 'i') },
-          { keywords: new RegExp(req.searchText, 'i') },
+          { keywords: new RegExp(req.searchText, 'i') }
         );
 
         let solutionDocument = await solutionsHelper.search(matchQuery, req.pageSize, req.pageNo);
@@ -197,7 +198,7 @@ module.exports = class Observations extends Abstract {
             },
             {
               observationMetaFormKey: 1,
-            },
+            }
           )
           .lean();
 
@@ -217,7 +218,7 @@ module.exports = class Observations extends Abstract {
                   ? solutionsData.observationMetaFormKey
                   : 'defaultObservationMetaForm',
             },
-            { value: 1 },
+            { value: 1 }
           )
           .lean();
 
@@ -270,7 +271,7 @@ module.exports = class Observations extends Abstract {
           req.query.solutionId,
           req.body.data,
           req.userDetails.userId,
-          req.userDetails.userToken,
+          req.userDetails.userToken
           // req.query.programId
         );
 
@@ -429,7 +430,7 @@ module.exports = class Observations extends Abstract {
         let result = await observationsHelper.removeEntityFromObservation(
           req.params._id,
           req.body.data,
-          req.userDetails.id,
+          req.userDetails.id
         );
 
         return resolve(result);
@@ -470,12 +471,16 @@ module.exports = class Observations extends Abstract {
       try {
         let response = {};
         if (req.method === 'POST') {
-          response = await observationsHelper.addEntityToObservation(req.params._id, req.body.data, req.userDetails.id);
+          response = await observationsHelper.addEntityToObservation(
+            req.params._id,
+            req.body.data,
+            req.userDetails.userId
+          );
         } else if (req.method === 'DELETE') {
           response = await observationsHelper.removeEntityFromObservation(
             req.params._id,
-            req.body.data,
-            req.userDetails.id,
+            req.body.data ? req.body.data : (req.query.entityId ? req.query.entityId.split(',') : []),
+            req.userDetails.userId
           );
         }
 
@@ -527,7 +532,7 @@ module.exports = class Observations extends Abstract {
    * @returns {JSON} List of entities in observations.
    */
 
-  async searchEntities(req) {
+  async searchEntitiesOld(req) {
     return new Promise(async (resolve, reject) => {
       try {
         let response = {
@@ -597,6 +602,22 @@ module.exports = class Observations extends Abstract {
 
         return resolve(response);
       } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+  async searchEntities(req) {
+    return new Promise(async (resolve, reject) => {
+      try{
+        let searchEntitiesResult = await entitiesHelper.searchEntitiesHelper(req);
+        resolve(searchEntitiesResult);
+      }catch(error){
+        console.log(error);
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
@@ -857,7 +878,7 @@ module.exports = class Observations extends Abstract {
               keywords: 0,
               concepts: 0,
               createdFor: 0,
-            },
+            }
           )
           .lean();
 
@@ -951,7 +972,7 @@ module.exports = class Observations extends Abstract {
           entityDocumentQuestionGroup,
           submissionDoc.result.evidences,
           solutionDocument && solutionDocument.questionSequenceByEcm ? solutionDocument.questionSequenceByEcm : false,
-          entityDocument.metaInformation,
+          entityDocument.metaInformation
         );
 
         assessment.evidences = parsedAssessment.evidences;
@@ -1006,7 +1027,7 @@ module.exports = class Observations extends Abstract {
             $set: {
               status: 'completed',
             },
-          },
+          }
         );
 
         return resolve({
@@ -1094,7 +1115,7 @@ module.exports = class Observations extends Abstract {
             if (newCriteriaId._id) {
               solutionCriteriaToFrameworkCriteriaMap[criteria._id.toString()] = newCriteriaId._id;
             }
-          }),
+          })
         );
 
         let updateThemes = function (themes) {
@@ -1240,7 +1261,7 @@ module.exports = class Observations extends Abstract {
         if (Object.keys(usersKeycloakIdMap).length > 0) {
           let userOrganisationDetails = await observationsHelper.getUserOrganisationDetails(
             Object.keys(usersKeycloakIdMap),
-            req.rspObj.userToken,
+            req.rspObj.userToken
           );
 
           usersKeycloakIdMap = userOrganisationDetails.data;
@@ -1360,7 +1381,7 @@ module.exports = class Observations extends Abstract {
               userId,
               solution,
               entityDocument,
-              userOrganisations,
+              userOrganisations
             );
             status = observationHelperData.status;
           } catch (error) {
@@ -1423,7 +1444,7 @@ module.exports = class Observations extends Abstract {
               createdBy: req.userDetails.userId,
               status: { $ne: 'inactive' },
             },
-            updateQuery,
+            updateQuery
           )
           .lean();
 
@@ -1475,7 +1496,7 @@ module.exports = class Observations extends Abstract {
             $set: {
               status: 'inactive',
             },
-          },
+          }
         );
 
         return resolve({
@@ -1582,7 +1603,7 @@ module.exports = class Observations extends Abstract {
       try {
         let completedObservationDocuments = await observationsHelper.completedObservations(
           req.query.fromDate,
-          req.query.toDate,
+          req.query.toDate
         );
 
         return resolve({
@@ -1779,7 +1800,7 @@ module.exports = class Observations extends Abstract {
         let submissionDocument = await observationsHelper.submissionStatus(
           req.params._id,
           req.query.entityId,
-          req.userDetails.userId,
+          req.userDetails.userId
         );
 
         submissionDocument.result = submissionDocument.data;
@@ -1853,7 +1874,7 @@ module.exports = class Observations extends Abstract {
           req.userDetails.userToken,
           req.pageSize,
           req.pageNo,
-          req.searchText,
+          req.searchText
         );
 
         observations['result'] = observations.data;
@@ -1918,7 +1939,7 @@ module.exports = class Observations extends Abstract {
           req.pageNo,
           req.pageSize,
           req.searchText,
-          req.query.filter,
+          req.query.filter
         );
 
         observations['result'] = observations.data;
@@ -1982,7 +2003,7 @@ module.exports = class Observations extends Abstract {
           req.rspObj.userToken,
           req.params._id ? req.params._id : '',
           req.query.solutionId,
-          req.body,
+          req.body
         );
 
         observations['result'] = observations.data;

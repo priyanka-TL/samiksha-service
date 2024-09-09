@@ -18,7 +18,7 @@ const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityAssessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
-const kendraService = require(ROOT_PATH + '/generics/services/kendra');
+const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper');
 const path = require('path');
 
 /**
@@ -1508,9 +1508,7 @@ module.exports = class SubmissionsHelper {
 
         let filePathToURLMap = {};
         if (fileSourcePath.length > 0) {
-          let evidenceUrls = await kendraService.getDownloadableUrl({
-            filePaths: fileSourcePath,
-          });
+          let evidenceUrls = await filesHelper.getDownloadableUrl(fileSourcePath);
           if (evidenceUrls.status == httpStatusCode.ok.status) {
             filePathToURLMap = _.keyBy(evidenceUrls.result, 'filePath');
           }
