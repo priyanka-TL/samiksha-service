@@ -1,5 +1,4 @@
-
-const filesCloudHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
+const filesCloudHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper');
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 
 /**
@@ -116,29 +115,248 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
  * @param {Object} data - The survey data object containing answers.
  * @returns {Array<string>} An array of keys that should be deleted from the answers object.
  */
-function getKeysToBeDeletedFromAnswers(data){
-    let keysToBeDeletedFromAnswers = [];
-    let answers = data.answers;
+function getKeysToBeDeletedFromAnswers(data) {
+  let keysToBeDeletedFromAnswers = [];
+  let answers = data.answers;
 
-    for(let answerInstanceKey in answers){
-      
-      if(answers[answerInstanceKey].responseType == 'matrix'){
+  for (let answerInstanceKey in answers) {
+    if (answers[answerInstanceKey].responseType == 'matrix') {
+      let value = answers[answerInstanceKey].value;
 
-        let value = answers[answerInstanceKey].value;
-
-        for(let obj of value){
-          
-          let keys = Object.keys(obj);
-          for(let key of keys){
-            keysToBeDeletedFromAnswers.push(key)
-          }
-
+      for (let obj of value) {
+        let keys = Object.keys(obj);
+        for (let key of keys) {
+          keysToBeDeletedFromAnswers.push(key);
         }
+      }
+    }
+  }
 
+  return keysToBeDeletedFromAnswers;
+}
+
+exports.generateObservationReportForRubricWithoutDruid = async function (data) {
+  let scoreReport = [];
+  let domainLevelObject = generateDomainLevelObject(data);
+  let chartObject = generateChartObjectForRubric(data);
+  let horizontalBarChart={
+    order:1,
+    domainLevelObject:domainLevelObject,
+    responseType:"horizontalBar",
+    chart:chartObject
+  }
+  scoreReport.push(horizontalBarChart)
+  let expansionChartObject = generateExpansionChartObject(data)
+  let expansionTableChart={
+    order:2,
+    responseType:"expansion-table",
+    chart:expansionChartObject
+  }
+  scoreReport.push(expansionTableChart)
+  return scoreReport;
+};
+
+function generateDomainLevelObject(submissionData) {
+  const domainLevelObject = {}
+  submissionData.forEach((data)=>{
+  data.themes.map((eachDomain) => {
+    let level = eachDomain.pointsBasedLevel;
+    let completedDate = data.completedDate;
+    let domainName = eachDomain.name
+      // Ensure the domainName exists in the object
+      if (!domainLevelObject[domainName]) {
+        domainLevelObject[domainName] = {};
       }
 
-    }
+      // Ensure the completedDate exists under the domainName
+      if (!domainLevelObject[domainName][completedDate]) {
+        domainLevelObject[domainName][completedDate] = {};
+      }
 
+      // Ensure the level exists under the completedDate and set it to 1
+      if (!domainLevelObject[domainName][completedDate][level]) {
+        domainLevelObject[domainName][completedDate][level] = 1;
+      } else {
+        domainLevelObject[domainName][completedDate][level]++;
+      }
     
-   return keysToBeDeletedFromAnswers;
+  });
+})
+  return domainLevelObject;
+}
+
+function generateChartObjectForRubric(chartObjectsArray) {
+// Create the initial structure of the horizontal chartData object
+
+  const chartOptions = {
+    type: 'horizontalBar',
+    title: '',
+    submissionDateArray: [],
+    options: {
+      title: {
+        display: true,
+        text: '',
+      },
+      scales: {
+        xAxes: [
+          {
+            stacked: true,
+            gridLines: {
+              display: false,
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'Criteria',
+            },
+          },
+        ],
+        yAxes: [
+          {
+            stacked: true,
+          },
+        ],
+      },
+      legend: {
+        display: true,
+        position: 'bottom',
+      },
+    },
+  };
+  let themeArray = [];
+  let dataSetsMap = {};
+
+
+   // Points mapping based on level (L1 -> 1, L2 -> 2.)
+   const pointsMapping = {
+    "L1": 1,
+    "L2": 2,
+    "L3": 3,
+    "L4": 4
+  };
+
+  // Loop through each chartObject in the array
+  chartObjectsArray.forEach((chartObject) => {
+    chartObject.themes.forEach((eachDomain) => {
+      const themeName = eachDomain.name;
+
+      // If themeName is not already in themeArray, add it
+      if (!themeArray.includes(themeName)) {
+        themeArray.push(themeName);
+
+        // When adding a new theme, ensure all existing datasets are padded with 0
+        for (let key in dataSetsMap) {
+          dataSetsMap[key].data.push(0);
+        }
+      }
+
+      // Find the points value for the current domain's level (L1, L2, etc.)
+      let pointsValue = pointsMapping[eachDomain.pointsBasedLevel] || 0;
+
+      // If there's no dataset for this points level, create it
+      if (!dataSetsMap[eachDomain.pointsBasedLevel]) {
+        dataSetsMap[eachDomain.pointsBasedLevel] = {
+          label: eachDomain.pointsBasedLevel,
+          data: new Array(themeArray.length).fill(0), // Initialize with zeros
+          backgroundColor: getColorForLevel(eachDomain.pointsBasedLevel), // Get color based on level
+        };
+      }
+
+      // Find the index of the current themeName
+      const themeIndex = themeArray.indexOf(themeName);
+
+      // Update the corresponding data in the dataset for this points level
+      dataSetsMap[eachDomain.pointsBasedLevel].data[themeIndex] = pointsValue;
+    });
+  });
+
+
+  let dataSetsArray = Object.values(dataSetsMap);
+
+  chartOptions['data'] ={
+    labels:themeArray,
+    datasets:dataSetsArray
   }
+  return chartOptions;
+}
+
+// Helper function to assign colors based on level
+function getColorForLevel(level) {
+  const colors = {
+    "L1": "rgb(255, 99, 132)",
+    "L2": "rgb(54, 162, 235)",
+    "L3": "rgb(255, 206, 86)",
+    "L4": "rgb(75, 192, 192)"
+  };
+  return colors[level] || "rgb(201, 203, 207)"; 
+}
+
+function generateExpansionChartObject(chartObjectsArray) {
+  let levelExpandKey = {
+    L1: "Level 1",
+    L2: "Level 2",
+    L3: "Level 3",
+    L4: "Level 4",
+  };
+
+  // Initialize the chartData object
+  let chartData = {
+    type: "expansion-table",
+    title: "Descriptive view",
+    heading: chartObjectsArray.map((_, index) => `Assess. ${index + 1}`), // Generate "Assess. 1", "Assess. 2", etc.
+    domains: [],
+    totalSubmissions: chartObjectsArray.length // Total number of assessments
+  };
+
+  let domainsAndCriteriaScores = {};
+
+  // Loop over each chart object (for each assessment)
+  chartObjectsArray.forEach((chartObject, assessmentIndex) => {
+    chartObject.themes.forEach((eachDomain) => {
+      if (!domainsAndCriteriaScores[eachDomain.name]) {
+        domainsAndCriteriaScores[eachDomain.name] = {
+          domainName: eachDomain.name,
+          criterias: []
+        };
+      }
+
+      eachDomain.criteria.forEach(eachCriteriaScores => {
+        let matchedCriteria = chartObject.criteria.find(eachDomainCriteria =>
+          eachCriteriaScores.criteriaId.toString() === eachDomainCriteria._id.toString() ||
+          (eachDomainCriteria.parentCriteriaId && eachCriteriaScores.criteriaId.toString() === eachDomainCriteria.parentCriteriaId.toString())
+        );
+
+        if (matchedCriteria) {
+          let existingCriteria = domainsAndCriteriaScores[eachDomain.name].criterias.find(
+            criteria => criteria.name === matchedCriteria.name
+          );
+
+          // If the criteria already exists, add another assessment (level and score) to the same entry
+          if (existingCriteria) {
+            existingCriteria.levels.push(levelExpandKey[matchedCriteria.score]);
+            existingCriteria.levelsWithScores.push({
+              level: levelExpandKey[matchedCriteria.score],
+              score: matchedCriteria.scoreAchieved
+            });
+          } else {
+            // If it's the first occurrence of this criteria, create a new entry
+            domainsAndCriteriaScores[eachDomain.name].criterias.push({
+              name: matchedCriteria.name,
+              levels: [levelExpandKey[matchedCriteria.score]],
+              levelsWithScores: [{
+                level: levelExpandKey[matchedCriteria.score],
+                score: matchedCriteria.scoreAchieved
+              }]
+            });
+          }
+        }
+      });
+    });
+  });
+
+  // Convert the domain criteria object back to an array
+  chartData.domains = Object.values(domainsAndCriteriaScores);
+
+  return chartData;
+}
+
+

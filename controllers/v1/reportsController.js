@@ -35,7 +35,7 @@ module.exports = class Reports {
   try {
      
       //  submission observation report
-      if (req.body.submissionId && req.body.observation == true ) {
+      if (req.body.submissionId && req.body.observation == true  ) {
           console.log({instaceObservationReport: 'executed'});
          let response = await reportsHelper.instaceObservationReport(req, res);
          res.send(response);
