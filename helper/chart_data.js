@@ -243,21 +243,20 @@ function generateChartObjectForRubric(chartObjectsArray) {
       if (!themeArray.includes(themeName)) {
         themeArray.push(themeName);
 
-        // When adding a new theme, ensure all existing datasets are padded with 0
         for (let key in dataSetsMap) {
           dataSetsMap[key].data.push(0);
         }
       }
 
-      // Find the points value for the current domain's level (L1, L2, etc.)
-      let pointsValue = pointsMapping[eachDomain.pointsBasedLevel] || 0;
+      // Find the points value for the current domain's level
+      let pointsValue = pointsMapping[eachDomain.pointsBasedLevel] || 1;
 
       // If there's no dataset for this points level, create it
       if (!dataSetsMap[eachDomain.pointsBasedLevel]) {
         dataSetsMap[eachDomain.pointsBasedLevel] = {
           label: eachDomain.pointsBasedLevel,
-          data: new Array(themeArray.length).fill(0), // Initialize with zeros
-          backgroundColor: getColorForLevel(eachDomain.pointsBasedLevel), // Get color based on level
+          data: new Array(themeArray.length).fill(0), 
+          backgroundColor: getColorForLevel(eachDomain.pointsBasedLevel),
         };
       }
 
