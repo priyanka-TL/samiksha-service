@@ -3070,6 +3070,16 @@ submissionReport = async function (req) {
     }
   });
 };
+/**
+ * Fetches observation reports based on the request parameters.
+ * @param {Object} req - The request object containing the following properties:
+ * @param {string} [req.body.submissionId] - The ID of the submission (for instance observation report).
+ * @param {string} [req.body.entityId] - The ID of the entity (for entity observation report).
+ * @param {string} [req.body.observationId] - The ID of the observation (for entity observation report).
+ * @param {boolean} req.body.observation - Flag indicating whether it's an observation report.
+ * @returns {Promise<Object>} A promise that resolves to an object containing the report data or an error message.
+ * @throws {Error} If there's an internal server error during the process.
+ */
 fetch = async function (req) {
   return new Promise(async function (resolve, reject) {
     try {
