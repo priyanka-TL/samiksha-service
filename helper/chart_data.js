@@ -33,7 +33,7 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
     if (fileName && fileName.length > 0) {
       for (let fileObj of fileName) {
         let sourcePath = await filesCloudHelper.getDownloadableUrl([fileObj.sourcePath]);
-        let extension = path.extname(fileObj.sourcePath);
+        let extension = path.extname(fileObj.sourcePath).split('.').join('');
 
         evidences.push({...sourcePath.result[0],extension});
       }
