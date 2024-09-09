@@ -433,6 +433,29 @@ function checkValidUUID(uuids) {
 function checkIfStringIsNumber(str) {
   return /^[0-9]+$/.test(str);
 }
+/**
+  * Return Gotenberg service connection string
+  * @function
+  * @name getGotenbergConnection
+  * @returns {Array}  returns gotenberg server connection.  
+*/
+
+function getGotenbergConnection() {
+
+  let options = {
+    method: "POST",
+    uri: process.env.GOTENBERG_URL + "/forms/chromium/convert/html",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    resolveWithFullResponse: true,
+    encoding: null,
+    json: true,
+    formData: ""
+  }
+
+  return options;
+}
 
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
@@ -463,5 +486,6 @@ module.exports = {
   arrayIdsTobjectIdsNew: arrayIdsTobjectIdsNew,
   getEndDate: getEndDate,
   getStartDate: getStartDate,
-  checkIfValidUUID:checkIfValidUUID
+  checkIfValidUUID:checkIfValidUUID,
+  getGotenbergConnection:getGotenbergConnection
 };

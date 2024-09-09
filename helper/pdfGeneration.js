@@ -1,5 +1,5 @@
 const fs = require('fs');
-const uuidv4 = require('uuid');
+const { v1: uuidv4 } = require('uuid');
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const width = 800; //px
 const height = 450; //px
@@ -9,8 +9,10 @@ const ejs = require('ejs');
 const path = require('path');
 const rimraf = require("rimraf");
 const request = require("request");
-const filesHelper = require('../common/files_helper');
-
+const filesHelpers = require(MODULES_BASE_PATH + '/files/helper')
+const cloudStorage = process.env.CLOUD_STORAGE_PROVIDER
+const bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
+const bucktType = process.env.CLOUD_STORAGE_BUCKET_TYPE
 
 // PDF generation function for entity report
 exports.pdfGeneration = async function pdfGeneration(instaRes) {
@@ -262,8 +264,13 @@ exports.pdfGeneration = async function pdfGeneration(instaRes) {
                                                             else {
                                                                 let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
 
+                                                                console.log(uploadFileResponse,'uploadFileResponse');
+                                                                console.log(stopppp);
+
                                                                 if (uploadFileResponse.success) {
                                                                     let pdfDownloadableUrl = await getDownloadableUrl(uploadFileResponse.data);
+
+                                                                    console.log(pdfDownloadableUrl,'pdfDownloadableUrl')
 
                                                                     if (pdfDownloadableUrl.success && pdfDownloadableUrl.data.result && Object.keys(pdfDownloadableUrl.data.result).length > 0) {
 
@@ -293,23 +300,23 @@ exports.pdfGeneration = async function pdfGeneration(instaRes) {
                                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -568,23 +575,23 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
                                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -782,23 +789,23 @@ exports.instanceObservationScorePdfGeneration = async function instanceObservati
                                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -969,23 +976,23 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(assessm
                                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -1250,23 +1257,23 @@ exports.assessmentAgainPdfReport = async function (assessmentResponse) {
                                                                         });
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -1522,23 +1529,23 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData) {
                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                         return resolve({
-                                                            status: filesHelper.status_success,
-                                                            message: filesHelper.pdf_report_generated,
+                                                            status: messageConstants.common.status_success,
+                                                            message: messageConstants.common.pdf_report_generated,
                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                         });
                                                     }
                                                     else {
                                                         return resolve({
-                                                            status: filesHelper.status_failure,
-                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                            status: messageConstants.common.status_failure,
+                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                             pdfUrl: ""
                                                         })
                                                     }
                                                 }
                                                 else {
                                                     return resolve({
-                                                        status: filesHelper.status_failure,
-                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                        status: messageConstants.common.status_failure,
+                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                         pdfUrl: ""
                                                     })
                                                 }
@@ -1693,23 +1700,23 @@ exports.instanceCriteriaReportPdfGeneration = async function (instanceResponse) 
                                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -1906,23 +1913,23 @@ exports.entityCriteriaPdfReportGeneration = async function (responseData) {
                                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -2110,23 +2117,23 @@ exports.instanceScoreCriteriaPdfGeneration = async function (observationResp, ob
                                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                                         return resolve({
-                                                                            status: filesHelper.status_success,
-                                                                            message: filesHelper.pdf_report_generated,
+                                                                            status: messageConstants.common.status_success,
+                                                                            message: messageConstants.common.pdf_report_generated,
                                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                                         });
                                                                     }
                                                                     else {
                                                                         return resolve({
-                                                                            status: filesHelper.status_failure,
-                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                            status: messageConstants.common.status_failure,
+                                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                             pdfUrl: ""
                                                                         })
                                                                     }
                                                                 }
                                                                 else {
                                                                     return resolve({
-                                                                        status: filesHelper.status_failure,
-                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                                        status: messageConstants.common.status_failure,
+                                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                                         pdfUrl: ""
                                                                     })
                                                                 }
@@ -2416,23 +2423,23 @@ exports.unnatiEntityReportPdfGeneration = async function (entityReportData) {
                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                         return resolve({
-                                                            status: filesHelper.status_success,
-                                                            message: filesHelper.pdf_report_generated,
+                                                            status: messageConstants.common.status_success,
+                                                            message: messageConstants.common.pdf_report_generated,
                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                         });
                                                     }
                                                     else {
                                                         return resolve({
-                                                            status: filesHelper.status_failure,
-                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                            status: messageConstants.common.status_failure,
+                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                             pdfUrl: ""
                                                         })
                                                     }
                                                 }
                                                 else {
                                                     return resolve({
-                                                        status: filesHelper.status_failure,
-                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                        status: messageConstants.common.status_failure,
+                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                         pdfUrl: ""
                                                     })
                                                 }
@@ -2763,30 +2770,69 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
      
      try {
  
-         let getSignedUrl = await kendraHelper.getPreSignedUrl
-         (
-             fileName
-         );
+        let getSignedUrl = await filesHelpers.preSignedUrls(
+            [fileName],
+            bucketName,
+            cloudStorage,
+            folderPath,
+            parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS), //expireIn PARAMS
+            '' //permission PARAMS
+        )
+         
+
+        require('fs').writeFileSync('getSignedUrl.json',JSON.stringify(getSignedUrl))
+        console.log(getSignedUrl,'getSignedUrl')
+
+
+        //  let getSignedUrl = await kendraHelper.getPreSignedUrl
+        //  (
+        //      fileName
+        //  );
         
          if (getSignedUrl.result && Object.keys(getSignedUrl.result).length > 0) {
              
-             let fileUploadUrl = getSignedUrl.result[Object.keys(getSignedUrl.result)[0]].files[0].url;
+             let fileUploadUrl = getSignedUrl.result[0].url;
              let fileData = fs.readFileSync(folderPath + "/" + fileName);
-             
+             console.log(folderPath + "/" + fileName,'filename')
+             console.log(fileData,'fileData')
              try { 
-                 await request({
+               let res =  await request({
                    url: fileUploadUrl,
                    method: 'put',
                    headers: {
-                       "x-ms-blob-type" : getSignedUrl.result[Object.keys(getSignedUrl.result)[0]].files[0].cloudStorage == filesHelper.azure ? "BlockBlob" : null,
+                       "x-ms-blob-type" : process.env.CLOUD_STORAGE_PROVIDER == messageConstants.common.azure ? "BlockBlob" : null,
                        "Content-Type": "multipart/form-data"
                      },
                    body: fileData
                  })
-                 
+
+
+                 var options = {
+                    'method': 'PUT',
+                    'url': fileUploadUrl,
+                    'headers': {
+                      'Content-Type': 'multipart/form-data'
+                    },
+                    body:fileData
+                  
+                  };
+                  await request(options, function (error, response) {
+                    if (error) throw new Error(error);
+                    console.log(response,'response')
+                    console.log(response.body);
+                  })
+
+                 require('fs').writeFileSync('response.json',JSON.stringify(res));
+
+                 if (res.statusCode >= 200 && res.statusCode < 300) {
+                    console.log('File uploaded successfully');
+                  } else {
+                    console.error(`File upload failed with status code: ${res.statusCode}`);
+                  }
+
                  return resolve({
                      success: true,
-                     data: getSignedUrl.result[Object.keys(getSignedUrl.result)[0]].files[0].payload.sourcePath
+                     data: getSignedUrl.result[0].payload.sourcePath
                  })
                  
              } catch (e) {
@@ -2815,6 +2861,15 @@ const getDownloadableUrl = async function (filePath) {
  
          try {
  
+            let downloadableUrl = await filesHelpers.getDownloadableUrl(
+                [filePath],
+                bucketName,
+                cloudStorage,
+                parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
+            )
+
+            console.log(downloadableUrl,'downloadableUrl')
+
              let response = await kendraHelper.getDownloadableUrl
              (
                  filePath
@@ -2971,24 +3026,24 @@ exports.questionResponseReportPdf = async function ( dataObj ) {
                                                             rimraf(imgPath, function () { console.log("done"); });
 
                                                             return resolve({
-                                                                status: filesHelper.status_success,
-                                                                message: filesHelper.pdf_report_generated,
+                                                                status: messageConstants.common.status_success,
+                                                                message: messageConstants.common.pdf_report_generated,
                                                                 pdfUrl: pdfDownloadableUrl.data.result.url
                                                             });
                                                         }
                                                         else {
                                                             
                                                             return resolve({
-                                                                status: filesHelper.status_failure,
-                                                                message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                                status: messageConstants.common.status_failure,
+                                                                message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                                 pdfUrl: ""
                                                             })
                                                         }
                                                     }
                                                     else {
                                                         return resolve({
-                                                            status: filesHelper.status_failure,
-                                                            message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                            status: messageConstants.common.status_failure,
+                                                            message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                             pdfUrl: ""
                                                         })
                                                     }
@@ -3231,23 +3286,23 @@ exports.coreStatsReportGeneration = async function (overview) {
                                                         rimraf(imgPath,function () { console.log("done")});
 
                                                         return resolve({
-                                                            status: filesHelper.status_success,
-                                                            message: filesHelper.pdf_report_generated,
+                                                            status: messageConstants.common.status_success,
+                                                            message: messageConstants.common.pdf_report_generated,
                                                             pdfUrl: pdfDownloadableUrl.data.result.url
                                                         });
                                                     }
                                                     else {
                                                         return resolve({
-                                                            status: filesHelper.status_failure,
-                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : filesHelper.could_not_generate_pdf,
+                                                            status: messageConstants.common.status_failure,
+                                                            message: pdfDownloadableUrl.message ? pdfDownloadableUrl.message : messageConstants.common.could_not_generate_pdf,
                                                             pdfUrl: ""
                                                         })
                                                     }
                                                 }
                                                 else {
                                                     return resolve({
-                                                        status: filesHelper.status_failure,
-                                                        message: uploadFileResponse.message ? uploadFileResponse.message : filesHelper.could_not_generate_pdf,
+                                                        status: messageConstants.common.status_failure,
+                                                        message: uploadFileResponse.message ? uploadFileResponse.message : messageConstants.common.could_not_generate_pdf,
                                                         pdfUrl: ""
                                                     })
                                                 }

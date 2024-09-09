@@ -87,4 +87,9 @@ module.exports = {
   PRIVATE: 'private',
 	WRITE_PERMISSION: 'w',
 	READ_PERMISSION: 'r',
+  pdf_report_generated : "Pdf report generated successfully",
+  could_not_generate_pdf : "Could not generate pdf report",
+  status_failure:'failure',
+  status_success:'success',
+  azure: "AZURE"
 };
