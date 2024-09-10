@@ -265,7 +265,10 @@ let enviromentVariables = {
     optional: true,
     default: '+05:30',
   },
-
+  GOTENBERG_URL : {
+    "message" : "Required",
+    "optional" : false
+  },
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
   //   message: 'ON/OFF',
   //   optional: false,

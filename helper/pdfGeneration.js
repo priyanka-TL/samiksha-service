@@ -269,7 +269,7 @@ exports.pdfGeneration = async function pdfGeneration(instaRes) {
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
-                                                                    message: messageConstants.common.pdf_report_generated,
+                                                                    message: messageConstants.apiResponses.pdf_report_generated,
                                                                     pdfUrl:uploadFileResponse.getDownloadableUrl
                                                                 })
                                                             }
@@ -502,7 +502,7 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
-                                                                    message: messageConstants.common.pdf_report_generated,
+                                                                    message: messageConstants.apiResponses.pdf_report_generated,
                                                                     pdfUrl:uploadFileResponse.getDownloadableUrl
                                                                 })
 
@@ -642,7 +642,7 @@ exports.instanceCriteriaReportPdfGeneration = async function (instanceResponse) 
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
-                                                                    message: messageConstants.common.pdf_report_generated,
+                                                                    message: messageConstants.apiResponses.pdf_report_generated,
                                                                     pdfUrl:uploadFileResponse.getDownloadableUrl
                                                                 })
 
@@ -815,7 +815,7 @@ exports.entityCriteriaPdfReportGeneration = async function (responseData) {
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
-                                                                    message: messageConstants.common.pdf_report_generated,
+                                                                    message: messageConstants.apiResponses.pdf_report_generated,
                                                                     pdfUrl:uploadFileResponse.getDownloadableUrl
                                                                 })
 
