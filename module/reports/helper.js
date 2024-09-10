@@ -141,9 +141,11 @@ module.exports = class ReportsHelper {
 
     let submissionDocument = submissionDocumentArr[0];
 
-    let solutionDocument = await solutionsQueries.solutionDocuments({
-      _id: submissionDocument.solutionId,
-    });
+    let solutionDocument = await solutionsQueries.solutionDocuments(
+      {
+        _id: submissionDocument.solutionId,
+      }
+    );
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
 
@@ -152,12 +154,11 @@ module.exports = class ReportsHelper {
       entityType: submissionDocument.entityType,
       entityId: entityId,
       entityName: submissionDocument.entityInformation.name,
-      solutionName: solutionDocument[0].name,
+      solutionName:solutionDocument[0].name,
       observationId: observationId,
       programName: programDocument.data.name,
       totalSubmissions: submissionDocumentArr.length,
     };
-    let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
     } else {
@@ -171,12 +172,13 @@ module.exports = class ReportsHelper {
     return responseObject;
   }
   static async instaceObservationReport(req) {
+
     let submissionId = req.body.submissionId;
     let entityType = req.body.entityType;
 
     let queryObject = {
-      _id: submissionId,
-      entityType: entityType,
+      _id:submissionId,
+      entityType:entityType,
       status: 'completed',
     };
 
@@ -184,9 +186,11 @@ module.exports = class ReportsHelper {
 
     let submissionDocument = submissionDocumentArr[0];
 
-    let solutionDocument = await solutionsQueries.solutionDocuments({
-      _id: submissionDocument.solutionId,
-    });
+    let solutionDocument = await solutionsQueries.solutionDocuments(
+      {
+        _id: submissionDocument.solutionId,
+      }
+    );
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
 
@@ -195,12 +199,11 @@ module.exports = class ReportsHelper {
       entityType: submissionDocument.entityType,
       entityId: submissionDocument.entityId,
       entityName: submissionDocument.entityInformation.name,
-      solutionName: solutionDocument[0].name,
+      solutionName:solutionDocument[0].name,
       observationId: submissionDocument.observationId,
       programName: programDocument.data.name,
       totalSubmissions: submissionDocumentArr.length,
     };
-    let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
     } else {
