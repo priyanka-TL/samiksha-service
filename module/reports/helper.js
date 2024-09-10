@@ -160,7 +160,6 @@ module.exports = class ReportsHelper {
     let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
-      console.log(result, 'this is a Rubricresult');
     } else {
       result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(
         submissionDocumentArr,
@@ -204,7 +203,6 @@ module.exports = class ReportsHelper {
     let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
-      console.log(result, 'this is a Rubricresult');
     } else {
       result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
     }
