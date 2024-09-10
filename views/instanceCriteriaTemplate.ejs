@@ -1,0 +1,37 @@
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+  <% var response= data.response; %>
+  <% for (var i=0;i < response.length; i++){ %>
+  <h2 style="margin-left:32px"><%= response[i].criteriaName %></h2>
+  <% for (var j=0;j < response[i].questionArray.length; j++){  %>
+  <% if(response[i].questionArray[j].responseType == 'text' || response[i].questionArray[j].responseType == 'date' || response[i].questionArray[j].responseType == 'number' || response[i].questionArray[j].responseType == 'slider' || response[i].questionArray[j].responseType == 'radio' || response[i].questionArray[j].responseType == 'multiselect'){ %>
+  
+  <div class="container" style="padding:20px;margin:20px">
+    <div style="border: solid 1px rgb(182, 175, 175)">
+      <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%= response[i].questionArray[j].question %>
+      </h3>
+      <% for(var k=0; k < response[i].questionArray[j].answers.length; k++) { %>
+      <div class="row" style="padding: 10px;padding-left:10px">
+        <div class="col-sm-12" style="font-size: 18px;">
+          <%= response[i].questionArray[j].answers[k] %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <% } %>
+
+  <% } %>
+
+  <% } %>
+
+
+</body>
+
+</html>
