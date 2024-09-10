@@ -14,6 +14,9 @@ const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const helperFunc = require('../../helper/chart_data');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
+const pdfHelper = require('../../helper/pdfGeneration');
+const { response } = require('express');
+
 /**
  * ReportsHelper
  * @class
@@ -60,6 +63,12 @@ module.exports = class ReportsHelper {
     });
   }
 
+  /**
+   * Generate a survey submission report
+   * @param {Object} req - The request object
+   * @param {Object} res - The response object
+   * @returns {Promise<Object>} The survey submission report
+   */
   static async surveySubmissionReport(req, res) {
     if (!req.query.submissionId) {
       let response = {
@@ -126,6 +135,11 @@ module.exports = class ReportsHelper {
       };
     }
   }
+  /**
+   * Generate an entity observation report
+   * @param {Object} req - The request object
+   * @returns {Promise<Object>} The entity observation report
+   */
   static async entityObservationReport(req) {
     let entityId = req.body.entityId;
     let observationId = req.body.observationId;
@@ -162,12 +176,29 @@ module.exports = class ReportsHelper {
     let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,true,criteriaWise);
 
     responseObject.reportSections = result;
+
+    if (req.body.pdf && criteriaWise) {
+      let pdfGenerationStatus = await pdfHelper.entityCriteriaPdfReportGeneration(responseObject);
+      return pdfGenerationStatus;
+    }
+
+    if (req.body.pdf) {
+      let pdfGenerationStatus = await pdfHelper.pdfGeneration(responseObject);
+      return pdfGenerationStatus;
+    }
+
     return responseObject;
   }
+  /**
+   * Generate an instance observation report
+   * @param {Object} req - The request object
+   * @returns {Promise<Object>} The instance observation report
+   */
   static async instaceObservationReport(req) {
 
     let submissionId = req.body.submissionId;
     let entityType = req.body.entityType;
+    let criteriaWise = req.body.criteriaWise;
 
     let queryObject = {
       _id:submissionId,
@@ -198,9 +229,26 @@ module.exports = class ReportsHelper {
       totalSubmissions: submissionDocumentArr.length,
     };
 
-
-    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
+    let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(
+      submissionDocumentArr,
+      true,
+      criteriaWise
+    );
     responseObject.reportSections = result;
+
+    if (req.body.pdf && criteriaWise) {
+      let pdfGenerationStatus = await pdfHelper.instanceCriteriaReportPdfGeneration({
+        ...responseObject,
+        response: result,
+      });
+      return pdfGenerationStatus;
+    }
+
+    if (req.body.pdf) {
+      let pdfGenerationStatus = await pdfHelper.instanceObservationPdfGeneration(responseObject);
+      return pdfGenerationStatus;
+    }
+
     return responseObject;
   }
 };

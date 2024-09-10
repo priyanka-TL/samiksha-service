@@ -402,4 +402,6 @@ module.exports = {
   CLOUD_SERVICE_SUCCESS_MESSAGE: "Url's generated successfully",
   USER_ROLES_NOT_FOUND: 'No user roles found',
   OBSERVATION_REPORT_SUCCESS: 'Observation Report generated successfully',
+  pdf_report_generated : "Pdf report generated successfully",
+  could_not_generate_pdf : "Could not generate pdf report"
 };
