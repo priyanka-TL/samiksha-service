@@ -266,7 +266,7 @@ let enviromentVariables = {
     default: '+05:30',
   },
   GOTENBERG_URL : {
-    "message" : "Required",
+    "message" : "Gotenberg url is Required",
     "optional" : false
   },
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
