@@ -55,14 +55,13 @@ module.exports = class ObservationSubmissionsHelper {
           });
         }
 
-        let submissionDocuments;
-
-        if (sortedData !== 'all') {
+        let submissionDocuments; 
+        if (sortedData !== 'all') { 
           submissionDocuments = await database.models.observationSubmissions
             .find(queryObject, projection)
             .sort(sortedData)
             .lean();
-        } else {
+        } else { 
           submissionDocuments = await database.models.observationSubmissions.find(queryObject, projection).lean();
         }
 
