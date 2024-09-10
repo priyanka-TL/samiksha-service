@@ -12,7 +12,6 @@ const request = require("request");
 const filesHelpers = require(MODULES_BASE_PATH + '/files/helper')
 const cloudStorage = process.env.CLOUD_STORAGE_PROVIDER
 const bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
-const bucktType = process.env.CLOUD_STORAGE_BUCKET_TYPE
 
 // PDF generation function for entity report
 exports.pdfGeneration = async function pdfGeneration(instaRes) {
@@ -263,9 +262,12 @@ exports.pdfGeneration = async function pdfGeneration(instaRes) {
                                                             }
                                                             else {
                                                                 let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
-
-                                                                console.log(uploadFileResponse,'uploadFileResponse');
-                                                                console.log(stopppp);
+                                                                console.log(uploadFileResponse)
+                                                                return resolve({
+                                                                    status: messageConstants.common.status_success,
+                                                                    message: messageConstants.common.pdf_report_generated,
+                                                                    pdfUrl:uploadFileResponse.getDownloadableUrl
+                                                                })
 
                                                                 if (uploadFileResponse.success) {
                                                                     let pdfDownloadableUrl = await getDownloadableUrl(uploadFileResponse.data);
@@ -543,6 +545,13 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
                                                             else {
 
                                                                 let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
+                                                                console.log(uploadFileResponse)
+                                                                return resolve({
+                                                                    status: messageConstants.common.status_success,
+                                                                    message: messageConstants.common.pdf_report_generated,
+                                                                    pdfUrl:uploadFileResponse.getDownloadableUrl
+                                                                })
+
                                                                
                                                                 if (uploadFileResponse.success) {
                                                                     let pdfDownloadableUrl = await getDownloadableUrl(uploadFileResponse.data);
@@ -2743,6 +2752,7 @@ const createChart = async function (chartData, imgPath) {
                 let chartImage = "chartPngImage_" + uuidv4() + "_.png";
 
                 let imgFilePath = imgPath + "/" + chartImage;
+                console.log(data.options,'data.options')
                 let imageBuffer = await chartJSNodeCanvas.renderToBuffer(data.options);
                 fs.writeFileSync(imgFilePath, imageBuffer);
 formData
@@ -2769,43 +2779,23 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
     return new Promise( async function( resolve, reject) {
      
      try {
- 
+        
+        console.log(fileName, folderPath,'fileName, folderPath')
         let getSignedUrl = await filesHelpers.preSignedUrls(
             [fileName],
             bucketName,
             cloudStorage,
-            folderPath,
+            'temporary/files/report/',
             parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS), //expireIn PARAMS
             '' //permission PARAMS
         )
          
-
-        require('fs').writeFileSync('getSignedUrl.json',JSON.stringify(getSignedUrl))
-        console.log(getSignedUrl,'getSignedUrl')
-
-
-        //  let getSignedUrl = await kendraHelper.getPreSignedUrl
-        //  (
-        //      fileName
-        //  );
-        
          if (getSignedUrl.result && Object.keys(getSignedUrl.result).length > 0) {
              
              let fileUploadUrl = getSignedUrl.result[0].url;
              let fileData = fs.readFileSync(folderPath + "/" + fileName);
-             console.log(folderPath + "/" + fileName,'filename')
-             console.log(fileData,'fileData')
-             try { 
-               let res =  await request({
-                   url: fileUploadUrl,
-                   method: 'put',
-                   headers: {
-                       "x-ms-blob-type" : process.env.CLOUD_STORAGE_PROVIDER == messageConstants.common.azure ? "BlockBlob" : null,
-                       "Content-Type": "multipart/form-data"
-                     },
-                   body: fileData
-                 })
 
+             try { 
 
                  var options = {
                     'method': 'PUT',
@@ -2816,24 +2806,21 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
                     body:fileData
                   
                   };
-                  await request(options, function (error, response) {
-                    if (error) throw new Error(error);
-                    console.log(response,'response')
-                    console.log(response.body);
+                
+                request(options, function (error, response) {
+                    if (error) {
+                        return resolve({
+                            success: false
+                        })
+                    };
+
+                    return resolve({
+                        success: true,
+                        data: getSignedUrl.result[0].payload.sourcePath,
+                        getDownloadableUrl:getSignedUrl.result[0].getDownloadableUrl[0]
+                    })
+
                   })
-
-                 require('fs').writeFileSync('response.json',JSON.stringify(res));
-
-                 if (res.statusCode >= 200 && res.statusCode < 300) {
-                    console.log('File uploaded successfully');
-                  } else {
-                    console.error(`File upload failed with status code: ${res.statusCode}`);
-                  }
-
-                 return resolve({
-                     success: true,
-                     data: getSignedUrl.result[0].payload.sourcePath
-                 })
                  
              } catch (e) {
                  console.log(e)

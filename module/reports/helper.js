@@ -164,6 +164,16 @@ module.exports = class ReportsHelper {
     let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,true,criteriaWise);
 
     responseObject.reportSections = result;
+
+    if(req.body.pdf){
+
+      let pdfGenerationStatus = await pdfHelper.pdfGeneration(responseObject);
+
+      console.log(pdfGenerationStatus,'pdfGenerationStatus')
+
+      return pdfGenerationStatus;
+    }
+
     return responseObject;
   }
   static async instaceObservationReport(req) {
@@ -204,12 +214,14 @@ module.exports = class ReportsHelper {
     let result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
     responseObject.reportSections = result;
 
+
     if(req.body.pdf){
 
-      let pdfGenerationStatus = await pdfHelper.pdfGeneration(responseObject);
+      let pdfGenerationStatus = await pdfHelper.instanceObservationPdfGeneration(responseObject);
 
       console.log(pdfGenerationStatus,'pdfGenerationStatus')
 
+      return pdfGenerationStatus;
     }
 
     return responseObject;

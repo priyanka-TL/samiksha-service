@@ -3,6 +3,7 @@ const filesCloudHelper = require(MODULES_BASE_PATH + '/cloud-services/files/help
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 
+const path = require('path');
 /**
  * Generates a submission report without using Druid.
  * This function processes survey data, removes specific keys from answers,
@@ -34,8 +35,9 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
     if (fileName && fileName.length > 0) {
       for (let fileObj of fileName) {
         let sourcePath = await filesCloudHelper.getDownloadableUrl([fileObj.sourcePath]);
+        let extension = path.extname(fileObj.sourcePath).split('.').join('');
 
-        evidences.push(sourcePath.result[0]);
+        evidences.push({...sourcePath.result[0],extension});
       }
     }
 
@@ -86,6 +88,7 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         optionsAvailableForUser: answerInstanceObj.options ? answerInstanceObj.options : undefined,
         instanceQuestions: valueArr,
         evidences,
+        evidence_count:evidences.length,
         instanceIdentifier,
       };
     } else {
@@ -103,6 +106,7 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         criteriaId: answerInstanceObj.criteriaId,
         optionsAvailableForUser: answerInstanceObj.options ? answerInstanceObj.options : undefined,
         evidences,
+        evidence_count:evidences.length
       };
     }
 
@@ -530,12 +534,24 @@ function groupDataByEntityId(array, name) {
         ],
       },
       options: {
-        responsive: true,
-        legend: {
-          position: 'bottom',
-          align: 'start',
+        tooltips: {
+            enabled: false
         },
-      },
+        plugins: {
+            datalabels: {
+                formatter: (value, ctx) => {
+                    let sum = 0;
+                    let dataArr = ctx.chart.data.datasets[0].data;
+                    dataArr.map(data => {
+                        sum += data;
+                    });
+                    let percentage = (value*100 / sum).toFixed(2)+"%";
+                    return percentage;
+                },
+                color: '#fff',
+            }
+        }
+    },
     };
 
     return chartObj;
