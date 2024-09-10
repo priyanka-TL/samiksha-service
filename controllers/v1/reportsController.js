@@ -3081,6 +3081,15 @@ submissionReport = async function (req) {
  * @throws {Error} If there's an internal server error during the process.
  */
 /*
+ * Sample Request:
+ {
+    "submissionId":"602a15ea1e72d1287475c66b",
+    "observation":true,
+    "entityType":"district",
+    "pdf":true,
+    "criteriaWise":true
+ }
+ * Sample Response:
 {
   "message": "Observation Report generated successfully",
   "status": 200,
