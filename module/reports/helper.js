@@ -159,6 +159,7 @@ module.exports = class ReportsHelper {
       programName: programDocument.data.name,
       totalSubmissions: submissionDocumentArr.length,
     };
+    let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
     } else {
@@ -204,6 +205,7 @@ module.exports = class ReportsHelper {
       programName: programDocument.data.name,
       totalSubmissions: submissionDocumentArr.length,
     };
+    let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
     } else {
