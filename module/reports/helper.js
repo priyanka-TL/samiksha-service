@@ -222,10 +222,10 @@ module.exports = class ReportsHelper {
       result: true,
       entityType: submissionDocument.entityType,
       entityId: submissionDocument.entityId,
-      entityName: submissionDocument.entityInformation.name,
+      entityName: submissionDocument.entityInformation?.name,
       solutionName:solutionDocument[0].name,
       observationId: submissionDocument.observationId,
-      programName: programDocument.data.name,
+      programName: programDocument.data?.name,
       totalSubmissions: submissionDocumentArr.length,
     };
 
