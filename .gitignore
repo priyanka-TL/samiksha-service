@@ -65,3 +65,4 @@ public/assessment/web2
 generics/helpers/credentials/*
 
 public/reports/*
+tmp/*
