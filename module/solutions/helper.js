@@ -598,7 +598,7 @@ module.exports = class SolutionsHelper {
           matchQuery['programId'] = ObjectId(programId);
         }
 
-        matchQuery['startDate'] = { $lte: new Date() };
+        //matchQuery['startDate'] = { $lte: new Date() };
         //listing the solution based on type and query
         let targetedSolutions = await this.list(type, subType, matchQuery, pageNo, pageSize, searchText, [
           'name',

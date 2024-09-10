@@ -57,6 +57,22 @@ module.exports = (req) => {
     entityList: function () {
       req.checkParams('_id').exists().withMessage('required solution id');
     },
+    fetch: function () {
+  if (req.body.submissionId && req.body.observation === true) {
+    req.checkBody('submissionId').exists().withMessage('submissionId is required');
+        req.checkBody('observation')
+      .custom(value => value === true || value === 'true')
+      .withMessage('observation must be true');
+  
+  }
+  else if (req.body.entityId && req.body.observationId && req.body.observation === true) {
+    req.checkBody('entityId').exists().withMessage('entityId is required');
+    req.checkBody('observationId').exists().withMessage('observationId is required');
+        req.checkBody('observation')
+      .custom(value => value === true || value === 'true')
+      .withMessage('observation must be true');
+  }
+    }
   };
 
   if (reportValidator[req.params.method]) reportValidator[req.params.method]();
