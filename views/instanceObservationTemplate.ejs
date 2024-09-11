@@ -1,0 +1,100 @@
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+  <% var orderData= data.orderData; %>
+  <% for (var r=0;r < orderData.length; r++){  %>
+  <% if(orderData[r].responseType == 'text' || orderData[r].responseType == 'date' || orderData[r].responseType == 'number' || orderData[r].responseType == 'slider' || orderData[r].responseType == 'radio' || orderData[r].responseType == 'multiselect'){ %>
+
+  <div class="container" style="padding:20px;margin:20px">
+    <div style="border: solid 1px rgb(182, 175, 175)">
+      <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%=  orderData[r].question %>
+      </h3>
+      <% for(var j=0; j < orderData[r].answers.length; j++) { %>
+      <div class="row" style="padding: 10px;padding-left:10px">
+        <div class="col-sm-12" style="font-size: 18px;">
+          <%= orderData[r].answers[j] %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <%  } else if(orderData[r].responseType == 'matrix'){ %>
+
+  <% for(var i=0; i< data.matrixRes.length; i++){ %>
+      
+      <% if(data.matrixRes[i].order == orderData[r].order){ %>
+
+        <div class="container" style="padding:20px;margin:10px">
+            <div style="border: solid 1px rgb(182, 175, 175)">
+              <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%=  orderData[r].question %>
+  </h3>
+  </div>
+  </div>
+
+  <% var matrixResponse = data.matrixRes[i].data %>
+
+
+  <% for(var k=0; k < matrixResponse.length; k++) { %>
+
+  <% if(matrixResponse[k].responseType == 'text' || matrixResponse[k].responseType == 'date' || matrixResponse[k].responseType == 'number' || matrixResponse[k].responseType == 'slider'){ %>
+
+  <div class="container" style="padding:20px;margin:20px">
+    <div style="border: solid 1px rgb(182, 175, 175)">
+      <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px">
+        <%=  matrixResponse[k].question %></h3>
+      <% for(var m=0; m< matrixResponse[k].answers.length; m++) { %>
+      <div class="row" style="padding: 10px;padding-left:10px">
+        <div class="col-sm-12" style="font-size: 18px;">
+          <%= matrixResponse[k].answers[m] %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <% } else if(matrixResponse[k][0].options.responseType == 'radio' || matrixResponse[k][0].options.responseType == 'multiselect' ){ %>
+
+
+  <div class="container" style="padding:20px;margin:20px">
+    <div style="border: solid 1px rgb(182, 175, 175)">
+      <!-- <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%=  matrixResponse[k][0].options.question %></h3> -->
+
+      <div>
+        <img style="width:70%" src="<%= matrixResponse[k][0].options.filename%>" />
+      </div>
+
+      <h5 style="padding-left:10px">Responses</h5>
+      <% for(var j=0; j < matrixResponse[k][0].options.answers.length; j++) { %>
+      <div class="row" style="padding: 10px;padding-left:10px">
+        <div class="col-sm-12" style="font-size: 18px;">
+          <p><%= matrixResponse[k][0].options.answers[j] %></p>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+
+
+  <%  } %>
+
+  <% } %>
+
+
+  <% } %>
+
+  <% } %>
+
+  <% } %>
+
+  <% } %>
+
+
+</body>
+
+</html>

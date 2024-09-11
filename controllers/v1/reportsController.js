@@ -30,43 +30,6 @@ module.exports = class Reports {
     return 'submissions';
   }
   
- async fetch  (req, res) {
-
-  try {
-     
-      //  submission observation report
-      if (req.body.submissionId && req.body.observation == true  ) {
-          console.log({instaceObservationReport: 'executed'});
-         let response = await reportsHelper.instaceObservationReport(req, res);
-         res.send(response);
-
-      } else if (req.body.entityId && req.body.observationId && req.body.observation == true) {    // entity observation report
-          let response = await reportsHelper.entityObservationReport(req, res);
-          res.send(response);
-          console.log("Response:",{ resp: response });
-
-      } else if ( req.body.survey == true ) {
-         let response = await reportsHelper.surveyReport(req, res);
-         res.send(response);
-         console.log("Response:",{ resp: response });
-
-      } else {
-          console.log("Response:",{ resp: "Report can't be generated for the given invalid request" });
-          res.send({
-              result: false,
-              message: "Report can't be generated for the given invalid request"
-          });
-      }
-  }
-  catch (err) {
-      res.status(500);
-      let response = {
-          result: false,
-          message: err.message
-      }
-      res.send(response);
-  }
-};
   /**
    * @api {get} /assessment/api/v1/reports/status/:solutionExternalId Fetch submission reports for entity
    * @apiVersion 1.0.0
@@ -3117,6 +3080,58 @@ submissionReport = async function (req) {
  * @returns {Promise<Object>} A promise that resolves to an object containing the report data or an error message.
  * @throws {Error} If there's an internal server error during the process.
  */
+/*
+ * Sample Request:
+ {
+    "submissionId":"602a15ea1e72d1287475c66b",
+    "observation":true,
+    "entityType":"district",
+    "pdf":true,
+    "criteriaWise":true
+ }
+ * Sample Response:
+{
+  "message": "Observation Report generated successfully",
+  "status": 200,
+  "result": {
+      "result": true,
+      "entityType": "district",
+      "entityId": "a87aa157-0d73-4aa3-9623-cb2f8a3ecf32",
+      "entityName": "AGRA",
+      "solutionName": "Enrollment challenges in DIKSHA Courses-1613135097520",
+      "observationId": "60267cf9262f8023e11072a3",
+      "programName": "School development Program",
+      "totalSubmissions": 1,
+      "reportSections": [
+          {
+              "qid": "60267cf9262f8023e1107292",
+              "order": "Q1_1612422856598-1613135097685",
+              "question": "Enter the date of observation",
+              "responseType": "date",
+              "answers": [
+                  "2021-02-15T17:39:18.865+05:30"
+              ],
+              "chart": {},
+              "instanceQuestions": [],
+              "options": [],
+              "criteriaName": "Criteria 1",
+              "criteriaId": "60267cf9262f8023e11072a0",
+              "evidences": [
+                  {
+                      "name": "tmp_IMG-20210131-WA00071724287027747939105.jpg",
+                      "sourcePath": "601793cd285b99334d2d9617/e85060c8-a76b-4e79-a36b-95836491baf9/tmp_IMG-20210131-WA00071724287027747939105.jpg",
+                      "fileUrl": {
+                          "filePath": "601793cd285b99334d2d9617/e85060c8-a76b-4e79-a36b-95836491baf9/tmp_IMG-20210131-WA00071724287027747939105.jpg",
+                          "url": "https://storage.googleapis.com/mentoring-dev-storage-private/601793cd285b99334d2d9617/e85060c8-a76b-4e79-a36b-95836491baf9/tmp_IMG-20210131-WA00071724287027747939105.jpg?GoogleAccessId=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com&Expires=1725978364&Signature=ICtClNBhEmGRB01zJU6nbDo3vc81FHdIYxIDDllPFA2sK42GL2ioU6UsieGTBbS1plFDV46%2FOIeBZupGx9UTLJ8yQHmOLJWlj8NyWU9QaS1UqsF6KQPoSOevN%2Fn6UXV5KQkRc8QruyLpKS%2BIoermhz%2BkWT%2BQSvoUwS6%2BGvL2iYCVzMA%2FVJfoIZPeL6a6Xv0JDAUpJQgF%2BNyCjSMO7tBh7UNmDXtsAxAY3G%2BhJ%2BjoehaPANT1IfE%2FR9dYbOVmwG1%2BNiDWNGhA4%2BEY1TU98sL4f7tOlr8nnjCSnvc2suSME%2B1wB1uQxVESGZGbmo87s2FXm6glJrKnPkVbgf%2Fcq41arA%3D%3D"
+                      },
+                      "submissionId": "602a15ea1e72d1287475c66b"
+                  }
+              ]
+          },]
+        }
+      }
+
+      */
 fetch = async function (req) {
   return new Promise(async function (resolve, reject) {
     try {
@@ -3125,11 +3140,11 @@ fetch = async function (req) {
         if (req.body.submissionId && req.body.observation == true ) {
 
          let response = await reportsHelper.instaceObservationReport(req);
-         resolve({message:response});
+         resolve({message:messageConstants.apiResponses.OBSERVATION_REPORT_SUCCESS,result:response});
 
       } else if (req.body.entityId && req.body.observationId && req.body.observation == true) {    // entity observation report
           let response = await reportsHelper.entityObservationReport(req);
-          resolve({message:response});
+          resolve({message:messageConstants.apiResponses.OBSERVATION_REPORT_SUCCESS,result:response});
 
       } else {
           console.log("Response:",{ resp: "Report can't be generated for the given invalid request" });
