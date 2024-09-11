@@ -446,12 +446,13 @@ function getGotenbergConnection() {
     method: "POST",
     uri: process.env.GOTENBERG_URL + "/forms/chromium/convert/html",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
+      'Content-Type': 'application/octet-stream',
+  },
     resolveWithFullResponse: true,
     encoding: null,
     json: true,
-    formData: ""
+    formData: "",
+  
   }
 
   return options;

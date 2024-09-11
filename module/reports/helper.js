@@ -15,7 +15,6 @@ const helperFunc = require('../../helper/chart_data');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
 const pdfHelper = require('../../helper/pdfGeneration');
-const { response } = require('express');
 
 /**
  * ReportsHelper
@@ -191,7 +190,13 @@ module.exports = class ReportsHelper {
     }
 
     if (req.body.pdf) {
-      let pdfGenerationStatus = await pdfHelper.pdfGeneration(responseObject);
+      let pdfGenerationStatus
+      if(req.body.scores){
+         pdfGenerationStatus = await pdfHelper.assessmentPdfGeneration(responseObject)
+
+      }else{
+       pdfGenerationStatus = await pdfHelper.pdfGeneration(responseObject);
+      }
       return pdfGenerationStatus;
     }
 
@@ -255,7 +260,7 @@ module.exports = class ReportsHelper {
     if (req.body.pdf) {
       let pdfGenerationStatus
       if(req.body.scores){
-         pdfGenerationStatus = await pdfHelper.assessmentPdfGeneration(responseObject)
+         pdfGenerationStatus = await pdfHelper.assessmentPdfGeneration(responseObject,submissionId)
 
       }else{
        pdfGenerationStatus = await pdfHelper.instanceObservationPdfGeneration(responseObject);

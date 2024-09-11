@@ -848,6 +848,7 @@ async function generateExpansionChartObject(chartObjectsArray) {
   chartObjectsArray.forEach((chartObject, assessmentIndex) => {
     // Loop over each themes Array 
     chartObject.themes.forEach((eachDomain) => {
+
       if (!domainsAndCriteriaScores[eachDomain.name]) {
         domainsAndCriteriaScores[eachDomain.name] = {
           domainName: eachDomain.name,

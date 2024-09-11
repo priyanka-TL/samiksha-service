@@ -1079,9 +1079,18 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
  }
 
 
- // ============> PDF generation function for assessment API ======================>
+ // ============> PDF generation function for withRubics  ======================>
+/**
+ * Generate  PDF observationwith Rubrics.
+ * @method
+ * @name assessmentPdfGeneration
+ * @param {Array} assessmentRes          - Conatins data of chartObject.
+ * @param {String} submissionId          - Id of the observation submission
+ * @returns {Object}                     -  contain PDF url
+ */
 exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
-    assessmentRes
+    assessmentRes,
+    submissionId=""
   ) {
     return new Promise(async function (resolve, reject) {
       let currentTempFolder =
@@ -1093,7 +1102,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
       let imgPath = __dirname + "/../" + currentTempFolder;
   
       try {
-        let assessmentChartData = await getAssessmentChartData(assessmentRes);
+        let assessmentChartData = await getAssessmentChartData(assessmentRes,submissionId);
         let chartData = await getChartObject([
           assessmentChartData.reportSections[0],
         ]);
@@ -1107,14 +1116,14 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
           imgPath + "/style.css"
         );
   
-        // let headerFile = await copyBootStrapFile(__dirname + '/../views/header.html', imgPath + '/header.html');
+        let headerFile = await copyBootStrapFile(__dirname + '/../views/header.html', imgPath + '/header.html');
         let footerFile = await copyBootStrapFile(
           __dirname + "/../views/footer.html",
           imgPath + "/footer.html"
         );
   
         let FormData = [];
-  
+       // create horizontal chart for PDF
         let formDataAssessment = await createChart(chartData, imgPath);
   
         FormData.push(...formDataAssessment);
@@ -1252,7 +1261,15 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
     });
   };
 
-const getAssessmentChartData = async function (assessmentData) {
+  /**
+ * Generate  dataSets and dataLables for observationwith Rubrics horizontal chart.
+ * @method
+ * @name getAssessmentChartData
+ * @param {Array} assessmentData          - Conatins data of chartObject.
+ * @param {String} submissionId          - Id of the observation submission
+ * @returns {Object}                    
+ */
+const getAssessmentChartData = async function (assessmentData,submissionId="") {
     let dataArray = [];
     let j = 0;
   
@@ -1265,14 +1282,13 @@ const getAssessmentChartData = async function (assessmentData) {
         ...dataArray,
         ...assessmentData.reportSections[0].chart.data.datasets[i].data,
       ];
-    }
-    console.log(assessmentData.reportSections[0].domainLevelObject,"this is the type of assessment");
-  
+    }  
     let chartData = await convertChartDataToPercentage(
         assessmentData.reportSections[0].domainLevelObject
       );
-    
+    if(submissionId !== ""){
     assessmentData.reportSections[0].chart.data.datasets = chartData;
+    }
     assessmentData.reportSections[0].chart.options["plugins"] = {
       datalabels: {
         formatter: function (value, data) {
@@ -1286,6 +1302,13 @@ const getAssessmentChartData = async function (assessmentData) {
     return assessmentData;
   };
 
+   /**
+ * Covert datasets Value to percentage for observationwith Rubrics horizontal chart.
+ * @method
+ * @name convertChartDataToPercentage
+ * @param {Array} domainObj            - Conatins data of chartObject.
+ * @returns {Object}                     -  contain expansion chartOptions
+ */
   const convertChartDataToPercentage = async function (domainObj) {
     let dynamicLevelObj = {};
     let domainKeys = Object.keys(domainObj);
@@ -1372,4 +1395,7 @@ const getAssessmentChartData = async function (assessmentData) {
   
     return datasets; // Return the datasets for the chart
   };
+  
+
+
   
