@@ -11,7 +11,7 @@ const request = require("request");
 const filesHelpers = require(MODULES_BASE_PATH + '/files/helper')
 const cloudStorage = process.env.CLOUD_STORAGE_PROVIDER
 const bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
-
+const path = require('path')
 /**
  * Generate a PDF report for entity
  * @param {Object} instaRes - The response object containing report data
@@ -265,7 +265,6 @@ exports.pdfGeneration = async function pdfGeneration(instaRes) {
                                                             }
                                                             else {
                                                                 let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
-                                                                console.log(uploadFileResponse)
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
@@ -498,7 +497,6 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
                                                             else {
 
                                                                 let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
-                                                                console.log(uploadFileResponse)
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
@@ -638,7 +636,6 @@ exports.instanceCriteriaReportPdfGeneration = async function (instanceResponse) 
                                                             else {
 
                                                                 let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
-                                                                console.log(uploadFileResponse)
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
@@ -811,7 +808,6 @@ exports.entityCriteriaPdfReportGeneration = async function (responseData) {
                                                             else {
 
                                                                 let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
-                                                                console.log(uploadFileResponse)
                                                                 rimraf(imgPath,function () { console.log("done")});
                                                                 return resolve({
                                                                     status: messageConstants.common.status_success,
@@ -983,7 +979,6 @@ const createChart = async function (chartData, imgPath) {
                 let chartImage = "chartPngImage_" + uuidv4() + "_.png";
 
                 let imgFilePath = imgPath + "/" + chartImage;
-                console.log(data.options,'data.options')
                 let imageBuffer = await chartJSNodeCanvas.renderToBuffer(data.options);
                 fs.writeFileSync(imgFilePath, imageBuffer);
 formData
@@ -1015,9 +1010,7 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
     return new Promise( async function( resolve, reject) {
      
      try {
-        
-        console.log(fileName, folderPath,'fileName, folderPath')
-        let getSignedUrl = await filesHelpers.preSignedUrls(
+                let getSignedUrl = await filesHelpers.preSignedUrls(
             [fileName],
             bucketName,
             cloudStorage,
@@ -1099,7 +1092,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
         "--" +
         Math.floor(Math.random() * (10000 - 10 + 1) + 10);
   
-      let imgPath = __dirname + "/../" + currentTempFolder;
+      let imgPath =path.resolve( __dirname + "/../" + currentTempFolder);
   
       try {
         let assessmentChartData = await getAssessmentChartData(assessmentRes,submissionId);
@@ -1112,13 +1105,13 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
         }
   
         let bootstrapStream = await copyBootStrapFile(
-          __dirname + "/../public/css/bootstrap.min.css",
+         path.resolve( __dirname + "/../public/css/bootstrap.min.css"),
           imgPath + "/style.css"
         );
   
-        let headerFile = await copyBootStrapFile(__dirname + '/../views/header.html', imgPath + '/header.html');
+        let headerFile = await copyBootStrapFile(path.resolve(__dirname + '/../views/header.ejs'), imgPath + '/header.html');
         let footerFile = await copyBootStrapFile(
-          __dirname + "/../views/footer.html",
+          path.resolve(__dirname + "/../views/footer.html"),
           imgPath + "/footer.html"
         );
   
@@ -1131,7 +1124,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
           assessmentName: "Institutional Assessment Report",
         };
         ejs
-          .renderFile(__dirname + "/../views/assessment_header.ejs", {
+          .renderFile(path.resolve(__dirname + "/../views/assessment_header.ejs"), {
             data: params,
           })
           .then(function (headerHtml) {
@@ -1140,7 +1133,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
               fs.mkdirSync(dir);
             }
             fs.writeFile(
-              dir + "/header.html",
+              path.resolve(dir + "/header.html"),
               headerHtml,
               function (errWr, dataWr) {
                 if (errWr) {
@@ -1149,24 +1142,21 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
                   var obj = {
                     path: formDataAssessment,
                   };
-                  console.log("data:", obj.path[0].options.filename);
-                 console.log("assessmentData:", assessmentRes.reportSections[1]);
                   ejs
                     .renderFile(
-                      __dirname + "/../views/stacked_bar_assessment_template.ejs",
+                      path.resolve(__dirname + "/../views/stacked_bar_assessment_template.ejs"),
                       {
                         data: obj.path[0].options.filename,
                         assessmentData: assessmentRes.reportSections[1],
                       }
                     )
                     .then(function (dataEjsRender) {
-                      console.log("dataEjsRender",imgPath);
                       var dir = imgPath;
                       if (!fs.existsSync(dir)) {
                         fs.mkdirSync(dir);
                       }
                       fs.writeFile(
-                        dir + "/index.html",
+                        path.resolve(dir + "/index.html"),
                         dataEjsRender,
                         function (errWriteFile, dataWriteFile) {
                           if (errWriteFile) {
@@ -1178,25 +1168,25 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
                               files: [],
                             };
                             FormData.push({
-                              value: fs.createReadStream(dir + "/index.html"),
+                              value: fs.createReadStream(path.resolve(dir + "/index.html")),
                               options: {
                                 filename: "index.html",
                               },
                             });
                             FormData.push({
-                              value: fs.createReadStream(dir + "/style.css"),
+                              value: fs.createReadStream(path.resolve(dir + "/style.css")),
                               options: {
                                 filename: "style.css",
                               },
                             });
                             FormData.push({
-                              value: fs.createReadStream(dir + "/header.html"),
+                              value: fs.createReadStream(path.resolve(dir + "/header.html")),
                               options: {
                                 filename: "header.html",
                               },
                             });
                             FormData.push({
-                              value: fs.createReadStream(dir + "/footer.html"),
+                              value: fs.createReadStream(path.resolve(dir + "/footer.html")),
                               options: {
                                 filename: "footer.html",
                               },
@@ -1212,7 +1202,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
                                 if (responseHtmlToPdf.statusCode == 200) {
                                   let pdfFile = uuidv4() + ".pdf";
                                   fs.writeFile(
-                                    dir + "/" + pdfFile,
+                                    path.resolve(dir + "/" + pdfFile),
                                     pdfBuffer,
                                     "binary",
                                     async function (err) {
@@ -1223,7 +1213,6 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
                                           await uploadPdfToCloud(pdfFile, dir);
   
                                         if (uploadFileResponse.success) {
-                                            console.log(uploadFileResponse)
                                             rimraf(imgPath,function () { console.log("done")});
                                             return resolve({
                                                 status: messageConstants.common.status_success,
