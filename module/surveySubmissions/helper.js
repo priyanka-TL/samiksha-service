@@ -598,6 +598,7 @@ module.exports = class SurveySubmissionsHelper {
           if( req.headers["user-agent"] ) {
             req.body.evidence["userAgent"] = req.headers["user-agent"];
           }
+          const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
           // creating evidence and adding answers in the Submission documents
           let response = await submissionsHelper.createEvidencesInSubmission(  
             req,

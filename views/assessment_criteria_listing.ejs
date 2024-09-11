@@ -1,0 +1,39 @@
+<div class="container" style="padding:20px;margin:30px;"></div>
+
+    <h4><%= assessmentRes.chart.title %></h4>
+  
+       <div style="border: solid 1px #D8D8D8;background-color: #fff">
+      <% for(let i=0; i < assessmentRes.chart.domains.length; i++) { %>
+      <h5 style="margin-top:10px"><%= assessmentRes.chart.domains[i].domainName%></h5>
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th style="width:400px">Criterias</th>
+          <% for(let j=0; j < assessmentRes.chart.heading.length; j++) { %>
+            <th><%= assessmentRes.chart.heading[j] %></th>
+          <% } %>
+        </tr>
+        </thead>
+        <tbody>
+          <% for(let k=0; k < assessmentRes.chart.domains[i].criterias.length; k++) { %>
+          <tr>
+            <td style="vertical-align: middle;"><%= assessmentRes.chart.domains[i].criterias[k].name%></td>
+            <% for(let level=0; level < assessmentRes.chart.domains[i].criterias[k].levels.length; level++) { %>
+              <td>
+                <div> <%= assessmentRes.chart.domains[i].criterias[k].levels[level]%>  </div>
+               <% if (assessmentRes.chart.domains[i].criterias[k].levelsWithScores && assessmentRes.chart.domains[i].criterias[k].levelsWithScores[level]) {%>
+                 <div  style="padding-top: 10px;">   <%= assessmentRes.chart.domains[i].criterias[k].levelsWithScores[level].score%> </div>
+              <% } %>
+            </td>
+            <% } %>
+          
+          </tr>
+          <% } %>
+        </tbody>
+      </table>  
+      <% } %>
+    </div>
+   
+     
+   
+  </div>

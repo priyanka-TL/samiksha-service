@@ -29,7 +29,7 @@ module.exports = class Reports {
   static get name() {
     return 'submissions';
   }
-
+  
   /**
    * @api {get} /assessment/api/v1/reports/status/:solutionExternalId Fetch submission reports for entity
    * @apiVersion 1.0.0
