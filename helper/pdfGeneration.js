@@ -1077,3 +1077,299 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
  
     })
  }
+
+
+ // ============> PDF generation function for assessment API ======================>
+exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
+    assessmentRes
+  ) {
+    return new Promise(async function (resolve, reject) {
+      let currentTempFolder =
+        "tmp/" +
+        uuidv4() +
+        "--" +
+        Math.floor(Math.random() * (10000 - 10 + 1) + 10);
+  
+      let imgPath = __dirname + "/../" + currentTempFolder;
+  
+      try {
+        let assessmentChartData = await getAssessmentChartData(assessmentRes);
+        let chartData = await getChartObject([
+          assessmentChartData.reportSections[0],
+        ]);
+  
+        if (!fs.existsSync(imgPath)) {
+          fs.mkdirSync(imgPath);
+        }
+  
+        let bootstrapStream = await copyBootStrapFile(
+          __dirname + "/../public/css/bootstrap.min.css",
+          imgPath + "/style.css"
+        );
+  
+        // let headerFile = await copyBootStrapFile(__dirname + '/../views/header.html', imgPath + '/header.html');
+        let footerFile = await copyBootStrapFile(
+          __dirname + "/../views/footer.html",
+          imgPath + "/footer.html"
+        );
+  
+        let FormData = [];
+  
+        let formDataAssessment = await createChart(chartData, imgPath);
+  
+        FormData.push(...formDataAssessment);
+        let params = {
+          assessmentName: "Institutional Assessment Report",
+        };
+        ejs
+          .renderFile(__dirname + "/../views/assessment_header.ejs", {
+            data: params,
+          })
+          .then(function (headerHtml) {
+            var dir = imgPath;
+            if (!fs.existsSync(dir)) {
+              fs.mkdirSync(dir);
+            }
+            fs.writeFile(
+              dir + "/header.html",
+              headerHtml,
+              function (errWr, dataWr) {
+                if (errWr) {
+                  throw errWr;
+                } else {
+                  var obj = {
+                    path: formDataAssessment,
+                  };
+                  console.log("data:", obj.path[0].options.filename);
+                 console.log("assessmentData:", assessmentRes.reportSections[1]);
+                  ejs
+                    .renderFile(
+                      __dirname + "/../views/stacked_bar_assessment_template.ejs",
+                      {
+                        data: obj.path[0].options.filename,
+                        assessmentData: assessmentRes.reportSections[1],
+                      }
+                    )
+                    .then(function (dataEjsRender) {
+                      console.log("dataEjsRender",imgPath);
+                      var dir = imgPath;
+                      if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir);
+                      }
+                      fs.writeFile(
+                        dir + "/index.html",
+                        dataEjsRender,
+                        function (errWriteFile, dataWriteFile) {
+                          if (errWriteFile) {
+                            throw errWriteFile;
+                          } else {
+                            let optionsHtmlToPdf =
+                              gen.utils.getGotenbergConnection();
+                            optionsHtmlToPdf.formData = {
+                              files: [],
+                            };
+                            FormData.push({
+                              value: fs.createReadStream(dir + "/index.html"),
+                              options: {
+                                filename: "index.html",
+                              },
+                            });
+                            FormData.push({
+                              value: fs.createReadStream(dir + "/style.css"),
+                              options: {
+                                filename: "style.css",
+                              },
+                            });
+                            FormData.push({
+                              value: fs.createReadStream(dir + "/header.html"),
+                              options: {
+                                filename: "header.html",
+                              },
+                            });
+                            FormData.push({
+                              value: fs.createReadStream(dir + "/footer.html"),
+                              options: {
+                                filename: "footer.html",
+                              },
+                            });
+                            optionsHtmlToPdf.formData.files = FormData;
+                            optionsHtmlToPdf.formData.marginTop = 1.2;
+                            optionsHtmlToPdf.formData.marginBottom = 1; 
+                            rp(optionsHtmlToPdf)
+                              .then(function (responseHtmlToPdf) {
+                                let pdfBuffer = Buffer.from(
+                                  responseHtmlToPdf.body
+                                );
+                                if (responseHtmlToPdf.statusCode == 200) {
+                                  let pdfFile = uuidv4() + ".pdf";
+                                  fs.writeFile(
+                                    dir + "/" + pdfFile,
+                                    pdfBuffer,
+                                    "binary",
+                                    async function (err) {
+                                      if (err) {
+                                        return console.log(err);
+                                      } else {
+                                        let uploadFileResponse =
+                                          await uploadPdfToCloud(pdfFile, dir);
+  
+                                        if (uploadFileResponse.success) {
+                                            console.log(uploadFileResponse)
+                                            rimraf(imgPath,function () { console.log("done")});
+                                            return resolve({
+                                                status: messageConstants.common.status_success,
+                                                message: messageConstants.apiResponses.pdf_report_generated,
+                                                pdfUrl:uploadFileResponse.getDownloadableUrl
+                                            })
+  
+                                          }                               
+                                      }
+                                    }
+                                  );
+                                }
+                              })
+                              .catch(function (err) {
+                                console.log("error in converting HtmlToPdf", err);
+                                resolve(err);
+                                throw err;
+                              });
+                          }
+                        }
+                      );
+                    })
+                    .catch(function (errEjsRender) {
+                      console.log("errEjsRender : ", errEjsRender);
+  
+                      resolve(errEjsRender);
+                    });
+                }
+              }
+            );
+          });
+      } catch (err) {
+        return reject(err);
+      }
+    });
+  };
+
+const getAssessmentChartData = async function (assessmentData) {
+    let dataArray = [];
+    let j = 0;
+  
+    for (
+      let i = 0;
+      i < assessmentData.reportSections[0].chart.data.datasets.length;
+      i++
+    ) {
+      dataArray = [
+        ...dataArray,
+        ...assessmentData.reportSections[0].chart.data.datasets[i].data,
+      ];
+    }
+    console.log(assessmentData.reportSections[0].domainLevelObject,"this is the type of assessment");
+  
+    let chartData = await convertChartDataToPercentage(
+        assessmentData.reportSections[0].domainLevelObject
+      );
+    
+    assessmentData.reportSections[0].chart.data.datasets = chartData;
+    assessmentData.reportSections[0].chart.options["plugins"] = {
+      datalabels: {
+        formatter: function (value, data) {
+          let labelValue = dataArray[j];
+          j++;
+          return labelValue;
+        },
+      },
+    };
+  
+    return assessmentData;
+  };
+
+  const convertChartDataToPercentage = async function (domainObj) {
+    let dynamicLevelObj = {};
+    let domainKeys = Object.keys(domainObj);
+  
+    // Iterate over each domain (e.g. "School Leadership and Management Team", etc.)
+    for (let i = 0; i < domainKeys.length; i++) {
+      let timestampKeys = Object.keys(domainObj[domainKeys[i]]); // Get the timestamp key
+      let levels = Object.keys(domainObj[domainKeys[i]][timestampKeys[0]]); // Get the levels inside the timestamp
+  
+      let sum = 0;
+      // Calculate sum for each level (L1, L2, etc.)
+      for (let j = 0; j < levels.length; j++) {
+        if (!dynamicLevelObj[levels[j]]) {
+          dynamicLevelObj[levels[j]] = [];
+        }
+        let levelObj = domainObj[domainKeys[i]][timestampKeys[0]]; // Get the level object
+        sum += levelObj[levels[j]]; // Sum the values of each level (L1, L2, etc.)
+      }
+  
+      // Calculate percentages
+      for (let k = 0; k < levels.length; k++) {
+        let levelObj = domainObj[domainKeys[i]][timestampKeys[0]];
+        levelObj[levels[k]] = ((levelObj[levels[k]] / sum) * 100).toFixed(2); // Convert to percentage
+      }
+    }
+  
+    let levelCountObject = {};
+  
+    // Organize data for chart representation
+    for (let domainKey = 0; domainKey < domainKeys.length; domainKey++) {
+      let levels = domainObj[domainKeys[domainKey]];
+      let timestampKeys = Object.keys(levels); // Get the timestamp keys
+  
+      for (let level in dynamicLevelObj) {
+        if (Object.keys(levels[timestampKeys[0]]).includes(level)) {
+          dynamicLevelObj[level].push(levels[timestampKeys[0]][level]);
+        } else {
+          dynamicLevelObj[level].push(0);
+        }
+      }
+    }
+  
+    // Sort the levels
+    Object.keys(dynamicLevelObj)
+      .sort()
+      .forEach(function (key) {
+        levelCountObject[key] = dynamicLevelObj[key];
+      });
+  
+    let datasets = [];
+    let backgroundColors = [
+      "rgb(255, 99, 132)",
+      "rgb(54, 162, 235)",
+      "rgb(255, 206, 86)",
+      "rgb(231, 233, 237)",
+      "rgb(75, 192, 192)",
+      "rgb(151, 187, 205)",
+      "rgb(220, 220, 220)",
+      "rgb(247, 70, 74)",
+      "rgb(70, 191, 189)",
+      "rgb(253, 180, 92)",
+      "rgb(148, 159, 177)",
+      "rgb(77, 83, 96)",
+      "rgb(95, 101, 217)",
+      "rgb(170, 95, 217)",
+      "rgb(140, 48, 57)",
+      "rgb(209, 6, 40)",
+      "rgb(68, 128, 51)",
+      "rgb(125, 128, 51)",
+      "rgb(128, 84, 51)",
+      "rgb(179, 139, 11)",
+    ];
+    let incrementor = 0;
+  
+    // Create datasets for chart
+    for (let level in levelCountObject) {
+      datasets.push({
+        label: level,
+        data: levelCountObject[level],
+        backgroundColor: backgroundColors[incrementor],
+      });
+      incrementor++;
+    }
+  
+    return datasets; // Return the datasets for the chart
+  };
+  

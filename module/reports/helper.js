@@ -253,10 +253,15 @@ module.exports = class ReportsHelper {
     }
 
     if (req.body.pdf) {
-      let pdfGenerationStatus = await pdfHelper.instanceObservationPdfGeneration(responseObject);
+      let pdfGenerationStatus
+      if(req.body.scores){
+         pdfGenerationStatus = await pdfHelper.assessmentPdfGeneration(responseObject)
+
+      }else{
+       pdfGenerationStatus = await pdfHelper.instanceObservationPdfGeneration(responseObject);
+      }
       return pdfGenerationStatus;
     }
-
     return responseObject;
   }
 };
