@@ -1088,7 +1088,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
     return new Promise(async function (resolve, reject) {
 
  //Check if the 'tmp' directory exists or create it if not
-   const tmpDir = path.join(__dirname+"/../", 'tmp');
+   const tmpDir = path.resolve(__dirname+"/../", 'tmp');
    if (!fs.existsSync(tmpDir)) {
        fs.mkdirSync(tmpDir, { recursive: true });
        console.log(`'tmp' directory created`);
