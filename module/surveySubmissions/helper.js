@@ -444,8 +444,9 @@ module.exports = class SurveySubmissionsHelper {
             surveySubmission.name = surveySubmission.surveyInformation.name;
             surveySubmission.description = surveySubmission.surveyInformation.description;
             surveySubmission._id = surveySubmission.surveyId;
+            surveySubmission.endDate = surveySubmission.surveyInformation.endDate
             delete surveySubmission.surveyId;
-            // delete surveySubmission['surveyInformation'];
+            delete surveySubmission['surveyInformation'];
             // 
             if (!surveyReportPage) {
               if (submissionStatus === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
