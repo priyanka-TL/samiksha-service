@@ -1,0 +1,49 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <% var response = data.response; %>
+    <% for (var i=0;i < response.length; i++){  %>
+    <h2 style="margin-left:32px"><%= response[i].criteriaName %></h2>
+    <% var questionData = response[i].questionArray; %>
+    <% for (var j=0;j < questionData.length; j++){  %>
+    <% if(questionData[j].responseType == 'text'){ %>
+    <%- include('textReport', {instaResponse: questionData[j] }); %>
+
+    <%  } else if(questionData[j].responseType == 'number'){ %>
+    <%- include('textReport', {instaResponse: questionData[j] }); %>
+
+    <%  } else if(questionData[j].responseType == 'date'){ %>
+    <%- include('textReport', {instaResponse: questionData[j] }); %>
+
+    <%  } else if(questionData[j].responseType == 'slider'){ %>
+    <%- include('textReport', {instaResponse: questionData[j] }); %>
+
+    <%  } else if(questionData[j].responseType == 'multiselect'){ %>
+
+    <% for (var k=0;k < data.multiselectData.length; k++){  %>
+    <% if(data.multiselectData[k].order == questionData[j].order ){ %>
+    <%- include('radioReport', {path: data.multiselectData[k].options.filename}); %>
+    <% } %>
+    <% } %>
+
+    <%  } else if(questionData[j].responseType == 'radio'){ %>
+    <% for (var k=0;k < data.radioData.length; k++){  %>
+    <% if(data.radioData[k].order == questionData[j].order ){ %>
+    <%- include('radioReport', {path: data.radioData[k].options.filename}); %>
+    <% } %>
+    <% } %>
+
+    <% } %>
+
+    <% } %>
+
+    <% } %>
+
+
+</body>
+
+</html>

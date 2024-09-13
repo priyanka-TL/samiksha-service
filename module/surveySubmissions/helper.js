@@ -410,6 +410,7 @@ module.exports = class SurveySubmissionsHelper {
               'surveyInformation.name': 1,
               'surveyInformation.endDate': 1,
               'surveyInformation.description': 1,
+              completedDate:1,
               status: 1,
               _id: 0,
             },
@@ -443,6 +444,7 @@ module.exports = class SurveySubmissionsHelper {
             surveySubmission.name = surveySubmission.surveyInformation.name;
             surveySubmission.description = surveySubmission.surveyInformation.description;
             surveySubmission._id = surveySubmission.surveyId;
+            surveySubmission.endDate = surveySubmission.surveyInformation.endDate
             delete surveySubmission.surveyId;
             delete surveySubmission['surveyInformation'];
             // 
@@ -598,6 +600,7 @@ module.exports = class SurveySubmissionsHelper {
           if( req.headers["user-agent"] ) {
             req.body.evidence["userAgent"] = req.headers["user-agent"];
           }
+          const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
           // creating evidence and adding answers in the Submission documents
           let response = await submissionsHelper.createEvidencesInSubmission(  
             req,

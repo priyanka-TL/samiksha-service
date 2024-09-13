@@ -6,15 +6,11 @@
  */
 
 // Dependencies
-const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const timeZoneDifference = process.env.TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC;
 const validateEntity = process.env.VALIDATE_ENTITIES;
 const userService = require(ROOT_PATH + '/generics/services/users');
-const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
-const programUsersHelper = require(MODULES_BASE_PATH + '/programUsers/helper');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers');
-
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 
 /**

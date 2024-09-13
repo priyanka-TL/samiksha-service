@@ -87,4 +87,7 @@ module.exports = {
   PRIVATE: 'private',
 	WRITE_PERMISSION: 'w',
 	READ_PERMISSION: 'r',
+  status_failure:'failure',
+  status_success:'success',
+  azure: "AZURE"
 };
