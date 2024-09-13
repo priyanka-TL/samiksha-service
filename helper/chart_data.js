@@ -65,10 +65,11 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
             ? questionRecordArrNew[0].options
             : undefined;
           value[key].question = questionRecordArrNew[0].question[0];
-
+           
           let valueKey = Array.isArray(value[key].value) ? value[key].value : [value[key].value];
 
           value[key].answers = valueKey;
+          value[key].questionNumber =questionRecordArrNew[0].questionNumber
         }
 
         value.instanceIdentifier = instanceIdentifier + ' ' + indentifierCount;
@@ -105,7 +106,8 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         criteriaId: answerInstanceObj.criteriaId,
         optionsAvailableForUser: answerInstanceObj.options ? answerInstanceObj.options : undefined,
         evidences,
-        evidence_count:evidences.length
+        evidence_count:evidences.length,
+        questionNumber: answerInstanceObj.questionNumber
       };
     }
 
