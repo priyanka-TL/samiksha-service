@@ -3,7 +3,7 @@ let fs = require('fs'),
 const requireAll = require('require-all');
 mkdirp(path.join(__dirname + '/../logs/' + process.env.NODE_ENV));
 mkdirp(path.join(__dirname + '/../' + 'uploads'));
-
+mkdirp(path.join(__dirname + '/../' +'tmp'));
 gen = Object.assign(global, {});
 
 module.exports = function () {
