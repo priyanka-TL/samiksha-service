@@ -90,6 +90,7 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         evidences,
         evidence_count:evidences.length,
         instanceIdentifier,
+        questionNumber:answerInstanceObj.questionNumber,
       };
     } else {
       let valueKey = Array.isArray(answerInstanceObj.value) ? answerInstanceObj.value : [answerInstanceObj.value];
