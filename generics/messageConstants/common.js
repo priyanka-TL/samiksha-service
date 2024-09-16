@@ -26,6 +26,7 @@ module.exports = {
   SUBMISSION_STATUS_RATING_PENDING: 'ratingPending',
   SUBMISSION_STATUS_COMPLETED: 'completed',
   SUBMISSION_STATUS_STARTED: 'started',
+  SUBMISSION_STATUS_EXPIRED:"expired",
   SUBMISSION_STATUS_NOT_STARTED: 'notstarted',
   IMAGE_FORMATS: ['png', 'jpg', 'jpeg', 'svg'],
   VIDEO_FORMATS: ['webm', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'ogg', 'mp4', 'm4p', 'm4v', 'avi', 'wmv'],

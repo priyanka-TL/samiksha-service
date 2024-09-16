@@ -773,7 +773,13 @@ module.exports = class SurveysHelper {
         }
 
         surveyDocument = surveyDocument[0];
-
+        //Check if the survey expired or not if its expired add status as expired
+        let expiredStatus = false
+        if(surveyDocument.endDate){
+             if(surveyDocument.endDate < new Date()){
+              expiredStatus = true;
+             }
+        }
         let solutionQueryObject = {
           _id: surveyDocument.solutionId,
           status: messageConstants.common.ACTIVE_STATUS,
@@ -931,7 +937,7 @@ module.exports = class SurveysHelper {
             surveyId: surveyDocument._id,
             createdBy: surveyDocument.createdBy,
             evidenceSubmissions: [],
-            status: messageConstants.common.SUBMISSION_STATUS_STARTED,
+            status: expiredStatus? messageConstants.common.SUBMISSION_STATUS_EXPIRED:messageConstants.common.SUBMISSION_STATUS_STARTED,
             evidences: submissionDocumentEvidences,
             evidencesStatus: Object.values(submissionDocumentEvidences),
             criteria: submissionDocumentCriterias,
@@ -1063,6 +1069,7 @@ module.exports = class SurveysHelper {
         'captureGpsLocationAtQuestionLevel',
         'enableQuestionReadOut',
         'author',
+        "endDate",
       ]);
     });
   }
