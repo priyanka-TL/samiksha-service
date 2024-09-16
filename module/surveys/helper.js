@@ -923,9 +923,9 @@ module.exports = class SurveysHelper {
             {
               _id: submissionId,
             },
-            ['evidences'],
+            ['evidences',"status"],
           );
-
+          assessment.status=surveySubmissionDocument[0].status
           submissionDocumentEvidences = surveySubmissionDocument[0].evidences;
         } else {
 
@@ -967,6 +967,7 @@ module.exports = class SurveysHelper {
 
           if (submissionDoc._id) {
             assessment.submissionId = submissionDoc._id;
+            assessment.status = submissionDoc.status
              //add report infromation to survey solution code
           }
         }
