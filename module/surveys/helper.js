@@ -773,7 +773,13 @@ module.exports = class SurveysHelper {
         }
 
         surveyDocument = surveyDocument[0];
-
+        //Check if the survey expired or not if its expired add status as expired
+        let expiredStatus = false
+        if(surveyDocument.endDate){
+             if(new Date(surveyDocument.endDate) < new Date()){
+              expiredStatus = true;
+             }
+        }
         let solutionQueryObject = {
           _id: surveyDocument.solutionId,
           status: messageConstants.common.ACTIVE_STATUS,
@@ -917,9 +923,9 @@ module.exports = class SurveysHelper {
             {
               _id: submissionId,
             },
-            ['evidences'],
+            ['evidences',"status"],
           );
-
+          assessment.status=surveySubmissionDocument[0].status
           submissionDocumentEvidences = surveySubmissionDocument[0].evidences;
         } else {
 
@@ -931,7 +937,7 @@ module.exports = class SurveysHelper {
             surveyId: surveyDocument._id,
             createdBy: surveyDocument.createdBy,
             evidenceSubmissions: [],
-            status: messageConstants.common.SUBMISSION_STATUS_STARTED,
+            status: expiredStatus? messageConstants.common.EXPIRED:messageConstants.common.SUBMISSION_STATUS_STARTED,
             evidences: submissionDocumentEvidences,
             evidencesStatus: Object.values(submissionDocumentEvidences),
             criteria: submissionDocumentCriterias,
@@ -961,6 +967,7 @@ module.exports = class SurveysHelper {
 
           if (submissionDoc._id) {
             assessment.submissionId = submissionDoc._id;
+            assessment.status = submissionDoc.status
              //add report infromation to survey solution code
           }
         }
@@ -1063,6 +1070,7 @@ module.exports = class SurveysHelper {
         'captureGpsLocationAtQuestionLevel',
         'enableQuestionReadOut',
         'author',
+        "endDate",
       ]);
     });
   }
@@ -1442,11 +1450,12 @@ module.exports = class SurveysHelper {
                 messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND
               );
             }
-            
-
+            let currentDate =new Date()
+            currentDate.setDate(currentDate.getDate()-15)
             if (
               solutionData.data.hasOwnProperty("endDate") &&
-              new Date(solutionData.data.endDate) < new Date()
+              new Date(solutionData.data.endDate) <  currentDate
+
             ) {
               throw new Error(messageConstants.apiResponses.SOLUTION_EXPIRED);
             }

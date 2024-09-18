@@ -615,6 +615,7 @@ module.exports = class SolutionsHelper {
           'referenceFrom',
           'entityType',
           'certificateTemplateId',
+          "status",
         ]);
         return resolve({
           success: true,

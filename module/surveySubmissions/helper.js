@@ -32,12 +32,16 @@ module.exports = class SurveySubmissionsHelper {
     surveySubmissionFilter = 'all',
     fieldsArray = 'all',
     sortedData = 'all',
-    skipFields = 'none',
+    skipFields = 'none'
   ) {
     return new Promise(async (resolve, reject) => {
       try {
-        
-        let surveySubmissionDocuments = await surveySubmissionQueries.surveySubmissionDocuments(surveySubmissionFilter,fieldsArray,sortedData,skipFields)
+        let surveySubmissionDocuments = await surveySubmissionQueries.surveySubmissionDocuments(
+          surveySubmissionFilter,
+          fieldsArray,
+          sortedData,
+          skipFields
+        );
         return resolve(surveySubmissionDocuments);
       } catch (error) {
         return resolve({
@@ -77,7 +81,7 @@ module.exports = class SurveySubmissionsHelper {
           throw new Error(
             messageConstants.apiResponses.SUBMISSION_NOT_FOUND +
               'or' +
-              messageConstants.apiResponses.SUBMISSION_STATUS_NOT_COMPLETE,
+              messageConstants.apiResponses.SUBMISSION_STATUS_NOT_COMPLETE
           );
         }
 
@@ -190,7 +194,7 @@ module.exports = class SurveySubmissionsHelper {
             _id: submissionId,
             evidencesStatus: { $elemMatch: { externalId: evidenceId } },
           },
-          ['evidencesStatus.$', 'status', 'createdBy'],
+          ['evidencesStatus.$', 'status', 'createdBy']
         );
 
         if (!submissionDocument.length) {
@@ -377,7 +381,7 @@ module.exports = class SurveySubmissionsHelper {
           data: [],
           count: 0,
         };
-        //Constructing the match query 
+        //Constructing the match query
         let submissionMatchQuery = { $match: { createdBy: userId } };
 
         if (gen.utils.convertStringToBoolean(surveyReportPage)) {
@@ -410,7 +414,7 @@ module.exports = class SurveySubmissionsHelper {
               'surveyInformation.name': 1,
               'surveyInformation.endDate': 1,
               'surveyInformation.description': 1,
-              completedDate:1,
+              completedDate: 1,
               status: 1,
               _id: 0,
             },
@@ -418,7 +422,10 @@ module.exports = class SurveySubmissionsHelper {
           {
             $facet: {
               totalCount: [{ $count: 'count' }],
-              data: [{ $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) }, { $limit: pageSize? pageSize: messageConstants.common.DEFAULT_PAGE_SIZE}],
+              data: [
+                { $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) },
+                { $limit: pageSize ? pageSize : messageConstants.common.DEFAULT_PAGE_SIZE },
+              ],
             },
           },
           {
@@ -444,15 +451,17 @@ module.exports = class SurveySubmissionsHelper {
             surveySubmission.name = surveySubmission.surveyInformation.name;
             surveySubmission.description = surveySubmission.surveyInformation.description;
             surveySubmission._id = surveySubmission.surveyId;
-            surveySubmission.endDate = surveySubmission.surveyInformation.endDate
+            surveySubmission.endDate = surveySubmission.surveyInformation.endDate;
             delete surveySubmission.surveyId;
             delete surveySubmission['surveyInformation'];
-            // 
+            //
             if (!surveyReportPage) {
               if (submissionStatus === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
                 result.data.push(surveySubmission);
               } else {
-                if (surveySubmission.status !== messageConstants.common.EXPIRED) {
+                let currentDate = new Date();
+                currentDate.setDate(currentDate.getDate() - 15);
+                if (new Date(surveySubmission.endDate) > currentDate) {
                   result.data.push(surveySubmission);
                 }
               }
@@ -524,7 +533,7 @@ module.exports = class SurveySubmissionsHelper {
           }
         }
         const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
-       // finding  list of created survey solutions by user
+        // finding  list of created survey solutions by user
         let result = await solutionsHelper.solutionDocumentsByAggregateQuery([
           solutionMatchQuery,
           {
@@ -539,7 +548,10 @@ module.exports = class SurveySubmissionsHelper {
           {
             $facet: {
               totalCount: [{ $count: 'count' }],
-              data: [{ $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) }, { $limit: pageSize ? pageSize :messageConstants.common.DEFAULT_PAGE_SIZE}],
+              data: [
+                { $skip: pageSize * (pageNo - messageConstants.common.DEFAULT_PAGE_NO) },
+                { $limit: pageSize ? pageSize : messageConstants.common.DEFAULT_PAGE_SIZE },
+              ],
             },
           },
           {
@@ -569,7 +581,7 @@ module.exports = class SurveySubmissionsHelper {
     });
   }
 
-     /**
+  /**
    * update survey submissions.
    * @method
    * @name update
@@ -577,74 +589,67 @@ module.exports = class SurveySubmissionsHelper {
    * @returns {JSON} - survey submissions creation.
    */
 
-   static update(req) {
-      return new Promise(async (resolve, reject) => {
-  
-        try {
-          // Check if the survey has already been submitted
-          let isSubmissionAllowed = await this.isAllowed
-          (
-            req.params._id,
-            req.body.evidence.externalId,
-            req.userDetails.userId
-          ) 
-  
-          if ((isSubmissionAllowed.data.allowed && isSubmissionAllowed.data.allowed == false) || !isSubmissionAllowed.data) {
-              throw new Error(messageConstants.apiResponses.MULTIPLE_SUBMISSIONS_NOT_ALLOWED)
-          }
-  
-          if( req.headers.deviceid ) {
-            req.body.evidence["deviceId"] = req.headers.deviceid;
-          }
-  
-          if( req.headers["user-agent"] ) {
-            req.body.evidence["userAgent"] = req.headers["user-agent"];
-          }
-          const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
-          // creating evidence and adding answers in the Submission documents
-          let response = await submissionsHelper.createEvidencesInSubmission(  
-            req,
-            messageConstants.common.SURVEY_SUBMISSIONS, 
-            false
-          );
-          if (response.result.status && response.result.status === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
-              await this.pushCompletedSurveySubmissionForReporting(req.params._id);
-          }
-  
-          let appInformation = {};
-  
-          if( req.headers["x-app-id"] || req.headers.appname ) {
-            appInformation["appName"] = 
-            req.headers["x-app-id"] ? req.headers["x-app-id"] :
-            req.headers.appname;
-          } 
-  
-          if( req.headers["x-app-ver"] || req.headers.appversion ) {
-            appInformation["appVersion"] = 
-            req.headers["x-app-ver"] ? req.headers["x-app-ver"] :
-            req.headers.appversion;
-          }
-  
-          if( Object.keys(appInformation).length > 0 ) {
-            await submissionsHelper.addAppInformation(
-              req.params._id,
-              appInformation,
-              messageConstants.common.SURVEY_SUBMISSIONS
-            );
-          }
-          
-          return resolve(response)
-  
-        } catch (error) {
-  
-          return reject({
-            status: error.status || httpStatusCode.internal_server_error.status,
-            message: error.message || httpStatusCode.internal_server_error.message,
-            errorObject: error
-          });
-  
+  static update(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Check if the survey has already been submitted
+        let isSubmissionAllowed = await this.isAllowed(
+          req.params._id,
+          req.body.evidence.externalId,
+          req.userDetails.userId
+        );
+
+        if (
+          (isSubmissionAllowed.data.allowed && isSubmissionAllowed.data.allowed == false) ||
+          !isSubmissionAllowed.data
+        ) {
+          throw new Error(messageConstants.apiResponses.MULTIPLE_SUBMISSIONS_NOT_ALLOWED);
         }
-  
-      })
-    }
+
+        if (req.headers.deviceid) {
+          req.body.evidence['deviceId'] = req.headers.deviceid;
+        }
+
+        if (req.headers['user-agent']) {
+          req.body.evidence['userAgent'] = req.headers['user-agent'];
+        }
+        const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
+        // creating evidence and adding answers in the Submission documents
+        let response = await submissionsHelper.createEvidencesInSubmission(
+          req,
+          messageConstants.common.SURVEY_SUBMISSIONS,
+          false
+        );
+        if (response.result.status && response.result.status === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
+          await this.pushCompletedSurveySubmissionForReporting(req.params._id);
+        }
+
+        let appInformation = {};
+
+        if (req.headers['x-app-id'] || req.headers.appname) {
+          appInformation['appName'] = req.headers['x-app-id'] ? req.headers['x-app-id'] : req.headers.appname;
+        }
+
+        if (req.headers['x-app-ver'] || req.headers.appversion) {
+          appInformation['appVersion'] = req.headers['x-app-ver'] ? req.headers['x-app-ver'] : req.headers.appversion;
+        }
+
+        if (Object.keys(appInformation).length > 0) {
+          await submissionsHelper.addAppInformation(
+            req.params._id,
+            appInformation,
+            messageConstants.common.SURVEY_SUBMISSIONS
+          );
+        }
+
+        return resolve(response);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };
