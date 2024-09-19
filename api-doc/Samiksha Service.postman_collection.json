@@ -1,0 +1,5392 @@
+{
+	"info": {
+		"_postman_id": "ce2d78e4-8071-4378-9ccc-0e12ee7be7e5",
+		"name": "Samiksha Service",
+		"description": "This API collection serves the Survey Service, covering both Observations and Surveys. It provides various endpoints for managing and interacting with surveys and observations, along with comprehensive report generation functionalities.\n\nObservations:\nObservations with Rubric: Allows assessment based on predefined rubrics.\nObservations without Rubric: Flexible observations without structured rubrics.\nReports:\nSurvey Reports: Generate detailed reports based on survey submissions.\nObservation Reports: Includes:\nEntity Reports: Focuses on specific entities being observed.\nInstance Reports: Provides detailed information on specific instances of observation.\nPDF Reports: Available for both entity and instance reports.\nThis API collection supports essential workflows such as criteria upload, observation submission, report generation, and program management. It simplifies the process of collecting, managing, and analyzing data for both surveys and observations.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35045619"
+	},
+	"item": [
+		{
+			"name": "v1",
+			"item": [
+				{
+					"name": "criteria",
+					"item": [
+						{
+							"name": "upload",
+							"item": [
+								{
+									"name": "upload citeria",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											},
+											{
+												"key": "Accept",
+												"value": "text/plain"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "criteria",
+													"type": "file",
+													"src": []
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/criteria/upload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"criteria",
+												"upload"
+											]
+										},
+										"description": "The Upload Criteria API allows users to upload a CSV file containing information about the criteria used to observe or evaluate an entity. Each record in the CSV should include a criteriaId, criteriaName, type, and other relevant information. The API processes this file, validates the data, and stores the criteria details in the system for further use in reports and evaluations."
+									},
+									"response": [
+										{
+											"name": "OK",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "multipart/form-data"
+													},
+													{
+														"key": "Accept",
+														"value": "text/plain"
+													}
+												],
+												"body": {
+													"mode": "formdata",
+													"formdata": [
+														{
+															"key": "criteria",
+															"type": "file",
+															"src": []
+														}
+													]
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/criteria/upload",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"criteria",
+														"upload"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "text",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "text/plain"
+												},
+												{
+													"key": "Server",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Date",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Content-Type",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Transfer-Encoding",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Connection",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "X-Powered-By",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Access-Control-Allow-Origin",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Content-disposition",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												}
+											],
+											"cookie": [],
+											"body": "<string>"
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "frameworks",
+					"item": [
+						{
+							"name": "create",
+							"item": [
+								{
+									"name": "frameworks create",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "framework",
+													"type": "file",
+													"src": []
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/frameworks/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"frameworks",
+												"create"
+											]
+										},
+										"description": " The Upload Framework API allows users to upload a CSV file containing observation data, along with a framework in JSON format. The framework sheet should include an external_id (UUID) for each framework entry, and the criteria external_id generated during the criteria upload process must also be included.\n\nThis API is used to create solutions based on a framework upload. Users must provide a frameworkID (UUID) and specify the entityType as defined in the template."
+									},
+									"response": [
+										{
+											"name": "OK",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "multipart/form-data"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "formdata",
+													"formdata": [
+														{
+															"key": "framework",
+															"type": "file",
+															"src": []
+														}
+													]
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/frameworks/create",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"frameworks",
+														"create"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "X-Powered-By",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Access-Control-Allow-Origin",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Content-Type",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Content-Length",
+													"value": "<integer>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "ETag",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Date",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Connection",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												},
+												{
+													"key": "Keep-Alive",
+													"value": "<string>",
+													"description": {
+														"content": "",
+														"type": "text/plain"
+													}
+												}
+											],
+											"cookie": [],
+											"body": "{}"
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "observations",
+					"item": [
+						{
+							"name": "importFromFramework",
+							"item": [
+								{
+									"name": "importFromFramework",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "framework",
+													"type": "file",
+													"src": []
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/observations/importFromFramework?frameworkId=<string>&entityType=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"observations",
+												"importFromFramework"
+											],
+											"query": [
+												{
+													"key": "frameworkId",
+													"value": "<string>",
+													"description": "UUID"
+												},
+												{
+													"key": "entityType",
+													"value": "<string>",
+													"description": "can be school,cluster,block"
+												}
+											]
+										},
+										"description": "This API is used to create solutions based on a framework upload. Users must provide a frameworkID (UUID) and specify the entityType as defined in the template.~~~~"
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "multipart/form-data"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "formdata",
+													"formdata": [
+														{
+															"key": "framework",
+															"type": "file",
+															"src": []
+														}
+													]
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/observations/importFromFramework?frameworkId=<string>&entityType=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"observations",
+														"importFromFramework"
+													],
+													"query": [
+														{
+															"key": "frameworkId",
+															"value": "<string>",
+															"description": "UUID"
+														},
+														{
+															"key": "entityType",
+															"value": "<string>",
+															"description": "can be school,cluster,block"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "assessment",
+							"item": [
+								{
+									"name": ":observationId",
+									"item": [
+										{
+											"name": "Assessment Observation",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/observations/assessment/:observationId?entityId=<string>&submissionNumber=<integer>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"observations",
+														"assessment",
+														":observationId"
+													],
+													"query": [
+														{
+															"key": "entityId",
+															"value": "<string>"
+														},
+														{
+															"key": "submissionNumber",
+															"value": "<integer>"
+														}
+													],
+													"variable": [
+														{
+															"key": "observationId"
+														}
+													]
+												},
+												"description": "The Assessment API retrieves information about a specific observation using the observation_id provided in the request. It returns details such as the questionnaire and other related information. The response also includes a submissionId, which is required for submitting responses through the Observation Submission API.\n\n"
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "x-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/observations/assessment/:observationId?entityId=<string>&submissionNumber=<integer>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"observations",
+																"assessment",
+																":observationId"
+															],
+															"query": [
+																{
+																	"key": "entityId",
+																	"value": "<string>"
+																},
+																{
+																	"key": "submissionNumber",
+																	"value": "<integer>"
+																}
+															],
+															"variable": [
+																{
+																	"key": "observationId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "entities",
+							"item": [
+								{
+									"name": "Obs/entities",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/observations/entities?solutionId=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"observations",
+												"entities"
+											],
+											"query": [
+												{
+													"key": "solutionId",
+													"value": "<string>"
+												}
+											]
+										},
+										"description": "This API retrieves a list of entities associated with a specific observation. You can pass the observation_id as a params parameter or the solutionId as a query parameter. The API will return the entities related to the observation or the solution, based on the input."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/observations/entities?solutionId=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"observations",
+														"entities"
+													],
+													"query": [
+														{
+															"key": "solutionId",
+															"value": "<string>"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "updateEntities",
+							"item": [
+								{
+									"name": ":observation_id",
+									"item": [
+										{
+											"name": "observations/updateEntitie",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/observations/updateEntities/:observation_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"observations",
+														"updateEntities",
+														":observation_id"
+													],
+													"variable": [
+														{
+															"key": "observation_id"
+														}
+													]
+												},
+												"description": "This API is used to add multiple entities to a specific observation. The observation_id is passed as a path parameter, and the entities are sent in the request body as an array of entity IDs. The provided entities will be associated with the observation."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "x-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/observations/updateEntities/:observation_id",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"observations",
+																"updateEntities",
+																":observation_id"
+															],
+															"variable": [
+																{
+																	"key": "observation_id"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "questions",
+					"item": [
+						{
+							"name": "bulkCreate",
+							"item": [
+								{
+									"name": "bulkCreate Questions",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questions",
+													"type": "file",
+													"src": []
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/questions/bulkCreate",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"questions",
+												"bulkCreate"
+											]
+										},
+										"description": "The Bulk Create API is used to create multiple questions in an observation. Users can provide a batch of questions in the request, which will be added to the specified observation."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "multipart/form-data"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "formdata",
+													"formdata": [
+														{
+															"key": "questions",
+															"type": "file",
+															"src": []
+														}
+													]
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/questions/bulkCreate",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"questions",
+														"bulkCreate"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "observationSubmissions",
+					"item": [
+						{
+							"name": "list",
+							"item": [
+								{
+									"name": ":observationSubmissionId",
+									"item": [
+										{
+											"name": "List Observation submission",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/observationSubmissions/list/:observationSubmissionId?entityId=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"observationSubmissions",
+														"list",
+														":observationSubmissionId"
+													],
+													"query": [
+														{
+															"key": "entityId",
+															"value": "<string>",
+															"description": "EntityId for which the submission have been made"
+														}
+													],
+													"variable": [
+														{
+															"key": "observationSubmissionId"
+														}
+													]
+												},
+												"description": "This API retrieves the details of a specific observation submission based on the observation-submission-id. It provides information about the submission, including responses to the observation's questionnaire, submission status, and other relevant data."
+											},
+											"response": [
+												{
+													"name": "OK",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "x-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/observationSubmissions/list/:observationSubmissionId?entityId=<string>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"observationSubmissions",
+																"list",
+																":observationSubmissionId"
+															],
+															"query": [
+																{
+																	"key": "entityId",
+																	"value": "<string>",
+																	"description": "EntityId for which the submission have been made"
+																}
+															],
+															"variable": [
+																{
+																	"key": "observationSubmissionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														},
+														{
+															"key": "X-Powered-By",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Access-Control-Allow-Origin",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Content-Type",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Content-Length",
+															"value": "<integer>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "ETag",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Date",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Connection",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Keep-Alive",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														}
+													],
+													"cookie": [],
+													"body": "{}"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "update",
+							"item": [
+								{
+									"name": ":observationSubmissionId",
+									"item": [
+										{
+											"name": "Update Observation Submission",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/observationSubmissions/update/:observationSubmissionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"observationSubmissions",
+														"update",
+														":observationSubmissionId"
+													],
+													"variable": [
+														{
+															"key": "observationSubmissionId"
+														}
+													]
+												},
+												"description": "The Observation Submission API is used to submit answers to a questionnaire for a specific observation. By providing the observation_id and the corresponding answers, this API updates the answers in the database.\n\n\nRequest Parameters:\nobservation_id (required): The ID of the observation for which answers are being submitted.\nanswers (required): A collection of answers corresponding to the questionnaire questions. This should be structured according to the format specified in the questionnaire.\n\n\n"
+											},
+											"response": [
+												{
+													"name": "OK",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "x-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/observationSubmissions/update/:observationSubmissionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"observationSubmissions",
+																"update",
+																":observationSubmissionId"
+															],
+															"variable": [
+																{
+																	"key": "observationSubmissionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														},
+														{
+															"key": "X-Powered-By",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Access-Control-Allow-Origin",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Content-Type",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Content-Length",
+															"value": "<integer>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "ETag",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Date",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Connection",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														},
+														{
+															"key": "Keep-Alive",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														}
+													],
+													"cookie": [],
+													"body": "{}"
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "surveys",
+					"item": [
+						{
+							"name": "getLink",
+							"item": [
+								{
+									"name": ":solutionExternalId",
+									"item": [
+										{
+											"name": "getLink",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveys/getLink/:solutionExternalId?appName=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveys",
+														"getLink",
+														":solutionExternalId"
+													],
+													"query": [
+														{
+															"key": "appName",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "solutionExternalId"
+														}
+													]
+												},
+												"description": "This API retrieves a sharing link for a survey solution using the solutionExternalId provided in the path parameters. The returned link allows users to access or share the survey solution, enabling easy distribution or collaboration. This is particularly useful for sharing surveys with external participants or stakeholders."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveys/getLink/:solutionExternalId?appName=<string>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveys",
+																"getLink",
+																":solutionExternalId"
+															],
+															"query": [
+																{
+																	"key": "appName",
+																	"value": "<string>"
+																}
+															],
+															"variable": [
+																{
+																	"key": "solutionExternalId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "createSolutionTemplate",
+							"item": [
+								{
+									"name": "createSolutionTemplate",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/surveys/createSolutionTemplate",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"surveys",
+												"createSolutionTemplate"
+											]
+										},
+										"description": "Generated from cURL: curl --location 'http://localhost:4301/samiksha/v1/surveys/createSolutionTemplate' \\\n--header 'x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoyLCJuYW1lIjoiU2Fpc2giLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6MywidGl0bGUiOiJtZW50ZWUiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsInZpc2libGl0eSI6IlBVQkxJQyIsIm9yZ2FuaXphdGlvbl9pZCI6IjEifV19LCJpYXQiOjE3MjUyNTQzOTgsImV4cCI6MTcyNTM0MDc5OH0.XZ40Y0BQxsZkPCBY00VNt1gfNJdcU-Mk75p48YJe5QE' \\\n--header 'Content-Type: application/json' \\\n--data '{\n    \"name\": \"survey support test\",\n    \"description\": \"This is Testing for survey upload\",\n    \"externalId\": \"a383af8d-7e4e-4c3b-a79d-ccf2bd14de57\",\n    \"author\": \"\",\n    \"startDate\": \"2022-04-29T13:57:28.259Z\",\n    \"endDate\": \"2026-05-02T12:00:00.259Z\",\n    \"linkTitle\": \"\",\n    \"linkUrl\": \"\",\n    \"status\": \"active\"\n}'"
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveys/createSolutionTemplate",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveys",
+														"createSolutionTemplate"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "mapSurverySolutionToProgram",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "mapSurverySolutionToProgram Copy",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveys/mapSurverySolutionToProgram/:solutionId?programId=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveys",
+														"mapSurverySolutionToProgram",
+														":solutionId"
+													],
+													"query": [
+														{
+															"key": "programId",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API maps a survey solution, identified by solutionId, to a specific program. The programId should be passed in the query parameters (req.query.programId), which represents the external ID of the program. Once mapped, the solution will be associated with the designated program, allowing for its usage within the context of that program."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveys/mapSurverySolutionToProgram/:solutionId?programId=<string>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveys",
+																"mapSurverySolutionToProgram",
+																":solutionId"
+															],
+															"query": [
+																{
+																	"key": "programId",
+																	"value": "<string>"
+																}
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "userAssigned",
+							"item": [
+								{
+									"name": "userAssigned dev",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Content-Type",
+												"value": "*/*"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "<string>"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/surveys/userAssigned?search=<string>&filter=<string>&surveyReportPage=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"surveys",
+												"userAssigned"
+											],
+											"query": [
+												{
+													"key": "search",
+													"value": "<string>"
+												},
+												{
+													"key": "filter",
+													"value": "<string>"
+												},
+												{
+													"key": "surveyReportPage",
+													"value": "<string>"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveys/userAssigned?search=<string>&filter=<string>&surveyReportPage=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveys",
+														"userAssigned"
+													],
+													"query": [
+														{
+															"key": "search",
+															"value": "<string>"
+														},
+														{
+															"key": "filter",
+															"value": "<string>"
+														},
+														{
+															"key": "surveyReportPage",
+															"value": "<string>"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "userSurvey",
+							"item": [
+								{
+									"name": "userSurveyNotusing",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>"
+											},
+											{
+												"key": "internal-access-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/v1/surveys/userSurvey?stats=<boolean>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"surveys",
+												"userSurvey"
+											],
+											"query": [
+												{
+													"key": "stats",
+													"value": "<boolean>"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "internal-access-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveys/userSurvey?stats=<boolean>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveys",
+														"userSurvey"
+													],
+													"query": [
+														{
+															"key": "stats",
+															"value": "<boolean>"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "importSurveryTemplateToSolution",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "importSurveryTemplateToSolution Copy 2",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveys/importSurveryTemplateToSolution/:solutionId?appName=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveys",
+														"importSurveryTemplateToSolution",
+														":solutionId"
+													],
+													"query": [
+														{
+															"key": "appName",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API is used to create a child solution from an existing solution. You need to pass the solutionId and appName as query parameters to generate the child solution."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveys/importSurveryTemplateToSolution/:solutionId?appName=<string>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveys",
+																"importSurveryTemplateToSolution",
+																":solutionId"
+															],
+															"query": [
+																{
+																	"key": "appName",
+																	"value": "<string>"
+																}
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "details",
+							"item": [
+								{
+									"name": ":surveyId",
+									"item": [
+										{
+											"name": "Details/Id",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveys/details/:surveyId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveys",
+														"details",
+														":surveyId"
+													],
+													"variable": [
+														{
+															"key": "surveyId"
+														}
+													]
+												},
+												"description": "This API retrieves the details of a specific survey using the surveyId. It provides information about the survey's solution, program, assessment, and the associated questionnaire, including questions and response options."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveys/details/:surveyId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveys",
+																"details",
+																":surveyId"
+															],
+															"variable": [
+																{
+																	"key": "surveyId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "solutions",
+					"item": [
+						{
+							"name": "create",
+							"item": [
+								{
+									"name": "create ",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "*/*"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "<string>"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/solutions/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"solutions",
+												"create"
+											]
+										},
+										"description": "This API is used to create a new solution. You need to pass the necessary details like name, description, and other solution-related metadata in the request body. It stores the solution in the system and returns its ID upon successful creation."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/create",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"create"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "importFromSolution",
+							"item": [
+								{
+									"name": "importFromSolution",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/solutions/importFromSolution?solutionId=<string>&entityType=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"solutions",
+												"importFromSolution"
+											],
+											"query": [
+												{
+													"key": "solutionId",
+													"value": "<string>",
+													"description": "Enter external solution id "
+												},
+												{
+													"key": "entityType",
+													"value": "<string>",
+													"description": "can be school,cluster or block"
+												}
+											]
+										},
+										"description": "This API is used to create a child solution from an existing solution. You need to pass the solutionId and entityType as query parameters to generate the child solution."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/importFromSolution?solutionId=<string>&entityType=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"importFromSolution"
+													],
+													"query": [
+														{
+															"key": "solutionId",
+															"value": "<string>",
+															"description": "Enter external solution id "
+														},
+														{
+															"key": "entityType",
+															"value": "<string>",
+															"description": "can be school,cluster or block"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "targetedSolutions",
+							"item": [
+								{
+									"name": "targetedSolutions",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/solutions/targetedSolutions?type=<string>&page=<integer>&limit=<integer>&search=<string>&surveyReportPage=<boolean>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"solutions",
+												"targetedSolutions"
+											],
+											"query": [
+												{
+													"key": "type",
+													"value": "<string>"
+												},
+												{
+													"key": "page",
+													"value": "<integer>"
+												},
+												{
+													"key": "limit",
+													"value": "<integer>"
+												},
+												{
+													"key": "search",
+													"value": "<string>"
+												},
+												{
+													"key": "surveyReportPage",
+													"value": "<boolean>"
+												}
+											]
+										},
+										"description": "This API fetches a list of targeted solutions based on the user profile or any applied filters. It returns a collection of solutions that are specifically designed or relevant to the user’s role or criteria."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/targetedSolutions?type=<string>&page=<integer>&limit=<integer>&search=<string>&surveyReportPage=<boolean>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"targetedSolutions"
+													],
+													"query": [
+														{
+															"key": "type",
+															"value": "<string>"
+														},
+														{
+															"key": "page",
+															"value": "<integer>"
+														},
+														{
+															"key": "limit",
+															"value": "<integer>"
+														},
+														{
+															"key": "search",
+															"value": "<string>"
+														},
+														{
+															"key": "surveyReportPage",
+															"value": "<boolean>"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "verifyLink",
+							"item": [
+								{
+									"name": ":link",
+									"item": [
+										{
+											"name": "verifyLink",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/verifyLink/:link?createProject=<boolean>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"verifyLink",
+														":link"
+													],
+													"query": [
+														{
+															"key": "createProject",
+															"value": "<boolean>"
+														}
+													],
+													"variable": [
+														{
+															"key": "link"
+														}
+													]
+												}
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/verifyLink/:link?createProject=<boolean>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"verifyLink",
+																":link"
+															],
+															"query": [
+																{
+																	"key": "createProject",
+																	"value": "<boolean>"
+																}
+															],
+															"variable": [
+																{
+																	"key": "link"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "fetchLink",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "fetchLink Copy",
+											"request": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/fetchLink/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"fetchLink",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API generates and retrieves a shareable link for a solution based on the provided solutionId. The link can be used to access or share the solution with other users."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/fetchLink/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"fetchLink",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "update",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "update",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/update/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"update",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "~~~~ The Solution Update API is used to update information related to a solution, such as the evidence upload method or other details. This allows users to modify existing solution configurations to reflect changes in how evidence is collected or to update other solution-specific information."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "x-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/update/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"update",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "getDetails",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "getDetails",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/getDetails/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"getDetails",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API retrieves detailed information about a solution by solutionId. The response includes all solution-related metadata such as name, description, categories, tasks, resources, and associated entities."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/getDetails/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"getDetails",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "list",
+							"item": [
+								{
+									"name": "list ",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/v1/solutions/list?type=<string>&page=<integer>&limit=<integer>&search=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"solutions",
+												"list"
+											],
+											"query": [
+												{
+													"key": "type",
+													"value": "<string>"
+												},
+												{
+													"key": "page",
+													"value": "<integer>"
+												},
+												{
+													"key": "limit",
+													"value": "<integer>"
+												},
+												{
+													"key": "search",
+													"value": "<string>"
+												}
+											]
+										},
+										"description": "This API returns a list of all available solutions. It can be used to fetch a comprehensive list or filter the results based on specific query parameters."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/list?type=<string>&page=<integer>&limit=<integer>&search=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"list"
+													],
+													"query": [
+														{
+															"key": "type",
+															"value": "<string>"
+														},
+														{
+															"key": "page",
+															"value": "<integer>"
+														},
+														{
+															"key": "limit",
+															"value": "<integer>"
+														},
+														{
+															"key": "search",
+															"value": "<string>"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "addEntitiesInScope",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "addEntitiesInScope",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/addEntitiesInScope/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"addEntitiesInScope",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API adds entities to the scope of a solution. By passing the solutionId and a list of entity IDs in the request body, the entities are added to the solution’s scope for assessment or observation purposes."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/addEntitiesInScope/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"addEntitiesInScope",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "addRolesInScope",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "addRolesInScope",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/addRolesInScope/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"addRolesInScope",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API allows adding roles to the scope of a solution. It updates the solution with additional roles that will be able to interact with or be evaluated by the solution. The solutionId and role details need to be provided in the request body."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/addRolesInScope/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"addRolesInScope",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "removeEntitiesInScope",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "removeEntitiesInScope",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth--token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/removeEntitiesInScope/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"removeEntitiesInScope",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API removes entities from the scope of a solution. By passing the solutionId and the entity IDs in the request body, the specified entities are removed from the solution’s scope."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth--token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/removeEntitiesInScope/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"removeEntitiesInScope",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "removeRolesInScope",
+							"item": [
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "removeRolesInScope",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/removeRolesInScope/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"removeRolesInScope",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API allows the removal of roles from the scope of a solution. By passing the solutionId and the role details in the request body, the specified roles are removed from interacting with the solution.\n\n"
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/removeRolesInScope/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"removeRolesInScope",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "details",
+							"item": [
+								{
+									"name": ":solution-id",
+									"item": [
+										{
+											"name": "Solution Details",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/details/:solution-id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"details",
+														":solution-id"
+													],
+													"variable": [
+														{
+															"key": "solution-id"
+														}
+													]
+												},
+												"description": " This API retrieves the details of a specific solution using the solution's id. It returns comprehensive information about the solution, including metadata, configuration, and any related data required for further operations."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/details/:solution-id",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"details",
+																":solution-id"
+															],
+															"variable": [
+																{
+																	"key": "solution-id"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": ":solutionId",
+									"item": [
+										{
+											"name": "This API retrieves the details of a specific solution using the solutionId. It provides comprehensive information about the solution, including its status, categories, tasks, and associated resources.\n\n\nresponse example:\n\n{\n  \"message\": \"Successfully fetc",
+											"request": {
+												"method": "POST",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/v1/solutions/details/:solutionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"solutions",
+														"details",
+														":solutionId"
+													],
+													"variable": [
+														{
+															"key": "solutionId"
+														}
+													]
+												},
+												"description": "This API retrieves the details of a specific solution using the solutionId. It provides comprehensive information about the solution, including its status, categories, tasks, and associated resources.\n\n\nresponse example:\n\n{\n  \"message\": \"Successfully fetched details\",\n  \"status\": 200,\n  \"result\": {\n    \"_id\": \"5f97d2f6bf3a3b1c0116c80a\",\n    \"status\": \"published\",\n    \"isDeleted\": false,\n    \"categories\": [\n      {\n        \"_id\": \"5f102331665bee6a740714e8\",\n        \"name\": \"Teachers\",\n        \"externalId\": \"teachers\"\n      },\n      {\n        \"name\": \"newCategory\",\n        \"externalId\": \"\",\n        \"_id\": \"\"\n      }\n    ],\n    \"tasks\": [\n      {\n        \"_id\": \"289d9558-b98f-41cf-81d3-92486f114a49\",\n        \"name\": \"Task 1\",\n        \"description\": \"Task 1 description\",\n        \"status\": \"notStarted\",\n        \"isACustomTask\": false,\n        \"startDate\": \"2020-09-29T09:08:41.667Z\",\n        \"endDate\": \"2020-09-29T09:08:41.667Z\",\n        \"lastModifiedAt\": \"2020-09-29T09:08:41.667Z\",\n        \"type\": \"single\",\n        \"isDeleted\": false,\n        \"attachments\": [\n          {\n            \"name\": \"download(2).jpeg\",\n            \"type\": \"image/jpeg\",\n            \"sourcePath\": \"projectId/userId/imageName\"\n          }\n        ],\n        \"remarks\": \"Tasks completed\",\n        \"assignee\": \"Aman\",\n        \"children\": [\n          {\n            \"_id\": \"289d9558-b98f-41cf-81d3-92486f114a50\",\n            \"name\": \"Task 2\",\n            \"description\": \"Task 2 description\",\n            \"status\": \"notStarted\",\n            \"children\": [],\n            \"isACustomTask\": false,\n            \"startDate\": \"2020-09-29T09:08:41.667Z\",\n            \"endDate\": \"2020-09-29T09:08:41.667Z\",\n            \"lastModifiedAt\": \"2020-09-29T09:08:41.667Z\",\n            \"type\": \"single\",\n            \"isDeleted\": false,\n            \"externalId\": \"task 2\",\n            \"isDeleteable\": false,\n            \"createdAt\": \"2020-10-28T05:58:24.907Z\",\n            \"updatedAt\": \"2020-10-28T05:58:24.907Z\",\n            \"isImportedFromLibrary\": false\n          }\n        ],\n        \"externalId\": \"task 1\",\n        \"isDeleteable\": false,\n        \"createdAt\": \"2020-10-28T05:58:24.907Z\",\n        \"updatedAt\": \"2020-10-28T05:58:24.907Z\",\n        \"isImportedFromLibrary\": false\n      }\n    ],\n    \"resources\": [],\n    \"deleted\": false,\n    \"__v\": 0,\n    \"description\": \"Project 1 description\"\n  }\n}\n"
+											},
+											"response": [
+												{
+													"name": "200 response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/v1/solutions/details/:solutionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"solutions",
+																"details",
+																":solutionId"
+															],
+															"variable": [
+																{
+																	"key": "solutionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "text",
+													"header": [],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "programs",
+					"item": [
+						{
+							"name": "join",
+							"item": [
+								{
+									"name": ":programId",
+									"item": [
+										{
+											"name": "join",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth--token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/join/:programId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"join",
+														":programId"
+													],
+													"variable": [
+														{
+															"key": "programId"
+														}
+													]
+												}
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth--token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/programs/join/:programId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"programs",
+																"join",
+																":programId"
+															],
+															"variable": [
+																{
+																	"key": "programId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "create",
+							"item": [
+								{
+									"name": "create Copy",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "*/*"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "<string>"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/programs/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"programs",
+												"create"
+											]
+										},
+										"description": "This API is used to create a new program. The request body should contain necessary details such as the program name, description, and any other relevant information to define the program. Once successfully created, the API returns the newly generated program's details.\n\neg req.body\n{\n      \"externalId\" : \"PROGID01\",\n      \"name\" : \"DCPCR School Development Index 2018-19\",\n      \"description\" : \"DCPCR School Development Index 2018-19\",\n      \"isDeleted\" : false,\n      \"resourceType\" : [ \n          \"program\"\n      ],\n      \"language\" : [ \n          \"English\"\n      ],\n      \"keywords\" : [],\n      \"concepts\" : [],\n      \"userId\":\"a082787f-8f8f-42f2-a706-35457ca6f1fd\",\n      \"imageCompression\" : {\n          \"quality\" : 10\n      },\n      \"components\" : [ \n          \"5b98fa069f664f7e1ae7498c\"\n      ],\n      \"scope\" : {\n          \"entityType\" : \"state\",\n          \"entities\" : [\"5d6609ef81a57a6173a79e78\"],\n          \"roles\" : [\"HM\"]\n      }\n      \"startDate\" : \"2023-04-06T09:35:00.000Z\",\n      \"endDate\" : \"\"2024-04-06T09:35:00.000Z\" // optional\n    }"
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/create",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"create"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "list",
+							"item": [
+								{
+									"name": "list Copy",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-auth--token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/v1/programs/list?page=<integer>&limit=<integer>&search=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"programs",
+												"list"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "<integer>"
+												},
+												{
+													"key": "limit",
+													"value": "<integer>"
+												},
+												{
+													"key": "search",
+													"value": "<string>"
+												}
+											]
+										},
+										"description": " This API retrieves a list of all available programs. The response includes details like program IDs, names, and other relevant information for each program.\n\n"
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-auth--token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/list?page=<integer>&limit=<integer>&search=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"list"
+													],
+													"query": [
+														{
+															"key": "page",
+															"value": "<integer>"
+														},
+														{
+															"key": "limit",
+															"value": "<integer>"
+														},
+														{
+															"key": "search",
+															"value": "<string>"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "update",
+							"item": [
+								{
+									"name": ":programId",
+									"item": [
+										{
+											"name": "update Copy",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/update/:programId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"update",
+														":programId"
+													],
+													"variable": [
+														{
+															"key": "programId"
+														}
+													]
+												},
+												"description": "This API updates an existing program using the programId provided as a path parameter. The request body should contain the fields to be updated, such as the program name, description, and other relevant data."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/programs/update/:programId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"programs",
+																"update",
+																":programId"
+															],
+															"variable": [
+																{
+																	"key": "programId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "details",
+							"item": [
+								{
+									"name": ":programId",
+									"item": [
+										{
+											"name": "details Copy",
+											"request": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/details/:programId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"details",
+														":programId"
+													],
+													"variable": [
+														{
+															"key": "programId"
+														}
+													]
+												},
+												"description": "This API fetches the details of a specific program identified by the programId. The response includes all relevant program information such as the name, description, and any other metadata."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/v1/programs/details/:programId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"programs",
+																"details",
+																":programId"
+															],
+															"variable": [
+																{
+																	"key": "programId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "addEntitiesInScope",
+							"item": [
+								{
+									"name": ":programId",
+									"item": [
+										{
+											"name": "addEntitiesInScope Copy",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/addEntitiesInScope/:programId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"addEntitiesInScope",
+														":programId"
+													],
+													"variable": [
+														{
+															"key": "programId"
+														}
+													]
+												},
+												"description": "This API adds entities to the scope of a specific program. The programId is passed as a path parameter, and the entities are passed in the request body."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/programs/addEntitiesInScope/:programId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"programs",
+																"addEntitiesInScope",
+																":programId"
+															],
+															"variable": [
+																{
+																	"key": "programId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "addRolesInScope",
+							"item": [
+								{
+									"name": ":programId",
+									"item": [
+										{
+											"name": "addRolesInScope",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/addRolesInScope/:programId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"addRolesInScope",
+														":programId"
+													],
+													"variable": [
+														{
+															"key": "programId"
+														}
+													]
+												},
+												"description": "This API adds roles to the scope of a specific program. The programId is passed as a path parameter, and the roles are provided in the request body."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>",
+																"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/programs/addRolesInScope/:programId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"programs",
+																"addRolesInScope",
+																":programId"
+															],
+															"variable": [
+																{
+																	"key": "programId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "removeRolesInScope",
+							"item": [
+								{
+									"name": ":programId",
+									"item": [
+										{
+											"name": "removeRolesInScope",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/removeRolesInScope/:programId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"removeRolesInScope",
+														":programId"
+													],
+													"variable": [
+														{
+															"key": "programId"
+														}
+													]
+												},
+												"description": " This API removes roles from the scope of a specific program. The programId is passed as a path parameter, and the roles to be removed are provided in the request body."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/programs/removeRolesInScope/:programId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"programs",
+																"removeRolesInScope",
+																":programId"
+															],
+															"variable": [
+																{
+																	"key": "programId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "removeEntitiesInScope",
+							"item": [
+								{
+									"name": ":programId",
+									"item": [
+										{
+											"name": "removeEntitiesInScope Copy",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/programs/removeEntitiesInScope/:programId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"programs",
+														"removeEntitiesInScope",
+														":programId"
+													],
+													"variable": [
+														{
+															"key": "programId"
+														}
+													]
+												},
+												"description": "This API removes entities from the scope of a specific program. The programId is passed as a path parameter, and the entities to be removed are provided in the request body."
+											},
+											"response": [
+												{
+													"name": "Successful response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/programs/removeEntitiesInScope/:programId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"programs",
+																"removeEntitiesInScope",
+																":programId"
+															],
+															"variable": [
+																{
+																	"key": "programId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": ""
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "surveySubmissions",
+					"item": [
+						{
+							"name": "update",
+							"item": [
+								{
+									"name": ":surveySubmissionId",
+									"item": [
+										{
+											"name": "update",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveySubmissions/update/:surveySubmissionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveySubmissions",
+														"update",
+														":surveySubmissionId"
+													],
+													"variable": [
+														{
+															"key": "surveySubmissionId"
+														}
+													]
+												},
+												"description": "This API is used to update the answers for a specific survey submission. The surveySubmissionId is passed as a path parameter, and the request body contains the answers to the questions in the survey. The submitted answers will be updated in the database."
+											},
+											"response": [
+												{
+													"name": "OK",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveySubmissions/update/:surveySubmissionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveySubmissions",
+																"update",
+																":surveySubmissionId"
+															],
+															"variable": [
+																{
+																	"key": "surveySubmissionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														},
+														{
+															"key": "Content-Type",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														}
+													],
+													"cookie": [],
+													"body": "{}"
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "66d6ac158e418e298fb47237",
+									"item": [
+										{
+											"name": "update dev Copy",
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveySubmissions/update/66d6ac158e418e298fb47237",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveySubmissions",
+														"update",
+														"66d6ac158e418e298fb47237"
+													]
+												}
+											},
+											"response": [
+												{
+													"name": "OK",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Content-Type",
+																"value": "*/*"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "<string>"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveySubmissions/update/66d6ac158e418e298fb47237",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveySubmissions",
+																"update",
+																"66d6ac158e418e298fb47237"
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														},
+														{
+															"key": "Content-Type",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														}
+													],
+													"cookie": [],
+													"body": "{}"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "getStatus",
+							"item": [
+								{
+									"name": ":surveySubmissionId",
+									"item": [
+										{
+											"name": "getStatus",
+											"request": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveySubmissions/getStatus/:surveySubmissionId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveySubmissions",
+														"getStatus",
+														":surveySubmissionId"
+													],
+													"variable": [
+														{
+															"key": "surveySubmissionId"
+														}
+													]
+												},
+												"description": "This API is used to fetch the current status of a survey submission. The surveySubmissionId is passed as a path parameter, and the API returns the status of that particular survey submission.\n\n"
+											},
+											"response": [
+												{
+													"name": "OK",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveySubmissions/getStatus/:surveySubmissionId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveySubmissions",
+																"getStatus",
+																":surveySubmissionId"
+															],
+															"variable": [
+																{
+																	"key": "surveySubmissionId"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														},
+														{
+															"key": "Content-Type",
+															"value": "<string>",
+															"description": {
+																"content": "",
+																"type": "text/plain"
+															}
+														}
+													],
+													"cookie": [],
+													"body": "{}"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "list",
+							"item": [
+								{
+									"name": "list Copy",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-auth-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Content-Type",
+												"value": "*/*"
+											},
+											{
+												"key": "Accept",
+												"value": "text/plain"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "<string>"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/surveySubmissions/list",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"surveySubmissions",
+												"list"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "undefined response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Content-Type",
+														"value": "*/*"
+													},
+													{
+														"key": "Accept",
+														"value": "text/plain"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "<string>"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveySubmissions/list",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveySubmissions",
+														"list"
+													]
+												}
+											},
+											"_postman_previewlanguage": "text",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "text/plain"
+												}
+											],
+											"cookie": [],
+											"body": "<string>"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "isAllowed",
+							"item": [
+								{
+									"name": ":surveySubmissionId",
+									"item": [
+										{
+											"name": "isAllowed",
+											"request": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-auth-token",
+														"value": "<string>"
+													},
+													{
+														"key": "Accept",
+														"value": "text/plain"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/v1/surveySubmissions/isAllowed/:surveySubmissionId?evidenceId=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"surveySubmissions",
+														"isAllowed",
+														":surveySubmissionId"
+													],
+													"query": [
+														{
+															"key": "evidenceId",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "surveySubmissionId"
+														}
+													]
+												},
+												"description": "This API checks if a specific survey submission, identified by surveySubmissionId, is allowed to proceed or perform certain actions. The response will indicate whether the user has the necessary permissions or if any constraints apply to the submission, such as completion status or other validation criteria."
+											},
+											"response": [
+												{
+													"name": "undefined response",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "X-auth-token",
+																"value": "<string>"
+															},
+															{
+																"key": "Accept",
+																"value": "text/plain"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/v1/surveySubmissions/isAllowed/:surveySubmissionId?evidenceId=<string>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"v1",
+																"surveySubmissions",
+																"isAllowed",
+																":surveySubmissionId"
+															],
+															"query": [
+																{
+																	"key": "evidenceId",
+																	"value": "<string>"
+																}
+															],
+															"variable": [
+																{
+																	"key": "surveySubmissionId"
+																}
+															]
+														}
+													},
+													"_postman_previewlanguage": "text",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "text/plain"
+														}
+													],
+													"cookie": [],
+													"body": "<string>"
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "reports",
+					"item": [
+						{
+							"name": "submissionReport",
+							"item": [
+								{
+									"name": "submissionReport",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/reports/submissionReport?submissionId=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"reports",
+												"submissionReport"
+											],
+											"query": [
+												{
+													"key": "submissionId",
+													"value": "<string>"
+												}
+											]
+										},
+										"description": "This API generates a detailed survey submission report based on the submissionId passed in the query parameters. It provides insights and data regarding the responses submitted for a specific survey or observation."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/reports/submissionReport?submissionId=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"reports",
+														"submissionReport"
+													],
+													"query": [
+														{
+															"key": "submissionId",
+															"value": "<string>"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "fetch",
+							"item": [
+								{
+									"name": "Fetch",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/reports/fetch",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"reports",
+												"fetch"
+											]
+										},
+										"description": " This API generates an observation report based on the query parameters provided. The report can either include a PDF or be without a PDF, and it can be generated as an instance report (specific to a single instance of observation) or an entity report (across multiple entities)."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/reports/fetch",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"reports",
+														"fetch"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "files",
+					"item": [
+						{
+							"name": "preSignedUrls",
+							"item": [
+								{
+									"name": "preSignedUrls",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "x-auth-token",
+												"value": "<string>",
+												"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/v1/files/preSignedUrls",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"v1",
+												"files",
+												"preSignedUrls"
+											]
+										},
+										"description": "This API provides a pre-signed URL that allows users to upload files directly to storage. Once the file is uploaded, the API also returns a downloadable URL, which can be used to directly access the uploaded file."
+									},
+									"response": [
+										{
+											"name": "Successful response",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "x-auth-token",
+														"value": "<string>",
+														"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/v1/files/preSignedUrls",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"v1",
+														"files",
+														"preSignedUrls"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://{{samikshaurl}}"
+		}
+	]
+}

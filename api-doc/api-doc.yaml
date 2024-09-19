@@ -1,0 +1,2280 @@
+openapi: 3.0.0
+info:
+  title: Samiksha Service
+  version: 1.0.0
+  description: |-
+    This API collection serves the Survey Service, covering both Observations and Surveys. It provides various endpoints for managing and interacting with surveys and observations, along with comprehensive report generation functionalities.
+
+    Observations:
+    Observations with Rubric: Allows assessment based on predefined rubrics.
+    Observations without Rubric: Flexible observations without structured rubrics.
+    Reports:
+    Survey Reports: Generate detailed reports based on survey submissions.
+    Observation Reports: Includes:
+    Entity Reports: Focuses on specific entities being observed.
+    Instance Reports: Provides detailed information on specific instances of observation.
+    PDF Reports: Available for both entity and instance reports.
+    This API collection supports essential workflows such as criteria upload, observation submission, report generation, and program management. It simplifies the process of collecting, managing, and analyzing data for both surveys and observations.
+servers:
+  - url: http://{{samikshaurl}}
+tags:
+  - name: observation
+  - name: Survey
+  - name: Polls
+  - name: Solutions
+  - name: Program
+  - name: Admin
+  - name: surveySubmissions
+  - name: Questions
+  - name: Report
+  - name: Survey Creation Flow
+  - name: Observation Creation Flow
+  - name: tag1
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Files
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+paths:
+  /v1/criteria/upload:
+    post:
+      tags:
+        - Observation Creation Flow
+      summary: upload citeria
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                criteria:
+                  type: string
+                  format: binary
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: OK
+          headers:
+            Server:
+              schema:
+                type: string
+                example: nginx/1.18.0 (Ubuntu)
+            Date:
+              schema:
+                type: string
+                example: Tue, 29 Aug 2023 08:58:38 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/octet-stream
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Powered-By:
+              schema:
+                type: string
+                example: Express
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: '*'
+            Content-disposition:
+              schema:
+                type: string
+                example: attachment; filename=Criteria-Upload_2023_08_29_14_28.csv
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                "Criteria Name","Criteria External Id","Criteria Internal Id"
+                "Planning and Execution (योजना एवं क्रियान्वयन)","D1C1_1649679267152","64edb33eb0d6fb2a605bf314"
+                "Data-based Governance (डाटा आधारित प्रशासन)","D1C2_1649679267152","64edb33eb0d6fb2a605bf315"
+                "Digital and Technology (डिजिटल एंड टेक्नोलॉजी)","D1C3_1649679267152","64edb33eb0d6fb2a605bf316"
+                "Sport & Art Intervention (खेल एवं कला का अंतःक्षेप)","D1C4_1649679267152","64edb33eb0d6fb2a605bf317"
+                "Communication (संवाद)","D2C1_1649679267152","64edb33eb0d6fb2a605bf318"
+                "Influence (प्रभाव)","D2C2_1649679267152","64edb33eb0d6fb2a605bf319"
+                "Collaboration (समन्वय)","D2C3_1649679267152","64edb33eb0d6fb2a605bf31a"
+                "Conflict Management (विरोधाभाष/संघर्ष प्रबंधन)","D2C4_1649679267152","64edb33eb0d6fb2a605bf31b"
+                "Coaching & Mentoring","D3C1_1649679267152","64edb33eb0d6fb2a605bf31c"
+                "Giving Feedback (प्रतिपुष्टि देना)","D3C2_1649679267152","64edb33eb0d6fb2a605bf31d"
+                "Supervision (पर्यवेक्षण)","D3C3_1649679267152","64edb33eb0d6fb2a605bf31e"
+                "Self-Awareness (स्व-जागरूकता)","D4C1_1649679267152","64edb33eb0d6fb2a605bf31f"
+                "Self- Management (स्व-प्रबंधन)","D4C2_1649679267152","64edb33eb0d6fb2a605bf320"
+                "Social and Emotional Wellbeing (सामाजिक एवं भावनात्मक देखभाल)","D4C3_1649679267152","64edb33eb0d6fb2a605bf321"
+      description: The Upload Criteria API allows users to upload a CSV file containing information about the criteria used to observe or evaluate an entity. Each record in the CSV should include a criteriaId, criteriaName, type, and other relevant information. The API processes this file, validates the data, and stores the criteria details in the system for further use in reports and evaluations.
+  /v1/frameworks/create:
+    post:
+      tags:
+        - observation
+      summary: frameworks create
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                framework:
+                  type: string
+                  format: binary
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Powered-By:
+              schema:
+                type: string
+                example: Express
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: '*'
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=utf-8
+            Content-Length:
+              schema:
+                type: integer
+                example: '59'
+            ETag:
+              schema:
+                type: string
+                example: W/"3b-P9rERk5plGUTm/7p8EU1gMhl3pw"
+            Date:
+              schema:
+                type: string
+                example: Mon, 28 Aug 2023 09:29:44 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Framework inserted successfully.
+                status: 200
+      description: |2-
+         The Upload Framework API allows users to upload a CSV file containing observation data, along with a framework in JSON format. The framework sheet should include an external_id (UUID) for each framework entry, and the criteria external_id generated during the criteria upload process must also be included.
+
+        This API is used to create solutions based on a framework upload. Users must provide a frameworkID (UUID) and specify the entityType as defined in the template.
+  /v1/observations/importFromFramework:
+    post:
+      tags:
+        - Observation Creation Flow
+      summary: importFromFramework
+      description: This API is used to create solutions based on a framework upload. Users must provide a frameworkID (UUID) and specify the entityType as defined in the template.~~~~
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                framework:
+                  type: string
+                  format: binary
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: frameworkId
+          in: query
+          schema:
+            type: string
+          example: 606d92fa-42d8-11ec-ac61-10092024-17_58
+          description: UUID
+        - name: entityType
+          in: query
+          schema:
+            type: string
+          example: school
+          description: can be school,cluster,block
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/questions/bulkCreate:
+    post:
+      tags:
+        - Questions
+      summary: bulkCreate Questions
+      description: The Bulk Create API is used to create multiple questions in an observation. Users can provide a batch of questions in the request, which will be added to the specified observation.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                questions:
+                  type: string
+                  format: binary
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/observations/assessment/:observationId:
+    post:
+      tags:
+        - observation
+      summary: Assessment Observation
+      description: |+
+        The Assessment API retrieves information about a specific observation using the observation_id provided in the request. It returns details such as the questionnaire and other related information. The response also includes a submissionId, which is required for submitting responses through the Observation Submission API.
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                district: 66d0560bdf92822366029c22
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: entityId
+          in: query
+          schema:
+            type: string
+          example: 5f8048a19a3faabb16a08473
+        - name: submissionNumber
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/observations/entities:
+    post:
+      tags:
+        - Observation Creation Flow
+      summary: Obs/entities
+      description: This API retrieves a list of entities associated with a specific observation. You can pass the observation_id as a params parameter or the solutionId as a query parameter. The API will return the entities related to the observation or the solution, based on the input.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                district: 123e4567-e89b-12d3-a456-426614174007
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: solutionId
+          in: query
+          schema:
+            type: string
+          example: 66e0433788b44767f9faf236
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/observationSubmissions/list/:observationSubmissionId:
+    post:
+      tags:
+        - observation
+      summary: List Observation submission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: entityId
+          in: query
+          schema:
+            type: string
+          example: 64e82cf2a87fdf4cccb96944
+          description: EntityId for which the submission have been made
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Powered-By:
+              schema:
+                type: string
+                example: Express
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: '*'
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=utf-8
+            Content-Length:
+              schema:
+                type: integer
+                example: '1714'
+            ETag:
+              schema:
+                type: string
+                example: W/"6b2-Pi2RNvVp2UmUYlTJzvUyiYPIH2Y"
+            Date:
+              schema:
+                type: string
+                example: Mon, 28 Aug 2023 09:58:51 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Successfully fetched observation submissions
+                status: 200
+                result:
+                  - _id: 64ec6c45e7d53cd3f68095ca
+                    evidencesStatus:
+                      - name: Observation
+                        code: OB
+                        status: notstarted
+                    isRubricDriven: false
+                    entityId: 64e82cf2a87fdf4cccb96944
+                    entityExternalId: Test
+                    entityType: district
+                    observationId: 64ec6ae351957fd239352446
+                    status: started
+                    scoringSystem: null
+                    criteriaLevelReport: false
+                    submissionNumber: 3
+                    title: Observation 3
+                    updatedAt: '2023-08-28T09:43:33.759Z'
+                    createdAt: '2023-08-28T09:43:33.759Z'
+                    observationName: 2.0 Feedback Form Ankit
+                    submissionDate: ''
+                    ratingCompletedAt: ''
+                  - _id: 64ec6c35e7d53cd3f68095be
+                    evidencesStatus:
+                      - name: Observation
+                        code: OB
+                        status: notstarted
+                    isRubricDriven: false
+                    entityId: 64e82cf2a87fdf4cccb96944
+                    entityExternalId: Test
+                    entityType: district
+                    observationId: 64ec6ae351957fd239352446
+                    status: started
+                    scoringSystem: null
+                    criteriaLevelReport: false
+                    submissionNumber: 2
+                    title: Observation 2
+                    updatedAt: '2023-08-28T09:43:17.682Z'
+                    createdAt: '2023-08-28T09:43:17.682Z'
+                    observationName: 2.0 Feedback Form Ankit
+                    submissionDate: ''
+                    ratingCompletedAt: ''
+                  - _id: 64ec6bd9e7d53cd3f68095b2
+                    evidencesStatus:
+                      - name: Observation
+                        code: OB
+                        status: notstarted
+                    isRubricDriven: false
+                    entityId: 64e82cf2a87fdf4cccb96944
+                    entityExternalId: Test
+                    entityType: district
+                    observationId: 64ec6ae351957fd239352446
+                    status: started
+                    scoringSystem: null
+                    criteriaLevelReport: false
+                    submissionNumber: 1
+                    title: Observation 1
+                    updatedAt: '2023-08-28T09:41:45.444Z'
+                    createdAt: '2023-08-28T09:41:45.444Z'
+                    observationName: 2.0 Feedback Form Ankit
+                    submissionDate: ''
+                    ratingCompletedAt: ''
+      description: This API retrieves the details of a specific observation submission based on the observation-submission-id. It provides information about the submission, including responses to the observation's questionnaire, submission status, and other relevant data.
+  /v1/observationSubmissions/update/:observationSubmissionId:
+    post:
+      tags:
+        - observation
+      summary: Update Observation Submission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                evidence:
+                  externalId: OB
+                  answers:
+                    66d0b982a0d83210b583e6f8:
+                      qid: 66d0b982a0d83210b583e6f8
+                      value: R1
+                      remarks: ''
+                      fileName: []
+                      gpsLocation: ''
+                      payload:
+                        question:
+                          - Select the medium of the course consumption
+                          - ''
+                        labels: []
+                        responseType: radio
+                        filesNotUploaded: []
+                      startTime: 1725101128668
+                      endTime: ''
+                      criteriaId: 66d0b982a0d83210b583e706
+                      responseType: radio
+                      evidenceMethod: OB
+                      rubricLevel: ''
+                    66d0b982a0d83210b583e6f9:
+                      qid: 66d0b982a0d83210b583e6f9
+                      value:
+                        - R1
+                        - R2
+                      remarks: ''
+                      fileName: []
+                      gpsLocation: ''
+                      payload:
+                        question:
+                          - Select the courses that you have enrolled in NISHTHA 2.0
+                          - ''
+                        labels: []
+                        responseType: multiselect
+                        filesNotUploaded: []
+                      startTime: 1725101128668
+                      endTime: ''
+                      criteriaId: 66d0b982a0d83210b583e706
+                      responseType: multiselect
+                      evidenceMethod: OB
+                      rubricLevel: ''
+                    66d0b982a0d83210b583e6fa:
+                      qid: 66d0b982a0d83210b583e6fa
+                      value:
+                        - R1
+                        - R2
+                      remarks: ''
+                      fileName: []
+                      gpsLocation: ''
+                      payload:
+                        question:
+                          - Select the courses which you have got the certificate.
+                          - ''
+                        labels: []
+                        responseType: multiselect
+                        filesNotUploaded: []
+                      startTime: 1725101128668
+                      endTime: ''
+                      criteriaId: 66d0b982a0d83210b583e706
+                      responseType: multiselect
+                      evidenceMethod: OB
+                      rubricLevel: ''
+                    66d0b982a0d83210b583e6fb:
+                      qid: 66d0b982a0d83210b583e6fb
+                      value:
+                        - R1
+                        - R2
+                      remarks: ''
+                      fileName: []
+                      gpsLocation: ''
+                      payload:
+                        question:
+                          - Select the courses that you have enrolled in NISHTHA 2.0
+                          - ''
+                        labels: []
+                        responseType: multiselect
+                        filesNotUploaded: []
+                      startTime: 1725101128668
+                      endTime: ''
+                      criteriaId: 66d0b982a0d83210b583e706
+                      responseType: multiselect
+                      evidenceMethod: OB
+                      rubricLevel: ''
+                    66d0b982a0d83210b583e6fc:
+                      qid: 66d0b982a0d83210b583e6fc
+                      value: '5'
+                      remarks: ''
+                      fileName: []
+                      gpsLocation: ''
+                      payload:
+                        question:
+                          - Give a rating on the reading materials available in the course
+                          - ''
+                        labels: []
+                        responseType: slider
+                        filesNotUploaded: []
+                      startTime: 1725101128668
+                      endTime: ''
+                      criteriaId: 66d0b982a0d83210b583e706
+                      responseType: slider
+                      evidenceMethod: OB
+                      rubricLevel: ''
+                  startTime: 1725098958201
+                  endTime: 1725099013086
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Powered-By:
+              schema:
+                type: string
+                example: Express
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: '*'
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=utf-8
+            Content-Length:
+              schema:
+                type: integer
+                example: '6199'
+            ETag:
+              schema:
+                type: string
+                example: W/"1837-Ckq/QY5LfHFLaV9nshdsCAQw8lM"
+            Date:
+              schema:
+                type: string
+                example: Mon, 28 Aug 2023 09:43:33 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Keep-Alive:
+              schema:
+                type: string
+                example: timeout=5
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Observation submission created successfully
+                status: 200
+                result:
+                  - _id: 64ec6ae351957fd239352446
+                    entities:
+                      - _id: 64e82cf2a87fdf4cccb96944
+                        submissionStatus: started
+                        submissions:
+                          - evidencesStatus:
+                              - externalId: OB
+                                tip: null
+                                name: Observation
+                                description: null
+                                modeOfCollection: onfield
+                                canBeNotApplicable: false
+                                notApplicable: false
+                                canBeNotAllowed: false
+                                remarks: null
+                                startTime: ''
+                                endTime: ''
+                                isSubmitted: false
+                                submissions: []
+                            feedback: []
+                            submissionsUpdatedHistory: []
+                            pointsBasedMaxScore: 0
+                            pointsBasedScoreAchieved: 0
+                            pointsBasedPercentageScore: 0
+                            isAPrivateProgram: false
+                            isRubricDriven: false
+                            deleted: false
+                            _id: 64ec6c45e7d53cd3f68095ca
+                            entityId: 64e82cf2a87fdf4cccb96944
+                            entityExternalId: Test
+                            entityInformation:
+                              externalId: Test
+                              name: Test School
+                              registryDetails:
+                                locationId: 123e4567-e89b-12d3-a456-426614174007
+                                code: Test7
+                                lastUpdatedAt: '2023-08-25T04:24:17.498Z'
+                            solutionId: 64ec693ae67838d0267c7e88
+                            solutionExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764-OBSERVATION-TEMPLATE
+                            entityTypeId: 64e8240aad92194a6a9c97a0
+                            entityType: district
+                            observationId: 64ec6ae351957fd239352446
+                            observationInformation:
+                              createdFor:
+                                - 64e824fc32daea2a272ac3d7
+                              rootOrganisations: []
+                              isAPrivateProgram: false
+                              name: 2.0 Feedback Form Ankit
+                              description: 2.0 feedback form
+                              entityTypeId: 64e8240aad92194a6a9c97a0
+                              entityType: district
+                              createdAt: '2021-11-11T10:16:02.564Z'
+                              updatedAt: '2023-08-28T09:37:39.520Z'
+                              frameworkId: 64ec6908e67838d0267c7e82
+                              frameworkExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764
+                              status: published
+                              startDate: '2023-08-28T09:37:25.313Z'
+                              endDate: '2024-08-28T09:37:25.686Z'
+                              solutionId: 64ec693ae67838d0267c7e88
+                              solutionExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764-OBSERVATION-TEMPLATE
+                              createdBy: 64e824fc32daea2a272ac3d7
+                            createdBy: 64e824fc32daea2a272ac3d7
+                            status: started
+                            scoringSystem: null
+                            criteriaLevelReport: false
+                            submissionNumber: 3
+                            title: Observation 3
+                            updatedAt: '2023-08-28T09:43:33.759Z'
+                            createdAt: '2023-08-28T09:43:33.759Z'
+                            __v: 0
+                          - evidencesStatus:
+                              - externalId: OB
+                                tip: null
+                                name: Observation
+                                description: null
+                                modeOfCollection: onfield
+                                canBeNotApplicable: false
+                                notApplicable: false
+                                canBeNotAllowed: false
+                                remarks: null
+                                startTime: ''
+                                endTime: ''
+                                isSubmitted: false
+                                submissions: []
+                            feedback: []
+                            submissionsUpdatedHistory: []
+                            pointsBasedMaxScore: 0
+                            pointsBasedScoreAchieved: 0
+                            pointsBasedPercentageScore: 0
+                            isAPrivateProgram: false
+                            isRubricDriven: false
+                            deleted: false
+                            _id: 64ec6c35e7d53cd3f68095be
+                            entityId: 64e82cf2a87fdf4cccb96944
+                            entityExternalId: Test
+                            entityInformation:
+                              externalId: Test
+                              name: Test School
+                              registryDetails:
+                                locationId: 123e4567-e89b-12d3-a456-426614174007
+                                code: Test7
+                                lastUpdatedAt: '2023-08-25T04:24:17.498Z'
+                            solutionId: 64ec693ae67838d0267c7e88
+                            solutionExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764-OBSERVATION-TEMPLATE
+                            entityTypeId: 64e8240aad92194a6a9c97a0
+                            entityType: district
+                            observationId: 64ec6ae351957fd239352446
+                            observationInformation:
+                              createdFor:
+                                - 64e824fc32daea2a272ac3d7
+                              rootOrganisations: []
+                              isAPrivateProgram: false
+                              name: 2.0 Feedback Form Ankit
+                              description: 2.0 feedback form
+                              entityTypeId: 64e8240aad92194a6a9c97a0
+                              entityType: district
+                              createdAt: '2021-11-11T10:16:02.564Z'
+                              updatedAt: '2023-08-28T09:37:39.520Z'
+                              frameworkId: 64ec6908e67838d0267c7e82
+                              frameworkExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764
+                              status: published
+                              startDate: '2023-08-28T09:37:25.313Z'
+                              endDate: '2024-08-28T09:37:25.686Z'
+                              solutionId: 64ec693ae67838d0267c7e88
+                              solutionExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764-OBSERVATION-TEMPLATE
+                              createdBy: 64e824fc32daea2a272ac3d7
+                            createdBy: 64e824fc32daea2a272ac3d7
+                            status: started
+                            scoringSystem: null
+                            criteriaLevelReport: false
+                            submissionNumber: 2
+                            title: Observation 2
+                            updatedAt: '2023-08-28T09:43:17.682Z'
+                            createdAt: '2023-08-28T09:43:17.682Z'
+                            __v: 0
+                          - evidencesStatus:
+                              - externalId: OB
+                                tip: null
+                                name: Observation
+                                description: null
+                                modeOfCollection: onfield
+                                canBeNotApplicable: false
+                                notApplicable: false
+                                canBeNotAllowed: false
+                                remarks: null
+                                startTime: ''
+                                endTime: ''
+                                isSubmitted: false
+                                submissions: []
+                            feedback: []
+                            submissionsUpdatedHistory: []
+                            pointsBasedMaxScore: 0
+                            pointsBasedScoreAchieved: 0
+                            pointsBasedPercentageScore: 0
+                            isAPrivateProgram: false
+                            isRubricDriven: false
+                            deleted: false
+                            _id: 64ec6bd9e7d53cd3f68095b2
+                            entityId: 64e82cf2a87fdf4cccb96944
+                            entityExternalId: Test
+                            entityInformation:
+                              externalId: Test
+                              name: Test School
+                              registryDetails:
+                                locationId: 123e4567-e89b-12d3-a456-426614174007
+                                code: Test7
+                                lastUpdatedAt: '2023-08-25T04:24:17.498Z'
+                            solutionId: 64ec693ae67838d0267c7e88
+                            solutionExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764-OBSERVATION-TEMPLATE
+                            entityTypeId: 64e8240aad92194a6a9c97a0
+                            entityType: district
+                            observationId: 64ec6ae351957fd239352446
+                            observationInformation:
+                              createdFor:
+                                - 64e824fc32daea2a272ac3d7
+                              rootOrganisations: []
+                              isAPrivateProgram: false
+                              name: 2.0 Feedback Form Ankit
+                              description: 2.0 feedback form
+                              entityTypeId: 64e8240aad92194a6a9c97a0
+                              entityType: district
+                              createdAt: '2021-11-11T10:16:02.564Z'
+                              updatedAt: '2023-08-28T09:37:39.520Z'
+                              frameworkId: 64ec6908e67838d0267c7e82
+                              frameworkExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764
+                              status: published
+                              startDate: '2023-08-28T09:37:25.313Z'
+                              endDate: '2024-08-28T09:37:25.686Z'
+                              solutionId: 64ec693ae67838d0267c7e88
+                              solutionExternalId: 606d92fa-42d8-11ec-ac61-5130d5eab764-OBSERVATION-TEMPLATE
+                              createdBy: 64e824fc32daea2a272ac3d7
+                            createdBy: 64e824fc32daea2a272ac3d7
+                            status: started
+                            scoringSystem: null
+                            criteriaLevelReport: false
+                            submissionNumber: 1
+                            title: Observation 1
+                            updatedAt: '2023-08-28T09:41:45.444Z'
+                            createdAt: '2023-08-28T09:41:45.444Z'
+                            __v: 0
+                        externalId: Test
+                        name: Test School
+                    name: 2.0 Feedback Form Ankit
+                    description: 2.0 feedback form
+                    status: published
+                    startDate: '2023-08-28T09:37:25.313Z'
+                    endDate: '2024-08-28T09:37:25.686Z'
+                    solutionId: 64ec693ae67838d0267c7e88
+      description: |+
+        The Observation Submission API is used to submit answers to a questionnaire for a specific observation. By providing the observation_id and the corresponding answers, this API updates the answers in the database.
+
+
+        Request Parameters:
+        observation_id (required): The ID of the observation for which answers are being submitted.
+        answers (required): A collection of answers corresponding to the questionnaire questions. This should be structured according to the format specified in the questionnaire.
+
+
+  /v1/surveys/getLink/:solutionExternalId:
+    post:
+      tags:
+        - Survey
+      summary: getLink
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"externalId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"programExternalId\": \"00000000-1621323219342\"\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: appName
+          in: query
+          schema:
+            type: string
+          example: samiksha
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API retrieves a sharing link for a survey solution using the solutionExternalId provided in the path parameters. The returned link allows users to access or share the survey solution, enabling easy distribution or collaboration. This is particularly useful for sharing surveys with external participants or stakeholders.
+  /v1/surveys/createSolutionTemplate:
+    post:
+      tags:
+        - Survey Creation Flow
+      summary: createSolutionTemplate
+      description: |-
+        Generated from cURL: curl --location 'http://localhost:4301/samiksha/v1/surveys/createSolutionTemplate' \
+        --header 'x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoyLCJuYW1lIjoiU2Fpc2giLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6MywidGl0bGUiOiJtZW50ZWUiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsInZpc2libGl0eSI6IlBVQkxJQyIsIm9yZ2FuaXphdGlvbl9pZCI6IjEifV19LCJpYXQiOjE3MjUyNTQzOTgsImV4cCI6MTcyNTM0MDc5OH0.XZ40Y0BQxsZkPCBY00VNt1gfNJdcU-Mk75p48YJe5QE' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "name": "survey support test",
+            "description": "This is Testing for survey upload",
+            "externalId": "a383af8d-7e4e-4c3b-a79d-ccf2bd14de57",
+            "author": "",
+            "startDate": "2022-04-29T13:57:28.259Z",
+            "endDate": "2026-05-02T12:00:00.259Z",
+            "linkTitle": "",
+            "linkUrl": "",
+            "status": "active"
+        }'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: survey support test
+                description: This is Testing for survey upload
+                externalId: a383af8d-7e4e-4c3b-a79d-ccf2bd14de57
+                author: ''
+                startDate: '2022-04-29T13:57:28.259Z'
+                endDate: '2026-05-02T12:00:00.259Z'
+                linkTitle: ''
+                linkUrl: ''
+                status: active
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/surveys/mapSurverySolutionToProgram/:solutionId:
+    post:
+      tags:
+        - Survey
+      summary: mapSurverySolutionToProgram Copy
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"externalId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"programExternalId\": \"00000000-1621323219342\"\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: programId
+          in: query
+          schema:
+            type: string
+          example: TN-Program-1597301830708
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API maps a survey solution, identified by solutionId, to a specific program. The programId should be passed in the query parameters (req.query.programId), which represents the external ID of the program. Once mapped, the solution will be associated with the designated program, allowing for its usage within the context of that program.
+  /v1/surveys/userAssigned:
+    post:
+      tags:
+        - Survey
+      summary: userAssigned dev
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"solutionIds\": [\"66b5c1dd982ea3322350853d\"]\n}"'
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: '{{authorization}}'
+        - name: X-authenticated-user-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: filter
+          in: query
+          schema:
+            type: string
+        - name: surveyReportPage
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/surveys/userSurvey:
+    post:
+      tags:
+        - Survey
+      summary: userSurveyNotusing
+      requestBody:
+        content: {}
+      parameters:
+        - name: X-authenticated-user-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: internal-access-token
+          in: header
+          schema:
+            type: string
+          example: 8c3a94f0931e01a4940a
+        - name: stats
+          in: query
+          schema:
+            type: boolean
+          example: 'false'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/solutions/create:
+    post:
+      tags:
+        - Solutions
+      summary: 'create '
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"createdFor\": [],\n    \"rootOrganisations\": [],\n    \"programExternalId\": \"TESTING_BY_DEV_TEAM_2\",\n    \"entities\": [\n      \"5f33c3d85f637784791cd830\"\n    ],\n    \"entityType\": \"school\",\n    \"externalId\": \"TN-Program-1597301830742\",\n    \"name\": \"Improvement Project 3\",\n    \"description\": \"Leveraging the huge number of private schools to show the significance of the financial problem by creating a petition and presenting to the authorities.\",\n    // \"startDate\": \"2021-06-16 00:00:00\",\n    // \"endDate\": \"2025-06-21 00:00:00\",\n    \"subType\": \"observation\",\n    \"type\": \"observation\",\n    \"excludeScope\":false,\n     \"isReusable\": false,\n    \"isAPrivateProgram\": false,\n    \"scope\": {\n    \"entityType\": \"state\",\n    \"entities\": [\n      \"5f33c3d85f637784791cd830\"\n    ],\n    \"roles\": \"HM\"\n      \n    \n  }\n  \n\n    \n    // \"entities\":[\n    //  \"db331a8c-b9e2-45f8-b3c0-7ec1e826b6df\",\"6cbce49e-c33d-4f4c-aaa8-c689a1f067f3\"\n    // ]\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API is used to create a new solution. You need to pass the necessary details like name, description, and other solution-related metadata in the request body. It stores the solution in the system and returns its ID upon successful creation.
+  /v1/solutions/importFromSolution:
+    post:
+      tags:
+        - Observation Creation Flow
+      summary: importFromSolution
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                externalId: ''
+                name: dev_testing
+                description: dev testing
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: solutionId
+          in: query
+          schema:
+            type: string
+          example: 606d92fa-42d8-11ec-ac61-10092024-17_58-OBSERVATION-TEMPLATE
+          description: 'Enter external solution id '
+        - name: entityType
+          in: query
+          schema:
+            type: string
+          example: school
+          description: can be school,cluster or block
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API is used to create a child solution from an existing solution. You need to pass the solutionId and entityType as query parameters to generate the child solution.
+  /v1/solutions/targetedSolutions:
+    post:
+      tags:
+        - Solutions
+      summary: targetedSolutions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                entityType: state
+                entityTypeId: 5f32d8228e0dc8312404056e
+                entities:
+                  - 5f33c3d85f637784791cd830
+                  - 5fd098e2e049735a86b748ac
+                  - 5fd1b52ab53a6416aaeefc83
+                  - 5fd1b52ab53a6416aaeefb20
+                role: BEO,HM
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: type
+          in: query
+          schema:
+            type: string
+          example: survey
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '7'
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: surveyReportPage
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API fetches a list of targeted solutions based on the user profile or any applied filters. It returns a collection of solutions that are specifically designed or relevant to the user’s role or criteria.
+  /v1/solutions/verifyLink/:link:
+    post:
+      tags:
+        - Solutions
+      summary: verifyLink
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                entityType: state
+                entityTypeId: 5f32d8228e0dc8312404056e
+                entities:
+                  - 5f33c3d85f637784791cd830
+                  - 5fd098e2e049735a86b748ac
+                  - 5fd1b52ab53a6416aaeefc83
+                  - 5fd1b52ab53a6416aaeefb20
+                role: BEO,HM
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: '{{authorization}}'
+        - name: X-authenticated-user-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: createProject
+          in: query
+          schema:
+            type: boolean
+          example: 'false'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: ''
+  /v1/solutions/fetchLink/:solutionId:
+    get:
+      tags:
+        - Solutions
+      summary: fetchLink Copy
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API generates and retrieves a shareable link for a solution based on the provided solutionId. The link can be used to access or share the solution with other users.
+  /v1/solutions/update/:solutionId:
+    post:
+      tags:
+        - Solutions
+      summary: update
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n\"evidenceMethods\": {\n            \"OB\": {\n                \"externalId\": \"OB\",\n                \"tip\": null,\n                \"name\": \"Observation\",\n                \"description\": null,\n                \"modeOfCollection\": \"onfield\",\n                \"canBeNotApplicable\": false,\n                \"notApplicable\": false,\n                \"canBeNotAllowed\": false,\n                \"remarks\": null\n            }\n        },\n        \"sections\": {\n            \"S1\": \"Observation Question\"\n        }\n}\n"'
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: ~~~~ The Solution Update API is used to update information related to a solution, such as the evidence upload method or other details. This allows users to modify existing solution configurations to reflect changes in how evidence is collected or to update other solution-specific information.
+  /v1/solutions/getDetails/:solutionId:
+    post:
+      tags:
+        - Solutions
+      summary: getDetails
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"programExternalId\" : \"MAHARASTHA-AUTO-TARGETING\",\n    \"entityType\" : \"school\",\n    \"externalId\" : \"SCOPE_MAHARASTHA_SURVEY\",\n    \"name\" : \"Survey testing\",\n    \"description\" : \"Improvement project test solution\"\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API retrieves detailed information about a solution by solutionId. The response includes all solution-related metadata such as name, description, categories, tasks, resources, and associated entities.
+  /v1/solutions/list:
+    get:
+      tags:
+        - Solutions
+      summary: 'list '
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: type
+          in: query
+          schema:
+            type: string
+          example: observation
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '2'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '100'
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API returns a list of all available solutions. It can be used to fetch a comprehensive list or filter the results based on specific query parameters.
+  /v1/solutions/addEntitiesInScope/:solutionId:
+    post:
+      tags:
+        - Solutions
+      summary: addEntitiesInScope
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n     \"entities\":[\"5f33c3d85f637784791cd831\"]\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API adds entities to the scope of a solution. By passing the solutionId and a list of entity IDs in the request body, the entities are added to the solution’s scope for assessment or observation purposes.
+  /v1/solutions/addRolesInScope/:solutionId:
+    post:
+      tags:
+        - Solutions
+      summary: addRolesInScope
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"roles\": [\n        \"DEO\",\n        \"HM\",\n        \"TEACHER\"\n    ]\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API allows adding roles to the scope of a solution. It updates the solution with additional roles that will be able to interact with or be evaluated by the solution. The solutionId and role details need to be provided in the request body.
+  /v1/solutions/removeEntitiesInScope/:solutionId:
+    post:
+      tags:
+        - Solutions
+      summary: removeEntitiesInScope
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"entities\": [\n        \"5f33c3d85f637784791cd831\"\n    ]\n}"'
+      parameters:
+        - name: X-auth--token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API removes entities from the scope of a solution. By passing the solutionId and the entity IDs in the request body, the specified entities are removed from the solution’s scope.
+  /v1/solutions/removeRolesInScope/:solutionId:
+    post:
+      tags:
+        - Solutions
+      summary: removeRolesInScope
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"roles\" : [\"DEO\"]\n}\n\n"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: |+
+        This API allows the removal of roles from the scope of a solution. By passing the solutionId and the role details in the request body, the specified roles are removed from interacting with the solution.
+
+  /v1/programs/join/:programId:
+    post:
+      tags:
+        - Program
+      summary: join
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"userRoleInformation\": {\n        \"district\": \"2f76dcf5-e43b-4f71-a3f2-c8f19e1fce03\",\n        \"block\": \"966c3be4-c125-467d-aaff-1eb1cd525923\",\n        \"state\": \"bc75cc99-9205-463e-a722-5326857838f8\",\n        \"school\": \"28226200910\",\n        \"role\": \"HM,DEO,MEO,CRP,Complex HM,SPD\"\n    },\n    \"isResource\": true,\n    \"consentShared\": true\n}"'
+      parameters:
+        - name: X-auth--token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: ''
+  /v1/programs/create:
+    post:
+      tags:
+        - Program
+      summary: create Copy
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"externalId\": \"TESTING_BY_DEV_TEAM_1\",\n    \"name\": \"Testing by dev team ap\",\n    \"description\": \"testing by dev team\",\n    \"resourceType\": [\n        \"program\"\n    ],\n    \"language\": [\n        \"English\"\n    ],\n    \"keywords\": [],\n    \"concepts\": [],\n    \"createdFor\": [],\n    \"rootOrganisations\": [],\n    \"startDate\": \"2023 05 01\",\n    \"endDate\": \"2025 10 10\"\n    // \"imageCompression\": {\n    //     \"quality\": 10\n    // }\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: |-
+        This API is used to create a new program. The request body should contain necessary details such as the program name, description, and any other relevant information to define the program. Once successfully created, the API returns the newly generated program's details.
+
+        eg req.body
+        {
+              "externalId" : "PROGID01",
+              "name" : "DCPCR School Development Index 2018-19",
+              "description" : "DCPCR School Development Index 2018-19",
+              "isDeleted" : false,
+              "resourceType" : [ 
+                  "program"
+              ],
+              "language" : [ 
+                  "English"
+              ],
+              "keywords" : [],
+              "concepts" : [],
+              "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
+              "imageCompression" : {
+                  "quality" : 10
+              },
+              "components" : [ 
+                  "5b98fa069f664f7e1ae7498c"
+              ],
+              "scope" : {
+                  "entityType" : "state",
+                  "entities" : ["5d6609ef81a57a6173a79e78"],
+                  "roles" : ["HM"]
+              }
+              "startDate" : "2023-04-06T09:35:00.000Z",
+              "endDate" : ""2024-04-06T09:35:00.000Z" // optional
+            }
+  /v1/programs/list:
+    get:
+      tags:
+        - Program
+      summary: list Copy
+      parameters:
+        - name: X-auth--token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '3'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: |2+
+         This API retrieves a list of all available programs. The response includes details like program IDs, names, and other relevant information for each program.
+
+  /v1/programs/update/:programId:
+    post:
+      tags:
+        - Program
+      summary: update Copy
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"endDate\": \"2025-05-15 14:00:00\",\n\"scope\": {\n        \"entityType\": \"state\",\n        \"entities\": [\n            \"5f33c3d85f637784791cd830\",\n            \"5f33c3d85f637784791cd831\"\n        ],\n        \"roles\": [\n            \"HM\",\n            \"DCT\",\n            \"CRP\",\n            \"DEO\",\n            \"BEO\"\n        ]\n    }  \n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API updates an existing program using the programId provided as a path parameter. The request body should contain the fields to be updated, such as the program name, description, and other relevant data.
+  /v1/programs/details/:programId:
+    get:
+      tags:
+        - Program
+      summary: details Copy
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API fetches the details of a specific program identified by the programId. The response includes all relevant program information such as the name, description, and any other metadata.
+  /v1/programs/addEntitiesInScope/:programId:
+    post:
+      tags:
+        - Program
+      summary: addEntitiesInScope Copy
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{     \n     \"entities\":[\"db331a8c-b9e2-45f8-b3c0-7ec1e826b6df\",\"4a994d9d-5677-40a8-83eb-e3c5eec73b92\"]\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API adds entities to the scope of a specific program. The programId is passed as a path parameter, and the entities are passed in the request body.
+  /v1/programs/addRolesInScope/:programId:
+    post:
+      tags:
+        - Program
+      summary: addRolesInScope
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"roles\":[\"HM\"] \n    \n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API adds roles to the scope of a specific program. The programId is passed as a path parameter, and the roles are provided in the request body.
+  /v1/programs/removeRolesInScope/:programId:
+    post:
+      tags:
+        - Program
+      summary: removeRolesInScope
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"roles\": [\n        \"BEO\"\n    ]\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: ' This API removes roles from the scope of a specific program. The programId is passed as a path parameter, and the roles to be removed are provided in the request body.'
+  /v1/programs/removeEntitiesInScope/:programId:
+    post:
+      tags:
+        - Program
+      summary: removeEntitiesInScope Copy
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"entities\": [\n        \"5f80353c946feebb14d68d57\"\n    ]\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API removes entities from the scope of a specific program. The programId is passed as a path parameter, and the entities to be removed are provided in the request body.
+  /samiksha/v1/admin/createIndex/solutions:
+    post:
+      tags:
+        - Admin
+      summary: New Request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                keys:
+                  - _id
+                  - name
+                  - description
+                  - endDate
+                  - isDeleted
+                  - link
+                  - projectTemplateId
+                  - externalId
+                  - type
+                  - subType
+                  - status
+                  - isPolled
+      parameters:
+        - name: x-authenticated-user-token
+          in: header
+          schema:
+            type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJuYW1lIjoiTmV2aWwiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6MywidGl0bGUiOiJtZW50ZWUiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsInZpc2libGl0eSI6IlBVQkxJQyIsIm9yZ2FuaXphdGlvbl9pZCI6IjEifV19LCJpYXQiOjE3MTc3MzUxMTAsImV4cCI6MTcxNzgyMTUxMH0.xz-utbiUR9uG7_iSyKqBeu5640UPACwtS1iR7OLOImo
+        - name: appname
+          in: header
+          schema:
+            type: string
+          example: mentored
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: ''
+  /v1/surveySubmissions/update/:surveySubmissionId:
+    post:
+      tags:
+        - surveySubmissions
+      summary: update
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"evidence\": {\n    \"externalId\": \"SF\",\n    \"answers\": {\n      \"65dc4ab49551bfb995a2453f\": {\n        \"qid\": \"65dc4ab49551bfb995a2453f\",\n        \"value\": \"wewewe\",\n        \"remarks\": \"\",\n        \"fileName\": [],\n        \"gpsLocation\": \"\",\n        \"payload\": {\n          \"question\": [\n            \"Enter your First question\",\n            \"\"\n          ],\n          \"labels\": [\n            \"wewewe\"\n          ],\n          \"responseType\": \"text\",\n          \"filesNotUploaded\": []\n        },\n        \"startTime\": 1709026874058,\n        \"endTime\": 1709026987127,\n        \"criteriaId\": \"65dc4ab49551bfb995a2454c\",\n        \"responseType\": \"text\",\n        \"evidenceMethod\": \"SF\",\n        \"rubricLevel\": \"\"\n      }\n    },\n    \"startTime\": 1709026873403,\n    \"endTime\": 1709027010423\n  }\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Submission completed successfully
+                status: 200
+                result:
+                  _id: 66b5def27731d2b664f9a199
+                  status: completed
+                  evidencesStatus:
+                    - externalId: SF
+                      name: Survey And Feedback
+                      description: Survey And Feedback
+                      modeOfCollection: ''
+                      canBeNotApplicable: false
+                      notApplicable: null
+                      canBeNotAllowed: false
+                      remarks: ''
+                      isActive: true
+                      startTime: 1709026873403
+                      endTime: 1709027010423
+                      isSubmitted: true
+                      submissions:
+                        - externalId: SF
+                          startTime: 1709026873403
+                          endTime: 1709027010423
+                          userAgent: PostmanRuntime/7.37.3
+                          gpsLocation: null
+                          submittedBy: '1'
+                          submittedByName: Nevil
+                          submittedByEmail: null
+                          submissionDate: '2024-08-12T07:04:18.913Z'
+                          isValid: true
+                      hasConflicts: false
+      description: This API is used to update the answers for a specific survey submission. The surveySubmissionId is passed as a path parameter, and the request body contains the answers to the questions in the survey. The submitted answers will be updated in the database.
+  /v1/surveySubmissions/getStatus/:surveySubmissionId:
+    get:
+      tags:
+        - surveySubmissions
+      summary: getStatus
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Submission status fetched successfully
+                status: 200
+                result:
+                  status: completed
+      description: |+
+        This API is used to fetch the current status of a survey submission. The surveySubmissionId is passed as a path parameter, and the API returns the status of that particular survey submission.
+
+  /v1/surveySubmissions/list:
+    post:
+      tags:
+        - surveySubmissions
+      summary: list Copy
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"evidence\": {\n    \"externalId\": \"SF\",\n    \"answers\": {\n      \"65dc4ab49551bfb995a2453f\": {\n        \"qid\": \"65dc4ab49551bfb995a2453f\",\n        \"value\": \"wewewe\",\n        \"remarks\": \"\",\n        \"fileName\": [],\n        \"gpsLocation\": \"\",\n        \"payload\": {\n          \"question\": [\n            \"Enter your First question\",\n            \"\"\n          ],\n          \"labels\": [\n            \"wewewe\"\n          ],\n          \"responseType\": \"text\",\n          \"filesNotUploaded\": []\n        },\n        \"startTime\": 1709026874058,\n        \"endTime\": 1709026987127,\n        \"criteriaId\": \"65dc4ab49551bfb995a2454c\",\n        \"responseType\": \"text\",\n        \"evidenceMethod\": \"SF\",\n        \"rubricLevel\": \"\"\n      }\n    },\n    \"startTime\": 1709026873403,\n    \"endTime\": 1709027010423\n  }\n}"'
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: '{{authorization}}'
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        undefined:
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "message": "survey list fetched successfully",
+                    "status": 200,
+                    "result": [
+                        {
+                            "name": "Diksha test survey ",
+                            "status": "active",
+                            "solutionId": "5fa278cdb6bd9b757dc4e927"
+                        },
+                        {
+                            "name": "Survey testing",
+                            "status": "active",
+                            "solutionId": "5ffbf29b69a1847d4286dfb6"
+                        },
+                        {
+                            "name": "Survey testing",
+                            "status": "active",
+                            "solutionId": "66b5bf58e5202bb797003ce2"
+                        },
+                        {
+                            "name": "Survey testing",
+                            "status": "active",
+                            "solutionId": "66b5bf851eff1c1ea4eb9019"
+                        },
+                        {
+                            "name": "Test survey 1",
+                            "status": "active",
+                            "solutionId": "66b5c1eb982ea33223508545"
+                        },
+                        {
+                            "solutionId": "5fa278cdb6bd9b757dc4e927",
+                            "surveyId": "601c0a267d4c835cf8b7243b",
+                            "status": "expired",
+                            "submissionId": "601c0a267d4c835cf8b7243c",
+                            "name": "Diksha test survey "
+                        },
+                        {
+                            "solutionId": "5ffbf29b69a1847d4286dfb6",
+                            "surveyId": "60d5ae0097fff47248a31a23",
+                            "status": "expired",
+                            "submissionId": "60d5ae0097fff47248a31a24",
+                            "name": "Jharkand survey scope testing"
+                        },
+                        {
+                            "surveyId": "66b5def27731d2b664f9a192",
+                            "status": "completed",
+                            "solutionId": "5ffbf29b69a1847d4286dfb6",
+                            "submissionId": "66b5def27731d2b664f9a199",
+                            "name": "Survey testing"
+                        }
+                    ]
+                }
+      description: ''
+  /v1/surveySubmissions/isAllowed/:surveySubmissionId:
+    get:
+      tags:
+        - surveySubmissions
+      summary: isAllowed
+      parameters:
+        - name: X-authenticated-user-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: evidenceId
+          in: query
+          schema:
+            type: string
+          example: SF
+      responses:
+        undefined:
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "message": "survey list fetched successfully",
+                    "status": 200,
+                    "result": [
+                        {
+                            "name": "Diksha test survey ",
+                            "status": "active",
+                            "solutionId": "5fa278cdb6bd9b757dc4e927"
+                        },
+                        {
+                            "name": "Survey testing",
+                            "status": "active",
+                            "solutionId": "5ffbf29b69a1847d4286dfb6"
+                        },
+                        {
+                            "name": "Survey testing",
+                            "status": "active",
+                            "solutionId": "66b5bf58e5202bb797003ce2"
+                        },
+                        {
+                            "name": "Survey testing",
+                            "status": "active",
+                            "solutionId": "66b5bf851eff1c1ea4eb9019"
+                        },
+                        {
+                            "name": "Test survey 1",
+                            "status": "active",
+                            "solutionId": "66b5c1eb982ea33223508545"
+                        },
+                        {
+                            "solutionId": "5fa278cdb6bd9b757dc4e927",
+                            "surveyId": "601c0a267d4c835cf8b7243b",
+                            "status": "expired",
+                            "submissionId": "601c0a267d4c835cf8b7243c",
+                            "name": "Diksha test survey "
+                        },
+                        {
+                            "solutionId": "5ffbf29b69a1847d4286dfb6",
+                            "surveyId": "60d5ae0097fff47248a31a23",
+                            "status": "expired",
+                            "submissionId": "60d5ae0097fff47248a31a24",
+                            "name": "Jharkand survey scope testing"
+                        },
+                        {
+                            "surveyId": "66b5def27731d2b664f9a192",
+                            "status": "completed",
+                            "solutionId": "5ffbf29b69a1847d4286dfb6",
+                            "submissionId": "66b5def27731d2b664f9a199",
+                            "name": "Survey testing"
+                        }
+                    ]
+                }
+      description: This API checks if a specific survey submission, identified by surveySubmissionId, is allowed to proceed or perform certain actions. The response will indicate whether the user has the necessary permissions or if any constraints apply to the submission, such as completion status or other validation criteria.
+  /v1/reports/submissionReport:
+    post:
+      tags:
+        - Report
+      summary: submissionReport
+      description: This API generates a detailed survey submission report based on the submissionId passed in the query parameters. It provides insights and data regarding the responses submitted for a specific survey or observation.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                externalId: PROGID05
+                name: DCPCR School Development Index 2018-19
+                description: DCPCR School Development Index 2018-19
+                isDeleted: false
+                resourceType:
+                  - program
+                language:
+                  - English
+                keywords: []
+                concepts: []
+                userId: a082787f-8f8f-42f2-a706-35457ca6f1fd
+                imageCompression:
+                  quality: 10
+                components:
+                  - 5b98fa069f664f7e1ae7498c
+                scope:
+                  entityType: state
+                  entities:
+                    - 5d6609ef81a57a6173a79e78
+                  roles:
+                    - HM
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: submissionId
+          in: query
+          schema:
+            type: string
+          example: 66c849fb98a45cd39a392e17
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/reports/fetch:
+    post:
+      tags:
+        - Report
+      summary: Fetch
+      description: ' This API generates an observation report based on the query parameters provided. The report can either include a PDF or be without a PDF, and it can be generated as an instance report (specific to a single instance of observation) or an entity report (across multiple entities).'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                submissionId: 66e03d1cbe48d96e6842d25d
+                observation: true
+                entityType: school
+                pdf: true
+                criteriaWise: true
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/surveys/importSurveryTemplateToSolution/:solutionId:
+    post:
+      tags:
+        - Survey Creation Flow
+      summary: importSurveryTemplateToSolution Copy 2
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n    \"externalId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"programExternalId\": \"00000000-1621323219342\"\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - name: appName
+          in: query
+          schema:
+            type: string
+          example: samiksha
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API is used to create a child solution from an existing solution. You need to pass the solutionId and appName as query parameters to generate the child solution.
+  /v1/surveySubmissions/update/66d6ac158e418e298fb47237:
+    post:
+      tags:
+        - Survey Creation Flow
+      summary: update dev Copy
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"evidence\": {\n    \"externalId\": \"SF\",\n    \"answers\": {\n      \"65dc4ab49551bfb995a2453f\": {\n        \"qid\": \"65dc4ab49551bfb995a2453f\",\n        \"value\": \"wewewe\",\n        \"remarks\": \"\",\n        \"fileName\": [],\n        \"gpsLocation\": \"\",\n        \"payload\": {\n          \"question\": [\n            \"Enter your First question\",\n            \"\"\n          ],\n          \"labels\": [\n            \"wewewe\"\n          ],\n          \"responseType\": \"text\",\n          \"filesNotUploaded\": []\n        },\n        \"startTime\": 1709026874058,\n        \"endTime\": 1709026987127,\n        \"criteriaId\": \"65dc4ab49551bfb995a2454c\",\n        \"responseType\": \"text\",\n        \"evidenceMethod\": \"SF\",\n        \"rubricLevel\": \"\"\n      }\n    },\n    \"startTime\": 1709026873403,\n    \"endTime\": 1709027010423\n  }\n}"'
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: '{{authorization}}'
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Submission completed successfully
+                status: 200
+                result:
+                  _id: 66b5def27731d2b664f9a199
+                  status: completed
+                  evidencesStatus:
+                    - externalId: SF
+                      name: Survey And Feedback
+                      description: Survey And Feedback
+                      modeOfCollection: ''
+                      canBeNotApplicable: false
+                      notApplicable: null
+                      canBeNotAllowed: false
+                      remarks: ''
+                      isActive: true
+                      startTime: 1709026873403
+                      endTime: 1709027010423
+                      isSubmitted: true
+                      submissions:
+                        - externalId: SF
+                          startTime: 1709026873403
+                          endTime: 1709027010423
+                          userAgent: PostmanRuntime/7.37.3
+                          gpsLocation: null
+                          submittedBy: '1'
+                          submittedByName: Nevil
+                          submittedByEmail: null
+                          submissionDate: '2024-08-12T07:04:18.913Z'
+                          isValid: true
+                      hasConflicts: false
+  /v1/surveys/details/:surveyId:
+    post:
+      tags:
+        - Survey Creation Flow
+      summary: Details/Id
+      requestBody:
+        content: {}
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: This API retrieves the details of a specific survey using the surveyId. It provides information about the survey's solution, program, assessment, and the associated questionnaire, including questions and response options.
+  /v1/solutions/details/:solution-id:
+    post:
+      tags:
+        - Observation Creation Flow
+      summary: Solution Details
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"// {\n//     \"role\": \"HM,DEO\",\n//     \"state\": \"5f33c3d85f637784791cd830\",\n//     \"district\": \"1dcbc362-ec4c-4559-9081-e0c2864c2931\",\n//     \"school\": \"c5726207-4f9f-4f45-91f1-3e9e8e84d824\"\n// }\n\n{\n    \"entityType\" : \"state\",\n    \"entityTypeId\" : \"5f32d8228e0dc8312404056e\",\n    \"entities\" : [\n        \"5f33c3d85f637784791cd830\",\n        \"5fd098e2e049735a86b748ac\",\n        \"5fd1b52ab53a6416aaeefc83\",\n        \"5fd1b52ab53a6416aaeefb20\"\n    ],\n    \"role\" : \"BEO,HM\"\n}"'
+      parameters:
+        - name: X-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+      description: ' This API retrieves the details of a specific solution using the solution''s id. It returns comprehensive information about the solution, including metadata, configuration, and any related data required for further operations.'
+  /v1/observations/updateEntities/:observation_id:
+    post:
+      tags:
+        - Observation Creation Flow
+      summary: observations/updateEntitie
+      description: This API is used to add multiple entities to a specific observation. The observation_id is passed as a path parameter, and the entities are sent in the request body as an array of entity IDs. The provided entities will be associated with the observation.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                data:
+                  - 663dca16801b3fb057941d10
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/files/preSignedUrls:
+    post:
+      tags:
+        - Files
+      summary: preSignedUrls
+      description: This API provides a pre-signed URL that allows users to upload files directly to storage. Once the file is uploaded, the API also returns a downloadable URL, which can be used to directly access the uploaded file.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                request:
+                  5f72f9998925ec7c60f79a91:
+                    files:
+                      - test
+                ref: survey
+      parameters:
+        - name: x-auth-token
+          in: header
+          schema:
+            type: string
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1/solutions/details/:solutionId:
+    post:
+      description: |
+        This API retrieves the details of a specific solution using the solutionId. It provides comprehensive information about the solution, including its status, categories, tasks, and associated resources.
+
+
+        response example:
+
+        {
+          "message": "Successfully fetched details",
+          "status": 200,
+          "result": {
+            "_id": "5f97d2f6bf3a3b1c0116c80a",
+            "status": "published",
+            "isDeleted": false,
+            "categories": [
+              {
+                "_id": "5f102331665bee6a740714e8",
+                "name": "Teachers",
+                "externalId": "teachers"
+              },
+              {
+                "name": "newCategory",
+                "externalId": "",
+                "_id": ""
+              }
+            ],
+            "tasks": [
+              {
+                "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
+                "name": "Task 1",
+                "description": "Task 1 description",
+                "status": "notStarted",
+                "isACustomTask": false,
+                "startDate": "2020-09-29T09:08:41.667Z",
+                "endDate": "2020-09-29T09:08:41.667Z",
+                "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                "type": "single",
+                "isDeleted": false,
+                "attachments": [
+                  {
+                    "name": "download(2).jpeg",
+                    "type": "image/jpeg",
+                    "sourcePath": "projectId/userId/imageName"
+                  }
+                ],
+                "remarks": "Tasks completed",
+                "assignee": "Aman",
+                "children": [
+                  {
+                    "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
+                    "name": "Task 2",
+                    "description": "Task 2 description",
+                    "status": "notStarted",
+                    "children": [],
+                    "isACustomTask": false,
+                    "startDate": "2020-09-29T09:08:41.667Z",
+                    "endDate": "2020-09-29T09:08:41.667Z",
+                    "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                    "type": "single",
+                    "isDeleted": false,
+                    "externalId": "task 2",
+                    "isDeleteable": false,
+                    "createdAt": "2020-10-28T05:58:24.907Z",
+                    "updatedAt": "2020-10-28T05:58:24.907Z",
+                    "isImportedFromLibrary": false
+                  }
+                ],
+                "externalId": "task 1",
+                "isDeleteable": false,
+                "createdAt": "2020-10-28T05:58:24.907Z",
+                "updatedAt": "2020-10-28T05:58:24.907Z",
+                "isImportedFromLibrary": false
+              }
+            ],
+            "resources": [],
+            "deleted": false,
+            "__v": 0,
+            "description": "Project 1 description"
+          }
+        }
+      operationId: ''
+      tags:
+        - Survey Creation Flow
+      parameters: []
+      requestBody: {}
+      responses:
+        '200':
+          $ref: ''
+components:
+  securitySchemes: {}
