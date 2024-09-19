@@ -72,14 +72,13 @@ module.exports = class Admin {
           req.body.limit ? req.body.limit : 100,
           req.body.skip ? req.body.skip : 0,
         );
-
         let mongoDBDocuments = await database.models[req.params._id]
           .find(mongoDB.queryObject, mongoDB.projectionObject)
           .skip(mongoDB.skippingValue)
           .limit(mongoDB.limitingValue);
 
         // finding document count from db. We can't get it from result array length because a limiting value is passed
-        let docCount = await database.models[req.params._id].find(mongoDB.queryObject).count();
+        let docCount = await database.models[req.params._id].countDocuments(mongoDB.queryObject);
         return resolve({
           message: messageConstants.apiResponses.DATA_FETCHED_SUCCESSFULLY,
           success: true,
