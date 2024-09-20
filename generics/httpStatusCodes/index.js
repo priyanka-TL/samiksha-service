@@ -18,6 +18,10 @@ module.exports = {
     status: 200,
     message: 'Success',
   },
+  ok_userService: {
+    status: 200,
+    message: 'OK',
+  },
   created: {
     status: 201,
     message: 'Created',

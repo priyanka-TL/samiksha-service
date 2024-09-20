@@ -26,12 +26,15 @@
     "body-parser": "^1.20.2",
     "bunyan": "^1.8.15",
     "cache-manager": "^2.11.1",
+    "chartjs-node-canvas": "^3.1.0",
     "cli-table": "^0.3.11",
+    "client-cloud-services": "^8.0.0",
     "commander": "^2.20.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "csvtojson": "^2.0.10",
     "dotenv": "^6.2.0",
+    "ejs": "^3.1.10",
     "express": "^4.18.2",
     "express-cassandra": "^2.9.0",
     "express-fileupload": "^0.4.0",
@@ -51,8 +54,8 @@
     "mathjs": "^5.10.3",
     "mkdir": "^0.0.2",
     "moment-timezone": "^0.5.43",
-    "mongodb": "^3.7.4",
-    "mongoose": "^7.4.5",
+    "mongodb": "^6.8.0",
+    "mongoose": "^8.5.1",
     "mongoose-autopopulate": "^1.0.1",
     "mongoose-delete": "^1.0.1",
     "mongoose-timestamp": "^0.6.0",
@@ -61,15 +64,14 @@
     "p-each-series": "^2.2.0",
     "path": "^0.12.7",
     "request": "^2.88.2",
+    "request-promise": "^4.2.6",
     "require-all": "^2.2.0",
-    "uuid": "^3.4.0",
+    "uuid": "^8.3.2",
     "yaml-js": "^0.1.5"
   },
   "devDependencies": {
     "grunt-apidoc": "^0.11.0",
     "gulp": "^4.0.0",
-    "gulp-apidoc": "^0.2.8",
-    "prettier": "^3.0.2",
-    "nodemon": "^2.0.20"
+    "gulp-apidoc": "^0.2.8"
   }
 }

@@ -3,7 +3,7 @@ let fs = require('fs'),
 const requireAll = require('require-all');
 mkdirp(path.join(__dirname + '/../logs/' + process.env.NODE_ENV));
 mkdirp(path.join(__dirname + '/../' + 'uploads'));
-
+mkdirp(path.join(__dirname + '/../' +'tmp'));
 gen = Object.assign(global, {});
 
 module.exports = function () {
@@ -22,6 +22,7 @@ module.exports = function () {
   global.ROOT_PATH = path.join(__dirname, '..');
   global.GENERIC_HELPERS_PATH = ROOT_PATH + '/generics/helpers';
   global.MODULES_BASE_PATH = ROOT_PATH + '/module';
+  global.DB_QUERY_BASE_PATH = ROOT_PATH + "/databaseQueries";
   global.log = new Log(global.config.log);
   global._ = require('lodash');
   gen.utils = require(ROOT_PATH + '/generics/helpers/utils');

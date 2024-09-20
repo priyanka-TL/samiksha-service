@@ -1,0 +1,17 @@
+<% if(instaResponse.responseType == 'text' || instaResponse.responseType == 'slider' || instaResponse.responseType == 'number' || instaResponse.responseType == 'date'){ %>
+  <div class="container" style="padding:20px;margin:20px">
+    <div style="border: solid 1px rgb(182, 175, 175)">
+      <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%= instaResponse.question %></h3>
+      <% for(var j=0; j < instaResponse.answers.length; j++) { %>
+        <div class="row" style="padding: 10px;padding-left:10px">
+            <div class="col-sm-12" style="font-size: 18px;">
+              <%= instaResponse.answers[j] %>
+        </div>
+      </div>
+ 
+  <% } %>
+</div>
+</div>
+<% } %>
+
+

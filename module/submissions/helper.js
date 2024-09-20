@@ -18,9 +18,8 @@ const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityAssessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
-const kendraService = require(ROOT_PATH + '/generics/services/kendra');
+const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper');
 const path = require('path');
-const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
 
 /**
  * SubmissionsHelper
@@ -236,6 +235,8 @@ module.exports = class SubmissionsHelper {
   static isSubmissionToBeAutoRated(submissionSolutionId) {
     return new Promise(async (resolve, reject) => {
       try {
+        const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+
         let solutionDocument = await solutionsHelper.checkIfSolutionIsRubricDriven(submissionSolutionId);
 
         let submissionToBeAutoRated =
@@ -361,11 +362,11 @@ module.exports = class SubmissionsHelper {
         req.body = req.body || {};
         let message = messageConstants.apiResponses.SUBMISSION_COMPLETED;
         let runUpdateQuery = false;
-
+       // query to get the submission documents
         let queryObject = {
           _id: new ObjectId(req.params._id),
         };
-
+      
         let queryOptions = {
           new: true,
           projection: {
@@ -375,9 +376,8 @@ module.exports = class SubmissionsHelper {
             status: 1,
           },
         };
-
+        // fetching the details from the respective collections example surveySubmissions or observationSubmissions
         let submissionDocument = await database.models[modelName].findOne(queryObject).lean();
-
         let updateObject = {};
         let result = {};
 
@@ -385,7 +385,7 @@ module.exports = class SubmissionsHelper {
           updateObject.$set = { entityProfile: req.body.entityProfile };
           runUpdateQuery = true;
         }
-
+        // Addig submitted by details in evidences
         if (req.body.evidence) {
           req.body.evidence.gpsLocation = req.headers.gpslocation;
           req.body.evidence.submittedBy = req.userDetails.userId;
@@ -402,7 +402,7 @@ module.exports = class SubmissionsHelper {
               singleEvidenceStatus.isSubmitted === false &&
               singleEvidenceStatus.submissions.length > 0,
           );
-
+          // if evidence submitted is false the adding the answers in the collection
           if (submissionDocument.evidences[req.body.evidence.externalId].isSubmitted === false) {
             runUpdateQuery = true;
             req.body.evidence.isValid = true;
@@ -490,6 +490,7 @@ module.exports = class SubmissionsHelper {
         }
 
         if (runUpdateQuery) {
+          //Updating the collection with answers and evidences
           let updatedSubmissionDocument = await database.models[modelName].findOneAndUpdate(
             queryObject,
             updateObject,
@@ -503,7 +504,9 @@ module.exports = class SubmissionsHelper {
             // Push updated submission to kafka for reporting/tracking.
             observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(updatedSubmissionDocument._id);
           } else if (modelName == messageConstants.common.SURVEY_SUBMISSIONS) {
-            // Push updated submission to kafka for reporting/tracking.
+            // Push updated submission to kafka for reporting/tracking."
+            const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
+
             surveySubmissionsHelper.pushInCompleteSurveySubmissionForReporting(updatedSubmissionDocument._id);
           }
 
@@ -1505,9 +1508,7 @@ module.exports = class SubmissionsHelper {
 
         let filePathToURLMap = {};
         if (fileSourcePath.length > 0) {
-          let evidenceUrls = await kendraService.getDownloadableUrl({
-            filePaths: fileSourcePath,
-          });
+          let evidenceUrls = await filesHelper.getDownloadableUrl(fileSourcePath);
           if (evidenceUrls.status == httpStatusCode.ok.status) {
             filePathToURLMap = _.keyBy(evidenceUrls.result, 'filePath');
           }

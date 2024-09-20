@@ -17,4 +17,9 @@ module.exports = {
   SOLUTION_DETAILS_BASED_ON_ROLE_LOCATION: 'api/v1/solutions/detailsBasedOnRoleAndLocation',
   GET_PROJECT_TEMPLATE_LISTS: 'api/v1/project/templates/listByIds',
   DOWNLOADABLE_FILE_URL: 'api/v1/cloud-services/files/getDownloadableUrl',
+  FIND_ENTITY_DOCUMENTS: '/v1/entities/find',
+  LIST_BY_ENTITY_TYPE: '/v1/entities/listByEntityType',
+  FIND_ENTITY_TYPE_DOCUMENTS :'/v1/entityTypes/find',
+  GET_TEMPLATE_DETAILS: '/v1/project/templates/details',
+  USER_READ:"/v1/user/read"
 };

@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:20
 
 WORKDIR /opt/samiksha/
 
@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 4301
 
 #start the application
-CMD ["nodemon", "dev"]
+CMD ["node", "dev"]
