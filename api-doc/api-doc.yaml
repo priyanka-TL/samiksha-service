@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Samiksha Service
+  title: Survey Service
   version: 1.0.0
   description: |-
     This API collection serves the Survey Service, covering both Observations and Surveys. It provides various endpoints for managing and interacting with surveys and observations, along with comprehensive report generation functionalities.
@@ -16,11 +16,10 @@ info:
     PDF Reports: Available for both entity and instance reports.
     This API collection supports essential workflows such as criteria upload, observation submission, report generation, and program management. It simplifies the process of collecting, managing, and analyzing data for both surveys and observations.
 servers:
-  - url: http://{{samikshaurl}}
+  - url: http://{{surveyurl}}
 tags:
   - name: observation
   - name: Survey
-  - name: Polls
   - name: Solutions
   - name: Program
   - name: Admin
@@ -44,7 +43,7 @@ paths:
     post:
       tags:
         - Observation Creation Flow
-      summary: upload citeria
+      summary: criteria is uploaded via use of csv file
       requestBody:
         content:
           multipart/form-data:
@@ -117,12 +116,29 @@ paths:
                 "Self-Awareness (स्व-जागरूकता)","D4C1_1649679267152","64edb33eb0d6fb2a605bf31f"
                 "Self- Management (स्व-प्रबंधन)","D4C2_1649679267152","64edb33eb0d6fb2a605bf320"
                 "Social and Emotional Wellbeing (सामाजिक एवं भावनात्मक देखभाल)","D4C3_1649679267152","64edb33eb0d6fb2a605bf321"
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: The Upload Criteria API allows users to upload a CSV file containing information about the criteria used to observe or evaluate an entity. Each record in the CSV should include a criteriaId, criteriaName, type, and other relevant information. The API processes this file, validates the data, and stores the criteria details in the system for further use in reports and evaluations.
   /v1/frameworks/create:
     post:
       tags:
         - observation
-      summary: frameworks create
+      summary: API to create framework
       requestBody:
         content:
           multipart/form-data:
@@ -182,6 +198,18 @@ paths:
               example:
                 message: Framework inserted successfully.
                 status: 200
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: |2-
          The Upload Framework API allows users to upload a CSV file containing observation data, along with a framework in JSON format. The framework sheet should include an external_id (UUID) for each framework entry, and the criteria external_id generated during the criteria upload process must also be included.
 
@@ -190,8 +218,8 @@ paths:
     post:
       tags:
         - Observation Creation Flow
-      summary: importFromFramework
-      description: This API is used to create solutions based on a framework upload. Users must provide a frameworkID (UUID) and specify the entityType as defined in the template.~~~~
+      summary: API to create a solution based on a framework upload
+      description: This API is used to create solutions based on a framework upload. Users must provide a frameworkID (UUID) and specify the entityType as defined in the template.
       requestBody:
         content:
           multipart/form-data:
@@ -225,11 +253,23 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
   /v1/questions/bulkCreate:
     post:
       tags:
         - Questions
-      summary: bulkCreate Questions
+      summary: API to upload questions to survey/Observations
       description: The Bulk Create API is used to create multiple questions in an observation. Users can provide a batch of questions in the request, which will be added to the specified observation.
       requestBody:
         content:
@@ -252,11 +292,23 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
   /v1/observations/assessment/:observationId:
     post:
       tags:
         - observation
-      summary: Assessment Observation
+      summary: Returns details of the observation including submissionId
       description: |+
         The Assessment API retrieves information about a specific observation using the observation_id provided in the request. It returns details such as the questionnaire and other related information. The response also includes a submissionId, which is required for submitting responses through the Observation Submission API.
 
@@ -289,11 +341,23 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
   /v1/observations/entities:
     post:
       tags:
         - Observation Creation Flow
-      summary: Obs/entities
+      summary: API to add entities to a specific observation
       description: This API retrieves a list of entities associated with a specific observation. You can pass the observation_id as a params parameter or the solutionId as a query parameter. The API will return the entities related to the observation or the solution, based on the input.
       requestBody:
         content:
@@ -318,11 +382,27 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                  result:
+                    type: array
+                    items:
+                      type: string
   /v1/observationSubmissions/list/:observationSubmissionId:
     post:
       tags:
         - observation
-      summary: List Observation submission
+      summary: Lists Observation submission
       requestBody:
         content:
           application/json:
@@ -382,6 +462,78 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        evidencesStatus:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              code:
+                                type: string
+                              status:
+                                type: string
+                            required:
+                              - name
+                              - code
+                              - status
+                        isRubricDriven:
+                          type: boolean
+                        entityId:
+                          type: string
+                        entityExternalId:
+                          type: string
+                        entityType:
+                          type: string
+                        observationId:
+                          type: string
+                        status:
+                          type: string
+                        scoringSystem:
+                          type: string
+                        submissionNumber:
+                          type: number
+                        title:
+                          type: string
+                        updatedAt:
+                          type: string
+                        createdAt:
+                          type: string
+                        observationName:
+                          type: string
+                        submissionDate:
+                          type: string
+                        ratingCompletedAt:
+                          type: string
+                      required:
+                        - _id
+                        - evidencesStatus
+                        - isRubricDriven
+                        - entityId
+                        - entityExternalId
+                        - entityType
+                        - observationId
+                        - scoringSystem
+                        - status
+                        - submissionNumber
+                        - title
+                        - updatedAt
+                        - createdAt
+                        - observationName
+                        - submissionDate
+                        - ratingCompletedAt
               example:
                 message: Successfully fetched observation submissions
                 status: 200
@@ -446,12 +598,28 @@ paths:
                     observationName: 2.0 Feedback Form Ankit
                     submissionDate: ''
                     ratingCompletedAt: ''
+        '404':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                  result:
+                    type: array
+                    items:
+                      type: string
       description: This API retrieves the details of a specific observation submission based on the observation-submission-id. It provides information about the submission, including responses to the observation's questionnaire, submission status, and other relevant data.
   /v1/observationSubmissions/update/:observationSubmissionId:
     post:
       tags:
         - observation
-      summary: Update Observation Submission
+      summary: API to submit/update observation Submissions
       requestBody:
         content:
           application/json:
@@ -823,6 +991,18 @@ paths:
                     startDate: '2023-08-28T09:37:25.313Z'
                     endDate: '2024-08-28T09:37:25.686Z'
                     solutionId: 64ec693ae67838d0267c7e88
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: |+
         The Observation Submission API is used to submit answers to a questionnaire for a specific observation. By providing the observation_id and the corresponding answers, this API updates the answers in the database.
 
@@ -836,7 +1016,7 @@ paths:
     post:
       tags:
         - Survey
-      summary: getLink
+      summary: ' returns a survey shareable link'
       requestBody:
         content:
           '*/*':
@@ -853,33 +1033,23 @@ paths:
           in: query
           schema:
             type: string
-          example: samiksha
+          example: survey
       responses:
         '200':
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          content: {}
+          headers: {}
       description: This API retrieves a sharing link for a survey solution using the solutionExternalId provided in the path parameters. The returned link allows users to access or share the survey solution, enabling easy distribution or collaboration. This is particularly useful for sharing surveys with external participants or stakeholders.
   /v1/surveys/createSolutionTemplate:
     post:
       tags:
         - Survey Creation Flow
-      summary: createSolutionTemplate
-      description: |-
-        Generated from cURL: curl --location 'http://localhost:4301/samiksha/v1/surveys/createSolutionTemplate' \
-        --header 'x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoyLCJuYW1lIjoiU2Fpc2giLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6MywidGl0bGUiOiJtZW50ZWUiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsInZpc2libGl0eSI6IlBVQkxJQyIsIm9yZ2FuaXphdGlvbl9pZCI6IjEifV19LCJpYXQiOjE3MjUyNTQzOTgsImV4cCI6MTcyNTM0MDc5OH0.XZ40Y0BQxsZkPCBY00VNt1gfNJdcU-Mk75p48YJe5QE' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "name": "survey support test",
-            "description": "This is Testing for survey upload",
-            "externalId": "a383af8d-7e4e-4c3b-a79d-ccf2bd14de57",
-            "author": "",
-            "startDate": "2022-04-29T13:57:28.259Z",
-            "endDate": "2026-05-02T12:00:00.259Z",
-            "linkTitle": "",
-            "linkUrl": "",
-            "status": "active"
-        }'
+      summary: ' Create survey solution template'
+      description: This API is used to create a solution template for a survey. The solution template defines the structure, questions, and configurations that will be part of the survey. It allows users to customize the survey solution according to specific requirements, such as adding questions, assigning criteria, and configuring other settings that guide the survey's execution.
       requestBody:
         content:
           application/json:
@@ -901,21 +1071,28 @@ paths:
           schema:
             type: string
           example: '{{token}}'
-        - name: Content-Type
-          in: header
-          schema:
-            type: string
-          example: application/json
       responses:
         '200':
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
   /v1/surveys/mapSurverySolutionToProgram/:solutionId:
     post:
       tags:
         - Survey
-      summary: mapSurverySolutionToProgram Copy
+      summary: 'Maps survey solution to a program '
       requestBody:
         content:
           '*/*':
@@ -937,13 +1114,41 @@ paths:
         '200':
           description: Successful response
           content:
-            application/json: {}
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
       description: This API maps a survey solution, identified by solutionId, to a specific program. The programId should be passed in the query parameters (req.query.programId), which represents the external ID of the program. Once mapped, the solution will be associated with the designated program, allowing for its usage within the context of that program.
   /v1/surveys/userAssigned:
     post:
       tags:
         - Survey
-      summary: userAssigned dev
+      summary: User assigned list of surveys
       requestBody:
         content:
           '*/*':
@@ -951,21 +1156,11 @@ paths:
               type: string
               example: '"{\n    \"solutionIds\": [\"66b5c1dd982ea3322350853d\"]\n}"'
       parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          example: '{{authorization}}'
         - name: X-authenticated-user-token
           in: header
           schema:
             type: string
           example: '{{token}}'
-        - name: Content-Type
-          in: header
-          schema:
-            type: string
-          example: application/json
         - name: search
           in: query
           schema:
@@ -983,39 +1178,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /v1/surveys/userSurvey:
-    post:
-      tags:
-        - Survey
-      summary: userSurveyNotusing
-      requestBody:
-        content: {}
-      parameters:
-        - name: X-authenticated-user-token
-          in: header
-          schema:
-            type: string
-          example: '{{token}}'
-        - name: internal-access-token
-          in: header
-          schema:
-            type: string
-          example: 8c3a94f0931e01a4940a
-        - name: stats
-          in: query
-          schema:
-            type: boolean
-          example: 'false'
-      responses:
-        '200':
-          description: Successful response
+        '500':
+          description: ''
+          headers: {}
           content:
-            application/json: {}
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
+      description: This API fetches a list of surveys that have been assigned to the authenticated user. The response includes details of each survey, such as the survey name, description, status, and other relevant information. It helps users track the surveys they are responsible for completing or managing.
   /v1/solutions/create:
     post:
       tags:
         - Solutions
-      summary: 'create '
+      summary: 'creates new solution '
       requestBody:
         content:
           '*/*':
@@ -1034,12 +1214,37 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                      required:
+                        - location
+                        - param
+                        - msg
       description: This API is used to create a new solution. You need to pass the necessary details like name, description, and other solution-related metadata in the request body. It stores the solution in the system and returns its ID upon successful creation.
   /v1/solutions/importFromSolution:
     post:
       tags:
         - Observation Creation Flow
-      summary: importFromSolution
+      summary: creates a child solution from an existing solution
       requestBody:
         content:
           application/json:
@@ -1073,12 +1278,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: This API is used to create a child solution from an existing solution. You need to pass the solutionId and entityType as query parameters to generate the child solution.
   /v1/solutions/targetedSolutions:
     post:
       tags:
         - Solutions
-      summary: targetedSolutions
+      summary: Lists targeted solution based on user profile
       requestBody:
         content:
           application/json:
@@ -1129,12 +1346,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: This API fetches a list of targeted solutions based on the user profile or any applied filters. It returns a collection of solutions that are specifically designed or relevant to the user’s role or criteria.
   /v1/solutions/verifyLink/:link:
     post:
       tags:
         - Solutions
-      summary: verifyLink
+      summary: Verifies Observation Link and returns details
       requestBody:
         content:
           application/json:
@@ -1150,12 +1379,7 @@ paths:
                   - 5fd1b52ab53a6416aaeefb20
                 role: BEO,HM
       parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          example: '{{authorization}}'
-        - name: X-authenticated-user-token
+        - name: X-auth-token
           in: header
           schema:
             type: string
@@ -1170,12 +1394,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
-      description: ''
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
+      description: This API verifies the validity of an observation link provided as :link in the path parameters. It checks whether the link is active and valid, and returns relevant details associated with the observation if the verification is successful. This can be used to ensure that users are accessing a legitimate observation link before proceeding with further actions.
   /v1/solutions/fetchLink/:solutionId:
     get:
       tags:
         - Solutions
-      summary: fetchLink Copy
+      summary: Generates shareable link based on solutionId
       parameters:
         - name: X-auth-token
           in: header
@@ -1187,12 +1423,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: This API generates and retrieves a shareable link for a solution based on the provided solutionId. The link can be used to access or share the solution with other users.
   /v1/solutions/update/:solutionId:
     post:
       tags:
         - Solutions
-      summary: update
+      summary: update solution api
       requestBody:
         content:
           '*/*':
@@ -1210,12 +1458,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
       description: ~~~~ The Solution Update API is used to update information related to a solution, such as the evidence upload method or other details. This allows users to modify existing solution configurations to reflect changes in how evidence is collected or to update other solution-specific information.
   /v1/solutions/getDetails/:solutionId:
     post:
       tags:
         - Solutions
-      summary: getDetails
+      summary: Returns details of the solution
       requestBody:
         content:
           '*/*':
@@ -1234,12 +1494,33 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
       description: This API retrieves detailed information about a solution by solutionId. The response includes all solution-related metadata such as name, description, categories, tasks, resources, and associated entities.
   /v1/solutions/list:
     get:
       tags:
         - Solutions
-      summary: 'list '
+      summary: solution listing api
       parameters:
         - name: X-auth-token
           in: header
@@ -1271,12 +1552,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: This API returns a list of all available solutions. It can be used to fetch a comprehensive list or filter the results based on specific query parameters.
   /v1/solutions/addEntitiesInScope/:solutionId:
     post:
       tags:
         - Solutions
-      summary: addEntitiesInScope
+      summary: Adds entities to the scope of a solution
       requestBody:
         content:
           '*/*':
@@ -1290,17 +1583,34 @@ paths:
             type: string
           example: '{{token}}'
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
+        - in: header
+          name: internal-access-token
+          description: This token is required in the request header for internal authentication and access to specific APIs within the system. It verifies the user's internal privileges and grants access to restricted resources. The internal-access-token should be passed in the header with each request to ensure proper authentication for internal services.
+          schema:
+            type: string
       responses:
         '200':
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
       description: This API adds entities to the scope of a solution. By passing the solutionId and a list of entity IDs in the request body, the entities are added to the solution’s scope for assessment or observation purposes.
   /v1/solutions/addRolesInScope/:solutionId:
     post:
       tags:
         - Solutions
-      summary: addRolesInScope
+      summary: add roles to the scope of a solution
       requestBody:
         content:
           '*/*':
@@ -1319,12 +1629,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
       description: This API allows adding roles to the scope of a solution. It updates the solution with additional roles that will be able to interact with or be evaluated by the solution. The solutionId and role details need to be provided in the request body.
   /v1/solutions/removeEntitiesInScope/:solutionId:
     post:
       tags:
         - Solutions
-      summary: removeEntitiesInScope
+      summary: removes entities from the scope of a solution
       requestBody:
         content:
           '*/*':
@@ -1342,12 +1664,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
       description: This API removes entities from the scope of a solution. By passing the solutionId and the entity IDs in the request body, the specified entities are removed from the solution’s scope.
   /v1/solutions/removeRolesInScope/:solutionId:
     post:
       tags:
         - Solutions
-      summary: removeRolesInScope
+      summary: removes role from the scope of a solution
       requestBody:
         content:
           '*/*':
@@ -1365,6 +1699,18 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
       description: |+
         This API allows the removal of roles from the scope of a solution. By passing the solutionId and the role details in the request body, the specified roles are removed from interacting with the solution.
 
@@ -1372,7 +1718,7 @@ paths:
     post:
       tags:
         - Program
-      summary: join
+      summary: makes the user join the program
       requestBody:
         content:
           '*/*':
@@ -1380,7 +1726,7 @@ paths:
               type: string
               example: '"{\n    \"userRoleInformation\": {\n        \"district\": \"2f76dcf5-e43b-4f71-a3f2-c8f19e1fce03\",\n        \"block\": \"966c3be4-c125-467d-aaff-1eb1cd525923\",\n        \"state\": \"bc75cc99-9205-463e-a722-5326857838f8\",\n        \"school\": \"28226200910\",\n        \"role\": \"HM,DEO,MEO,CRP,Complex HM,SPD\"\n    },\n    \"isResource\": true,\n    \"consentShared\": true\n}"'
       parameters:
-        - name: X-auth--token
+        - name: X-auth-token
           in: header
           schema:
             type: string
@@ -1390,12 +1736,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
-      description: ''
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+      description: This API allows a user to join a program by providing the programId in the path parameters. Once the user is successfully added to the program, they will be able to participate in the program.
   /v1/programs/create:
     post:
       tags:
         - Program
-      summary: create Copy
+      summary: api to create a new program
       requestBody:
         content:
           '*/*':
@@ -1414,6 +1772,31 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                      required:
+                        - location
+                        - param
+                        - msg
       description: |-
         This API is used to create a new program. The request body should contain necessary details such as the program name, description, and any other relevant information to define the program. Once successfully created, the API returns the newly generated program's details.
 
@@ -1450,7 +1833,7 @@ paths:
     get:
       tags:
         - Program
-      summary: list Copy
+      summary: lists all available programs
       parameters:
         - name: X-auth--token
           in: header
@@ -1477,6 +1860,18 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: |2+
          This API retrieves a list of all available programs. The response includes details like program IDs, names, and other relevant information for each program.
 
@@ -1484,7 +1879,7 @@ paths:
     post:
       tags:
         - Program
-      summary: update Copy
+      summary: updates an existing program
       requestBody:
         content:
           '*/*':
@@ -1503,12 +1898,33 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
       description: This API updates an existing program using the programId provided as a path parameter. The request body should contain the fields to be updated, such as the program name, description, and other relevant data.
   /v1/programs/details/:programId:
     get:
       tags:
         - Program
-      summary: details Copy
+      summary: List detail of a program
       parameters:
         - name: X-auth-token
           in: header
@@ -1521,12 +1937,33 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
       description: This API fetches the details of a specific program identified by the programId. The response includes all relevant program information such as the name, description, and any other metadata.
   /v1/programs/addEntitiesInScope/:programId:
     post:
       tags:
         - Program
-      summary: addEntitiesInScope Copy
+      summary: Adds entities to the scope of a program
       requestBody:
         content:
           '*/*':
@@ -1544,6 +1981,27 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
       description: This API adds entities to the scope of a specific program. The programId is passed as a path parameter, and the entities are passed in the request body.
   /v1/programs/addRolesInScope/:programId:
     post:
@@ -1615,7 +2073,7 @@ paths:
           content:
             application/json: {}
       description: This API removes entities from the scope of a specific program. The programId is passed as a path parameter, and the entities to be removed are provided in the request body.
-  /samiksha/v1/admin/createIndex/solutions:
+  /survey/v1/admin/createIndex/solutions:
     post:
       tags:
         - Admin
@@ -1660,7 +2118,7 @@ paths:
     post:
       tags:
         - surveySubmissions
-      summary: update
+      summary: updates surveySubmission record
       requestBody:
         content:
           '*/*':
@@ -1716,12 +2174,33 @@ paths:
                           submissionDate: '2024-08-12T07:04:18.913Z'
                           isValid: true
                       hasConflicts: false
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
       description: This API is used to update the answers for a specific survey submission. The surveySubmissionId is passed as a path parameter, and the request body contains the answers to the questions in the survey. The submitted answers will be updated in the database.
   /v1/surveySubmissions/getStatus/:surveySubmissionId:
     get:
       tags:
         - surveySubmissions
-      summary: getStatus
+      summary: Returns current status of the surveySubmission record
       parameters:
         - name: X-auth-token
           in: header
@@ -1745,6 +2224,27 @@ paths:
                 status: 200
                 result:
                   status: completed
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
       description: |+
         This API is used to fetch the current status of a survey submission. The surveySubmissionId is passed as a path parameter, and the API returns the status of that particular survey submission.
 
@@ -1752,7 +2252,7 @@ paths:
     post:
       tags:
         - surveySubmissions
-      summary: list Copy
+      summary: Fetches list of survey submissions done by user
       requestBody:
         content:
           '*/*':
@@ -1760,86 +2260,61 @@ paths:
               type: string
               example: '"{\n  \"evidence\": {\n    \"externalId\": \"SF\",\n    \"answers\": {\n      \"65dc4ab49551bfb995a2453f\": {\n        \"qid\": \"65dc4ab49551bfb995a2453f\",\n        \"value\": \"wewewe\",\n        \"remarks\": \"\",\n        \"fileName\": [],\n        \"gpsLocation\": \"\",\n        \"payload\": {\n          \"question\": [\n            \"Enter your First question\",\n            \"\"\n          ],\n          \"labels\": [\n            \"wewewe\"\n          ],\n          \"responseType\": \"text\",\n          \"filesNotUploaded\": []\n        },\n        \"startTime\": 1709026874058,\n        \"endTime\": 1709026987127,\n        \"criteriaId\": \"65dc4ab49551bfb995a2454c\",\n        \"responseType\": \"text\",\n        \"evidenceMethod\": \"SF\",\n        \"rubricLevel\": \"\"\n      }\n    },\n    \"startTime\": 1709026873403,\n    \"endTime\": 1709027010423\n  }\n}"'
       parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          example: '{{authorization}}'
         - name: X-auth-token
           in: header
           schema:
             type: string
           example: '{{token}}'
-        - name: Content-Type
-          in: header
-          schema:
-            type: string
-          example: application/json
       responses:
-        undefined:
+        '200':
+          description: ''
+          headers: {}
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-              example: |-
-                {
-                    "message": "survey list fetched successfully",
-                    "status": 200,
-                    "result": [
-                        {
-                            "name": "Diksha test survey ",
-                            "status": "active",
-                            "solutionId": "5fa278cdb6bd9b757dc4e927"
-                        },
-                        {
-                            "name": "Survey testing",
-                            "status": "active",
-                            "solutionId": "5ffbf29b69a1847d4286dfb6"
-                        },
-                        {
-                            "name": "Survey testing",
-                            "status": "active",
-                            "solutionId": "66b5bf58e5202bb797003ce2"
-                        },
-                        {
-                            "name": "Survey testing",
-                            "status": "active",
-                            "solutionId": "66b5bf851eff1c1ea4eb9019"
-                        },
-                        {
-                            "name": "Test survey 1",
-                            "status": "active",
-                            "solutionId": "66b5c1eb982ea33223508545"
-                        },
-                        {
-                            "solutionId": "5fa278cdb6bd9b757dc4e927",
-                            "surveyId": "601c0a267d4c835cf8b7243b",
-                            "status": "expired",
-                            "submissionId": "601c0a267d4c835cf8b7243c",
-                            "name": "Diksha test survey "
-                        },
-                        {
-                            "solutionId": "5ffbf29b69a1847d4286dfb6",
-                            "surveyId": "60d5ae0097fff47248a31a23",
-                            "status": "expired",
-                            "submissionId": "60d5ae0097fff47248a31a24",
-                            "name": "Jharkand survey scope testing"
-                        },
-                        {
-                            "surveyId": "66b5def27731d2b664f9a192",
-                            "status": "completed",
-                            "solutionId": "5ffbf29b69a1847d4286dfb6",
-                            "submissionId": "66b5def27731d2b664f9a199",
-                            "name": "Survey testing"
-                        }
-                    ]
-                }
-      description: ''
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    externalId:
+                      type: string
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    assessments:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                          externalId:
+                            type: string
+                          name:
+                            type: string
+                          description:
+                            type: string
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
+      description: This API is used to fetch a list of surveys that have been submitted or are in progress. The response includes details such as the solutionId, surveyId, the current status of the survey submission, the survey name, and the submissionId.
   /v1/surveySubmissions/isAllowed/:surveySubmissionId:
     get:
       tags:
         - surveySubmissions
-      summary: isAllowed
+      summary: checks if survey submission is allowed for the passed id
       parameters:
         - name: X-authenticated-user-token
           in: header
@@ -1852,70 +2327,54 @@ paths:
             type: string
           example: SF
       responses:
-        undefined:
+        '200':
+          description: ''
+          headers: {}
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-              example: |-
-                {
-                    "message": "survey list fetched successfully",
-                    "status": 200,
-                    "result": [
-                        {
-                            "name": "Diksha test survey ",
-                            "status": "active",
-                            "solutionId": "5fa278cdb6bd9b757dc4e927"
-                        },
-                        {
-                            "name": "Survey testing",
-                            "status": "active",
-                            "solutionId": "5ffbf29b69a1847d4286dfb6"
-                        },
-                        {
-                            "name": "Survey testing",
-                            "status": "active",
-                            "solutionId": "66b5bf58e5202bb797003ce2"
-                        },
-                        {
-                            "name": "Survey testing",
-                            "status": "active",
-                            "solutionId": "66b5bf851eff1c1ea4eb9019"
-                        },
-                        {
-                            "name": "Test survey 1",
-                            "status": "active",
-                            "solutionId": "66b5c1eb982ea33223508545"
-                        },
-                        {
-                            "solutionId": "5fa278cdb6bd9b757dc4e927",
-                            "surveyId": "601c0a267d4c835cf8b7243b",
-                            "status": "expired",
-                            "submissionId": "601c0a267d4c835cf8b7243c",
-                            "name": "Diksha test survey "
-                        },
-                        {
-                            "solutionId": "5ffbf29b69a1847d4286dfb6",
-                            "surveyId": "60d5ae0097fff47248a31a23",
-                            "status": "expired",
-                            "submissionId": "60d5ae0097fff47248a31a24",
-                            "name": "Jharkand survey scope testing"
-                        },
-                        {
-                            "surveyId": "66b5def27731d2b664f9a192",
-                            "status": "completed",
-                            "solutionId": "5ffbf29b69a1847d4286dfb6",
-                            "submissionId": "66b5def27731d2b664f9a199",
-                            "name": "Survey testing"
-                        }
-                    ]
-                }
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                  result:
+                    type: object
+                    properties:
+                      allowed:
+                        type: boolean
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                      required:
+                        - location
+                        - param
+                        - msg
       description: This API checks if a specific survey submission, identified by surveySubmissionId, is allowed to proceed or perform certain actions. The response will indicate whether the user has the necessary permissions or if any constraints apply to the submission, such as completion status or other validation criteria.
   /v1/reports/submissionReport:
     post:
       tags:
         - Report
-      summary: submissionReport
+      summary: Returns submission report for survey
       description: This API generates a detailed survey submission report based on the submissionId passed in the query parameters. It provides insights and data regarding the responses submitted for a specific survey or observation.
       requestBody:
         content:
@@ -1961,11 +2420,25 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                  result:
+                    type: boolean
   /v1/reports/fetch:
     post:
       tags:
         - Report
-      summary: Fetch
+      summary: Api used to generate observation report
       description: ' This API generates an observation report based on the query parameters provided. The report can either include a PDF or be without a PDF, and it can be generated as an instance report (specific to a single instance of observation) or an entity report (across multiple entities).'
       requestBody:
         content:
@@ -1990,11 +2463,23 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
   /v1/surveys/importSurveryTemplateToSolution/:solutionId:
     post:
       tags:
         - Survey Creation Flow
-      summary: importSurveryTemplateToSolution Copy 2
+      summary: Creates a child solution from an existing solution
       requestBody:
         content:
           '*/*':
@@ -2012,88 +2497,43 @@ paths:
           in: query
           schema:
             type: string
-          example: samiksha
+          example: survey
       responses:
         '200':
           description: Successful response
           content:
             application/json: {}
-      description: This API is used to create a child solution from an existing solution. You need to pass the solutionId and appName as query parameters to generate the child solution.
-  /v1/surveySubmissions/update/66d6ac158e418e298fb47237:
-    post:
-      tags:
-        - Survey Creation Flow
-      summary: update dev Copy
-      requestBody:
-        content:
-          '*/*':
-            schema:
-              type: string
-              example: '"{\n  \"evidence\": {\n    \"externalId\": \"SF\",\n    \"answers\": {\n      \"65dc4ab49551bfb995a2453f\": {\n        \"qid\": \"65dc4ab49551bfb995a2453f\",\n        \"value\": \"wewewe\",\n        \"remarks\": \"\",\n        \"fileName\": [],\n        \"gpsLocation\": \"\",\n        \"payload\": {\n          \"question\": [\n            \"Enter your First question\",\n            \"\"\n          ],\n          \"labels\": [\n            \"wewewe\"\n          ],\n          \"responseType\": \"text\",\n          \"filesNotUploaded\": []\n        },\n        \"startTime\": 1709026874058,\n        \"endTime\": 1709026987127,\n        \"criteriaId\": \"65dc4ab49551bfb995a2454c\",\n        \"responseType\": \"text\",\n        \"evidenceMethod\": \"SF\",\n        \"rubricLevel\": \"\"\n      }\n    },\n    \"startTime\": 1709026873403,\n    \"endTime\": 1709027010423\n  }\n}"'
-      parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          example: '{{authorization}}'
-        - name: X-auth-token
-          in: header
-          schema:
-            type: string
-          example: '{{token}}'
-        - name: Content-Type
-          in: header
-          schema:
-            type: string
-          example: application/json
-      responses:
-        '200':
-          description: OK
-          headers:
-            Content-Type:
-              schema:
-                type: string
-                example: application/json
+        '400':
+          description: ''
+          headers: {}
           content:
             application/json:
               schema:
                 type: object
-              example:
-                message: Submission completed successfully
-                status: 200
-                result:
-                  _id: 66b5def27731d2b664f9a199
-                  status: completed
-                  evidencesStatus:
-                    - externalId: SF
-                      name: Survey And Feedback
-                      description: Survey And Feedback
-                      modeOfCollection: ''
-                      canBeNotApplicable: false
-                      notApplicable: null
-                      canBeNotAllowed: false
-                      remarks: ''
-                      isActive: true
-                      startTime: 1709026873403
-                      endTime: 1709027010423
-                      isSubmitted: true
-                      submissions:
-                        - externalId: SF
-                          startTime: 1709026873403
-                          endTime: 1709027010423
-                          userAgent: PostmanRuntime/7.37.3
-                          gpsLocation: null
-                          submittedBy: '1'
-                          submittedByName: Nevil
-                          submittedByEmail: null
-                          submissionDate: '2024-08-12T07:04:18.913Z'
-                          isValid: true
-                      hasConflicts: false
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                      required:
+                        - location
+                        - param
+                        - msg
+      description: This API is used to create a child solution from an existing solution. You need to pass the solutionId and appName as query parameters to generate the child solution.
   /v1/surveys/details/:surveyId:
     post:
       tags:
         - Survey Creation Flow
-      summary: Details/Id
+      summary: Returns details of a specific survey using the surveyId.
       requestBody:
         content: {}
       parameters:
@@ -2107,12 +2547,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: This API retrieves the details of a specific survey using the surveyId. It provides information about the survey's solution, program, assessment, and the associated questionnaire, including questions and response options.
   /v1/solutions/details/:solution-id:
     post:
       tags:
         - Observation Creation Flow
-      summary: Solution Details
+      summary: Details of a specific solution using the solution's id
       requestBody:
         content:
           '*/*':
@@ -2131,12 +2583,24 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
       description: ' This API retrieves the details of a specific solution using the solution''s id. It returns comprehensive information about the solution, including metadata, configuration, and any related data required for further operations.'
   /v1/observations/updateEntities/:observation_id:
     post:
       tags:
         - Observation Creation Flow
-      summary: observations/updateEntitie
+      summary: API used to add entities to a specific observation
       description: This API is used to add multiple entities to a specific observation. The observation_id is passed as a path parameter, and the entities are sent in the request body as an array of entity IDs. The provided entities will be associated with the observation.
       requestBody:
         content:
@@ -2158,11 +2622,32 @@ paths:
           description: Successful response
           content:
             application/json: {}
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
   /v1/files/preSignedUrls:
     post:
       tags:
         - Files
-      summary: preSignedUrls
+      summary: Generates a pre-signed url for file upload
       description: This API provides a pre-signed URL that allows users to upload files directly to storage. Once the file is uploaded, the API also returns a downloadable URL, which can be used to directly access the uploaded file.
       requestBody:
         content:
@@ -2187,94 +2672,123 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /v1/solutions/details/:solutionId:
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+  /V1/frameworks/uploadThemes/:frameworkExternalID:
     post:
-      description: |
-        This API retrieves the details of a specific solution using the solutionId. It provides comprehensive information about the solution, including its status, categories, tasks, and associated resources.
-
-
-        response example:
-
-        {
-          "message": "Successfully fetched details",
-          "status": 200,
-          "result": {
-            "_id": "5f97d2f6bf3a3b1c0116c80a",
-            "status": "published",
-            "isDeleted": false,
-            "categories": [
-              {
-                "_id": "5f102331665bee6a740714e8",
-                "name": "Teachers",
-                "externalId": "teachers"
-              },
-              {
-                "name": "newCategory",
-                "externalId": "",
-                "_id": ""
-              }
-            ],
-            "tasks": [
-              {
-                "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
-                "name": "Task 1",
-                "description": "Task 1 description",
-                "status": "notStarted",
-                "isACustomTask": false,
-                "startDate": "2020-09-29T09:08:41.667Z",
-                "endDate": "2020-09-29T09:08:41.667Z",
-                "lastModifiedAt": "2020-09-29T09:08:41.667Z",
-                "type": "single",
-                "isDeleted": false,
-                "attachments": [
-                  {
-                    "name": "download(2).jpeg",
-                    "type": "image/jpeg",
-                    "sourcePath": "projectId/userId/imageName"
-                  }
-                ],
-                "remarks": "Tasks completed",
-                "assignee": "Aman",
-                "children": [
-                  {
-                    "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
-                    "name": "Task 2",
-                    "description": "Task 2 description",
-                    "status": "notStarted",
-                    "children": [],
-                    "isACustomTask": false,
-                    "startDate": "2020-09-29T09:08:41.667Z",
-                    "endDate": "2020-09-29T09:08:41.667Z",
-                    "lastModifiedAt": "2020-09-29T09:08:41.667Z",
-                    "type": "single",
-                    "isDeleted": false,
-                    "externalId": "task 2",
-                    "isDeleteable": false,
-                    "createdAt": "2020-10-28T05:58:24.907Z",
-                    "updatedAt": "2020-10-28T05:58:24.907Z",
-                    "isImportedFromLibrary": false
-                  }
-                ],
-                "externalId": "task 1",
-                "isDeleteable": false,
-                "createdAt": "2020-10-28T05:58:24.907Z",
-                "updatedAt": "2020-10-28T05:58:24.907Z",
-                "isImportedFromLibrary": false
-              }
-            ],
-            "resources": [],
-            "deleted": false,
-            "__v": 0,
-            "description": "Project 1 description"
-          }
-        }
+      summary: ' Upload Themes For Frameworks'
+      description: This API uploads themes for a specific framework using the frameworkExternalID provided in the path parameters. A CSV file containing the theme data must be provided in the body with the field name "themes." The uploaded themes are then linked to the corresponding framework, allowing them to be used in assessments, surveys, or other relevant areas of the framework.
       operationId: ''
       tags:
-        - Survey Creation Flow
+        - Observation Creation Flow
       parameters: []
       requestBody: {}
       responses:
         '200':
-          $ref: ''
+          description: ''
+          headers: {}
+          content:
+            text:
+              schema:
+                type: string
+              examples:
+                example1:
+                  value: |-
+                    "theme","aoi","indicators","criteriaInternalId","status"
+                    "Organisational Leadership (संस्थागत नेतृत्व)###D1###40","","","62541ba48de7164ffffc5512###40","success"
+                    "Organisational Leadership (संस्थागत नेतृत्व)###D1###40","","","62541ba48de7164ffffc5513###40","success"
+                    "Organisational Leadership (संस्थागत नेतृत्व)###D1###40","","","62541ba48de7164ffffc5514###40","success"
+                    "Organisational Leadership (संस्थागत नेतृत्व)###D1###40","","","62541ba48de7164ffffc5515###40","success"
+                    "Social Leadership (सामाजिक नेतृत्व)###D2###40","","","62541ba48de7164ffffc5516###40","success"
+                    "Social Leadership (सामाजिक नेतृत्व)###D2###40","","","62541ba48de7164ffffc5517###40","success"
+                    "Social Leadership (सामाजिक नेतृत्व)###D2###40","","","62541ba48de7164ffffc5518###40","success"
+                    "Social Leadership (सामाजिक नेतृत्व)###D2###40","","","62541ba48de7164ffffc5519###40","success"
+                    "People Leadership (व्यक्ति नेतृत्व)###D3###40","","","62541ba48de7164ffffc551a###40","success"
+                    "People Leadership (व्यक्ति नेतृत्व)###D3###40","","","62541ba48de7164ffffc551b###40","success"
+                    "People Leadership (व्यक्ति नेतृत्व)###D3###40","","","62541ba48de7164ffffc551c###40","success"
+                    "Personal Leadership (व्यक्ति नेतृत्व)###D4###40","","","62541ba48de7164ffffc551d###40","success"
+                    "Personal Leadership (व्यक्ति नेतृत्व)###D4###40","","","62541ba48de7164ffffc551e###40","success"
+                    "Personal Leadership (व्यक्ति नेतृत्व)###D4###40","","","62541ba48de7164ffffc551f###40","success"
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: string
+  /v1/files/getDownloadableUrl:
+    get:
+      summary: Returns downloadable URL for the files
+      description: This API is used to retrieve a downloadable URL for a file that has already been uploaded to the cloud. By providing the necessary file information, the API returns a secure URL that can be used to download the file directly. This API is particularly useful for accessing files stored in cloud storage after an upload process is complete.
+      operationId: ''
+      tags:
+        - Files
+      parameters: []
+      requestBody: {}
+      responses:
+        '200':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        filePath:
+                          type: string
+                        url:
+                          type: string
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                      required:
+                        - location
+                        - param
+                        - msg
 components:
   securitySchemes: {}
