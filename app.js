@@ -46,6 +46,11 @@ fs.existsSync('logs') || fs.mkdirSync('logs');
 
 const serviceBaseUrl = process.env.APPLICATION_BASE_URL || '/assessment/';
 
+
+app.get(process.env.API_DOC_URL, function (req, res) {
+	res.sendFile(path.join(__dirname, './api-doc/index.html'))
+})
+
 // const observationSubmissionsHtmlPath = process.env.OBSERVATION_SUBMISSIONS_HTML_PATH
 //   ? process.env.OBSERVATION_SUBMISSIONS_HTML_PATH
 //   : 'observationSubmissions';
