@@ -66,10 +66,10 @@
       register: envConfig 
     - debug: msg=" cred {{ envConfig }} "
 
-    # - name: generate api-doc 
-    #   shell: cd {{current_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
-    #   register: apiDocResponse 
-    # - debug: msg=" Api-doc {{ apiDocResponse }} "
+    - name: generate api-doc 
+      shell: cd {{current_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
+      register: apiDocResponse 
+    - debug: msg="Api-doc {{ apiDocResponse }}"
 
     - name: Delete old pm2 process
       command: pm2 delete elevate-samiksha-service
