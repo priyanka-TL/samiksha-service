@@ -345,7 +345,6 @@ def programmappingpdpmsheetcreation(MainFilePath,accessToken, program_file,progr
             
             creatorKeyCloakId = userDetails[0]
             creatorName = userDetails[1]
-            print("lineeeeeeeeeeeee347",userDetails[3])
             # uncomment the following line in future
             # if "PROGRAM_DESIGNER" in userDetails[3]:
             # creatorKeyCloakId = userDetails[0]
@@ -555,7 +554,6 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         # rolesPGMID = fetchScopeRole(parentFolder, accessToken, rolesPGM.lstrip().rstrip().split(","))
                         rolesPGMID=rolesPGM.lstrip().rstrip().split(",")
                         # sys.exit()
-                        print("coming here... 556")
                         # call function to create program 
                         programCreation(accessToken, parentFolder, extIdPGM, programNameInp, descriptionPGM,keywordsPGM.lstrip().rstrip().split(","), entitiesPGMID, rolesPGMID, orgIds,creatorKeyCloakId, creatorName,entitiesPGM,mainRole,rolesPGM)
                         # sys.exit()
@@ -630,9 +628,7 @@ def fetchEntityType(solutionName_for_folder_path, accessToken, entitiesPGM, scop
         data = json.dumps(payload)
 
         # Make the API call inside the loop to send one request per entity
-        print(data,"line no 633")
         responseFetchEntityListApi = requests.post(url=urlFetchEntityListApi, headers=headerFetchEntityListApi, data=data)
-        print(responseFetchEntityListApi.text)
         # Log API call details
         messageArr = ["Entities List Fetch API executed for entity: " + entityName, 
                       "URL  : " + str(urlFetchEntityListApi),
@@ -660,7 +656,6 @@ def fetchEntityType(solutionName_for_folder_path, accessToken, entitiesPGM, scop
         else:
             # Handle cases where the API call fails for a specific entity
             raise RuntimeError(f"Failed to fetch entity type for '{entityName}'. Status code: {responseFetchEntityListApi.status_code}")
-
     # Return all found entity types
     return entityTypes                    
 
@@ -685,16 +680,46 @@ def createFileStructForProgram(programFile):
 
     return returnPathStr
 
+# # Function create File structure for Solutions
+# def createFileStruct(MainFilePath, addObservationSolution):
+#     if not os.path.isdir(MainFilePath + '/SolutionFiles'):
+#         os.mkdir(MainFilePath + '/SolutionFiles')
+#     if "\\" in str(addObservationSolution):
+#         fileNameSplit = str(addObservationSolution).split('\\')[-1:]
+#     elif "/" in str(addObservationSolution):
+#         fileNameSplit = str(addObservationSolution).split('/')[-1:]
+#     else:
+#         fileNameSplit = str(addObservationSolution)
+#     # Extract the file name regardless of the path format
+#     print(fileNameSplit,addObservationSolution,"this is the file name")
+#     if ".xlsx" in str(fileNameSplit[0]):
+#         ts = str(time.time()).replace(".", "_")
+#         folderName = fileNameSplit[0].replace(".xlsx", "-" + str(ts))
+#         os.mkdir(MainFilePath + '/SolutionFiles/' + str(folderName))
+#         path = os.path.join(MainFilePath + '/SolutionFiles', str(folderName))
+#         path = os.path.join(path, str('apiHitLogs'))
+#         os.mkdir(path)
+#     else:
+#         terminatingMessage("File Error.offff")
+#     returnPathStr = os.path.join(MainFilePath + '/SolutionFiles', str(folderName))
+
+#     if not os.path.isdir(returnPathStr + "/user_input_file"):
+#         os.mkdir(returnPathStr + "/user_input_file")
+
+#     shutil.copy(addObservationSolution, os.path.join(returnPathStr + "user_input_file"))
+#     shutil.copy(programFile, os.path.join(returnPathStr + "user_input_file"))
+#     return returnPathStr
+
 # Function create File structure for Solutions
-def createFileStruct(MainFilePath, addObservationSolution):
+def createFileStruct(MainFilePath, addSolutionFile):
     if not os.path.isdir(MainFilePath + '/SolutionFiles'):
         os.mkdir(MainFilePath + '/SolutionFiles')
-    if "\\" in str(addObservationSolution):
-        fileNameSplit = str(addObservationSolution).split('\\')[-1:]
-    elif "/" in str(addObservationSolution):
-        fileNameSplit = str(addObservationSolution).split('/')[-1:]
+    if "\\" in str(addSolutionFile):
+        fileNameSplit = str(addSolutionFile).split('\\')[-1:]
+    elif "/" in str(addSolutionFile):
+        fileNameSplit = str(addSolutionFile).split('/')[-1:]
     else:
-        fileNameSplit = str(addObservationSolution)
+        fileNameSplit = str(addSolutionFile)
     if ".xlsx" in str(fileNameSplit[0]):
         ts = str(time.time()).replace(".", "_")
         folderName = fileNameSplit[0].replace(".xlsx", "-" + str(ts))
@@ -709,10 +734,9 @@ def createFileStruct(MainFilePath, addObservationSolution):
     if not os.path.isdir(returnPathStr + "/user_input_file"):
         os.mkdir(returnPathStr + "/user_input_file")
 
-    shutil.copy(addObservationSolution, os.path.join(returnPathStr + "user_input_file"))
-    shutil.copy(programFile, os.path.join(returnPathStr + "user_input_file"))
+    shutil.copy(addSolutionFile, os.path.join(returnPathStr + "user_input_file.xlsx"))
+    # shutil.copy(programFile, os.path.join(returnPathStr + "user_input_file"))
     return returnPathStr
-
 
 # function to accept only csv file as input in command line argument
 def valid_file(param):
@@ -742,7 +766,6 @@ def generateAccessToken(solutionName_for_folder_path):
         'password' : config.get(environment, 'password')
     }
     responseKeyClockUser = requests.request("POST", config.get(environment, 'userLoginHost') + config.get(environment, 'keyclockapiurl'), headers=headerKeyClockUser, data=json.dumps(loginBody))
-    print(responseKeyClockUser,"this is line no 680")
     messageArr = []
     messageArr.append("URL : " + str(config.get(environment, 'keyclockAPIUrl')))
     messageArr.append("Body : " + str(config.get(environment, 'keyclockAPIBody')))
@@ -768,11 +791,10 @@ def generateAccessToken(solutionName_for_folder_path):
 
 # Function to search for programs
 def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp):
-
+ if programNameInp:
     global programID, programExternalId, programDescription, isProgramnamePresent, programName
     programName = programNameInp
     programUrl = config.get(environment, 'internal_kong_ip') + config.get(environment, 'fetchProgramInfoApiUrl')
-    print(programUrl,programName)
     payload = json.dumps({
         "query": {
             "name": programNameInp.lstrip().rstrip(),
@@ -783,9 +805,7 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
             })
     
     headersProgramSearch =  {'Content-Type': 'application/json', 'X-auth-token': accessTokenUser}
-    print("came hereeeeeeeee")
     responseProgramSearch = requests.post(url=programUrl, headers=headersProgramSearch,data=payload)
-    print(responseProgramSearch.text)
     messageArr = []
 
     messageArr.append("Program Search API")
@@ -900,7 +920,6 @@ def fetchUserDetails(environment, accessToken, dikshaId):
     decoded_token = jwt.decode(accessToken, options={"verify_signature": False}, algorithms=["HS256"])
     data=decoded_token.get('data')
     user_id = data.get('id')  
-    print(user_id,"this is 838")
     url = config.get(environment, 'userLoginHost') + config.get(environment, 'userInfoApiUrl')+"/"+str(user_id)
     messageArr = ["User search API called."]
     headers = {'Content-Type': 'application/json',
@@ -915,7 +934,6 @@ def fetchUserDetails(environment, accessToken, dikshaId):
     responseUserSearch = requests.request("GET", url, headers=headers)
     if responseUserSearch.status_code == 200:
         responseUserSearch = responseUserSearch.json()
-        print(responseUserSearch,"line no 843")
         if responseUserSearch['result']:
             userKeycloak = responseUserSearch['result']['id']
             userName = responseUserSearch['result']['name']
@@ -1235,7 +1253,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
     typeofSolutin = 0
 
     global environment, observationId, solutionName, pointBasedValue, entityType, allow_multiple_submissions, programName, userEntity, roles, isProgramnamePresent, solutionLanguage, keyWords, entityTypeId, solutionDescription, creator, dikshaLoginId
-
     if (len(rubrics_sheet_names) == len(sheetNames1)) and ((set(rubrics_sheet_names) == set(sheetNames1))):
         print("--->Observation with rubrics file detected.<---")
         typeofSolutin = 1
@@ -1283,7 +1300,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                     
 
         for sheetEnv in sheetNames1:
-            print(sheetEnv ,"Setting 12222") 
             
             questionsequenceArr =[]
             if sheetEnv == "Instructions":
@@ -1291,7 +1307,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
             else:
                 if sheetEnv.strip().lower() == 'details':
                     print("--->Checking details sheet...")
-                    detailsCols = ["observation_solution_name", "observation_solution_description", "Diksha_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type"]
+                    detailsCols = ["observation_solution_name", "observation_solution_description", "Diksha_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type","start_date","end_date"]
                     detailsEnvSheet = wbObservation1.sheet_by_name(sheetEnv)
                     keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
                                range(detailsEnvSheet.ncols)]
@@ -1299,9 +1315,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         dictDetailsEnv = {
                             keysEnv[col_index_env]: detailsEnvSheet.cell(row_index_env, col_index_env).value for
                             col_index_env in range(detailsEnvSheet.ncols)}
-                        print(dictDetailsEnv,"this is 123777777777777")
                         if set(detailsCols) == set(dictDetailsEnv.keys()):
-                            print("emtering with rubrocs................................................")
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                             dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
                             ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
@@ -1312,7 +1326,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             print(str(dictDetailsEnv['scoring_system']).encode('utf-8').decode('utf-8'),"1245")
                             solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8')
                             pointBasedValue = str(dictDetailsEnv['scoring_system']).encode('utf-8').decode('utf-8') if dictDetailsEnv['scoring_system'] else terminatingMessage("\"scoring_system\" must not be Empty in \"details\" sheet")
-                            print(pointBasedValue,"line 1247")
                             entityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
 
                             solutionLanguage = dictDetailsEnv['language'].split(",") if dictDetailsEnv['language'] else [""]
@@ -1502,7 +1515,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
         # Point based value set as null by default for observation without rubrics
         pointBasedValue = "null"
         criteria_id_arr = []
-        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'Diksha_loginId','language', 'keywords', 'entity_type', "scope_entity"]
+        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'Diksha_loginId','language', 'keywords', 'entity_type', "scope_entity","start_date","end_date"]
         criteriaColNames = ['criteria_id', 'criteria_name']
         questionsColNames = ["criteria_id","question_sequence","question_id","instance_parent_question_id","parent_question_id","show_when_parent_question_value_is","parent_question_value","page","question_number","question_primary_language","question_secondory_language","question_tip","question_hint","instance_identifier","question_response_type","date_auto_capture","response_required","min_number_value","max_number_value","file_upload","show_remarks","response(R1)","response(R1)_hint","response(R2)","response(R2)_hint","response(R3)","response(R3)_hint","response(R4)","response(R4)_hint","response(R5)","response(R5)_hint","response(R6)","response(R6)_hint","response(R7)","response(R7)_hint","response(R8)","response(R8)_hint","response(R9)","response(R9)_hint","response(R10)","response(R10)_hint","response(R11)","response(R11)_hint","response(R12)","response(R12)_hint","response(R13)","response(R13)_hint","response(R14)","response(R14)_hint","response(R15)","response(R15)_hint","response(R16)","response(R16)_hint","response(R17)","response(R17)_hint","response(R18)","response(R18)_hint","response(R19)","response(R19)_hint","response(R20)","response(R20)_hint","question_weightage","section_header"]
         for sheetColCheck in sheetNames1:
@@ -1542,6 +1555,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
                         creator = dictDetailsEnv['Name_of_the_creator'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
                         ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+                        
                         # if not "CONTENT_CREATOR" in ccUserDetails[3]:
                         #     terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)
                         # ccRootOrgName = ccUserDetails[4]
@@ -3203,6 +3217,52 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
                 solutionEndDate = resourceDetailsSheet["H" + str(row)].value
     return [solutionRolesArray, solutionStartDate, solutionEndDate]
 
+def fetchSolutionDetailsFromResourceSheet(solutionName_for_folder_path, programFile, solutionId, accessToken,typeofSolution):
+    global solutionRolesArray, solutionStartDate, solutionEndDate
+    urlFetchSolutionApi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'fetchSolutionDoc') + solutionId
+    
+    headerFetchSolutionApi = {
+        'Content-Type': 'application/json',
+        'Authorization': config.get(environment, 'Authorization'),
+        'X-auth-token': accessToken,
+        'X-Channel-id': config.get(environment, 'X-Channel-id'),
+        'internal-access-token': config.get(environment, 'internal-access-token')
+    }
+    payloadFetchSolutionApi = {}
+
+    responseFetchSolutionApiUrl = requests.post(url=urlFetchSolutionApi, headers=headerFetchSolutionApi,
+                                             data=payloadFetchSolutionApi)
+    responseFetchSolutionJson = responseFetchSolutionApiUrl.json()
+    messageArr = ["Solution Fetch Link.",
+                  "solution name : " + responseFetchSolutionJson["result"]["name"],
+                  "solution ExternalId : " + responseFetchSolutionJson["result"]["externalId"]]
+    messageArr.append("Upload status code : " + str(responseFetchSolutionApiUrl.status_code))
+    createAPILog(solutionName_for_folder_path, messageArr)
+
+    if responseFetchSolutionApiUrl.status_code == 200:
+        print('Fetch solution Api Success')
+        
+        solutionName = responseFetchSolutionJson["result"]["name"]
+        xfile = openpyxl.load_workbook(programFile)
+        sheet_name = 'details'.strip()
+        resourceDetailsSheet = xfile[sheet_name]
+        rowCountRD = resourceDetailsSheet.max_row
+        columnCountRD = resourceDetailsSheet.max_column
+        for row in range(3, rowCountRD + 1):
+            cell_value = resourceDetailsSheet["A" + str(row)].value
+            if cell_value is not None and str(cell_value).strip() == str(solutionName).strip():
+                # solutionMainRole = str(resourceDetailsSheet["E" + str(row)].value).strip()
+                # solutionRolesArray = str(resourceDetailsSheet["F" + str(row)].value).split(",") if str(resourceDetailsSheet["E" + str(row)].value).split(",") else []
+                # if "teacher" in solutionMainRole.strip().lower():
+                #     solutionRolesArray.append("TEACHER")
+                if typeofSolution ==1 :
+                  solutionStartDate = resourceDetailsSheet["J" + str(row)].value
+                  solutionEndDate = resourceDetailsSheet["K" + str(row)].value
+                else :
+                  solutionStartDate = resourceDetailsSheet["H" + str(row)].value
+                  solutionEndDate = resourceDetailsSheet["I" + str(row)].value
+    return [solutionRolesArray, solutionStartDate, solutionEndDate]
+
 
 def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, programFile, solutionExternalId, solutionId,accessToken):
     urlFetchSolutionApi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'fetchSolutionDoc') + solutionId
@@ -3437,7 +3497,8 @@ def createChild(solutionName_for_folder_path, observationExternalId, accessToken
                   "Status code : " + str(responseSol_prog_mapping.status_code),
                   "Response : " + responseSol_prog_mapping.text, "body : " + str(payloadSol_prog_mapping)]
     if responseSol_prog_mapping.status_code == 200:
-        print("Solution mapped to program : " + programName)
+        if programName :
+          print("Solution mapped to program : " + programName)
         print("Child solution : " + childObservationExternalId)
 
         responseSol_prog_mapping = responseSol_prog_mapping.json()
@@ -3526,13 +3587,10 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
                         createAPILog(parentFolder, messageArr)
                         apicheckslog(parentFolder,fileheader)
                         if responseCreateSolutionApi.status_code == 200:
-                            print("entering herreeeee.........")
                             responseCreateSolutionApi = responseCreateSolutionApi.json()
                             urlSearchSolution = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment,'fetchSolutionDetails') + "survey&page=1&limit=10&search=" 
                             responseSearchSolution = requests.request("GET", urlSearchSolution,
                                                                       headers=headerCreateSolutionApi)
-                            print("entering herreeeee.........",responseSearchSolution)
-
                             messageArr = ["********* Search Survey Solution *********", "URL : " + urlSearchSolution,
                                           "Status code : " + str(responseSearchSolution.status_code),
                                           "Response : " + responseSearchSolution.text]
@@ -3835,7 +3893,6 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                 }
                 responseImportSoluTemplateApi = requests.post(url=urlImportSoluTemplate,
                                                              headers=headerImportSoluTemplateApi)
-                print(responseImportSoluTemplateApi,"this is line no 3648")
                 if responseImportSoluTemplateApi.status_code == 200:
                     print('Creating Child Success')
 
@@ -3845,59 +3902,75 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                     createAPILog(parentFolder, messageArr)
                     responseImportSoluTemplateApi = responseImportSoluTemplateApi.json()
                     solutionIdSuc = responseImportSoluTemplateApi["result"]["solutionId"]
-                    urlSurveyProgramMapping = config.get(environment, 'internal_kong_ip') + config.get(environment, "importSurveySolutionToProgramUrl") + str(solutionIdSuc) + "?programId=" + programExternalId.lstrip().rstrip()
-                    headeSurveyProgramMappingApi = {
+
+                    print(programExternalId,"this is the external program id")
+                    if programExternalId:
+                       urlSurveyProgramMapping = config.get(environment, 'internal_kong_ip') + config.get(environment, "importSurveySolutionToProgramUrl") + str(solutionIdSuc) + "?programId=" + programExternalId.lstrip().rstrip()
+                       headeSurveyProgramMappingApi = {
                         'X-auth-token': accessToken,
                         'X-Channel-id': config.get(environment, 'X-Channel-id')
-                    }
-                    responseSurveyProgramMappingApi = requests.post(url=urlSurveyProgramMapping,headers=headeSurveyProgramMappingApi)
-                    if responseSurveyProgramMappingApi.status_code == 200:
-                        print('Program Mapping Success')
+                       }
+                       responseSurveyProgramMappingApi = requests.post(url=urlSurveyProgramMapping,headers=headeSurveyProgramMappingApi)
+                       if responseSurveyProgramMappingApi.status_code == 200:
+                          print('Program Mapping Success')
                         
-                        messageArr = ["********* Program mapping api *********", "URL : " + urlSurveyProgramMapping,
+                          messageArr = ["********* Program mapping api *********", "URL : " + urlSurveyProgramMapping,
                                       "Status code : " + str(responseSurveyProgramMappingApi.status_code),
                                       "Response : " + responseSurveyProgramMappingApi.text]
-                        createAPILog(parentFolder, messageArr)
+                          createAPILog(parentFolder, messageArr)
+                          surveyLink = None
+                          solutionIdSuc = None
+                          surveyExternalIdSuc = None
+                          surveyLink = responseImportSoluTemplateApi["result"]["link"]
+                          solutionIdSuc = responseImportSoluTemplateApi["result"]["solutionId"]
+                          solutionExtIdSuc = responseImportSoluTemplateApi["result"]["solutionExternalId"]
+                          print("Survey Child Id : " + str(solutionIdSuc))
+                          solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, solutionIdSuc,accessToken)
+                                                                                                            
+                          print(solutionDetails[0],"this is solutions details") 
+                          scopeEntities = entitiesPGMID
+                          scopeRoles = solutionDetails[0]
+                          print(scopeRoles,"this is scopeRoles")
+                          scope = {}
+                          for i in range(len(entitiesType)):
+                            entity_type = entitiesType[i]
+                            entity_value = scopeEntities[i]
+                          if entity_type in scope:
+                            scope[entity_type] = []
+                            scope[entity_type].append(entity_value)
+                          else:
+                            scope[entity_type] = [entity_value]
+                    # bodySolutionUpdate = {
+                     #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
+                          scope["roles"] = scopeRoles
+                          bodySolutionUpdate = {
+                            "scope": scope
+                           }
+                        # surveyScopeBody = {
+                        #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
+                          solutionUpdate(parentFolder, accessToken, solutionIdSuc, bodySolutionUpdate)
+                          prepareProgramSuccessSheet(MainFilePath, parentFolder, programFile, solutionExtIdSuc,
+                                                   solutionIdSuc, accessToken)
+                        
+                          print('Survey Successfully Added')
+                       else:
+                         print('Program Mapping Failed')
+                         messageArr = ["********* Program mapping api *********", "URL : " + urlSurveyProgramMapping,
+                                      "Status code : " + str(responseSurveyProgramMappingApi.status_code),
+                                      "Response : " + responseSurveyProgramMappingApi.text]
+                         createAPILog(parentFolder, messageArr)
+                    else:
                         surveyLink = None
                         solutionIdSuc = None
                         surveyExternalIdSuc = None
                         surveyLink = responseImportSoluTemplateApi["result"]["link"]
                         solutionIdSuc = responseImportSoluTemplateApi["result"]["solutionId"]
                         solutionExtIdSuc = responseImportSoluTemplateApi["result"]["solutionExternalId"]
-                        print("Survey Child Id : " + str(solutionIdSuc))
-                        solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, solutionIdSuc,accessToken)
-                                                                                                            
-                        print(solutionDetails[0],"this is solutions details") 
-                        scopeEntities = entitiesPGMID
-                        scopeRoles = solutionDetails[0]
-                        print(scopeRoles,"this is scopeRoles")
-                        scope = {}
-                        for i in range(len(entitiesType)):
-                          entity_type = entitiesType[i]
-                          entity_value = scopeEntities[i]
-                        if entity_type in scope:
-                          scope[entity_type].append(entity_value)
-                        else:
-                          scope[entity_type] = [entity_value]
-                    # bodySolutionUpdate = {
-                     #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                        scope["roles"] = scopeRoles
-                        bodySolutionUpdate = {
-                         "scope": scope
-                        }
-                        # surveyScopeBody = {
-                        #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                        solutionUpdate(parentFolder, accessToken, solutionIdSuc, bodySolutionUpdate)
-                        prepareProgramSuccessSheet(MainFilePath, parentFolder, programFile, solutionExtIdSuc,
-                                                   solutionIdSuc, accessToken)
-                        
+                        print("Survey Child Id : " + str(solutionExtIdSuc))
+                        print("Survey Child Link : " + str(surveyLink))
+                        print("Survey Solution Id : " + str(solutionIdSuc))
                         print('Survey Successfully Added')
-                    else:
-                        print('Program Mapping Failed')
-                        messageArr = ["********* Program mapping api *********", "URL : " + urlSurveyProgramMapping,
-                                      "Status code : " + str(responseSurveyProgramMappingApi.status_code),
-                                      "Response : " + responseSurveyProgramMappingApi.text]
-                        createAPILog(parentFolder, messageArr)
+                        return str(solutionIdSuc)
                 else:
                     print('Creating Child API Failed')
                     messageArr = ["********* Program mapping api *********", "URL : " + urlImportSoluTemplate,
@@ -5010,6 +5083,7 @@ def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, list
                     entity_type = entitiesType[i]
                     entity_value = scopeEntities[i]
                     if entity_type in scope:
+                        scope[entity_type] = []
                         scope[entity_type].append(entity_value)
                     else:
                         scope[entity_type] = [entity_value]
@@ -5212,7 +5286,6 @@ def downloadlogosign(filePathAddProject,projectName_for_folder_path):
 def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isProgramnamePresent, isCourse,
              scopeEntityType=scopeEntityType):
     scopeEntityType = scopeEntityType
-
     if not isCourse:
         parentFolder = createFileStruct(MainFilePath, addObservationSolution)
         accessToken = generateAccessToken(parentFolder)
@@ -5309,6 +5382,7 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                         entity_type = entitiesType[i]
                         entity_value = scopeEntities[i]
                     if entity_type in scope:
+                        scope[entity_type] = []
                         scope[entity_type].append(entity_value)
                     else:
                         scope[entity_type] = [entity_value]
@@ -5383,12 +5457,14 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                     solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
                                                                            accessToken)
                     scopeEntities = entitiesPGMID
+                    print(entitiesType,scopeEntities,"this is 5429")
                     scopeRoles = solutionDetails[0]
                     scope = {}
                     for i in range(len(entitiesType)):
                        entity_type = entitiesType[i]
                        entity_value = scopeEntities[i]
                     if entity_type in scope:
+                        scope[entity_type] = []
                         scope[entity_type].append(entity_value)
                     else:
                         scope[entity_type] = [entity_value]
@@ -5542,7 +5618,220 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
 
             addProjectFunc(addObservationSolution, parentFolder, millisecond,validateSheets)
             print("Done.")
+    else :
+          parentFolder = createFileStruct(MainFilePath, addObservationSolution)
+          accessToken = generateAccessToken(parentFolder)
+          typeofSolution = validateSheets(addObservationSolution, accessToken, parentFolder)
+          wbObservation = xlrd.open_workbook(addObservationSolution, on_demand=True)
+         
+          print(typeofSolution,"this is type of solution")
+          if typeofSolution == 1 or typeofSolution == 5:
+            if typeofSolution == 5:
+                impLedObsFlag = True
+            else:
+                impLedObsFlag = False
+            criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "framework", impLedObsFlag)
+            
+            userDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+            matchedShikshalokamLoginId = userDetails[0]
+            
+            frameworkExternalId = frameWorkUpload(parentFolder, wbObservation, millisecond, accessToken)
+            observationExternalId = frameworkExternalId + "-OBSERVATION-TEMPLATE"
+            themesUpload(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, False)
+            solutionId = createSolutionFromFramework(parentFolder, accessToken, frameworkExternalId)
 
+            ecmsSheet = wbObservation.sheet_by_name('ECMs or Domains')
+            keys = [ecmsSheet.cell(1, col_index).value for col_index in range(ecmsSheet.ncols)]
+            ecm_update = dict()
+            ecm_dict = dict()
+            section = dict()
+            ecmSeqCount = 1
+            for row_index in range(2, ecmsSheet.nrows):
+                dictECMs = {keys[col_index]: ecmsSheet.cell(row_index, col_index).value for col_index in
+                            range(ecmsSheet.ncols)}
+                EMC_ID = dictECMs['ECM Id/Domian ID'].encode('utf-8').decode('utf-8').strip() + '_' + str(millisecond)
+                ECM_NAME = dictECMs['ECM Name/Domain Name'].encode('utf-8').decode('utf-8').strip()
+                section.update({dictECMs['section_id']: dictECMs['section_name']})
+                ecm_sections[EMC_ID] = dictECMs['section_id']
+                if dictECMs['Is ECM Mandatory?']:
+                    if dictECMs['Is ECM Mandatory?'] == "TRUE" or dictECMs['Is ECM Mandatory?'] == 1:
+                        dictECMs['Is ECM Mandatory?'] = False
+                    elif dictECMs['Is ECM Mandatory?'] == "FALSE" or dictECMs['Is ECM Mandatory?'] == 0:
+                        dictECMs['Is ECM Mandatory?'] = True
+                else:
+                    dictECMs['Is ECM Mandatory?'] = False
+                ecm_update[EMC_ID] = {
+                    "externalId": EMC_ID, "tip": None, "name": ECM_NAME, "description": None,
+                    "modeOfCollection": "onfield",
+                    "canBeNotApplicable": dictECMs['Is ECM Mandatory?'],
+                    "notApplicable": False, "canBeNotAllowed": dictECMs['Is ECM Mandatory?'],
+                    "remarks": None,
+                    "sequenceNo": ecmSeqCount
+                    }
+                ecmSeqCount += 1
+            ecm_dict['evidenceMethods'] = ecm_update
+            bodySolutionUpdate = ecm_dict
+            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            bodySolutionUpdate = {"sections": section}
+            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            bodySolutionUpdate = {"status": "active", "isDeleted": False, "criteriaLevelReport": criteriaLevelsReport}
+            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            excelBook = open_workbook(addObservationSolution)
+            questionUpload(addObservationSolution, parentFolder, frameworkExternalId, millisecond, accessToken,solutionId,typeofSolution)
+            if not pointBasedValue.lower() == "null":
+                bodySolutionUpdate = {"isRubricDriven": True}
+                solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+                fetchSolutionCriteria(parentFolder, observationExternalId, accessToken)
+                uploadCriteriaRubrics(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, True)
+                uploadThemeRubrics(parentFolder, wbObservation, accessToken, frameworkExternalId, True)
+            else:
+                print("Observation with scoring system : null.")
+            bodySolutionUpdate = {'allowMultipleAssessemts': allow_multiple_submissions, "creator": creator}
+            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            global solutionRolesArray, solutionStartDate, solutionEndDate
+            xfile = openpyxl.load_workbook(programFile)
+            sheet_name = 'details'.strip()
+            resourceDetailsSheet = xfile[sheet_name]
+            solutionDetails = fetchSolutionDetailsFromResourceSheet(parentFolder, programFile, solutionId, accessToken,typeofSolution)
+            if solutionDetails[1]:
+                startDateArr = str(solutionDetails[1]).split("-")
+                bodySolutionUpdate = {
+                    "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + " 00:00:00"}
+                solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            if solutionDetails[2]:
+                print(solutionDetails[2],"this is 5294")
+                endDateArr = str(solutionDetails[2]).split("-")
+                bodySolutionUpdate = {
+                    "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + " 23:59:59"}
+                solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            if isProgramnamePresent:
+                childId = createChild(parentFolder, observationExternalId, accessToken)
+                if childId[0]:
+                    # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
+                    #                                                        accessToken)
+                    # scopeEntities = entitiesPGMID
+                    # scopeRoles = solutionDetails[0]
+                    # scope = {}
+                    # for i in range(len(entitiesType)):
+                    #     entity_type = entitiesType[i]
+                    #     entity_value = scopeEntities[i]
+                    # if entity_type in scope:
+                    #    scope[entity_type] = []
+                    #    scope[entity_type].append(entity_value)
+                    # else:
+                    #     scope[entity_type] = [entity_value]
+                    # bodySolutionUpdate = {
+                    #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
+                    # scope["roles"] = [rolesPGM]
+                    # bodySolutionUpdate = {
+                    #     "scope": scope
+                    #  }
+                    
+                    solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+                    if solutionDetails[1]:
+                        startDateArr = str(solutionDetails[1]).split("-")
+                        bodySolutionUpdate = {
+                            "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
+                                0] + " 00:00:00"}
+                        solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+                    if solutionDetails[2]:
+                        endDateArr = str(solutionDetails[2]).split("-")
+                        bodySolutionUpdate = {
+                            "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + " 23:59:59"}
+                        solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+                    prepareProgramSuccessSheet(MainFilePath, parentFolder, programFile, childId[1], childId[0],
+                                               accessToken)
+            else:
+                print("No program name detected.")
+          elif typeofSolution == 2:
+            criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "criteria", False)
+            
+            userDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+            matchedShikshalokamLoginId = userDetails[0]
+            
+            frameworkExternalId = frameWorkUpload(parentFolder, wbObservation, millisecond, accessToken)
+            observationExternalId = frameworkExternalId + "-OBSERVATION-TEMPLATE"
+            themesUpload(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, True)
+            solutionId = createSolutionFromFramework(parentFolder, accessToken, frameworkExternalId)
+            sectionsObj = {"sections": {'S1': 'Observation Question'}}
+            solutionUpdate(parentFolder, accessToken, solutionId, sectionsObj)
+            ecmObj = {}
+            ecmExternalId = None
+            ecmObj = {
+                "evidenceMethods": {'OB': {'externalId': 'OB', 'tip': None, 'name': 'Observation', 'description': None,
+                                           'modeOfCollection': 'onfield', 'canBeNotApplicable': False,
+                                           'notApplicable': False, 'canBeNotAllowed': False, 'remarks': None}}}
+            solutionUpdate(parentFolder, accessToken, solutionId, ecmObj)
+            questionUpload(addObservationSolution, parentFolder, frameworkExternalId, millisecond, accessToken,
+                           solutionId, typeofSolution)
+            fetchSolutionCriteria(parentFolder, observationExternalId, accessToken)
+            if not pointBasedValue.lower() == "null":
+                uploadCriteriaRubrics(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, False)
+                uploadThemeRubrics(parentFolder, wbObservation, accessToken, frameworkExternalId, False)
+            bodySolutionUpdate = {"status": "active", "isDeleted": False, "allowMultipleAssessemts": True,
+                                  "creator": creator}
+            solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+
+            solutionDetails = fetchSolutionDetailsFromResourceSheet(parentFolder, programFile, solutionId, accessToken,typeofSolution)
+            # Below script will convert date DD-MM-YYYY TO YYYY-MM-DD 00:00:00 to match the code syntax
+
+            if solutionDetails[1]:
+                startDateArr = str(solutionDetails[1]).split("-")
+                bodySolutionUpdate = {
+                    "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[0] + " 00:00:00"}
+                solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            if solutionDetails[2]:
+                endDateArr = str(solutionDetails[2]).split("-")
+                bodySolutionUpdate = {
+                    "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + " 23:59:59"}
+                solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
+            if isProgramnamePresent:
+                childId = createChild(parentFolder, observationExternalId, accessToken)
+                if childId[0]:
+                    # solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
+                    #                                                        accessToken)
+                    # scopeEntities = entitiesPGMID
+                    # scopeRoles = solutionDetails[0]
+                    # scope = {}
+                    # print(entitiesType,"this is a 5755")
+                    # for i in range(len(entitiesType)):
+                    #    entity_type = entitiesType[i]
+                    #    entity_value = scopeEntities[i]
+                    # if entity_type in scope:
+                    #     scope[entity_type] = []
+                    #     scope[entity_type].append(entity_value)
+                    # else:
+                    #     scope[entity_type] = [entity_value]
+                    # # bodySolutionUpdate = {
+                    #  #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
+                    # scope["roles"] = scopeRoles
+                    # bodySolutionUpdate = {
+                    #      "scope": scope
+                    # }
+                    solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+                    if solutionDetails[1]:
+                        startDateArr = str(solutionDetails[1]).split("-")
+                        bodySolutionUpdate = {
+                            "startDate": startDateArr[2] + "-" + startDateArr[1] + "-" + startDateArr[
+                                0] + " 00:00:00"}
+                        solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+                    if solutionDetails[2]:
+                        endDateArr = str(solutionDetails[2]).split("-")
+                        bodySolutionUpdate = {
+                            "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + " 23:59:59"}
+                        solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
+                    prepareProgramSuccessSheet(MainFilePath, parentFolder, programFile, childId[1], childId[0],
+                                               accessToken)
+            else:
+                print("No program name detected.")
+
+          elif typeofSolution == 3:
+            surveyResp = createSurveySolution(parentFolder, wbObservation, accessToken)
+            surTempExtID = surveyResp[1]
+            bodySolutionUpdate = {"status": "active", "isDeleted": False}
+            solutionUpdate(parentFolder, accessToken, surveyResp[0], bodySolutionUpdate)
+            uploadSurveyQuestions(parentFolder, wbObservation, addObservationSolution, accessToken, surTempExtID,
+                                  surveyResp[0], millisecond)
 #main execution
 start_time = time.time()
 parser = argparse.ArgumentParser()
@@ -5614,5 +5903,19 @@ if len(sheetNames) == len(pgmSheets) and sheetNames == pgmSheets:
                         addObservationSolution = wget.download(file_url, dest_file)
                         print("--->solution input file successfully downloaded" + str(addObservationSolution))
                         mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isProgramnamePresent,isCourse, )
+else :
+    MainFilePath = createFileStructForProgram(programFile)
+    print(programFile,"58222")
+    addObservationSolution = programFile
+    wbPgm = xlrd.open_workbook(programFile, on_demand=True)
+    millisecond = int(time.time() * 1000)
+    # Specify the local path of the Excel file
+    local=os.getcwd()
+    resourceLinkOrExtPGMcopy = local+'/'+str(programFile)
+    if not os.path.isdir('InputFiles'):
+         os.mkdir('InputFiles')
+    shutil.copy(resourceLinkOrExtPGMcopy,'InputFiles' )
+    print("--->solution input file successfully copied")
+    mainFunc(MainFilePath, programFile, os.path.join('InputFiles',programFile),millisecond ,isProgramnamePresent =True,isCourse=True)
 end_time = time.time()
 print("Execution time in sec : " + str(end_time - start_time))
