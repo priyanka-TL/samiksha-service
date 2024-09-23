@@ -28,7 +28,6 @@ tags:
   - name: Report
   - name: Survey Creation Flow
   - name: Observation Creation Flow
-  - name: tag1
     description: ''
     externalDocs:
       description: ''
@@ -62,7 +61,7 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: OK
+          description: Success response
           headers:
             Server:
               schema:
@@ -117,7 +116,7 @@ paths:
                 "Self- Management (स्व-प्रबंधन)","D4C2_1649679267152","64edb33eb0d6fb2a605bf320"
                 "Social and Emotional Wellbeing (सामाजिक एवं भावनात्मक देखभाल)","D4C3_1649679267152","64edb33eb0d6fb2a605bf321"
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -157,7 +156,7 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: OK
+          description: Success response
           headers:
             X-Powered-By:
               schema:
@@ -199,7 +198,7 @@ paths:
                 message: Framework inserted successfully.
                 status: 200
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -250,11 +249,11 @@ paths:
           description: can be school,cluster,block
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -289,11 +288,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -338,11 +337,11 @@ paths:
           example: '1'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -379,11 +378,11 @@ paths:
           example: 66e0433788b44767f9faf236
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -424,7 +423,7 @@ paths:
           description: EntityId for which the submission have been made
       responses:
         '200':
-          description: OK
+          description: Success response
           headers:
             X-Powered-By:
               schema:
@@ -741,7 +740,7 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: OK
+          description: Success response
           headers:
             X-Powered-By:
               schema:
@@ -992,7 +991,7 @@ paths:
                     endDate: '2024-08-28T09:37:25.686Z'
                     solutionId: 64ec693ae67838d0267c7e88
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1036,11 +1035,11 @@ paths:
           example: survey
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           content: {}
           headers: {}
       description: This API retrieves a sharing link for a survey solution using the solutionExternalId provided in the path parameters. The returned link allows users to access or share the survey solution, enabling easy distribution or collaboration. This is particularly useful for sharing surveys with external participants or stakeholders.
@@ -1073,11 +1072,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1112,7 +1111,7 @@ paths:
           example: TN-Program-1597301830708
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json:
               schema:
@@ -1123,7 +1122,7 @@ paths:
                   status:
                     type: number
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1156,11 +1155,12 @@ paths:
               type: string
               example: '"{\n    \"solutionIds\": [\"66b5c1dd982ea3322350853d\"]\n}"'
       parameters:
-        - name: X-authenticated-user-token
+        - name: x-auth-token
           in: header
           schema:
             type: string
           example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
         - name: search
           in: query
           schema:
@@ -1175,11 +1175,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1211,11 +1211,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1275,11 +1275,11 @@ paths:
           description: can be school,cluster or block
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1343,11 +1343,11 @@ paths:
           example: 'true'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1391,11 +1391,11 @@ paths:
           example: 'false'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1420,11 +1420,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1455,11 +1455,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1491,11 +1491,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1549,11 +1549,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1590,11 +1590,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1626,11 +1626,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1661,11 +1661,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1696,11 +1696,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1733,11 +1733,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1769,11 +1769,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1857,11 +1857,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1895,11 +1895,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1934,11 +1934,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -1978,11 +1978,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2023,7 +2023,7 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
       description: This API adds roles to the scope of a specific program. The programId is passed as a path parameter, and the roles are provided in the request body.
@@ -2031,7 +2031,7 @@ paths:
     post:
       tags:
         - Program
-      summary: removeRolesInScope
+      summary: API to remove roles in the scope of a program
       requestBody:
         content:
           '*/*':
@@ -2046,7 +2046,7 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
       description: ' This API removes roles from the scope of a specific program. The programId is passed as a path parameter, and the roles to be removed are provided in the request body.'
@@ -2054,7 +2054,7 @@ paths:
     post:
       tags:
         - Program
-      summary: removeEntitiesInScope Copy
+      summary: removes entities from the scope of specific program
       requestBody:
         content:
           '*/*':
@@ -2069,7 +2069,7 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
       description: This API removes entities from the scope of a specific program. The programId is passed as a path parameter, and the entities to be removed are provided in the request body.
@@ -2077,7 +2077,7 @@ paths:
     post:
       tags:
         - Admin
-      summary: New Request
+      summary: API removes entities from scope of specific program
       requestBody:
         content:
           application/json:
@@ -2098,11 +2098,12 @@ paths:
                   - status
                   - isPolled
       parameters:
-        - name: x-authenticated-user-token
+        - name: x-auth-token
           in: header
           schema:
             type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJuYW1lIjoiTmV2aWwiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6MywidGl0bGUiOiJtZW50ZWUiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsInZpc2libGl0eSI6IlBVQkxJQyIsIm9yZ2FuaXphdGlvbl9pZCI6IjEifV19LCJpYXQiOjE3MTc3MzUxMTAsImV4cCI6MTcxNzgyMTUxMH0.xz-utbiUR9uG7_iSyKqBeu5640UPACwtS1iR7OLOImo
+          example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
         - name: appname
           in: header
           schema:
@@ -2110,7 +2111,7 @@ paths:
           example: mentored
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
       description: ''
@@ -2133,7 +2134,7 @@ paths:
           example: application/json
       responses:
         '200':
-          description: OK
+          description: Success response
           headers:
             Content-Type:
               schema:
@@ -2175,7 +2176,7 @@ paths:
                           isValid: true
                       hasConflicts: false
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2209,7 +2210,7 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: OK
+          description: Success response
           headers:
             Content-Type:
               schema:
@@ -2225,7 +2226,7 @@ paths:
                 result:
                   status: completed
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2267,7 +2268,7 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: ''
+          description: success response
           headers: {}
           content:
             application/json:
@@ -2298,7 +2299,7 @@ paths:
                           description:
                             type: string
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2316,11 +2317,12 @@ paths:
         - surveySubmissions
       summary: checks if survey submission is allowed for the passed id
       parameters:
-        - name: X-authenticated-user-token
+        - name: x-auth-token
           in: header
           schema:
             type: string
           example: '{{token}}'
+          description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
         - name: evidenceId
           in: query
           schema:
@@ -2328,7 +2330,7 @@ paths:
           example: SF
       responses:
         '200':
-          description: ''
+          description: success response
           headers: {}
           content:
             application/json:
@@ -2345,7 +2347,7 @@ paths:
                       allowed:
                         type: boolean
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2417,11 +2419,11 @@ paths:
           example: 66c849fb98a45cd39a392e17
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2460,11 +2462,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2500,11 +2502,11 @@ paths:
           example: survey
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2544,11 +2546,11 @@ paths:
           example: '{{token}}'
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2580,11 +2582,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2619,11 +2621,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2669,11 +2671,11 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Successful response
+          description: Success response
           content:
             application/json: {}
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2698,7 +2700,7 @@ paths:
       requestBody: {}
       responses:
         '200':
-          description: ''
+          description: success response
           headers: {}
           content:
             text:
@@ -2723,7 +2725,7 @@ paths:
                     "Personal Leadership (व्यक्ति नेतृत्व)###D4###40","","","62541ba48de7164ffffc551e###40","success"
                     "Personal Leadership (व्यक्ति नेतृत्व)###D4###40","","","62541ba48de7164ffffc551f###40","success"
         '500':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
@@ -2745,7 +2747,7 @@ paths:
       requestBody: {}
       responses:
         '200':
-          description: ''
+          description: success response
           headers: {}
           content:
             application/json:
@@ -2766,7 +2768,7 @@ paths:
                         url:
                           type: string
         '400':
-          description: ''
+          description: Failure response
           headers: {}
           content:
             application/json:
