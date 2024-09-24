@@ -500,9 +500,9 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         EntityType = "district"
                     else:
                         entitiesPGM = entitiesPGM
-                        EntityType = "state"
+                        # EntityType = entitiesType
+                        scopeEntityType = entitiesType
 
-                    scopeEntityType = entitiesType
 
                     global entitiesPGMID
                     entitiesPGMID = fetchEntityId(parentFolder, accessToken,
@@ -527,9 +527,8 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                             EntityType = "district"
                         else:
                             entitiesPGM = entitiesPGM
-                            EntityType = "state"
+                        scopeEntityType = entitiesType
 
-                        scopeEntityType = EntityType
 
                         mainRole = dictDetailsEnv['Targeted role at program level'] if dictDetailsEnv['Targeted role at program level'] else terminatingMessage("\"Targeted role at program level\" must not be Empty in \"Program details\" sheet")
                         global rolesPGM
@@ -545,7 +544,7 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         
                         messageArr = []
 
-                        scopeEntityType = EntityType
+                        scopeEntityType = entitiesType
                         # fetch entity details 
                         entitiesPGMID = fetchEntityId(parentFolder, accessToken,entitiesPGM.lstrip().rstrip().split(","), scopeEntityType)
                         
@@ -614,7 +613,6 @@ def fetchEntityType(solutionName_for_folder_path, accessToken, entitiesPGM, scop
     # Loop through each entity name in the entitiesPGM list
     for entityName in entitiesPGM:
         entityName = entityName.strip()  # Remove any extra spaces
-        print(entityName, "Processing entity...")  # Log the entity being processed
 
         # Prepare the payload for the API request
         payload = {
@@ -1144,7 +1142,6 @@ def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, s
     }
     data=json.dumps(payload)
     responseFetchEntityListApi = requests.post(url=urlFetchEntityListApi, headers=headerFetchEntityListApi,data=json.dumps(payload))
-    print(responseFetchEntityListApi.text)
     messageArr = ["Entities List Fetch API executed.", "URL  : " + str(urlFetchEntityListApi),
                   "Status : " + str(responseFetchEntityListApi.status_code)]
     createAPILog(solutionName_for_folder_path, messageArr)
@@ -1416,7 +1413,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         if not "Score for R" + str(n) in keysEnv or not "response(R" + str(n) + ")_hint" in keysEnv:
                             terminatingMessage("Mandatory Key: " + "Score for R" + str(n) + " or " + "response(R" + str(
                                 n) + ")_hint is missing")
-                    print(detailsEnvSheet.nrows,"this is row")
                     for row_index_env in range(2, detailsEnvSheet.nrows):
                         dictDetailsEnv = {
                             keysEnv[col_index_env]: detailsEnvSheet.cell(row_index_env, col_index_env).value for
@@ -1431,7 +1427,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
 
                         questionsequenceArr.append(question_sequence)
                         question_sequence_arr = questionsequenceArr
-                        print(question_sequence_arr,"this is a valid question sequence 1356")
                         if not dictDetailsEnv['question_primary_language']:
                             terminatingMessage("question_primary_language cannot be empty in questions sheet.")
                         if not dictDetailsEnv['question_response_type']:
@@ -1443,8 +1438,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                                 dictDetailsEnv['criteria_id']) + "  cannot be empty in questions sheet.")
                         if not dictDetailsEnv['criteria_id'].lower() in criteriaExternalIds:
                             terminatingMessage("criteria_id : " + str(dictDetailsEnv['criteria_id']) + " in questions sheet is not matching the criteria upload.")
-                    print(len(question_sequence_arr))
-                    print(len(set(question_sequence_arr)))
                     if not len(question_sequence_arr) == len(set(question_sequence_arr)):
                             terminatingMessage("\"question_sequence\" must be Unique in \"questions\" sheet")
                     if not len(quesExtIds) == len(set(quesExtIds)):
@@ -1466,7 +1459,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             if eachCols.strip() == "L" + str(countImps) + "-improvement-projects":
                                 countImps += 1
                         countImps = countImps - 1
-                print(pointBasedValue,"this is a point based")
                 if not pointBasedValue.lower() == "null":
                     if sheetEnv.strip().lower() == 'Criteria_Rubric-Scoring':
                         print("--->Checking Criteria Rubrics sheet")
@@ -3297,6 +3289,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
 
     responseFetchSolutionLinkApi = requests.get(url=urlFetchSolutionLinkApi, headers=headerFetchSolutionLinkApi,
                                                  data=payloadFetchSolutionLinkApi)
+
     messageArr = ["Solution Fetch Link.","solution id : " + solutionId,"solution ExternalId : " + solutionExternalId]
     messageArr.append("Upload status code : " + str(responseFetchSolutionLinkApi.status_code))
     createAPILog(solutionName_for_folder_path, messageArr)
@@ -3935,11 +3928,10 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                           for i in range(len(entitiesType)):
                             entity_type = entitiesType[i]
                             entity_value = scopeEntities[i]
-                          if entity_type in scope:
-                            scope[entity_type] = []
-                            scope[entity_type].append(entity_value)
-                          else:
-                            scope[entity_type] = [entity_value]
+                            if entity_type in scope:
+                              scope[entity_type].append(entity_value)
+                            else:
+                              scope[entity_type] = [entity_value]
                     # bodySolutionUpdate = {
                      #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
                           scope["roles"] = scopeRoles
@@ -5083,7 +5075,6 @@ def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, list
                     entity_type = entitiesType[i]
                     entity_value = scopeEntities[i]
                     if entity_type in scope:
-                        scope[entity_type] = []
                         scope[entity_type].append(entity_value)
                     else:
                         scope[entity_type] = [entity_value]
@@ -5381,14 +5372,13 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                     for i in range(len(entitiesType)):
                         entity_type = entitiesType[i]
                         entity_value = scopeEntities[i]
-                    if entity_type in scope:
-                        scope[entity_type] = []
-                        scope[entity_type].append(entity_value)
-                    else:
-                        scope[entity_type] = [entity_value]
+                        if entity_type in scope:
+                          scope[entity_type].append(entity_value)
+                        else:
+                          scope[entity_type] = [entity_value]
                     # bodySolutionUpdate = {
                     #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                    scope["roles"] = [rolesPGM]
+                    scope["roles"] = scopeRoles
                     bodySolutionUpdate = {
                         "scope": scope
                      }
@@ -5457,17 +5447,16 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                     solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
                                                                            accessToken)
                     scopeEntities = entitiesPGMID
-                    print(entitiesType,scopeEntities,"this is 5429")
+                    print(entitiesType,solutionDetails,"this is 5429")
                     scopeRoles = solutionDetails[0]
                     scope = {}
                     for i in range(len(entitiesType)):
                        entity_type = entitiesType[i]
                        entity_value = scopeEntities[i]
-                    if entity_type in scope:
-                        scope[entity_type] = []
-                        scope[entity_type].append(entity_value)
-                    else:
-                        scope[entity_type] = [entity_value]
+                       if entity_type in scope:
+                          scope[entity_type].append(entity_value)
+                       else:
+                          scope[entity_type] = [entity_value]
                     # bodySolutionUpdate = {
                      #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
                     scope["roles"] = scopeRoles
