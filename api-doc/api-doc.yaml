@@ -219,7 +219,7 @@ paths:
           content:
             application/json:
               examples:
-                example1:
+                SuccessResponse:
                   value:
                     message: Observation Solution generated.
                     status: 200
@@ -760,7 +760,7 @@ paths:
               schema:
                 type: string
               examples:
-                example1:
+                SuccessResponse:
                   value:
                     message: Observation entities fetched successfully
                     status: 200
@@ -3180,7 +3180,7 @@ paths:
               type: string
               example: '"{\n    \"endDate\": \"2025-05-15 14:00:00\",\n\"scope\": {\n        \"entityType\": \"state\",\n        \"entities\": [\n            \"5f33c3d85f637784791cd830\",\n            \"5f33c3d85f637784791cd831\"\n        ],\n        \"roles\": [\n            \"HM\",\n            \"DCT\",\n            \"CRP\",\n            \"DEO\",\n            \"BEO\"\n        ]\n    }  \n}"'
             examples:
-              example1:
+              SuccessResponse:
                 value:
                   endDate: '2025-05-15 14:00:00'
                   scope:
@@ -3446,7 +3446,7 @@ paths:
               type: string
               example: '"{\n    \"roles\": [\n        \"BEO\"\n    ]\n}"'
             examples:
-              example1:
+              SuccessResponse:
                 value:
                   roles:
                     - BEO
@@ -4659,7 +4659,7 @@ paths:
           content:
             application/json:
               examples:
-                example1:
+                SuccessResponse:
                   value:
                     message: Assessment fetched successfully
                     status: 200
@@ -5163,7 +5163,7 @@ paths:
             schema:
               type: string
             examples:
-              example1:
+              exampleRequestBody:
                 value:
                   request:
                     5f72f9998925ec7c60f79a91:
@@ -5278,7 +5278,7 @@ paths:
             schema:
               type: string
             examples:
-              example1:
+              exampleRequestBody:
                 value:
                   filePaths:
                     - survey/5f72f9998925ec7c60f79a91/6/a8c119e6-ec1e-4bb9-adf7-f87151558def/uploadFile2.jpg
