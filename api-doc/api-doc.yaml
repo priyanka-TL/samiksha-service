@@ -61,60 +61,16 @@ paths:
           description: Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions.
       responses:
         '200':
-          description: Success response
-          headers:
-            Server:
-              schema:
-                type: string
-                example: nginx/1.18.0 (Ubuntu)
-            Date:
-              schema:
-                type: string
-                example: Tue, 29 Aug 2023 08:58:38 GMT
-            Content-Type:
-              schema:
-                type: string
-                example: application/octet-stream
-            Transfer-Encoding:
-              schema:
-                type: string
-                example: chunked
-            Connection:
-              schema:
-                type: string
-                example: keep-alive
-            X-Powered-By:
-              schema:
-                type: string
-                example: Express
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-                example: '*'
-            Content-disposition:
-              schema:
-                type: string
-                example: attachment; filename=Criteria-Upload_2023_08_29_14_28.csv
+          headers: {}
           content:
-            text/plain:
+            text:
               schema:
                 type: string
-              example: |-
-                "Criteria Name","Criteria External Id","Criteria Internal Id"
-                "Planning and Execution (योजना एवं क्रियान्वयन)","D1C1_1649679267152","64edb33eb0d6fb2a605bf314"
-                "Data-based Governance (डाटा आधारित प्रशासन)","D1C2_1649679267152","64edb33eb0d6fb2a605bf315"
-                "Digital and Technology (डिजिटल एंड टेक्नोलॉजी)","D1C3_1649679267152","64edb33eb0d6fb2a605bf316"
-                "Sport & Art Intervention (खेल एवं कला का अंतःक्षेप)","D1C4_1649679267152","64edb33eb0d6fb2a605bf317"
-                "Communication (संवाद)","D2C1_1649679267152","64edb33eb0d6fb2a605bf318"
-                "Influence (प्रभाव)","D2C2_1649679267152","64edb33eb0d6fb2a605bf319"
-                "Collaboration (समन्वय)","D2C3_1649679267152","64edb33eb0d6fb2a605bf31a"
-                "Conflict Management (विरोधाभाष/संघर्ष प्रबंधन)","D2C4_1649679267152","64edb33eb0d6fb2a605bf31b"
-                "Coaching & Mentoring","D3C1_1649679267152","64edb33eb0d6fb2a605bf31c"
-                "Giving Feedback (प्रतिपुष्टि देना)","D3C2_1649679267152","64edb33eb0d6fb2a605bf31d"
-                "Supervision (पर्यवेक्षण)","D3C3_1649679267152","64edb33eb0d6fb2a605bf31e"
-                "Self-Awareness (स्व-जागरूकता)","D4C1_1649679267152","64edb33eb0d6fb2a605bf31f"
-                "Self- Management (स्व-प्रबंधन)","D4C2_1649679267152","64edb33eb0d6fb2a605bf320"
-                "Social and Emotional Wellbeing (सामाजिक एवं भावनात्मक देखभाल)","D4C3_1649679267152","64edb33eb0d6fb2a605bf321"
+              examples:
+                SuccessResponse:
+                  value: |-
+                    "Criteria Name","Criteria External Id","Criteria Internal Id"
+                    "Cleanliness","PRV_16_09_2024_13_05_163662571997","66f159b8a15533ac19d7a681"
         '500':
           description: Failure response
           headers: {}
@@ -128,7 +84,7 @@ paths:
                   message:
                     type: string
               examples:
-                example1:
+                FailureResponse:
                   value:
                     status: 500
                     message: Oops! Something Went Wrong.
@@ -197,6 +153,11 @@ paths:
               example:
                 message: Framework inserted successfully.
                 status: 200
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Framework inserted successfully.
+                    status: 200
         '500':
           description: Failure response
           headers: {}
@@ -209,6 +170,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: |2-
          The Upload Framework API allows users to upload a CSV file containing observation data, along with a framework in JSON format. The framework sheet should include an external_id (UUID) for each framework entry, and the criteria external_id generated during the criteria upload process must also be included.
 
@@ -251,7 +217,14 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Observation Solution generated.
+                    status: 200
+                    result:
+                      templateId: 66f13e05ea227fad26f4cb66
         '500':
           description: Failure response
           headers: {}
@@ -264,6 +237,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
   /v1/questions/bulkCreate:
     post:
       tags:
@@ -290,7 +268,18 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            text/html:
+              schema:
+                type: string
+              examples:
+                SuccessResponse:
+                  value: |-
+                    "_SYSTEM_ID","Question External Id","Question Name"
+                    "66f13eedea227fad26f4cb88","N111_23_09_2024_15_40_1636625759433","Select the medium of the course consumption PRV"
+                    "66f13eedea227fad26f4cb8e","N112_23_09_2024_15_40_1636625759433","Select the courses that you have enrolled in PRV 2.0"
+                    ,"N113_23_09_2024_15_40_1636625759433","Select the courses which you have got the certificate."
+                    ,"N114_23_09_2024_15_40_1636625759433","Select the courses that you have enrolled in PRV 2.0"
+                    ,"N118_23_09_2024_15_40_1636625759433","Give a rating on the reading materials available in the course"
         '400':
           description: Failure response
           headers: {}
@@ -303,6 +292,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
   /v1/observations/assessment/:observationId:
     post:
       tags:
@@ -339,7 +333,384 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Assessment fetched successfully
+                    status: 200
+                    result:
+                      entityProfile:
+                        entityType: school
+                      solution:
+                        _id: 66f13f10ea227fad26f4cbc0
+                        externalId: 606d92fa-42d8-11ec-ac61-23092024-1537-OBSERVATION-TEMPLATE-1727086352343
+                        name: dev_testing
+                        description: dev testing
+                        registry: []
+                        captureGpsLocationAtQuestionLevel: false
+                        enableQuestionReadOut: false
+                        scoringSystem: null
+                        isRubricDriven: false
+                        pageHeading: Domains
+                      assessment:
+                        name: dev_testing
+                        description: dev testing
+                        externalId: 606d92fa-42d8-11ec-ac61-23092024-1537-OBSERVATION-TEMPLATE-1727086352343
+                        pageHeading: Domains
+                        submissionId: 66f242fe12d7b74be68f602e
+                        evidences:
+                          - code: OB
+                            sections:
+                              - code: S1
+                                questions:
+                                  - _id: 66f13f10ea227fad26f4cbb0
+                                    externalId: N113_23_09_2024_15_40_1636625759433-1727086352325
+                                    question:
+                                      - Select the courses which you have got the certificate.
+                                      - ''
+                                    tip: ''
+                                    hint: ''
+                                    responseType: multiselect
+                                    value: ''
+                                    isCompleted: false
+                                    showRemarks: false
+                                    remarks: ''
+                                    visibleIf: ''
+                                    options:
+                                      - value: R1
+                                        label: AP_Sec_1.Curriculum and Inclusive Classrooms
+                                      - value: R2
+                                        label: AP_Sec_2.ICT in Teaching-Learning and Assessment
+                                      - value: R3
+                                        label: AP_Sec_3.Personal-Social Qualities for Holistic Development
+                                      - value: R4
+                                        label: AP_Sec_4.Art Integrated Learning
+                                      - value: R5
+                                        label: AP_Sec_5. Understanding Secondary Stage Learners
+                                      - value: R6
+                                        label: AP_Sec_6. Health and Well-being
+                                      - value: R7
+                                        label: AP_Sec_7. Integrating Gender in Schooling Processes
+                                      - value: R8
+                                        label: 'AP_Sec_8. School Leadership: Concepts and Applications'
+                                      - value: R9
+                                        label: AP_Sec_9. Vocational Education
+                                    sliderOptions: []
+                                    children: []
+                                    questionGroup:
+                                      - A1
+                                    questionType: auto
+                                    modeOfCollection: onfield
+                                    usedForScoring: ''
+                                    fileName: []
+                                    validation:
+                                      required: true
+                                    accessibility: 'No'
+                                    canBeNotApplicable: 'false'
+                                    instanceQuestions: []
+                                    isAGeneralQuestion: false
+                                    autoCapture: false
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    allowAudioRecording: false
+                                    page: p1
+                                    questionNumber: '3'
+                                    prefillFromEntityProfile: false
+                                    entityFieldName: ''
+                                    isEditable: true
+                                    showQuestionInPreview: false
+                                    createdFromQuestionId: 66f13ebdea227fad26f4cb72
+                                    updatedAt: '2024-09-23T10:12:32.328Z'
+                                    createdAt: '2024-09-23T10:11:09.905Z'
+                                    deleted: false
+                                    __v: 0
+                                    evidenceMethod: OB
+                                    payload:
+                                      criteriaId: 66f13f10ea227fad26f4cbbc
+                                      responseType: multiselect
+                                      evidenceMethod: OB
+                                      rubricLevel: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    file: ''
+                                  - _id: 66f13f10ea227fad26f4cbb1
+                                    externalId: N114_23_09_2024_15_40_1636625759433-1727086352325
+                                    question:
+                                      - Select the courses that you have enrolled in PRV 2.0
+                                      - ''
+                                    tip: ''
+                                    hint: ''
+                                    responseType: multiselect
+                                    value: ''
+                                    isCompleted: false
+                                    showRemarks: false
+                                    remarks: ''
+                                    visibleIf: ''
+                                    options:
+                                      - value: R1
+                                        label: 'AP_Sec_మాడ్యూలు 1: విద్యా ప్రణాళిక మరియు సహిత తరగతి గదులు'
+                                      - value: R2
+                                        label: 'AP_Sec_మాడ్యూలు 2: బోధన, అభ్యసన, మూల్యాంకనంలో ICT ని సమగ్రపరచడం'
+                                      - value: R3
+                                        label: 'AP_Sec_ మాడ్యూలు 3 : వ్యక్తిగత సామాజిక లక్షణాలను అభివృద్ధి చేయడం'
+                                      - value: R4
+                                        label: AP_Sec_మాడ్యూలు 4. కళ ఆధారిత అభ్యసనం
+                                      - value: R5
+                                        label: 'AP_Sec_మాడ్యూలు 5 : మాధ్యమిక దశలోని విద్యార్థులను అర్థం చేసుకోవడం'
+                                      - value: R6
+                                        label: AP_Sec_మాడ్యూలు 6 :ఆరోగ్యం మరియు శ్రేయస్సు
+                                      - value: R7
+                                        label: 'AP_Sec_మాడ్యూలు 7 : పాఠశాల ప్రక్రియలో లింగభావనను సమగ్ర పరచడం'
+                                      - value: R8
+                                        label: 'AP_Sec_మాడ్యూలు 8 : పాఠశాల నాయకత్వం - భావనలు మరియు అనువర్తనాలు'
+                                      - value: R9
+                                        label: AP_Sec_9 వృత్తి విద్య
+                                    sliderOptions: []
+                                    children: []
+                                    questionGroup:
+                                      - A1
+                                    questionType: auto
+                                    modeOfCollection: onfield
+                                    usedForScoring: ''
+                                    fileName: []
+                                    validation:
+                                      required: true
+                                    accessibility: 'No'
+                                    canBeNotApplicable: 'false'
+                                    instanceQuestions: []
+                                    isAGeneralQuestion: false
+                                    autoCapture: false
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    allowAudioRecording: false
+                                    page: p1
+                                    questionNumber: '2'
+                                    prefillFromEntityProfile: false
+                                    entityFieldName: ''
+                                    isEditable: true
+                                    showQuestionInPreview: false
+                                    createdFromQuestionId: 66f13ebdea227fad26f4cb78
+                                    updatedAt: '2024-09-23T10:12:32.328Z'
+                                    createdAt: '2024-09-23T10:11:09.929Z'
+                                    deleted: false
+                                    __v: 0
+                                    evidenceMethod: OB
+                                    payload:
+                                      criteriaId: 66f13f10ea227fad26f4cbbc
+                                      responseType: multiselect
+                                      evidenceMethod: OB
+                                      rubricLevel: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    file: ''
+                                  - _id: 66f13f10ea227fad26f4cbb2
+                                    externalId: N118_23_09_2024_15_40_1636625759433-1727086352326
+                                    question:
+                                      - Give a rating on the reading materials available in the course
+                                      - ''
+                                    tip: 1 is very bad, 5 is very good
+                                    hint: ''
+                                    responseType: slider
+                                    value: ''
+                                    isCompleted: false
+                                    showRemarks: false
+                                    remarks: ''
+                                    visibleIf: ''
+                                    options: []
+                                    sliderOptions: []
+                                    children: []
+                                    questionGroup:
+                                      - A1
+                                    questionType: auto
+                                    modeOfCollection: onfield
+                                    usedForScoring: ''
+                                    fileName: []
+                                    validation:
+                                      required: true
+                                      max: '5'
+                                      min: '1'
+                                    accessibility: 'No'
+                                    canBeNotApplicable: 'false'
+                                    instanceQuestions: []
+                                    isAGeneralQuestion: false
+                                    autoCapture: false
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    allowAudioRecording: false
+                                    page: p1
+                                    questionNumber: '4'
+                                    prefillFromEntityProfile: false
+                                    entityFieldName: ''
+                                    isEditable: true
+                                    showQuestionInPreview: false
+                                    createdFromQuestionId: 66f13ebdea227fad26f4cb7e
+                                    updatedAt: '2024-09-23T10:12:32.328Z'
+                                    createdAt: '2024-09-23T10:11:09.945Z'
+                                    deleted: false
+                                    __v: 0
+                                    evidenceMethod: OB
+                                    payload:
+                                      criteriaId: 66f13f10ea227fad26f4cbbc
+                                      responseType: slider
+                                      evidenceMethod: OB
+                                      rubricLevel: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    file: ''
+                                  - _id: 66f13f10ea227fad26f4cbb3
+                                    externalId: N111_23_09_2024_15_40_1636625759433-1727086352326
+                                    question:
+                                      - Select the medium of the course consumption PRV
+                                      - ''
+                                    tip: ''
+                                    hint: ''
+                                    responseType: radio
+                                    value: ''
+                                    isCompleted: false
+                                    showRemarks: false
+                                    remarks: ''
+                                    visibleIf: ''
+                                    options:
+                                      - value: R1
+                                        label: English
+                                      - value: R2
+                                        label: Telugu
+                                      - value: R3
+                                        label: Urdu
+                                    sliderOptions: []
+                                    children:
+                                      - 66f13f10ea227fad26f4cbb4
+                                    questionGroup:
+                                      - A1
+                                    questionType: auto
+                                    modeOfCollection: onfield
+                                    usedForScoring: ''
+                                    fileName: []
+                                    validation:
+                                      required: true
+                                    accessibility: 'No'
+                                    canBeNotApplicable: 'false'
+                                    instanceQuestions: []
+                                    isAGeneralQuestion: false
+                                    autoCapture: false
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    allowAudioRecording: false
+                                    page: p1
+                                    questionNumber: '1'
+                                    prefillFromEntityProfile: false
+                                    entityFieldName: ''
+                                    isEditable: true
+                                    showQuestionInPreview: false
+                                    createdFromQuestionId: 66f13eedea227fad26f4cb88
+                                    updatedAt: '2024-09-23T10:12:32.328Z'
+                                    createdAt: '2024-09-23T10:11:57.099Z'
+                                    deleted: false
+                                    __v: 0
+                                    evidenceMethod: OB
+                                    payload:
+                                      criteriaId: 66f13f10ea227fad26f4cbbc
+                                      responseType: radio
+                                      evidenceMethod: OB
+                                      rubricLevel: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    file: ''
+                                  - _id: 66f13f10ea227fad26f4cbb4
+                                    externalId: N112_23_09_2024_15_40_1636625759433-1727086352326
+                                    question:
+                                      - Select the courses that you have enrolled in PRV 2.0
+                                      - ''
+                                    tip: ''
+                                    hint: ''
+                                    responseType: multiselect
+                                    value: ''
+                                    isCompleted: false
+                                    showRemarks: false
+                                    remarks: ''
+                                    visibleIf:
+                                      - operator: '==='
+                                        value:
+                                          - R1
+                                        _id: 66f13f10ea227fad26f4cbb3
+                                    options:
+                                      - value: R1
+                                        label: AP_Sec_1.Curriculum and Inclusive Classrooms
+                                      - value: R2
+                                        label: AP_Sec_2.ICT in Teaching-Learning and Assessment
+                                      - value: R3
+                                        label: AP_Sec_3.Personal-Social Qualities for Holistic Development
+                                      - value: R4
+                                        label: AP_Sec_4.Art Integrated Learning
+                                      - value: R5
+                                        label: AP_Sec_5. Understanding Secondary Stage Learners
+                                      - value: R6
+                                        label: AP_Sec_6. Health and Well-being
+                                      - value: R7
+                                        label: AP_Sec_7. Integrating Gender in Schooling Processes
+                                      - value: R8
+                                        label: 'AP_Sec_8. School Leadership: Concepts and Applications'
+                                      - value: R9
+                                        label: AP_Sec_9. Vocational Education
+                                    sliderOptions: []
+                                    children: []
+                                    questionGroup:
+                                      - A1
+                                    questionType: auto
+                                    modeOfCollection: onfield
+                                    usedForScoring: ''
+                                    fileName: []
+                                    validation:
+                                      required: true
+                                    accessibility: 'No'
+                                    canBeNotApplicable: 'false'
+                                    instanceQuestions: []
+                                    isAGeneralQuestion: false
+                                    autoCapture: false
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    allowAudioRecording: false
+                                    page: p1
+                                    questionNumber: '2'
+                                    prefillFromEntityProfile: false
+                                    entityFieldName: ''
+                                    isEditable: true
+                                    showQuestionInPreview: false
+                                    createdFromQuestionId: 66f13eedea227fad26f4cb8e
+                                    updatedAt: '2024-09-23T10:12:32.328Z'
+                                    createdAt: '2024-09-23T10:11:57.110Z'
+                                    deleted: false
+                                    __v: 0
+                                    evidenceMethod: OB
+                                    payload:
+                                      criteriaId: 66f13f10ea227fad26f4cbbc
+                                      responseType: multiselect
+                                      evidenceMethod: OB
+                                      rubricLevel: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    file: ''
+                                name: Observation Question
+                            externalId: OB
+                            tip: null
+                            name: Observation
+                            description: null
+                            modeOfCollection: onfield
+                            canBeNotApplicable: false
+                            notApplicable: false
+                            canBeNotAllowed: false
+                            remarks: null
+                            startTime: ''
+                            endTime: ''
+                            isSubmitted: false
+                            submissions: []
+                        submissions: {}
         '500':
           description: Failure response
           headers: {}
@@ -352,6 +723,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
   /v1/observations/entities:
     post:
       tags:
@@ -380,7 +756,17 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              schema:
+                type: string
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Observation entities fetched successfully
+                    status: 200
+                    result:
+                      allowMultipleAssessemts: false
+                      _id: 66f13f6aea227fad26f4cbc6
         '500':
           description: Failure response
           headers: {}
@@ -397,6 +783,12 @@ paths:
                     type: array
                     items:
                       type: string
+              examples:
+                FailureResponse:
+                  value:
+                    message: Could not found solution details
+                    status: 500
+                    result: []
   /v1/observationSubmissions/list/:observationSubmissionId:
     post:
       tags:
@@ -990,6 +1382,38 @@ paths:
                     startDate: '2023-08-28T09:37:25.313Z'
                     endDate: '2024-08-28T09:37:25.686Z'
                     solutionId: 64ec693ae67838d0267c7e88
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Submission completed successfully
+                    status: 200
+                    result:
+                      _id: 66f242fe12d7b74be68f602e
+                      status: completed
+                      evidencesStatus:
+                        - externalId: OB
+                          tip: null
+                          name: Observation
+                          description: null
+                          modeOfCollection: onfield
+                          canBeNotApplicable: false
+                          notApplicable: null
+                          canBeNotAllowed: false
+                          remarks: null
+                          startTime: 1725098958201
+                          endTime: 1725099013086
+                          isSubmitted: true
+                          submissions:
+                            - externalId: OB
+                              startTime: 1725098958201
+                              endTime: 1725099013086
+                              gpsLocation: null
+                              submittedBy: '2'
+                              submittedByName: Saish
+                              submittedByEmail: null
+                              submissionDate: '2024-09-24T04:43:01.023Z'
+                              isValid: true
+                          hasConflicts: false
         '500':
           description: Failure response
           headers: {}
@@ -1002,6 +1426,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: |+
         The Observation Submission API is used to submit answers to a questionnaire for a specific observation. By providing the observation_id and the corresponding answers, this API updates the answers in the database.
 
@@ -1037,11 +1466,25 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Survey solution Link generated successfully
+                    status: 200
+                    result: https://apps.shikshalokam.org/samiksha/take-survey/8e8902eb1e13ae9c38dec8f1b5a4bdff
         '500':
           description: Failure response
-          content: {}
           headers: {}
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API retrieves a sharing link for a survey solution using the solutionExternalId provided in the path parameters. The returned link allows users to access or share the survey solution, enabling easy distribution or collaboration. This is particularly useful for sharing surveys with external participants or stakeholders.
   /v1/surveys/createSolutionTemplate:
     post:
@@ -1064,6 +1507,16 @@ paths:
                 linkTitle: ''
                 linkUrl: ''
                 status: active
+            examples:
+              ReqestBodyExample:
+                value:
+                  name: Survey
+                  description: School Assessment
+                  externalId: school-assessment-survey
+                  startDate: 2025/10/10
+                  endDate: 2025/12/25
+                  linkTite: Read more about the solution
+                  linkUrl: http://www.africau.edu/images/default/sample.pdf
       parameters:
         - name: x-auth-token
           in: header
@@ -1074,7 +1527,14 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    status: 200
+                    message: Survey solution template created successfully
+                    result:
+                      solutionId: 5f58b0b8894a0928fc8aa9b3
         '500':
           description: Failure response
           headers: {}
@@ -1087,6 +1547,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
   /v1/surveys/mapSurverySolutionToProgram/:solutionId:
     post:
       tags:
@@ -1121,6 +1586,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                SuccessResponse:
+                  value:
+                    status: 200
+                    message: Mapped survey solution to program successfully
         '400':
           description: Failure response
           headers: {}
@@ -1177,7 +1647,19 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: List of user assigned surveys
+                    status: 200
+                    result:
+                      data:
+                        - _id: 5fe1f060d12d8c7c3d9ebe97
+                          solutionId: 5f92b5b79a530908731ac195
+                          name: survey and feedback solution
+                          description: test survey and feedback solution
+                      count: 1
         '500':
           description: Failure response
           headers: {}
@@ -1190,6 +1672,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API fetches a list of surveys that have been assigned to the authenticated user. The response includes details of each survey, such as the survey name, description, status, and other relevant information. It helps users track the surveys they are responsible for completing or managing.
   /v1/solutions/create:
     post:
@@ -1202,6 +1689,28 @@ paths:
             schema:
               type: string
               example: '"{\n    \"createdFor\": [],\n    \"rootOrganisations\": [],\n    \"programExternalId\": \"TESTING_BY_DEV_TEAM_2\",\n    \"entities\": [\n      \"5f33c3d85f637784791cd830\"\n    ],\n    \"entityType\": \"school\",\n    \"externalId\": \"TN-Program-1597301830742\",\n    \"name\": \"Improvement Project 3\",\n    \"description\": \"Leveraging the huge number of private schools to show the significance of the financial problem by creating a petition and presenting to the authorities.\",\n    // \"startDate\": \"2021-06-16 00:00:00\",\n    // \"endDate\": \"2025-06-21 00:00:00\",\n    \"subType\": \"observation\",\n    \"type\": \"observation\",\n    \"excludeScope\":false,\n     \"isReusable\": false,\n    \"isAPrivateProgram\": false,\n    \"scope\": {\n    \"entityType\": \"state\",\n    \"entities\": [\n      \"5f33c3d85f637784791cd830\"\n    ],\n    \"roles\": \"HM\"\n      \n    \n  }\n  \n\n    \n    // \"entities\":[\n    //  \"db331a8c-b9e2-45f8-b3c0-7ec1e826b6df\",\"6cbce49e-c33d-4f4c-aaa8-c689a1f067f3\"\n    // ]\n}"'
+            examples:
+              exampleBody:
+                value:
+                  createdFor: []
+                  rootOrganisations: []
+                  programExternalId: PISA test-1598030013395
+                  entities:
+                    - 5f33c3d85f637784791cd830
+                  entityType: school
+                  externalId: TN-Program-1597301830742
+                  name: Improvement Project 3
+                  description: Leveraging the huge number of private schools to show the significance of the financial problem by creating a petition and presenting to the authorities.
+                  subType: observation
+                  type: observation
+                  excludeScope: false
+                  isReusable: false
+                  isAPrivateProgram: false
+                  scope:
+                    entityType: state
+                    entities:
+                      - 5f33c3d85f637784791cd830
+                    roles: HM
       parameters:
         - name: X-auth-token
           in: header
@@ -1213,7 +1722,14 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Solution created successfully
+                    status: 200
+                    result:
+                      _id: 66f24a5612d7b74be68f6099
         '400':
           description: Failure response
           headers: {}
@@ -1277,7 +1793,14 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Duplicate Solution generated.
+                    status: 200
+                    result:
+                      _id: 66f13f10ea227fad26f4cbc0
         '500':
           description: Failure response
           headers: {}
@@ -1290,6 +1813,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API is used to create a child solution from an existing solution. You need to pass the solutionId and entityType as query parameters to generate the child solution.
   /v1/solutions/targetedSolutions:
     post:
@@ -1345,7 +1873,50 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully targeted solutions fetched
+                    status: 200
+                    result:
+                      data:
+                        - name: Test survey 1
+                          description: Test survey 1
+                          status: active
+                          solutionId: 66c5c70d3eef3c105862297c
+                          isCreator: true
+                        - name: Test survey 1
+                          description: Test survey 1
+                          status: active
+                          solutionId: 66c5d7d18b301274f7c3c0b9
+                          isCreator: true
+                        - name: Test survey 1
+                          description: Test survey 1
+                          status: active
+                          solutionId: 66c60e3328d3cd5537b7b36f
+                          isCreator: true
+                        - name: Test survey 1
+                          description: Test survey 1
+                          status: active
+                          solutionId: 66c60f6528d3cd5537b7b374
+                          isCreator: true
+                        - name: Test survey 1
+                          description: Test survey 1
+                          status: active
+                          solutionId: 66c61861d662bed41eb7de70
+                          isCreator: true
+                        - name: Test survey 1
+                          description: Test survey 1
+                          status: active
+                          solutionId: 66c61df582122edc141311c2
+                          isCreator: true
+                        - name: Test survey 1
+                          description: Test survey 1
+                          status: active
+                          solutionId: 66c6e534619002843adef441
+                          isCreator: true
+                      count: 15
         '500':
           description: Failure response
           headers: {}
@@ -1358,6 +1929,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API fetches a list of targeted solutions based on the user profile or any applied filters. It returns a collection of solutions that are specifically designed or relevant to the user’s role or criteria.
   /v1/solutions/verifyLink/:link:
     post:
@@ -1378,6 +1954,13 @@ paths:
                   - 5fd1b52ab53a6416aaeefc83
                   - 5fd1b52ab53a6416aaeefb20
                 role: BEO,HM
+            examples:
+              ExampleBody:
+                value:
+                  role: HM
+                  state: 236f5cff-c9af-4366-b0b6-253a1789766a
+                  district: 1dcbc362-ec4c-4559-9081-e0c2864c2931
+                  school: c5726207-4f9f-4f45-91f1-3e9e8e84d824
       parameters:
         - name: X-auth-token
           in: header
@@ -1393,7 +1976,38 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Observation solution link verified successfully
+                    status: 200
+                    result:
+                      - _id: 5f6853f293734140ccce90cf
+                        entities:
+                          - 5f636fa2916c13367d8ff835
+                        createdFor: []
+                        rootOrganisations: []
+                        isAPrivateProgram: false
+                        deleted: false
+                        status: published
+                        solutionId: 5f64651f916c13367d8ff83f
+                        solutionExternalId: PRIYANKA-3-FRAMWORK-OBSERVATION-1
+                        programId: 5f634e31577d2ce1ed942c65
+                        programExternalId: MY-ASSESSMENT-PROGRAM2
+                        frameworkId: 5f6349c4577d2ce1ed942a56
+                        frameworkExternalId: PRIYANKA-3-FRAMWORK
+                        entityTypeId: 5d15a959e9185967a6d5e8a6
+                        entityType: school
+                        createdBy: 01c04166-a65e-4e92-a87b-a9e4194e771d
+                        startDate: '2020-09-21T07:19:14.618Z'
+                        endDate: '2021-09-21T07:19:14.618Z'
+                        name: Priyanka Observation solution
+                        description: Priyanka Observation description
+                        updatedAt: '2020-09-21T07:19:14.648Z'
+                        createdAt: '2020-09-21T07:19:14.648Z'
+                        __v: 0
+                        link: a325411f49158bc21b7f08d33aad5c02
         '500':
           description: Failure response
           headers: {}
@@ -1406,6 +2020,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API verifies the validity of an observation link provided as :link in the path parameters. It checks whether the link is active and valid, and returns relevant details associated with the observation if the verification is successful. This can be used to ensure that users are accessing a legitimate observation link before proceeding with further actions.
   /v1/solutions/fetchLink/:solutionId:
     get:
@@ -1422,7 +2041,13 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Solution Link generated successfully
+                    status: 200
+                    result: https://samiksha/create-observation/38cd93bdb87489c3890fe0ab00e7d406
         '500':
           description: Failure response
           headers: {}
@@ -1435,6 +2060,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API generates and retrieves a shareable link for a solution based on the provided solutionId. The link can be used to access or share the solution with other users.
   /v1/solutions/update/:solutionId:
     post:
@@ -1457,7 +2087,12 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Solution updated successfully
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -1470,6 +2105,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: ~~~~ The Solution Update API is used to update information related to a solution, such as the evidence upload method or other details. This allows users to modify existing solution configurations to reflect changes in how evidence is collected or to update other solution-specific information.
   /v1/solutions/getDetails/:solutionId:
     post:
@@ -1493,7 +2133,73 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    status: 200
+                    result:
+                      _id: 5fa27b88b6bd9b757dc4e92d
+                      resourceType:
+                        - Survey Solution
+                      language:
+                        - English
+                      keywords:
+                        - Survey
+                      concepts: []
+                      createdFor: []
+                      themes:
+                        - type: theme
+                          label: theme
+                          externalId: SF
+                          name: Survey and Feedback
+                          weightage: 0
+                          criteria:
+                            - criteriaId: 5fa27b88b6bd9b757dc4e92c
+                              weightage: 0
+                      flattenedThemes: []
+                      entities: []
+                      registry: []
+                      isRubricDriven: false
+                      enableQuestionReadOut: false
+                      captureGpsLocationAtQuestionLevel: false
+                      isAPrivateProgram: false
+                      allowMultipleAssessemts: false
+                      isDeleted: false
+                      rootOrganisations: []
+                      deleted: false
+                      type: survey
+                      subType: survey
+                      name: 'Diksha test survey '
+                      externalId: 6e0e32da-1e84-11eb-a3bf-000d3af02677-1604483976159
+                      description: Diksha test survey via genie
+                      linkTitle: ''
+                      linkUrl: ''
+                      author: 86d2d978-5b20-4453-8a76-82b5a4c728c9
+                      isReusable: false
+                      status: active
+                      startDate: '2020-11-04T09:59:29.596Z'
+                      endDate: '2021-11-04T09:59:29.596Z'
+                      sections:
+                        S1: Observation Question
+                      evidenceMethods:
+                        OB:
+                          externalId: OB
+                          tip: null
+                          name: Observation
+                          description: null
+                          modeOfCollection: onfield
+                          canBeNotApplicable: false
+                          notApplicable: false
+                          canBeNotAllowed: false
+                          remarks: null
+                      updatedAt: '2024-09-24T05:33:37.906Z'
+                      createdAt: '2020-11-04T09:59:36.182Z'
+                      __v: 0
+                      parentSolutionId: 5fa27b812dbd4b755b88e639
+                      link: 8b8415cca02c67d3e3e29e28d9408404
+                      minNoOfSubmissionsRequired: 1
+                      updatedBy: '2'
         '400':
           description: Failure response
           headers: {}
@@ -1551,7 +2257,415 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Solution Fetched successfully
+                    status: 200
+                    result:
+                      data:
+                        - _id: 660551fe8048eb00089ca693
+                          externalId: e2faebd2-ecf4-11ee-b59c-ac12038f3f22-OBSERVATION-TEMPLATE
+                          name: Observation Without Rubric
+                          description: Selenium is an open source umbrella project for a range of tools and libraries aimed at supporting browser automation.
+                        - _id: 660549818048eb00089ca676
+                          externalId: d2f12f6d-ecef-11ee-8ec6-c0a5e8ff50d1-OBSERVATION-TEMPLATE_CHILD
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6605497f8048eb00089ca5ae
+                          externalId: d2f12f6d-ecef-11ee-8ec6-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6604026663d43b0008180791
+                          externalId: da320224-ec2c-11ee-8403-678d24039647-OBSERVATION-TEMPLATE_CHILD
+                          name: Kaushik KT obs with rubrics
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6604026463d43b00081806c9
+                          externalId: da320224-ec2c-11ee-8403-678d24039647-OBSERVATION-TEMPLATE
+                          name: Kaushik KT obs with rubrics
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f53c63d43b0008180543
+                          externalId: 022e0e08-ec25-11ee-a31e-c0a5e8ff50d1-OBSERVATION-TEMPLATE_CHILD
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f53a63d43b000818047b
+                          externalId: 022e0e08-ec25-11ee-a31e-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f40063d43b00081803f2
+                          externalId: 46f2996a-ec24-11ee-a0a1-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f3b063d43b0008180369
+                          externalId: 16da5aff-ec24-11ee-a255-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f34f63d43b00081802e0
+                          externalId: dd28d4bc-ec23-11ee-8ff4-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f2d863d43b0008180257
+                          externalId: 9627cc1f-ec23-11ee-a7e5-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f28763d43b00081801ce
+                          externalId: 663b8729-ec23-11ee-ae21-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f25263d43b0008180145
+                          externalId: 4678470f-ec23-11ee-ad1e-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f15663d43b00081800bc
+                          externalId: b03453ee-ec22-11ee-9f47-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation With rubrics template
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6603f15363d43b000818009b
+                          externalId: ad4fca52-ec22-11ee-b438-c0a5e8ff50d1-OBSERVATION-TEMPLATE_CHILD
+                          name: Testing Observation Without rubrics template
+                          description: Testing Observation Without rubrics template
+                        - _id: 6603f15163d43b000818000b
+                          externalId: ad4fca52-ec22-11ee-b438-c0a5e8ff50d1-OBSERVATION-TEMPLATE
+                          name: Testing Observation Without rubrics template
+                          description: 'Testing Observation Without rubrics template '
+                        - _id: 66011fd5d7fe7f00088d4be8
+                          externalId: b5d4948c-ea6f-11ee-8094-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: Obs without rubrics KT
+                          description: This is an assessment form to be used during classroom observation.
+                        - _id: 65eff9e0a38f0a00088f3657
+                          externalId: 028e899c-e03c-11ee-92e9-972ec2339e28-OBSERVATION-TEMPLATE_CHILD
+                          name: observation for testing imp flow
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65eff9dca38f0a00088f35c7
+                          externalId: 028e899c-e03c-11ee-92e9-972ec2339e28-OBSERVATION-TEMPLATE
+                          name: observation for testing imp flow
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 6492d2335c81330008b7179e
+                          externalId: 3182bd9c-101f-11ee-8145-651b4322082f-OBSERVATION-TEMPLATE_CHILD
+                          name: ರೂಬ್ರಿಕ್ಸ್ ಇಲ್ಲದ obs 5 रूब्रिक के बिना अवलोकन 5 రూబ్రిక్స్ లేని obs 5
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 6492c4ad5c81330008b7144e
+                          externalId: 1fc5d4fc-1017-11ee-a40a-c335b69b694f-OBSERVATION-TEMPLATE_CHILD
+                          name: रूब्रिक के बिना अवलोकन 6
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 6492c49b5c81330008b71390
+                          externalId: 1510e89e-1017-11ee-a40a-c335b69b694f-OBSERVATION-TEMPLATE_CHILD
+                          name: रूब्रिक के साथ अवलोकन 5
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 6492ee395c81330008b72598
+                          externalId: e512c360-102f-11ee-8145-651b4322082f-OBSERVATION-TEMPLATE_CHILD
+                          name: Obs without rubrics  3
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 6492d63e5c81330008b71b30
+                          externalId: 9a0b9706-1021-11ee-8145-651b4322082f-OBSERVATION-TEMPLATE_CHILD
+                          name: obs without rubrics 3
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 648c420f5c81330008b6956e
+                          externalId: be7b6ed0-0c35-11ee-9eca-334a9e787416-OBSERVATION-TEMPLATE_CHILD
+                          name: obs without rubrics 4
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 648c41125c81330008b69336
+                          externalId: 2607ccd4-0c35-11ee-9eca-334a9e787416-OBSERVATION-TEMPLATE_CHILD
+                          name: obs with rubrics 3
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 651fc8222111300008191b0e
+                          externalId: 1bf19f0c-6424-11ee-b9d5-c84bd61ce734-OBSERVATION-TEMPLATE_CHILD
+                          name: OCI-Observation without rubric--Isrubricdriven-False
+                          description: Leadership Self Assessment CSP Program 4
+                        - _id: 651fc81d2111300008191a49
+                          externalId: 18536aeb-6424-11ee-8f31-c84bd61ce734-OBSERVATION-TEMPLATE_CHILD
+                          name: OCI-Observation with rubric--Isrubricdriven-True-Criterialevelreport-True-Multiplesubmission-False
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 64993db85c81330008b78e62
+                          externalId: cd876e78-13f2-11ee-9e7b-e174cf9ccc2b-OBSERVATION-TEMPLATE_CHILD
+                          name: Observation with rubric--Isrubricdriven-True-Criterialevelreport-True-Multiplesubmission-True-2
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 64993d9e5c81330008b78ba3
+                          externalId: bf88bb7e-13f2-11ee-9e7b-e174cf9ccc2b-OBSERVATION-TEMPLATE_CHILD
+                          name: Observation without rubric--Isrubricdriven-False-2
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 64ad4dd3c60fd100086944d0
+                          externalId: 2a9c5208-1fe8-11ee-803d-6bfb48c7b057-OBSERVATION-TEMPLATE_CHILD
+                          name: Leadership Self Assessment for program 1
+                          description: Leadership Self Assessment for program 1
+                        - _id: 64ad4d35c60fd10008694403
+                          externalId: cc0faf1e-1fe7-11ee-803d-6bfb48c7b057-OBSERVATION-TEMPLATE_CHILD
+                          name: Leadership Self Assessment for program 1
+                          description: Leadership Self Assessment for program 1
+                        - _id: 64ad4c4cc60fd1000869429c
+                          externalId: 418be330-1fe7-11ee-8924-70a8d3c32ea4-OBSERVATION-TEMPLATE_CHILD
+                          name: without rubric 2
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 64ad4c20c60fd100086941f0
+                          externalId: 23949bba-1fe7-11ee-803d-6bfb48c7b057-OBSERVATION-TEMPLATE_CHILD
+                          name: Leadership Self Assessment  observation in project
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 64ad4b74c60fd1000869413d
+                          externalId: c035f42e-1fe6-11ee-803d-6bfb48c7b057-OBSERVATION-TEMPLATE_CHILD
+                          name: Leadership Self Assessment for testing
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 64ad4b2bc60fd1000869408a
+                          externalId: 95405228-1fe6-11ee-803d-6bfb48c7b057-OBSERVATION-TEMPLATE_CHILD
+                          name: Leadership Self Assessment for testing
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 64ad49b4c60fd10008693fd7
+                          externalId: b502c614-1fe5-11ee-803d-6bfb48c7b057-OBSERVATION-TEMPLATE_CHILD
+                          name: without rubric 2
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 64ad44c2c60fd10008693bc7
+                          externalId: c3440aec-1fe2-11ee-aff2-296cedf2a165-OBSERVATION-TEMPLATE_CHILD
+                          name: without rubric 2
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 649a91d25c81330008b7b8cc
+                          externalId: 850dcd1a-14bd-11ee-af5f-bb2c8e1fa21b-OBSERVATION-TEMPLATE_CHILD
+                          name: obs with rubrics HT
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 649a91c55c81330008b7b7df
+                          externalId: 7e01078a-14bd-11ee-af5f-bb2c8e1fa21b-OBSERVATION-TEMPLATE_CHILD
+                          name: without rubric 2
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 649a91be5c81330008b7b726
+                          externalId: 79b68b82-14bd-11ee-af5f-bb2c8e1fa21b-OBSERVATION-TEMPLATE_CHILD
+                          name: without rubric 1
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 649a91b85c81330008b7b677
+                          externalId: 76a01b98-14bd-11ee-af5f-bb2c8e1fa21b-OBSERVATION-TEMPLATE_CHILD
+                          name: Observation without Rubrics HT
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65d46d10769bc20009d2ebd6
+                          externalId: 369f4ea0-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE_CHILD
+                          name: Automation-Observation Without Rubric-1
+                          description: Selenium is an open source umbrella project for a range of tools and libraries aimed at supporting browser automation.
+                        - _id: 65d46d0f769bc20009d2eb8f
+                          externalId: 369f4ea0-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE
+                          name: Automation-Observation Without Rubric-1
+                          description: Selenium is an open source umbrella project for a range of tools and libraries aimed at supporting browser automation.
+                        - _id: 65d46d0b769bc20009d2eb6e
+                          externalId: 32a3eb44-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE_CHILD
+                          name: Automation-Observation With Rubric Multiple Submission-1
+                          description: Appium is an open source automation tool for running scripts and testing native applications, mobile-web applications and hybrid applications on Android or iOS using a webdriver.
+                        - _id: 65d46d08769bc20009d2eb2a
+                          externalId: 32a3eb44-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE
+                          name: Automation-Observation With Rubric Multiple Submission-1
+                          description: Appium is an open source automation tool for running scripts and testing native applications, mobile-web applications and hybrid applications on Android or iOS using a webdriver.
+                        - _id: 65d46cff769bc20009d2eb15
+                          externalId: 2b8d06ec-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE_CHILD
+                          name: Automation-Observation With Rubric  Single Submission-1
+                          description: Appium is an open source automation tool for running scripts and testing native applications, mobile-web applications and hybrid applications on Android or iOS using a webdriver.
+                        - _id: 65d46cfc769bc20009d2ead1
+                          externalId: 2b8d06ec-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE
+                          name: Automation-Observation With Rubric  Single Submission-1
+                          description: Appium is an open source automation tool for running scripts and testing native applications, mobile-web applications and hybrid applications on Android or iOS using a webdriver.
+                        - _id: 65d46ceb769bc20009d2eab8
+                          externalId: 20992afe-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE_CHILD
+                          name: Automation Obs Task - 1
+                          description: Selenium is an open source umbrella project for a range of tools and libraries aimed at supporting browser automation.
+                        - _id: 65d46cea769bc20009d2ea83
+                          externalId: 20992afe-cfd0-11ee-966c-23d352e3b541-OBSERVATION-TEMPLATE
+                          name: Automation Obs Task - 1
+                          description: Selenium is an open source umbrella project for a range of tools and libraries aimed at supporting browser automation.
+                        - _id: 65cdbb570c6529000831fcbf
+                          externalId: c0f371e6-cbd2-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE_CHILD
+                          name: mahadevan observtion with rubrics
+                          description: mahadevan observtion with rubrics testing
+                        - _id: 65cdbb560c6529000831fbf7
+                          externalId: c0f371e6-cbd2-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE
+                          name: mahadevan observtion with rubrics
+                          description: mahadevan observtion with rubrics testing
+                        - _id: 65cdbadc0c6529000831fbd6
+                          externalId: 77e2a788-cbd2-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE_CHILD
+                          name: mahadevan without rubrics
+                          description: mahadevan without rubrics testing
+                        - _id: 65cdbadb0c6529000831fb46
+                          externalId: 77e2a788-cbd2-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE
+                          name: mahadevan without rubrics
+                          description: mahadevan without rubrics testing
+                        - _id: 65cdb4dc0c6529000831fb31
+                          externalId: e43f3ada-cbce-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE_CHILD
+                          name: mahadevan observation without rubrics
+                          description: mahadevan scrpt implementation second
+                        - _id: 65cdb4db0c6529000831faa1
+                          externalId: e43f3ada-cbce-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE
+                          name: mahadevan observation without rubrics
+                          description: mahadevan scrpt implementation second
+                        - _id: 65cdae3a0c6529000831fa23
+                          externalId: f01e3cba-cbca-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE_CHILD
+                          name: mahadevan obs without rubrics
+                          description: mahadevan test observation without rubrics
+                        - _id: 65cdae390c6529000831f993
+                          externalId: f01e3cba-cbca-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE
+                          name: mahadevan obs without rubrics
+                          description: mahadevan test observation without rubrics
+                        - _id: 65cc4b110c6529000831f51c
+                          externalId: 3eedb17e-caf7-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE_CHILD
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cc4b100c6529000831f454
+                          externalId: 3eedb17e-caf7-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cc4b090c6529000831f433
+                          externalId: 3a9a78e6-caf7-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE_CHILD
+                          name: નમસ્કાર
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cc4b080c6529000831f39d
+                          externalId: 3a9a78e6-caf7-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE
+                          name: નમસ્કાર
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cc4b050c6529000831f384
+                          externalId: 37a8f856-caf7-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE_CHILD
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cc4b030c6529000831f2f4
+                          externalId: 37a8f856-caf7-11ee-a9da-5fbb0dac7d3a-OBSERVATION-TEMPLATE
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb602c0c6529000831f20f
+                          externalId: 3c6d954a-ca6b-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cb602a0c6529000831f147
+                          externalId: 3c6d954a-ca6b-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cb60270c6529000831f126
+                          externalId: 39adebde-ca6b-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: નમસ્કાર
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb60250c6529000831f090
+                          externalId: 39adebde-ca6b-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: નમસ્કાર
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb60230c6529000831f077
+                          externalId: 372c5b02-ca6b-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb60210c6529000831efe7
+                          externalId: 372c5b02-ca6b-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb5f4e0c6529000831efc9
+                          externalId: b8557c6e-ca6a-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cb5f4c0c6529000831ef01
+                          externalId: b8557c6e-ca6a-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cb5f490c6529000831eee0
+                          externalId: b55e1b60-ca6a-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: નમસ્કાર
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb5f470c6529000831ee4a
+                          externalId: b55e1b60-ca6a-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: નમસ્કાર
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb5f440c6529000831ee31
+                          externalId: b28ed71c-ca6a-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb5f430c6529000831eda1
+                          externalId: b28ed71c-ca6a-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb5c320c6529000831ed1e
+                          externalId: ddf1de38-ca68-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: spreadsheet obs
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb5c310c6529000831ec85
+                          externalId: ddf1de38-ca68-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: spreadsheet obs
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb5bea0c6529000831ec60
+                          externalId: b3136eca-ca68-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE_CHILD
+                          name: spreadsheet obs
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb5be90c6529000831ebd0
+                          externalId: b3136eca-ca68-11ee-8bc7-9b217dbb5044-OBSERVATION-TEMPLATE
+                          name: spreadsheet obs
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb5a020c6529000831eb8f
+                          externalId: 900dec1c-ca67-11ee-b3ce-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cb5a000c6529000831eac7
+                          externalId: 900dec1c-ca67-11ee-b3ce-c8b29bf28140-OBSERVATION-TEMPLATE
+                          name: నమస్కారం
+                          description: This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab
+                        - _id: 65cb59fb0c6529000831eaa6
+                          externalId: 8c3136b2-ca67-11ee-b3ce-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: નમસ્કાર
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb59fa0c6529000831ea10
+                          externalId: 8c3136b2-ca67-11ee-b3ce-c8b29bf28140-OBSERVATION-TEMPLATE
+                          name: નમસ્કાર
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65cb59f40c6529000831e9f7
+                          externalId: 88208abe-ca67-11ee-b3ce-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65cb59f30c6529000831e967
+                          externalId: 88208abe-ca67-11ee-b3ce-c8b29bf28140-OBSERVATION-TEMPLATE
+                          name: ਸਤ ਸ੍ਰੀ ਅਕਾਲ
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65c47d1f35e2c90008302056
+                          externalId: 5ff89fc4-c650-11ee-9797-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: Observation testing
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65c47d1c35e2c90008301fc6
+                          externalId: 5ff89fc4-c650-11ee-9797-c8b29bf28140-OBSERVATION-TEMPLATE
+                          name: Observation testing
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65c47cf735e2c90008301fa9
+                          externalId: 47ae347e-c650-11ee-8cb5-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: Observation testing
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65c47cf435e2c90008301f19
+                          externalId: 47ae347e-c650-11ee-8cb5-c8b29bf28140-OBSERVATION-TEMPLATE
+                          name: Observation testing
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65c4794a35e2c90008301e5f
+                          externalId: 161e87bc-c64e-11ee-bb79-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: School Observation Sheet
+                          description: This is a school observation for Mission Pragati a District Education Department,Muzaffarpur (Bihar) led program.
+                        - _id: 65c4794635e2c90008301d32
+                          externalId: 161e87bc-c64e-11ee-bb79-c8b29bf28140-OBSERVATION-TEMPLATE
+                          name: School Observation Sheet
+                          description: This is a school observation for Mission Pragati a District Education Department,Muzaffarpur (Bihar) led program.
+                        - _id: 65c4793b35e2c90008301ce9
+                          externalId: 0d941738-c64e-11ee-bb79-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: Observation testing
+                          description: Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses
+                        - _id: 65c4793835e2c90008301c59
+                          externalId: 0d941738-c64e-11ee-bb79-c8b29bf28140-OBSERVATION-TEMPLATE
+                          name: Observation testing
+                          description: 'Survey Form to understand the challenges that the parents are facing in getting their children enrolled in DIKSHA courses '
+                        - _id: 65bb614fc8c8c40008d1e84d
+                          externalId: 0cada496-c0cd-11ee-a358-87db6fcb5f18-OBSERVATION-TEMPLATE_CHILD
+                          name: 'Mahadevan_observation_without_rubrics '
+                          description: 'assessment '
+                        - _id: 65ba45db79601d0008895de3
+                          externalId: af14b0e2-c02f-11ee-a358-87db6fcb5f18-OBSERVATION-TEMPLATE_CHILD
+                          name: 'observation_with_rubrics_assessment '
+                          description: 'mahadevan assessment '
+                        - _id: 65b8c075b9fa080008084186
+                          externalId: 23c9289c-bf49-11ee-a358-87db6fcb5f18-OBSERVATION-TEMPLATE_CHILD
+                          name: 'Observation with out rubrics assessment  '
+                          description: 'Observation with out rubrics assessment '
+                        - _id: 65b9dd9e79601d0008895834
+                          externalId: 6cbb5da8-bffb-11ee-ae66-588a5a120c7a-OBSERVATION-TEMPLATE_CHILD
+                          name: Test observation in production jan 12
+                          description: सर्टिफिकेट प्राप्त करने हेतु दी गई प्रश्नावली को पूर्ण करें
+                        - _id: 65b9dd9c79601d00088957fb
+                          externalId: 6cbb5da8-bffb-11ee-ae66-588a5a120c7a-OBSERVATION-TEMPLATE
+                          name: Test observation in production jan 12
+                          description: सर्टिफिकेट प्राप्त करने हेतु दी गई प्रश्नावली को पूर्ण करें
+                        - _id: 65b88910b9fa080008083d10
+                          externalId: 70a0d4ee-bf30-11ee-adb9-c8b29bf28140-OBSERVATION-TEMPLATE_CHILD
+                          name: Test observation in production jan 12
+                          description: सर्टिफिकेट प्राप्त करने हेतु दी गई प्रश्नावली को पूर्ण करें
+                      count: 1624
         '500':
           description: Failure response
           headers: {}
@@ -1564,6 +2678,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API returns a list of all available solutions. It can be used to fetch a comprehensive list or filter the results based on specific query parameters.
   /v1/solutions/addEntitiesInScope/:solutionId:
     post:
@@ -1576,6 +2695,11 @@ paths:
             schema:
               type: string
               example: '"{\n     \"entities\":[\"5f33c3d85f637784791cd831\"]\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  entities:
+                    - 5fd098e2e049735a86b748b1
       parameters:
         - name: X-auth-token
           in: header
@@ -1592,7 +2716,12 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully added entities in solution scope
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -1605,6 +2734,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API adds entities to the scope of a solution. By passing the solutionId and a list of entity IDs in the request body, the entities are added to the solution’s scope for assessment or observation purposes.
   /v1/solutions/addRolesInScope/:solutionId:
     post:
@@ -1617,6 +2751,13 @@ paths:
             schema:
               type: string
               example: '"{\n    \"roles\": [\n        \"DEO\",\n        \"HM\",\n        \"TEACHER\"\n    ]\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  roles:
+                    - DEO
+                    - HM
+                    - TEACHER
       parameters:
         - name: X-auth-token
           in: header
@@ -1628,7 +2769,12 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully added roles in solution scope
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -1641,6 +2787,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API allows adding roles to the scope of a solution. It updates the solution with additional roles that will be able to interact with or be evaluated by the solution. The solutionId and role details need to be provided in the request body.
   /v1/solutions/removeEntitiesInScope/:solutionId:
     post:
@@ -1653,6 +2804,11 @@ paths:
             schema:
               type: string
               example: '"{\n    \"entities\": [\n        \"5f33c3d85f637784791cd831\"\n    ]\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  entities:
+                    - 5fd098e2e049735a86b748b1
       parameters:
         - name: X-auth--token
           in: header
@@ -1663,7 +2819,12 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully removed entities from solution scope
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -1676,6 +2837,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API removes entities from the scope of a solution. By passing the solutionId and the entity IDs in the request body, the specified entities are removed from the solution’s scope.
   /v1/solutions/removeRolesInScope/:solutionId:
     post:
@@ -1688,6 +2854,11 @@ paths:
             schema:
               type: string
               example: '"{\n    \"roles\" : [\"DEO\"]\n}\n\n"'
+            examples:
+              exampleRequestBody:
+                value:
+                  roles:
+                    - DEO
       parameters:
         - name: X-auth-token
           in: header
@@ -1698,7 +2869,12 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully removed roles from solution scope
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -1711,6 +2887,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: |+
         This API allows the removal of roles from the scope of a solution. By passing the solutionId and the role details in the request body, the specified roles are removed from interacting with the solution.
 
@@ -1725,6 +2906,17 @@ paths:
             schema:
               type: string
               example: '"{\n    \"userRoleInformation\": {\n        \"district\": \"2f76dcf5-e43b-4f71-a3f2-c8f19e1fce03\",\n        \"block\": \"966c3be4-c125-467d-aaff-1eb1cd525923\",\n        \"state\": \"bc75cc99-9205-463e-a722-5326857838f8\",\n        \"school\": \"28226200910\",\n        \"role\": \"HM,DEO,MEO,CRP,Complex HM,SPD\"\n    },\n    \"isResource\": true,\n    \"consentShared\": true\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  userRoleInformation:
+                    district: 2f76dcf5-e43b-4f71-a3f2-c8f19e1fce03
+                    block: 966c3be4-c125-467d-aaff-1eb1cd525923
+                    state: bc75cc99-9205-463e-a722-5326857838f8
+                    school: '28226200910'
+                    role: HM,DEO,MEO,CRP,Complex HM,SPD
+                  isResource: true
+                  consentShared: true
       parameters:
         - name: X-auth-token
           in: header
@@ -1735,7 +2927,14 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: You have joined this program successfully
+                    success: true
+                    data:
+                      _id: 5f34ec17585244939f89f90c
         '400':
           description: Failure response
           headers: {}
@@ -1748,6 +2947,11 @@ paths:
                     type: string
                   status:
                     type: number
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API allows a user to join a program by providing the programId in the path parameters. Once the user is successfully added to the program, they will be able to participate in the program.
   /v1/programs/create:
     post:
@@ -1760,6 +2964,35 @@ paths:
             schema:
               type: string
               example: '"{\n    \"externalId\": \"TESTING_BY_DEV_TEAM_1\",\n    \"name\": \"Testing by dev team ap\",\n    \"description\": \"testing by dev team\",\n    \"resourceType\": [\n        \"program\"\n    ],\n    \"language\": [\n        \"English\"\n    ],\n    \"keywords\": [],\n    \"concepts\": [],\n    \"createdFor\": [],\n    \"rootOrganisations\": [],\n    \"startDate\": \"2023 05 01\",\n    \"endDate\": \"2025 10 10\"\n    // \"imageCompression\": {\n    //     \"quality\": 10\n    // }\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  externalId: TESTING_BY_DEV_TEAM_9
+                  name: Testing by dev team ap
+                  description: testing by dev team
+                  resourceType:
+                    - program
+                  language:
+                    - English
+                  keywords: []
+                  concepts: []
+                  createdFor: []
+                  rootOrganisations: []
+                  startDate: '2023-05-01'
+                  endDate: '2024-05-10'
+                  imageCompression:
+                    quality: 10
+                  scope:
+                    entityType: state
+                    entities:
+                      - 5f33c3d85f637784791cd830
+                      - 5f33c3d85f637784791cd831
+                    roles:
+                      - HM
+                      - DCT
+                      - CRP
+                      - DEO
+                      - BEO
       parameters:
         - name: X-auth-token
           in: header
@@ -1771,7 +3004,14 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Programs created successfully
+                    status: 200
+                    result:
+                      _id: 66f25cf80d4a10ed2f5d9cdc
         '400':
           description: Failure response
           headers: {}
@@ -1859,7 +3099,55 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Program information list fetched successfully.
+                    status: 200
+                    result:
+                      data:
+                        - _id: 65f3ffd0ddff04000965200f
+                          isAPrivateProgram: false
+                          externalId: PGM_Tech_Skill_Club-Smart_Learn_308483_08-03-24_newtest
+                          description: This program will make students and teachers across all the schools more digitally skilled.
+                        - _id: 65f04dcc0725800009778fea
+                          isAPrivateProgram: false
+                          externalId: PGM_MIP_certificate_with_project_12
+                          description: Program for project with certificate
+                        - _id: 65eff9d80725800009778efe
+                          isAPrivateProgram: false
+                          externalId: New_VPN_testing
+                          description: Obs led imp
+                        - _id: 65e04672b277a10009c5fa99
+                          isAPrivateProgram: false
+                          externalId: PGM_BR_DIET_DUMRAON_BUXAR_MIP_288179
+                          description: 'शिक्षक प्रारम्भिक कक्षाओं के अनुरूप पाठ्यचर्या निर्माण तथा शिक्षण में बाल साहित्य उपयोग एवं क्रियान्वयन सुनिश्चित कर पाएंगें। '
+                        - _id: 65df0b2b1cb0df0008e70798
+                          isAPrivateProgram: false
+                          externalId: PGM_MIP_DIET_Banka_शब्दो_के_संग_खेले_खेल_146376
+                          description: शिक्षकों के शिक्षणशास्त्रीय कौशल में निखार लाना एवं बुनियाद के बच्चो का साक्षरता ज्ञान का मजबूत नीव तैयार करना
+                        - _id: 65dc775151245f0008d05a3a
+                          isAPrivateProgram: false
+                          externalId: PGM_DIET_GAYA_604291_26-02-2024_TEST_26_02_12_12_12_1212_hvgh
+                          description: 'शिक्षक कक्षा-कक्ष में बच्चों के लिए पुस्तकालय के कोना का निर्माण करा पायेंगे | '
+                        - _id: 65dc769251245f0008d05a31
+                          isAPrivateProgram: false
+                          externalId: PGM_DIET_GAYA_604291_26-02-2024_TEST_26_02_12_12_12_1212
+                          description: 'शिक्षक कक्षा-कक्ष में बच्चों के लिए पुस्तकालय के कोना का निर्माण करा पायेंगे | '
+                        - _id: 65dc764651245f0008d05a28
+                          isAPrivateProgram: false
+                          externalId: PGM_DIET_GAYA_604291_26-02-2024_TEST_26_02_12_12_12_12
+                          description: 'शिक्षक कक्षा-कक्ष में बच्चों के लिए पुस्तकालय के कोना का निर्माण करा पायेंगे | '
+                        - _id: 65dc605151245f0008d057e5
+                          isAPrivateProgram: false
+                          externalId: pgm_DIET_GAYA_604291_26-02-2024
+                          description: 'शिक्षक कक्षा-कक्ष में बच्चों के लिए पुस्तकालय के कोना का निर्माण करा पायेंगे | '
+                        - _id: 65d84bac551f6d0008733860
+                          isAPrivateProgram: false
+                          externalId: pgm_Updated_Programs_DIET DARBHANGA
+                          description: शिक्षक बच्चे को दैनिक जीवन में अंको का उपयोग करना सीखा पायेंगे।
+                      count: 1063
         '500':
           description: Failure response
           headers: {}
@@ -1872,6 +3160,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: |2+
          This API retrieves a list of all available programs. The response includes details like program IDs, names, and other relevant information for each program.
 
@@ -1886,6 +3179,21 @@ paths:
             schema:
               type: string
               example: '"{\n    \"endDate\": \"2025-05-15 14:00:00\",\n\"scope\": {\n        \"entityType\": \"state\",\n        \"entities\": [\n            \"5f33c3d85f637784791cd830\",\n            \"5f33c3d85f637784791cd831\"\n        ],\n        \"roles\": [\n            \"HM\",\n            \"DCT\",\n            \"CRP\",\n            \"DEO\",\n            \"BEO\"\n        ]\n    }  \n}"'
+            examples:
+              SuccessResponse:
+                value:
+                  endDate: '2025-05-15 14:00:00'
+                  scope:
+                    entityType: state
+                    entities:
+                      - 5f33c3d85f637784791cd830
+                      - 5f33c3d85f637784791cd831
+                    roles:
+                      - HM
+                      - DCT
+                      - CRP
+                      - DEO
+                      - BEO
       parameters:
         - name: X-auth-token
           in: header
@@ -1897,7 +3205,14 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Programs updated successfully
+                    status: 200
+                    result:
+                      _id: 65f04dcc0725800009778fea
         '400':
           description: Failure response
           headers: {}
@@ -1936,7 +3251,64 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Programs fetched successfully
+                    status: 200
+                    result:
+                      _id: 65f04dcc0725800009778fea
+                      resourceType:
+                        - program
+                      language:
+                        - English
+                      keywords:
+                        - शब्द पहचान
+                        - पठन कौशल
+                        - धारा प्रवाह पठन
+                      concepts: []
+                      components:
+                        - 65f054c80725800009779002
+                      isAPrivateProgram: false
+                      isDeleted: false
+                      rootOrganisations:
+                        - '01269878797503692810'
+                      createdFor:
+                        - '01269878797503692810'
+                      deleted: false
+                      status: active
+                      owner: fca2925f-1eee-4654-9177-fece3fd6afc9
+                      createdBy: 9bb884fc-8a56-4727-9522-25a7d5b8ea06
+                      updatedBy: '2'
+                      externalId: PGM_MIP_certificate_with_project_12
+                      name: Program for project with certificate
+                      description: Program for project with certificate
+                      startDate: '2024-02-06T18:30:00.000Z'
+                      endDate: '2045-05-15T08:30:00.000Z'
+                      imageCompression:
+                        quality: 10
+                      metaInformation:
+                        state:
+                          - Alluri Sita Rama Raju
+                        roles:
+                          - Teacher
+                          - HT & Officials
+                      requestForPIIConsent: true
+                      updatedAt: '2024-09-24T06:39:05.857Z'
+                      createdAt: '2024-03-12T12:42:52.946Z'
+                      __v: 0
+                      scope:
+                        entityType: state
+                        entities:
+                          - 5f33c3d85f637784791cd830
+                          - 5f33c3d85f637784791cd831
+                        roles:
+                          - HM
+                          - DCT
+                          - CRP
+                          - DEO
+                          - BEO
         '400':
           description: Failure response
           headers: {}
@@ -1970,6 +3342,11 @@ paths:
             schema:
               type: string
               example: '"{     \n     \"entities\":[\"db331a8c-b9e2-45f8-b3c0-7ec1e826b6df\",\"4a994d9d-5677-40a8-83eb-e3c5eec73b92\"]\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  entities:
+                    - 5fbf3f8c3e9df47967eed916
       parameters:
         - name: X-auth-token
           in: header
@@ -1980,7 +3357,12 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully added entities in program scope
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -2014,6 +3396,11 @@ paths:
             schema:
               type: string
               example: '"{\n    \"roles\":[\"HM\"] \n    \n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  roles:
+                    - HM
       parameters:
         - name: X-auth-token
           in: header
@@ -2025,7 +3412,27 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully added roles in program scope
+                    status: 200
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 400
+                    message:
+                      - location: body
+                        param: roles
+                        msg: required program roles to be added
       description: This API adds roles to the scope of a specific program. The programId is passed as a path parameter, and the roles are provided in the request body.
   /v1/programs/removeRolesInScope/:programId:
     post:
@@ -2038,6 +3445,11 @@ paths:
             schema:
               type: string
               example: '"{\n    \"roles\": [\n        \"BEO\"\n    ]\n}"'
+            examples:
+              SuccessResponse:
+                value:
+                  roles:
+                    - BEO
       parameters:
         - name: X-auth-token
           in: header
@@ -2048,7 +3460,27 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully removed roles in program scope
+                    status: 200
+        '400':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 400
+                    message:
+                      - location: body
+                        param: roles
+                        msg: required program roles to be added
       description: ' This API removes roles from the scope of a specific program. The programId is passed as a path parameter, and the roles to be removed are provided in the request body.'
   /v1/programs/removeEntitiesInScope/:programId:
     post:
@@ -2061,6 +3493,11 @@ paths:
             schema:
               type: string
               example: '"{\n    \"entities\": [\n        \"5f80353c946feebb14d68d57\"\n    ]\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  entities:
+                    - 5f80353c946feebb14d68d57
       parameters:
         - name: X-auth-token
           in: header
@@ -2071,13 +3508,30 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Successfully removed entities in program scope
+                    status: 200
+        '500':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                FailureResponse:
+                  value:
+                    message: No program found.
+                    status: 500
       description: This API removes entities from the scope of a specific program. The programId is passed as a path parameter, and the entities to be removed are provided in the request body.
   /survey/v1/admin/createIndex/solutions:
     post:
       tags:
         - Admin
-      summary: API removes entities from scope of specific program
+      summary: API to creates index
       requestBody:
         content:
           application/json:
@@ -2113,8 +3567,13 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
-      description: ''
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Keys indexed successfully
+                    status: 200
+      description: API can be used to create index in the database for solution table
   /v1/surveySubmissions/update/:surveySubmissionId:
     post:
       tags:
@@ -2126,6 +3585,34 @@ paths:
             schema:
               type: string
               example: '"{\n  \"evidence\": {\n    \"externalId\": \"SF\",\n    \"answers\": {\n      \"65dc4ab49551bfb995a2453f\": {\n        \"qid\": \"65dc4ab49551bfb995a2453f\",\n        \"value\": \"wewewe\",\n        \"remarks\": \"\",\n        \"fileName\": [],\n        \"gpsLocation\": \"\",\n        \"payload\": {\n          \"question\": [\n            \"Enter your First question\",\n            \"\"\n          ],\n          \"labels\": [\n            \"wewewe\"\n          ],\n          \"responseType\": \"text\",\n          \"filesNotUploaded\": []\n        },\n        \"startTime\": 1709026874058,\n        \"endTime\": 1709026987127,\n        \"criteriaId\": \"65dc4ab49551bfb995a2454c\",\n        \"responseType\": \"text\",\n        \"evidenceMethod\": \"SF\",\n        \"rubricLevel\": \"\"\n      }\n    },\n    \"startTime\": 1709026873403,\n    \"endTime\": 1709027010423\n  }\n}"'
+            examples:
+              exampleRequestBody:
+                value:
+                  evidence:
+                    externalId: SF
+                    answers:
+                      65dc4ab49551bfb995a2453f:
+                        qid: 65dc4ab49551bfb995a2453f
+                        value: wewewe
+                        remarks: ''
+                        fileName: []
+                        gpsLocation: ''
+                        payload:
+                          question:
+                            - Enter your First question
+                            - ''
+                          labels:
+                            - wewewe
+                          responseType: text
+                          filesNotUploaded: []
+                        startTime: 1709026874058
+                        endTime: 1709026987127
+                        criteriaId: 65dc4ab49551bfb995a2454c
+                        responseType: text
+                        evidenceMethod: SF
+                        rubricLevel: ''
+                    startTime: 1709026873403
+                    endTime: 1709027010423
       parameters:
         - name: Content-Type
           in: header
@@ -2175,6 +3662,11 @@ paths:
                           submissionDate: '2024-08-12T07:04:18.913Z'
                           isValid: true
                       hasConflicts: false
+              examples:
+                SuccessResponse:
+                  value:
+                    status: 200
+                    message: Survey submission created successfully
         '400':
           description: Failure response
           headers: {}
@@ -2225,6 +3717,13 @@ paths:
                 status: 200
                 result:
                   status: completed
+              examples:
+                SuccessResponse:
+                  value:
+                    status: 200
+                    message: Submission status fetched successfully
+                    result:
+                      status: completed
         '400':
           description: Failure response
           headers: {}
@@ -2254,12 +3753,7 @@ paths:
       tags:
         - surveySubmissions
       summary: Fetches list of survey submissions done by user
-      requestBody:
-        content:
-          '*/*':
-            schema:
-              type: string
-              example: '"{\n  \"evidence\": {\n    \"externalId\": \"SF\",\n    \"answers\": {\n      \"65dc4ab49551bfb995a2453f\": {\n        \"qid\": \"65dc4ab49551bfb995a2453f\",\n        \"value\": \"wewewe\",\n        \"remarks\": \"\",\n        \"fileName\": [],\n        \"gpsLocation\": \"\",\n        \"payload\": {\n          \"question\": [\n            \"Enter your First question\",\n            \"\"\n          ],\n          \"labels\": [\n            \"wewewe\"\n          ],\n          \"responseType\": \"text\",\n          \"filesNotUploaded\": []\n        },\n        \"startTime\": 1709026874058,\n        \"endTime\": 1709026987127,\n        \"criteriaId\": \"65dc4ab49551bfb995a2454c\",\n        \"responseType\": \"text\",\n        \"evidenceMethod\": \"SF\",\n        \"rubricLevel\": \"\"\n      }\n    },\n    \"startTime\": 1709026873403,\n    \"endTime\": 1709027010423\n  }\n}"'
+      requestBody: {}
       parameters:
         - name: X-auth-token
           in: header
@@ -2298,6 +3792,77 @@ paths:
                             type: string
                           description:
                             type: string
+              examples:
+                SuccessResponse:
+                  value:
+                    message: survey list fetched successfully
+                    status: 200
+                    result:
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c5c70d3eef3c105862297c
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c5d7d18b301274f7c3c0b9
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c60e3328d3cd5537b7b36f
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c60f6528d3cd5537b7b374
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c61861d662bed41eb7de70
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c61df582122edc141311c2
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c6e534619002843adef441
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c6eccb8675bacf7c9e9daf
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c767adc5b0522868803ba7
+                      - name: Test survey 1
+                        status: active
+                        solutionId: 66c81d10c5b0522868803c32
+                      - surveyId: 66c5cb8e8b301274f7c3c078
+                        status: completed
+                        solutionId: 66c5c70d3eef3c105862297c
+                        submissionId: 66c5cb8e8b301274f7c3c07e
+                        name: Test survey 1
+                      - surveyId: 66c6186ed662bed41eb7de76
+                        status: completed
+                        solutionId: 66c61861d662bed41eb7de70
+                        submissionId: 66c6186ed662bed41eb7de7c
+                        name: Test survey 1
+                      - surveyId: 66c61e0e82122edc141311c8
+                        status: inprogress
+                        solutionId: 66c61df582122edc141311c2
+                        submissionId: 66c61e0f82122edc141311ce
+                        name: Test survey 1
+                      - surveyId: 66c6e563619002843adef449
+                        status: started
+                        solutionId: 66c6e534619002843adef441
+                        submissionId: 66c6ea718675bacf7c9e9d31
+                        name: Test survey 1
+                      - surveyId: 66c6ecd68675bacf7c9e9db5
+                        status: completed
+                        solutionId: 66c6eccb8675bacf7c9e9daf
+                        submissionId: 66c6ecd68675bacf7c9e9dbb
+                        name: Test survey 1
+                      - surveyId: 66c767bec5b0522868803bae
+                        status: completed
+                        solutionId: 66c767adc5b0522868803ba7
+                        submissionId: 66c767bec5b0522868803bb4
+                        name: Test survey 1
+                      - surveyId: 66c81d1ec5b0522868803c38
+                        status: completed
+                        solutionId: 66c81d10c5b0522868803c32
+                        submissionId: 66c81d1ec5b0522868803c3e
+                        name: Test survey 1
         '500':
           description: Failure response
           headers: {}
@@ -2346,6 +3911,13 @@ paths:
                     properties:
                       allowed:
                         type: boolean
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Survey submission check completed successfully
+                    status: 200
+                    result:
+                      allowed: true
         '400':
           description: Failure response
           headers: {}
@@ -2378,33 +3950,7 @@ paths:
         - Report
       summary: Returns submission report for survey
       description: This API generates a detailed survey submission report based on the submissionId passed in the query parameters. It provides insights and data regarding the responses submitted for a specific survey or observation.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              example:
-                externalId: PROGID05
-                name: DCPCR School Development Index 2018-19
-                description: DCPCR School Development Index 2018-19
-                isDeleted: false
-                resourceType:
-                  - program
-                language:
-                  - English
-                keywords: []
-                concepts: []
-                userId: a082787f-8f8f-42f2-a706-35457ca6f1fd
-                imageCompression:
-                  quality: 10
-                components:
-                  - 5b98fa069f664f7e1ae7498c
-                scope:
-                  entityType: state
-                  entities:
-                    - 5d6609ef81a57a6173a79e78
-                  roles:
-                    - HM
+      requestBody: {}
       parameters:
         - name: x-auth-token
           in: header
@@ -2421,7 +3967,80 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message:
+                      surveyName: AP-TEST-PROGRAM-3.6.5-SURVEY-1-DEO
+                      report:
+                        - order: TSD003_1604483265440-1610349652536
+                          question: Grade?
+                          responseType: slider
+                          answers:
+                            - 3
+                          chart: {}
+                          instanceQuestions: []
+                          criteriaName: Survey and Feedback
+                          criteriaId: 5ffbfc5469a1847d4286dfd0
+                          optionsAvailableForUser: []
+                          evidences: []
+                          evidence_count: 0
+                          questionNumber: '3'
+                        - order: TSD004_1604483265440-1610349652537
+                          question: Which of the following is functional in the toilets of the school?
+                          responseType: multiselect
+                          answers:
+                            - R2
+                          chart: {}
+                          instanceQuestions: []
+                          criteriaName: Survey and Feedback
+                          criteriaId: 5ffbfc5469a1847d4286dfd0
+                          optionsAvailableForUser:
+                            - value: R1
+                              label: Cisterns
+                            - value: R2
+                              label: Taps
+                            - value: R3
+                              label: Washbasins
+                            - value: R4
+                              label: Handwash/Soap
+                            - value: R5
+                              label: None of the above
+                          evidences: []
+                          evidence_count: 0
+                          questionNumber: '4'
+                        - order: TSD001_1604483265440-1610349652538
+                          question: is electrical wiring / boards closed and insulated?
+                          responseType: radio
+                          answers:
+                            - R1
+                          chart: {}
+                          instanceQuestions: []
+                          criteriaName: Survey and Feedback
+                          criteriaId: 5ffbfc5469a1847d4286dfd0
+                          optionsAvailableForUser:
+                            - value: R1
+                              label: 'Yes'
+                            - value: R2
+                              label: 'No'
+                          evidences: []
+                          evidence_count: 0
+                          questionNumber: '1'
+                        - order: TSD002_1604483265440-1610349652539
+                          question: Name of the school?
+                          responseType: text
+                          answers:
+                            - you
+                          chart: {}
+                          instanceQuestions: []
+                          criteriaName: Survey and Feedback
+                          criteriaId: 5ffbfc5469a1847d4286dfd0
+                          optionsAvailableForUser: []
+                          evidences: []
+                          evidence_count: 0
+                          questionNumber: '2'
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -2453,6 +4072,14 @@ paths:
                 entityType: school
                 pdf: true
                 criteriaWise: true
+            examples:
+              exampleRequestBody:
+                value:
+                  submissionId: 602a15ea1e72d1287475c66b
+                  observation: true
+                  entityType: district
+                  pdf: true
+                  criteriaWise: true
       parameters:
         - name: x-auth-token
           in: header
@@ -2464,7 +4091,50 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value: |-
+                    {
+                      "message": "Observation Report generated successfully",
+                      "status": 200,
+                      "result": {
+                          "result": true,
+                          "entityType": "district",
+                          "entityId": "a87aa157-0d73-4aa3-9623-cb2f8a3ecf32",
+                          "entityName": "AGRA",
+                          "solutionName": "Enrollment challenges in DIKSHA Courses-1613135097520",
+                          "observationId": "60267cf9262f8023e11072a3",
+                          "programName": "School development Program",
+                          "totalSubmissions": 1,
+                          "reportSections": [
+                              {
+                                  "qid": "60267cf9262f8023e1107292",
+                                  "order": "Q1_1612422856598-1613135097685",
+                                  "question": "Enter the date of observation",
+                                  "responseType": "date",
+                                  "answers": [
+                                      "2021-02-15T17:39:18.865+05:30"
+                                  ],
+                                  "chart": {},
+                                  "instanceQuestions": [],
+                                  "options": [],
+                                  "criteriaName": "Criteria 1",
+                                  "criteriaId": "60267cf9262f8023e11072a0",
+                                  "evidences": [
+                                      {
+                                          "name": "tmp_IMG-20210131-WA00071724287027747939105.jpg",
+                                          "sourcePath": "601793cd285b99334d2d9617/e85060c8-a76b-4e79-a36b-95836491baf9/tmp_IMG-20210131-WA00071724287027747939105.jpg",
+                                          "fileUrl": {
+                                              "filePath": "601793cd285b99334d2d9617/e85060c8-a76b-4e79-a36b-95836491baf9/tmp_IMG-20210131-WA00071724287027747939105.jpg",
+                                              "url": "https://storage.googleapis.com/mentoring-dev-storage-private/601793cd285b99334d2d9617/e85060c8-a76b-4e79-a36b-95836491baf9/tmp_IMG-20210131-WA00071724287027747939105.jpg?GoogleAccessId=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com&Expires=1725978364&Signature=ICtClNBhEmGRB01zJU6nbDo3vc81FHdIYxIDDllPFA2sK42GL2ioU6UsieGTBbS1plFDV46%2FOIeBZupGx9UTLJ8yQHmOLJWlj8NyWU9QaS1UqsF6KQPoSOevN%2Fn6UXV5KQkRc8QruyLpKS%2BIoermhz%2BkWT%2BQSvoUwS6%2BGvL2iYCVzMA%2FVJfoIZPeL6a6Xv0JDAUpJQgF%2BNyCjSMO7tBh7UNmDXtsAxAY3G%2BhJ%2BjoehaPANT1IfE%2FR9dYbOVmwG1%2BNiDWNGhA4%2BEY1TU98sL4f7tOlr8nnjCSnvc2suSME%2B1wB1uQxVESGZGbmo87s2FXm6glJrKnPkVbgf%2Fcq41arA%3D%3D"
+                                          },
+                                          "submissionId": "602a15ea1e72d1287475c66b"
+                                      }
+                                  ]
+                              },]
+                            }
+                          }
         '500':
           description: Failure response
           headers: {}
@@ -2477,6 +4147,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
   /v1/surveys/importSurveryTemplateToSolution/:solutionId:
     post:
       tags:
@@ -2488,6 +4163,13 @@ paths:
             schema:
               type: string
               example: '"{\n    \"externalId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"programExternalId\": \"00000000-1621323219342\"\n}"'
+            examples:
+              exampleBody:
+                value:
+                  externalId: survey-234
+                  name: survey test 123
+                  description: survey description
+                  programExternalId: 00000000-1621323219342
       parameters:
         - name: X-auth-token
           in: header
@@ -2504,7 +4186,16 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Survey solution imported successfully
+                    status: 200
+                    result:
+                      solutionId: 66f246bc12d7b74be68f6060
+                      solutionExternalId: 1e0723a4-dd49-11ea-a3bf-000d3af02677-OBSERVATION-TEMPLATE-1727153852497
+                      link: http://localhost/4301/samiksha/take-survey/d82f5dd94da51be4b59598e06c94a486
         '400':
           description: Failure response
           headers: {}
@@ -2548,7 +4239,384 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Survey details fetched successfully
+                    status: 200
+                    result:
+                      solution:
+                        _id: 5fcf34503e9df47967eedb03
+                        externalId: cdcc3246-1e82-11eb-a3bf-000d3af02677-1607414864208
+                        name: 'Diksha test survey '
+                        description: Diksha test survey via genie
+                        captureGpsLocationAtQuestionLevel: false
+                        enableQuestionReadOut: false
+                      assessment:
+                        name: 'Diksha test survey '
+                        description: Diksha test survey via genie
+                        externalId: cdcc3246-1e82-11eb-a3bf-000d3af02677-1607414864208
+                        submissionId: 66f2478712d7b74be68f6095
+                        status: expired
+                        evidences:
+                          - code: SF
+                            sections:
+                              - code: SQ
+                                questions:
+                                  - _id: ''
+                                    question: ''
+                                    isCompleted: ''
+                                    showRemarks: ''
+                                    options: ''
+                                    sliderOptions: ''
+                                    children: ''
+                                    questionGroup: ''
+                                    fileName: ''
+                                    instanceQuestions: ''
+                                    isAGeneralQuestion: ''
+                                    autoCapture: ''
+                                    allowAudioRecording: ''
+                                    prefillFromEntityProfile: ''
+                                    entityFieldName: ''
+                                    isEditable: ''
+                                    showQuestionInPreview: ''
+                                    deleted: ''
+                                    remarks: ''
+                                    value: ''
+                                    usedForScoring: ''
+                                    questionType: ''
+                                    canBeNotApplicable: ''
+                                    visibleIf: ''
+                                    validation: ''
+                                    file: ''
+                                    externalId: ''
+                                    tip: ''
+                                    hint: ''
+                                    responseType: pageQuestions
+                                    modeOfCollection: ''
+                                    accessibility: ''
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    page: p2
+                                    questionNumber: ''
+                                    updatedAt: ''
+                                    createdAt: ''
+                                    __v: ''
+                                    createdFromQuestionId: ''
+                                    evidenceMethod: ''
+                                    payload: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    pageQuestions:
+                                      - _id: 5fcf34503e9df47967eedafe
+                                        question:
+                                          - Grade?
+                                          - ''
+                                        isCompleted: false
+                                        showRemarks: false
+                                        options: []
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        fileName: []
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        allowAudioRecording: false
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        deleted: false
+                                        remarks: ''
+                                        value: ''
+                                        usedForScoring: ''
+                                        questionType: auto
+                                        canBeNotApplicable: 'false'
+                                        visibleIf: ''
+                                        validation:
+                                          required: true
+                                          max: '4'
+                                          min: '1'
+                                        file:
+                                          required: true
+                                          type:
+                                            - image/jpeg
+                                            - docx
+                                            - pdf
+                                            - ppt
+                                          minCount: 0
+                                          maxCount: 10
+                                          caption: 'FALSE'
+                                        externalId: TSD003_1604483265440-1607414864214
+                                        tip: ''
+                                        hint: ''
+                                        responseType: slider
+                                        modeOfCollection: onfield
+                                        accessibility: 'No'
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        page: p2
+                                        questionNumber: '3'
+                                        updatedAt: '2020-12-08T08:07:44.220Z'
+                                        createdAt: '2020-11-04T09:47:55.359Z'
+                                        __v: 0
+                                        createdFromQuestionId: 5fa278cb6c10b27561cd281f
+                                        evidenceMethod: SF
+                                        payload:
+                                          criteriaId: 5fcf34503e9df47967eedb02
+                                          responseType: slider
+                                          evidenceMethod: SF
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                      - _id: 5fcf34503e9df47967eedaff
+                                        question:
+                                          - Which of the following is functional in the toilets of the school?
+                                          - ''
+                                        isCompleted: false
+                                        showRemarks: false
+                                        options:
+                                          - value: R1
+                                            label: Cisterns
+                                          - value: R2
+                                            label: Taps
+                                          - value: R3
+                                            label: Washbasins
+                                          - value: R4
+                                            label: Handwash/Soap
+                                          - value: R5
+                                            label: None of the above
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        fileName: []
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        allowAudioRecording: false
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        deleted: false
+                                        remarks: ''
+                                        value: ''
+                                        usedForScoring: ''
+                                        questionType: auto
+                                        canBeNotApplicable: 'false'
+                                        visibleIf: ''
+                                        validation:
+                                          required: true
+                                        externalId: TSD004_1604483265440-1607414864215
+                                        tip: ''
+                                        hint: exam date
+                                        responseType: multiselect
+                                        modeOfCollection: onfield
+                                        accessibility: 'No'
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        page: p2
+                                        questionNumber: '4'
+                                        updatedAt: '2020-12-08T08:07:44.220Z'
+                                        createdAt: '2020-11-04T09:47:55.372Z'
+                                        __v: 0
+                                        createdFromQuestionId: 5fa278cb6c10b27561cd2820
+                                        evidenceMethod: SF
+                                        payload:
+                                          criteriaId: 5fcf34503e9df47967eedb02
+                                          responseType: multiselect
+                                          evidenceMethod: SF
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                        file: ''
+                                  - _id: ''
+                                    question: ''
+                                    isCompleted: ''
+                                    showRemarks: ''
+                                    options: ''
+                                    sliderOptions: ''
+                                    children: ''
+                                    questionGroup: ''
+                                    fileName: ''
+                                    instanceQuestions: ''
+                                    isAGeneralQuestion: ''
+                                    autoCapture: ''
+                                    allowAudioRecording: ''
+                                    prefillFromEntityProfile: ''
+                                    entityFieldName: ''
+                                    isEditable: ''
+                                    showQuestionInPreview: ''
+                                    deleted: ''
+                                    remarks: ''
+                                    value: ''
+                                    usedForScoring: ''
+                                    questionType: ''
+                                    canBeNotApplicable: ''
+                                    visibleIf: ''
+                                    validation: ''
+                                    file: ''
+                                    externalId: ''
+                                    tip: ''
+                                    hint: ''
+                                    responseType: pageQuestions
+                                    modeOfCollection: ''
+                                    accessibility: ''
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    page: p1
+                                    questionNumber: ''
+                                    updatedAt: ''
+                                    createdAt: ''
+                                    __v: ''
+                                    createdFromQuestionId: ''
+                                    evidenceMethod: ''
+                                    payload: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    pageQuestions:
+                                      - _id: 5fcf34503e9df47967eedb00
+                                        question:
+                                          - is electrical wiring / boards closed and insulated?
+                                          - ''
+                                        isCompleted: false
+                                        showRemarks: true
+                                        options:
+                                          - value: R1
+                                            label: 'Yes'
+                                          - value: R2
+                                            label: 'No'
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        fileName: []
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        allowAudioRecording: false
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        deleted: false
+                                        remarks: ''
+                                        value: ''
+                                        usedForScoring: ''
+                                        questionType: auto
+                                        canBeNotApplicable: 'false'
+                                        visibleIf: ''
+                                        validation:
+                                          required: true
+                                        file:
+                                          required: true
+                                          type:
+                                            - image/jpeg
+                                            - docx
+                                            - pdf
+                                            - ppt
+                                          minCount: 0
+                                          maxCount: 10
+                                          caption: 'FALSE'
+                                        externalId: TSD001_1604483265440-1607414864216
+                                        tip: ''
+                                        hint: ''
+                                        responseType: radio
+                                        modeOfCollection: onfield
+                                        accessibility: 'No'
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        page: p1
+                                        questionNumber: '1'
+                                        updatedAt: '2020-12-08T08:07:44.220Z'
+                                        createdAt: '2020-11-04T09:47:55.383Z'
+                                        __v: 0
+                                        createdFromQuestionId: 5fa278cb6c10b27561cd2821
+                                        evidenceMethod: SF
+                                        payload:
+                                          criteriaId: 5fcf34503e9df47967eedb02
+                                          responseType: radio
+                                          evidenceMethod: SF
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                      - _id: 5fcf34503e9df47967eedb01
+                                        question:
+                                          - Name of the school?
+                                          - ''
+                                        isCompleted: false
+                                        showRemarks: true
+                                        options: []
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        fileName: []
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        allowAudioRecording: false
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        deleted: false
+                                        remarks: ''
+                                        value: ''
+                                        usedForScoring: ''
+                                        questionType: auto
+                                        canBeNotApplicable: 'false'
+                                        visibleIf: ''
+                                        validation:
+                                          required: true
+                                        externalId: TSD002_1604483265440-1607414864217
+                                        tip: school name
+                                        hint: ''
+                                        responseType: text
+                                        modeOfCollection: onfield
+                                        accessibility: 'No'
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        page: p1
+                                        questionNumber: '2'
+                                        updatedAt: '2020-12-08T08:07:44.220Z'
+                                        createdAt: '2020-11-04T09:47:55.395Z'
+                                        __v: 0
+                                        createdFromQuestionId: 5fa278cb6c10b27561cd2822
+                                        evidenceMethod: SF
+                                        payload:
+                                          criteriaId: 5fcf34503e9df47967eedb02
+                                          responseType: text
+                                          evidenceMethod: SF
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                        file: ''
+                                name: Survey Questions
+                            externalId: SF
+                            name: Survey And Feedback
+                            description: Survey And Feedback
+                            modeOfCollection: ''
+                            canBeNotApplicable: false
+                            notApplicable: false
+                            canBeNotAllowed: false
+                            remarks: ''
+                            isActive: true
+                            startTime: ''
+                            endTime: ''
+                            isSubmitted: false
+                            submissions: []
+                        submissions: {}
         '500':
           description: Failure response
           headers: {}
@@ -2561,6 +4629,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: This API retrieves the details of a specific survey using the surveyId. It provides information about the survey's solution, program, assessment, and the associated questionnaire, including questions and response options.
   /v1/solutions/details/:solution-id:
     post:
@@ -2584,7 +4657,430 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Assessment fetched successfully
+                    status: 200
+                    result:
+                      solution:
+                        _id: 66f13f10ea227fad26f4cbc0
+                        externalId: 606d92fa-42d8-11ec-ac61-23092024-1537-OBSERVATION-TEMPLATE-1727086352343
+                        name: dev_testing
+                        description: dev testing
+                        registry: []
+                        captureGpsLocationAtQuestionLevel: false
+                        enableQuestionReadOut: false
+                        scoringSystem: null
+                        isRubricDriven: false
+                        pageHeading: Domains
+                      assessment:
+                        name: dev_testing
+                        description: dev testing
+                        externalId: 606d92fa-42d8-11ec-ac61-23092024-1537-OBSERVATION-TEMPLATE-1727086352343
+                        pageHeading: Domains
+                        submissionId: ''
+                        evidences:
+                          - code: OB
+                            sections:
+                              - code: S1
+                                questions:
+                                  - _id: ''
+                                    externalId: ''
+                                    question: ''
+                                    tip: ''
+                                    hint: ''
+                                    responseType: pageQuestions
+                                    value: ''
+                                    isCompleted: ''
+                                    showRemarks: ''
+                                    remarks: ''
+                                    visibleIf: ''
+                                    options: ''
+                                    sliderOptions: ''
+                                    children: ''
+                                    questionGroup: ''
+                                    questionType: ''
+                                    modeOfCollection: ''
+                                    usedForScoring: ''
+                                    fileName: ''
+                                    validation: ''
+                                    accessibility: ''
+                                    canBeNotApplicable: ''
+                                    instanceQuestions: ''
+                                    isAGeneralQuestion: ''
+                                    autoCapture: ''
+                                    rubricLevel: ''
+                                    sectionHeader: ''
+                                    allowAudioRecording: ''
+                                    page: p1
+                                    questionNumber: ''
+                                    prefillFromEntityProfile: ''
+                                    entityFieldName: ''
+                                    isEditable: ''
+                                    showQuestionInPreview: ''
+                                    createdFromQuestionId: ''
+                                    updatedAt: ''
+                                    createdAt: ''
+                                    deleted: ''
+                                    __v: ''
+                                    evidenceMethod: ''
+                                    payload: ''
+                                    startTime: ''
+                                    endTime: ''
+                                    gpsLocation: ''
+                                    file: ''
+                                    pageQuestions:
+                                      - _id: 66f13f10ea227fad26f4cbb0
+                                        externalId: N113_23_09_2024_15_40_1636625759433-1727086352325
+                                        question:
+                                          - Select the courses which you have got the certificate.
+                                          - ''
+                                        tip: ''
+                                        hint: ''
+                                        responseType: multiselect
+                                        value: ''
+                                        isCompleted: false
+                                        showRemarks: false
+                                        remarks: ''
+                                        visibleIf: ''
+                                        options:
+                                          - value: R1
+                                            label: AP_Sec_1.Curriculum and Inclusive Classrooms
+                                          - value: R2
+                                            label: AP_Sec_2.ICT in Teaching-Learning and Assessment
+                                          - value: R3
+                                            label: AP_Sec_3.Personal-Social Qualities for Holistic Development
+                                          - value: R4
+                                            label: AP_Sec_4.Art Integrated Learning
+                                          - value: R5
+                                            label: AP_Sec_5. Understanding Secondary Stage Learners
+                                          - value: R6
+                                            label: AP_Sec_6. Health and Well-being
+                                          - value: R7
+                                            label: AP_Sec_7. Integrating Gender in Schooling Processes
+                                          - value: R8
+                                            label: 'AP_Sec_8. School Leadership: Concepts and Applications'
+                                          - value: R9
+                                            label: AP_Sec_9. Vocational Education
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        questionType: auto
+                                        modeOfCollection: onfield
+                                        usedForScoring: ''
+                                        fileName: []
+                                        validation:
+                                          required: true
+                                        accessibility: 'No'
+                                        canBeNotApplicable: 'false'
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        allowAudioRecording: false
+                                        page: p1
+                                        questionNumber: '3'
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        createdFromQuestionId: 66f13ebdea227fad26f4cb72
+                                        updatedAt: '2024-09-23T10:12:32.328Z'
+                                        createdAt: '2024-09-23T10:11:09.905Z'
+                                        deleted: false
+                                        __v: 0
+                                        evidenceMethod: OB
+                                        payload:
+                                          criteriaId: 66f13f10ea227fad26f4cbbc
+                                          responseType: multiselect
+                                          evidenceMethod: OB
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                        file: ''
+                                      - _id: 66f13f10ea227fad26f4cbb1
+                                        externalId: N114_23_09_2024_15_40_1636625759433-1727086352325
+                                        question:
+                                          - Select the courses that you have enrolled in PRV 2.0
+                                          - ''
+                                        tip: ''
+                                        hint: ''
+                                        responseType: multiselect
+                                        value: ''
+                                        isCompleted: false
+                                        showRemarks: false
+                                        remarks: ''
+                                        visibleIf: ''
+                                        options:
+                                          - value: R1
+                                            label: 'AP_Sec_మాడ్యూలు 1: విద్యా ప్రణాళిక మరియు సహిత తరగతి గదులు'
+                                          - value: R2
+                                            label: 'AP_Sec_మాడ్యూలు 2: బోధన, అభ్యసన, మూల్యాంకనంలో ICT ని సమగ్రపరచడం'
+                                          - value: R3
+                                            label: 'AP_Sec_ మాడ్యూలు 3 : వ్యక్తిగత సామాజిక లక్షణాలను అభివృద్ధి చేయడం'
+                                          - value: R4
+                                            label: AP_Sec_మాడ్యూలు 4. కళ ఆధారిత అభ్యసనం
+                                          - value: R5
+                                            label: 'AP_Sec_మాడ్యూలు 5 : మాధ్యమిక దశలోని విద్యార్థులను అర్థం చేసుకోవడం'
+                                          - value: R6
+                                            label: AP_Sec_మాడ్యూలు 6 :ఆరోగ్యం మరియు శ్రేయస్సు
+                                          - value: R7
+                                            label: 'AP_Sec_మాడ్యూలు 7 : పాఠశాల ప్రక్రియలో లింగభావనను సమగ్ర పరచడం'
+                                          - value: R8
+                                            label: 'AP_Sec_మాడ్యూలు 8 : పాఠశాల నాయకత్వం - భావనలు మరియు అనువర్తనాలు'
+                                          - value: R9
+                                            label: AP_Sec_9 వృత్తి విద్య
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        questionType: auto
+                                        modeOfCollection: onfield
+                                        usedForScoring: ''
+                                        fileName: []
+                                        validation:
+                                          required: true
+                                        accessibility: 'No'
+                                        canBeNotApplicable: 'false'
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        allowAudioRecording: false
+                                        page: p1
+                                        questionNumber: '2'
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        createdFromQuestionId: 66f13ebdea227fad26f4cb78
+                                        updatedAt: '2024-09-23T10:12:32.328Z'
+                                        createdAt: '2024-09-23T10:11:09.929Z'
+                                        deleted: false
+                                        __v: 0
+                                        evidenceMethod: OB
+                                        payload:
+                                          criteriaId: 66f13f10ea227fad26f4cbbc
+                                          responseType: multiselect
+                                          evidenceMethod: OB
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                        file: ''
+                                      - _id: 66f13f10ea227fad26f4cbb2
+                                        externalId: N118_23_09_2024_15_40_1636625759433-1727086352326
+                                        question:
+                                          - Give a rating on the reading materials available in the course
+                                          - ''
+                                        tip: 1 is very bad, 5 is very good
+                                        hint: ''
+                                        responseType: slider
+                                        value: ''
+                                        isCompleted: false
+                                        showRemarks: false
+                                        remarks: ''
+                                        visibleIf: ''
+                                        options: []
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        questionType: auto
+                                        modeOfCollection: onfield
+                                        usedForScoring: ''
+                                        fileName: []
+                                        validation:
+                                          required: true
+                                          max: '5'
+                                          min: '1'
+                                        accessibility: 'No'
+                                        canBeNotApplicable: 'false'
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        allowAudioRecording: false
+                                        page: p1
+                                        questionNumber: '4'
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        createdFromQuestionId: 66f13ebdea227fad26f4cb7e
+                                        updatedAt: '2024-09-23T10:12:32.328Z'
+                                        createdAt: '2024-09-23T10:11:09.945Z'
+                                        deleted: false
+                                        __v: 0
+                                        evidenceMethod: OB
+                                        payload:
+                                          criteriaId: 66f13f10ea227fad26f4cbbc
+                                          responseType: slider
+                                          evidenceMethod: OB
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                        file: ''
+                                      - _id: 66f13f10ea227fad26f4cbb3
+                                        externalId: N111_23_09_2024_15_40_1636625759433-1727086352326
+                                        question:
+                                          - Select the medium of the course consumption PRV
+                                          - ''
+                                        tip: ''
+                                        hint: ''
+                                        responseType: radio
+                                        value: ''
+                                        isCompleted: false
+                                        showRemarks: false
+                                        remarks: ''
+                                        visibleIf: ''
+                                        options:
+                                          - value: R1
+                                            label: English
+                                          - value: R2
+                                            label: Telugu
+                                          - value: R3
+                                            label: Urdu
+                                        sliderOptions: []
+                                        children:
+                                          - 66f13f10ea227fad26f4cbb4
+                                        questionGroup:
+                                          - A1
+                                        questionType: auto
+                                        modeOfCollection: onfield
+                                        usedForScoring: ''
+                                        fileName: []
+                                        validation:
+                                          required: true
+                                        accessibility: 'No'
+                                        canBeNotApplicable: 'false'
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        allowAudioRecording: false
+                                        page: p1
+                                        questionNumber: '1'
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        createdFromQuestionId: 66f13eedea227fad26f4cb88
+                                        updatedAt: '2024-09-23T10:12:32.328Z'
+                                        createdAt: '2024-09-23T10:11:57.099Z'
+                                        deleted: false
+                                        __v: 0
+                                        evidenceMethod: OB
+                                        payload:
+                                          criteriaId: 66f13f10ea227fad26f4cbbc
+                                          responseType: radio
+                                          evidenceMethod: OB
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                        file: ''
+                                      - _id: 66f13f10ea227fad26f4cbb4
+                                        externalId: N112_23_09_2024_15_40_1636625759433-1727086352326
+                                        question:
+                                          - Select the courses that you have enrolled in PRV 2.0
+                                          - ''
+                                        tip: ''
+                                        hint: ''
+                                        responseType: multiselect
+                                        value: ''
+                                        isCompleted: false
+                                        showRemarks: false
+                                        remarks: ''
+                                        visibleIf:
+                                          - operator: '==='
+                                            value:
+                                              - R1
+                                            _id: 66f13f10ea227fad26f4cbb3
+                                        options:
+                                          - value: R1
+                                            label: AP_Sec_1.Curriculum and Inclusive Classrooms
+                                          - value: R2
+                                            label: AP_Sec_2.ICT in Teaching-Learning and Assessment
+                                          - value: R3
+                                            label: AP_Sec_3.Personal-Social Qualities for Holistic Development
+                                          - value: R4
+                                            label: AP_Sec_4.Art Integrated Learning
+                                          - value: R5
+                                            label: AP_Sec_5. Understanding Secondary Stage Learners
+                                          - value: R6
+                                            label: AP_Sec_6. Health and Well-being
+                                          - value: R7
+                                            label: AP_Sec_7. Integrating Gender in Schooling Processes
+                                          - value: R8
+                                            label: 'AP_Sec_8. School Leadership: Concepts and Applications'
+                                          - value: R9
+                                            label: AP_Sec_9. Vocational Education
+                                        sliderOptions: []
+                                        children: []
+                                        questionGroup:
+                                          - A1
+                                        questionType: auto
+                                        modeOfCollection: onfield
+                                        usedForScoring: ''
+                                        fileName: []
+                                        validation:
+                                          required: true
+                                        accessibility: 'No'
+                                        canBeNotApplicable: 'false'
+                                        instanceQuestions: []
+                                        isAGeneralQuestion: false
+                                        autoCapture: false
+                                        rubricLevel: ''
+                                        sectionHeader: ''
+                                        allowAudioRecording: false
+                                        page: p1
+                                        questionNumber: '2'
+                                        prefillFromEntityProfile: false
+                                        entityFieldName: ''
+                                        isEditable: true
+                                        showQuestionInPreview: false
+                                        createdFromQuestionId: 66f13eedea227fad26f4cb8e
+                                        updatedAt: '2024-09-23T10:12:32.328Z'
+                                        createdAt: '2024-09-23T10:11:57.110Z'
+                                        deleted: false
+                                        __v: 0
+                                        evidenceMethod: OB
+                                        payload:
+                                          criteriaId: 66f13f10ea227fad26f4cbbc
+                                          responseType: multiselect
+                                          evidenceMethod: OB
+                                          rubricLevel: ''
+                                        startTime: ''
+                                        endTime: ''
+                                        gpsLocation: ''
+                                        file: ''
+                                name: Observation Question
+                            externalId: OB
+                            tip: null
+                            name: Observation
+                            description: null
+                            modeOfCollection: onfield
+                            canBeNotApplicable: false
+                            notApplicable: false
+                            canBeNotAllowed: false
+                            remarks: null
+                            startTime: ''
+                            endTime: ''
+                            isSubmitted: false
+                            submissions: []
+                        submissions: {}
+                      programJoined: false
+                      consentShared: false
         '500':
           description: Failure response
           headers: {}
@@ -2597,6 +5093,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
       description: ' This API retrieves the details of a specific solution using the solution''s id. It returns comprehensive information about the solution, including metadata, configuration, and any related data required for further operations.'
   /v1/observations/updateEntities/:observation_id:
     post:
@@ -2623,7 +5124,12 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Updated successfully.
+                    status: 200
         '400':
           description: Failure response
           headers: {}
@@ -2655,13 +5161,15 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              example:
-                request:
-                  5f72f9998925ec7c60f79a91:
-                    files:
-                      - test
-                ref: survey
+              type: string
+            examples:
+              exampleRequestBody:
+                value:
+                  request:
+                    5f72f9998925ec7c60f79a91:
+                      files:
+                        - test.png
+                  ref: survey
       parameters:
         - name: x-auth-token
           in: header
@@ -2673,7 +5181,22 @@ paths:
         '200':
           description: Success response
           content:
-            application/json: {}
+            application/json:
+              examples:
+                SuccessResponse:
+                  value:
+                    message: URLs generated successfully.
+                    status: 200
+                    result:
+                      cloudStorage: gcloud
+                      5f72f9998925ec7c60f79a91:
+                        files:
+                          - file: test
+                            payload:
+                              sourcePath: project/5f72f9998925ec7c60f79a91/survey/31b683cd-ce68-4dcb-9411-6feee4abc1ff/test
+                            url: https://storage.googleapis.com/mentoring-dev-storage-private/project/5f72f9998925ec7c60f79a91/survey/31b683cd-ce68-4dcb-9411-6feee4abc1ff/test?GoogleAccessId=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com&Expires=1727180259&Signature=C6ik6k9dSIb7SjkH8u3aeLprVElaHBFw%2BYrSDyjzRbmrhQAGAEy9GhRQ6SkrAXXTMPabqeQGN88Wjq03rw94is8Ul9KBIfnZGvYGM7YdqlWTs4cb2vL24wxC%2B6rSId7QXlQb%2BpXkfNdOONWTI256citooQKK6PuGzO13xGs0I6ylIWbIbpb0ivTd3Q5nj5g61YzJln3qNjEpno1zksazcb7m6SPYz9R8aMf%2FolpMXQ8nCULkCmWlo%2BTCqkAH9ZdcARh1eGe7PNAv5fZFs11BRk64cgtyaUaF7u2Li0rL4s6NUt4wNK%2BQADc1iS6ViHQ5cCsLrUNSQZu8bAXKdx4LqA%3D%3D
+                            getDownloadableUrl:
+                              - https://storage.googleapis.com/mentoring-dev-storage-private/project/5f72f9998925ec7c60f79a91/survey/31b683cd-ce68-4dcb-9411-6feee4abc1ff/test?GoogleAccessId=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com&Expires=1727180259&Signature=JGtiScbY0hZhMSwbyuCEhTxaZUwmVjEsK8Lztlx8bhm32oaHswpbOTMZwPkU%2FTqFo2%2FOLUsj7PlsU27hpAp2VJP%2FoaoMrF%2BePKKyiCULlb8I9KqgSoHGZiBj2Lx6W2ONzcNKIn%2BCQUAv6lHnyRNV1ievFC9BbRbJXK13omuxCV9ah3KpZWhvHv%2BgaN2X8Ec0zf%2F7GrqG4V8FkuLcEWmn2kYSBpcaUb3vRWAFMfGpdNRlkO4rpGWzDwQFUWqgF8T1mepW7swN3uISNRSiS843Ynte9YDLhzfmHJ4an2MNE%2FHtMdneLGXLTCYHwHVFKJKUqIU%2BE4Cw8oN9QMWAo0E1NQ%3D%3D
         '400':
           description: Failure response
           headers: {}
@@ -2707,7 +5230,7 @@ paths:
               schema:
                 type: string
               examples:
-                example1:
+                SuccessResponse:
                   value: |-
                     "theme","aoi","indicators","criteriaInternalId","status"
                     "Organisational Leadership (संस्थागत नेतृत्व)###D1###40","","","62541ba48de7164ffffc5512###40","success"
@@ -2736,6 +5259,11 @@ paths:
                     type: number
                   message:
                     type: string
+              examples:
+                FailureResponse:
+                  value:
+                    status: 500
+                    message: Oops! Something Went Wrong.
   /v1/files/getDownloadableUrl:
     get:
       summary: Returns downloadable URL for the files
@@ -2744,7 +5272,16 @@ paths:
       tags:
         - Files
       parameters: []
-      requestBody: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              exampleRequestBody:
+                value:
+                  filePaths:
+                    - survey/5f72f9998925ec7c60f79a91/6/a8c119e6-ec1e-4bb9-adf7-f87151558def/uploadFile2.jpg
       responses:
         '200':
           description: success response
@@ -2767,6 +5304,14 @@ paths:
                           type: string
                         url:
                           type: string
+              examples:
+                SuccessResponse:
+                  value:
+                    message: Url's generated successfully
+                    status: 200
+                    result:
+                      - filePath: survey/5f72f9998925ec7c60f79a91/6/a8c119e6-ec1e-4bb9-adf7-f87151558def/uploadFile2.jpg
+                        url: https://storage.googleapis.com/mentoring-dev-storage-private/survey/5f72f9998925ec7c60f79a91/6/a8c119e6-ec1e-4bb9-adf7-f87151558def/uploadFile2.jpg?GoogleAccessId=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com&Expires=1727180335&Signature=EcrkmnGE7yqFS0YgRufzHih%2FCC6MXsTtaGg4n%2BRc75j8ydekPpoibnbr5Atk0MAiwBx0elAY%2FhrSKcF2r4unEZIspiaBA72hpmCXA4bGF8ayIdjJgvAM64iHLWslyvRJ9uD%2FaTQT%2BWSBOTO0AX00XT18BGBYsPOlVOWkGZAVlwrjVDZ9v9VJdQhdJ9xF3rp97jnPclSiTUgxAJyfCRxn2%2BL6t6B4a%2Fndo5g0KiKkHjUPjjt5QmslXGU7BAemJsmCoeNoLH4gf9RQ4h8cEiyY59QstD%2FaKzJuiWl5QqUE9oPGOcw8Ind78rt2HkUzjkTG9MKsmGzw7Fqjk%2FXOQ8IZgw%3D%3D
         '400':
           description: Failure response
           headers: {}
