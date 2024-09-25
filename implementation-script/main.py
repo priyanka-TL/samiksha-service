@@ -245,6 +245,17 @@ def programCreation(accessToken, parentFolder, externalId, pName, pDescription, 
     programCreationurl = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'programCreationurl')
     messageArr.append("Program Creation URL : " + programCreationurl)
     # program creation payload
+    scope={}
+    for i in range(len(scopeEntityType)):
+        entity_type = scopeEntityType[i]
+        entity_value = entities[i]
+        if entity_type in scope:
+            scope[entity_type].append(entity_value)
+        else:
+            scope[entity_type] = [entity_value]
+                    # bodySolutionUpdate = {
+                    #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
+    scope["roles"] = roles
     payload = json.dumps({
         "externalId": externalId,
         "name": pName,
@@ -267,11 +278,7 @@ def programCreation(accessToken, parentFolder, externalId, pName, pDescription, 
         "creator": creatorName,
         "owner": creatorKeyCloakId,
         "author": creatorKeyCloakId,
-        "scope": {
-            "entityType": scopeEntityType,
-            "entities": entitiesPGMID,
-            "roles": roles
-        },
+        "scope": scope,
         "metaInformation": {
             "state":entitiesPGM.split(","),
             "roles": mainRole.split(",")
@@ -491,7 +498,7 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                     endDateOfProgram = endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + " 23:59:59"
 
                     global scopeEntityType
-                    scopeEntityType = "state"
+                    # scopeEntityType = "state"
                     global entitiesType
                     entitiesType = fetchEntityType(parentFolder, accessToken,
                                                   entitiesPGM.lstrip().rstrip().split(","), scopeEntityType)
@@ -502,7 +509,6 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         entitiesPGM = entitiesPGM
                         # EntityType = entitiesType
                         scopeEntityType = entitiesType
-
 
                     global entitiesPGMID
                     entitiesPGMID = fetchEntityId(parentFolder, accessToken,
@@ -527,7 +533,7 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                             EntityType = "district"
                         else:
                             entitiesPGM = entitiesPGM
-                        scopeEntityType = entitiesType
+                            scopeEntityType = entitiesType
 
 
                         mainRole = dictDetailsEnv['Targeted role at program level'] if dictDetailsEnv['Targeted role at program level'] else terminatingMessage("\"Targeted role at program level\" must not be Empty in \"Program details\" sheet")
@@ -837,7 +843,6 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
                     programDescription = eachPgm['description']
                     isAPrivateProgram = eachPgm['isAPrivateProgram']
                     getProgramDetails.append([programID, programExternalId, programDescription, isAPrivateProgram])
-                    print (getProgramDetails,"getProgramDetails")
                     if len(getProgramDetails) == 0:
                         print("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         messageArr.append("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
@@ -2213,6 +2218,7 @@ def solutionUpdate(solutionName_for_folder_path, accessToken, solutionId, bodySo
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         "internal-access-token": config.get(environment, 'internal-access-token')
         }
+    print(bodySolutionUpdate,"this is a solution update 2216")
     responseUpdateSolutionApi = requests.post(url=solutionUpdateApi, headers=headerUpdateSolutionApi,data=json.dumps(bodySolutionUpdate))
     messageArr = ["Solution Update API called.", "URL : " + str(solutionUpdateApi), "Body : " + str(bodySolutionUpdate),"Response : " + str(responseUpdateSolutionApi.text),"Status Code : " + str(responseUpdateSolutionApi.status_code)]
     createAPILog(solutionName_for_folder_path, messageArr)
@@ -3920,10 +3926,8 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                           print("Survey Child Id : " + str(solutionIdSuc))
                           solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, solutionIdSuc,accessToken)
                                                                                                             
-                          print(solutionDetails[0],"this is solutions details") 
                           scopeEntities = entitiesPGMID
                           scopeRoles = solutionDetails[0]
-                          print(scopeRoles,"this is scopeRoles")
                           scope = {}
                           for i in range(len(entitiesType)):
                             entity_type = entitiesType[i]
