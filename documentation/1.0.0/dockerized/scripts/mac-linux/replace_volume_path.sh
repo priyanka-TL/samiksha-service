@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the path of your docker-compose file
-DOCKER_COMPOSE_FILE="docker-compose-project.yml"
+DOCKER_COMPOSE_FILE="docker-compose.yml"
 
 # Check if the Docker Compose file exists
 if [ ! -f "$DOCKER_COMPOSE_FILE" ]; then
