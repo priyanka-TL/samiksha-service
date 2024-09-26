@@ -117,7 +117,7 @@ EOF
 # Function to install PM2
 install_pm2() {
     echo "Installing PM2..."
-    sudo npm install pm2@latest -g
+    npm install pm2@latest -g
 }
 
 # Function to install MongoDB
