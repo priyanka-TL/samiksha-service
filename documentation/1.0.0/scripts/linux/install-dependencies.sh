@@ -65,6 +65,17 @@ install_redis() {
     sudo DEBIAN_FRONTEND=noninteractive apt install -y redis-server
     sudo sed -i 's/^# *supervised .*/supervised systemd/' /etc/redis/redis.conf
     sudo systemctl restart redis.service
+    sudo systemctl enable redis.service
+}
+
+# Function to install PostgreSQL
+install_postgres() {
+    echo "Installing PostgreSQL..."
+    sudo apt update
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y postgresql postgresql-contrib
+    sudo systemctl start postgresql
+    sudo systemctl enable postgresql
+    echo "PostgreSQL installation and setup completed."
 }
 
 # Function to install Citus
@@ -112,6 +123,10 @@ install_citus() {
     echo "\$PSQL_OUTPUT"
 
 EOF
+
+    # Enable and start Citus service
+    sudo systemctl start postgresql
+    sudo systemctl enable postgresql
 }
 
 # Function to install PM2
@@ -136,7 +151,7 @@ install_mongodb() {
 # Function to display options
 display_menu() {
     echo "Please select an installation option:"
-    options=("Install Node.js" "Install Kafka" "Install Redis" "Install Citus" "Install PM2" "Install MongoDB" "Exit")
+    options=("Install Node.js" "Install Kafka" "Install Redis" "Install PostgreSQL" "Install Citus" "Install PM2" "Install MongoDB" "Exit")
     for i in ${!options[@]}; do
         echo "$((i+1)). ${options[i]}"
     done
@@ -152,10 +167,11 @@ while true; do
             1) install_nodejs ;;
             2) install_kafka ;;
             3) install_redis ;;
-            4) install_citus ;;
-            5) install_pm2 ;;
-            6) install_mongodb ;;
-            7) echo "Exiting the installation script."; break ;;
+            4) install_postgres ;;
+            5) install_citus ;;
+            6) install_pm2 ;;
+            7) install_mongodb ;;
+            8) echo "Exiting the installation script."; break ;;
             *) echo "Invalid option. Please try again." ;;
         esac
         echo "Operation completed. Here are the next options:"
