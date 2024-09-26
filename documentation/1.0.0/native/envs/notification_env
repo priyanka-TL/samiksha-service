@@ -1,0 +1,14 @@
+API_DOC_URL=/api-doc
+APPLICATION_BASE_URL=/notification/
+APPLICATION_ENV=development
+APPLICATION_PORT=3002
+DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/notification
+DISABLE_LOG=false
+ENABLE_LOG=true
+ERROR_LOG_LEVEL=silly
+INTERNAL_ACCESS_TOKEN=internal_access_token
+KAFKA_GROUP_ID=notification
+KAFKA_HOST=kafka:9092
+KAFKA_TOPIC=develop.notifications
+SENDGRID_API_KEY=SG.asd9f87a9s8d7f.
+SENDGRID_FROM_MAIL=no-reply@some.org
