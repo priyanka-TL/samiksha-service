@@ -66,7 +66,7 @@ services:
     networks:
       - elevate_net
     env_file:
-      - ${user_env}
+      - ${users_env}
   notification:
     image: shikshalokamqa/elevate-notification:2.2
     ports:
