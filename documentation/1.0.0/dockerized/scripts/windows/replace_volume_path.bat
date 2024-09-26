@@ -2,7 +2,7 @@
 SETLOCAL EnableDelayedExpansion
 
 REM Define the path of your docker-compose file
-SET "DOCKER_COMPOSE_FILE=docker-compose-mentoring.yml"
+SET "DOCKER_COMPOSE_FILE=docker-compose.yml"
 
 REM Check if the Docker Compose file exists
 IF NOT EXIST "%DOCKER_COMPOSE_FILE%" (
