@@ -707,13 +707,13 @@ chmod +x check-dependencies.sh
 
   
 
-1.  **Create Elevate-service Directory:** Create a directory named **elevate-service**.
+1.  **Create Elevate-survey Directory:** Create a directory named **elevate-survey**.
 
   
 
   
 
-> Example Command: `mkdir elevate-service && cd elevate-service/`
+> Example Command: `mkdir elevate-survey && cd elevate-survey/`
 
   
 
