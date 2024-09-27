@@ -197,154 +197,6 @@ chmod +x check-dependencies.sh
 
 ```
 
-  
-
-- **Windows**
-
-  
-
-1. Install Node.js 20:
-
-  
-
-Download and install Node.js v20 for Windows platform (x64) from official [Node.js download page](https://nodejs.org/en/download).
-
-  
-
-2. Install Kafka 3.5.0:
-
-  
-
-1. Adapt the instructions given in the following ["Apache Kafka on Windows"](https://www.conduktor.io/kafka/how-to-install-apache-kafka-on-windows/) documentation to install Kafka version 3.5.0.
-
-  
-
-> Note: As per the instructions, Kafka server and Zookeeper has to be kept active on different WSL terminals for the entire lifetime of MentorEd services.
-
-  
-
-> Note: Multiple WSL terminals can be opened by launching `Ubuntu` from start menu.
-
-  
-
-2. Open a new WSL terminal and execute the following command to get the IP of the WSL instance.
-
-  
-
-```
-
-ip addr show eth0
-
-```
-
-  
-
-Sample Output:
-
-  
-
-```
-
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1492 qdisc mq state UP group default qlen 1000
-
-link/ether 11:56:54:f0:as:vf brd ff:ff:ff:ff:ff:ff
-
-inet 172.12.46.150/20 brd 172.24.79.255 scope global eth0
-
-valid_lft forever preferred_lft forever
-
-inet6 fe80::215:5dff:fee7:dc52/64 scope link
-
-valid_lft forever preferred_lft forever
-
-```
-
-  
-
-Keep note of the IP address shown alongside `inet`. In the above case, `172.12.46.150` is IP address of the WSL instance.
-
-  
-
-3. In the same WSL terminal, navigate to `config` directory of Kafka from step 1 and make the following changes to `server.properties` file.
-
-  
-
-- Uncomment `listeners=PLAINTEXT://:9092` line and change it to `listeners=PLAINTEXT://0.0.0.0:9092` to allow connections from any IP.
-
-  
-
-- Uncomment `advertised.listeners` line and set it to `advertised.listeners=PLAINTEXT://172.12.46.150:9092`. Replace `172.12.46.150` with the actual IP address of your WSL instance.
-
-  
-
-4. Restart the Zookeeper and Kafka Server from their own WSL terminals from step 1.
-
-  
-
-3. Install Redis:
-
-  
-
-1. Follow the instructions given in the official [Redis Documentation](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-windows/) to install Redis using WSL.
-
-  
-
-2. Using the WSL terminal, open the Redis configuration file in a text editor, such as nano:
-
-  
-
-```
-
-sudo nano /etc/redis/redis.conf
-
-```
-
-  
-
-3. Find the line containing `bind 127.0.0.1 ::1` and change it to `bind 0.0.0.0 ::.`. This change allows Redis to accept connections from any IP address. Then save and exit the file.
-
-  
-
-4. Restart Redis to apply the changes:
-
-  
-
-```
-
-sudo service redis-server restart
-
-```
-
-  
-
-4. Install PM2:
-
-  
-
-```
-
-npm install pm2@latest -g
-
-```
-
-  
-
-5. Install PostgreSQL 16:
-
-  
-
-1. Download and install PostgreSQL 16 from [EnterpriseDB PostgreSQL](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) download page.
-
-  
-
-> Note: Set username and password for the default database to be 'postgres' during installation.
-
-  
-
-2. Once installed, Add `C:\Program Files\PostgreSQL\16\bin` to windows environment variables. Refer [here](https://www.computerhope.com/issues/ch000549.htm) or [here](https://stackoverflow.com/a/68851621) for more information regarding how to set it.
-
-  
-
 ## Installation
 
   
@@ -373,7 +225,7 @@ git clone -b release-2.6.1 https://github.com/ELEVATE-Project/user.git && \
 git clone -b release-2.6.1 https://github.com/ELEVATE-Project/notification.git && \
 git clone -b release-2.6.1 https://github.com/ELEVATE-Project/interface-service.git && \
 git clone -b release-2.6.1 https://github.com/ELEVATE-Project/scheduler.git && \
-git clone -b release-2.0.0 https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
+git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
 
 ```
 
@@ -629,53 +481,20 @@ sudo npm i sequelize-cli -g
 
 ```
 
-cd mentoring/src && npx sequelize-cli db:migrate && cd ../.. && \
-
 cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
-
 cd notification/src && npx sequelize-cli db:migrate && cd ../..
 
-```
-
-  
-
-- **Windows**
-
-1. Install Sequelize-cli globally:
-
-```
-
-npm i sequelize-cli -g
-
-```
-
-2. Run Migrations:
-
-```
-
-cd mentoring/src & npx sequelize-cli db:migrate & cd ../.. && ^
-
-cd user/src & npx sequelize-cli db:migrate & cd ../.. & ^
-
-cd notification/src & npx sequelize-cli db:migrate & cd ../..
-
-```
-
-  
+```  
 
 7. **Enabling Citus And Setting Distribution Columns (Optional)**
 
-  
-
-MentorEd relies on PostgreSQL as its core database system. To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
-
-  
+To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
 
 > NOTE: Currently only available for Linux based operation systems.
 
   
 
-1. Download mentoring `distributionColumns.sql` file.
+1. Download user `distributionColumns.sql` file.
 
   
 
