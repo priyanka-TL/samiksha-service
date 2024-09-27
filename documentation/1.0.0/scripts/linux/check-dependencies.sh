@@ -99,6 +99,22 @@ check_mongo() {
     fi
 }
 
+# Function to check Gotenberg installation and service status
+check_gotenberg() {
+    if command -v docker > /dev/null 2>&1; then
+        echo -e "${GREEN}Docker is installed. Version: $(docker --version)${NC}"
+    else
+        echo -e "${RED}Docker is not installed.${NC}"
+        return
+    fi
+
+    if docker ps | grep -q gotenberg; then
+        echo -e "${GREEN}Gotenberg Docker container is running.${NC}"
+    else
+        echo -e "${RED}Gotenberg Docker container is not running.${NC}"
+    fi
+}
+
 # Main execution flow of the script
 echo "Survey Service Dependencies Status"
 
@@ -109,3 +125,4 @@ check_pm2
 check_postgres
 check_citus
 check_mongo
+check_gotenberg
