@@ -11,7 +11,8 @@
     "start": "node app.js",
     "dev": "module/migrations/bin/migrations.js up && nodemon app.js",
     "migrations": "module/migrations/bin/migrations.js",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write ",
+		"db:populate-data": "node ./documentation/1.0.0/sample-data/mac-linux/insertData.js"
   },
   "keywords": [
     "shikshalokam",

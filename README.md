@@ -978,7 +978,7 @@ Use Survey in-build seeders to insert the initial data.
 
 
 ```
-cd mentoring/src && npm run db:seed:all && cd ../.. && \
+cd samiksha-service && npm run db:populate-data && cd ../.. && \
 
 cd user/src && npm run db:seed:all && cd ../..
 
