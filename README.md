@@ -435,7 +435,7 @@ By implementing these adjustments, the configuration ensures that when the `dock
 
   
 
-During the initial setup of Project services with the default configuration, you may encounter issues creating new accounts through the regular SignUp flow on the MentorEd portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
+During the initial setup of Project services with the default configuration, you may encounter issues creating new accounts through the regular SignUp flow on the Survey portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
 
   
 
@@ -722,7 +722,7 @@ chmod +x check-dependencies.sh
 
   
 
-1.  **Create Mentoring Directory:** Create a directory named **mentorEd**.
+1.  **Create Samiksha Directory:** Create a directory named **samiksha-service**.
 
   
 
@@ -1217,7 +1217,7 @@ ionic serve
 
 ```
 
-Navigate to http://localhost:8100 to access the MentorEd Portal.
+Navigate to http://localhost:8100 to access the Survey Portal.
 
   
 
@@ -1229,13 +1229,13 @@ Navigate to http://localhost:8100 to access the MentorEd Portal.
 
   
 
-During the initial setup of MentorEd services with the default configuration, you may encounter issues creating new accounts through the regular SignUp flow on the MentorEd portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
+During the initial setup of Survey services with the default configuration, you may encounter issues creating new accounts through the regular SignUp flow on the Survey portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
 
   
 
   
 
-In such cases, you can generate sample user accounts using the steps below. This allows you to explore the MentorEd services and portal immediately after setup.
+In such cases, you can generate sample user accounts using the steps below. This allows you to explore the Survey services and portal immediately after setup.
 
   
 
