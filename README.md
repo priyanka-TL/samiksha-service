@@ -1019,43 +1019,7 @@ git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects
 
   
 
-```
-
-  
-
-  
-
--  **Windows**
-
-  
-
-  
-
-```
-
-  
-
-git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
-
-git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
-
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/user.git && \
-
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/notification.git && \
-
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/interface-service.git && \
-
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/scheduler.git && \
-
-git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
-
-  
-
-```
-
-  
-
-  
+``` 
 
 3.  **Install NPM Packages**
 
@@ -1097,51 +1061,7 @@ cd observation-survey-projects-pwa && npm install --force && cd ..
 
   
 
-```
-
-  
-
-  
-
--  **Windows**
-
-  
-
-  
-
-```
-
-  
-
-cd samiksha-service & npm install & cd ..\.. & ^
-
-  
-
-cd user\src & npm install & cd ..\.. & ^
-
-  
-
-cd notification\src & npm install & cd ..\.. & ^
-
-  
-
-cd interface-service\src & npm install & cd ..\.. & ^
-
-  
-
-cd scheduler\src & npm install & cd ..\.. & ^
-
-  
-
-cd observation-survey-projects-pwa & npm install --force & cd ..
-
-  
-
-```
-
-  
-
-  
+```  
 
 4.  **Download Environment Files**
 
@@ -1606,43 +1526,6 @@ cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../.
 
 ```
 
-  
-
-  
-
--  **Windows**
-
-  
-
-```
-
-  
-
-cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && ^
-
-  
-
-cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && ^
-
-  
-
-cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && ^
-
-  
-
-cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && ^
-
-  
-
-cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-
-  
-
-```
-
-  
-
-  
 
 10.  **Run Service Scripts**
 
@@ -1678,43 +1561,13 @@ cd mentoring/src/scripts && node psqlFunction.js && node viewsScript.js && cd ..
 
 ```
 
-  
-
-  
-
--  **Windows**
-
-  
-
-```
-
-  
-
-cd user/src/scripts & node insertDefaultOrg.js & node viewsScript.js & ^
-
-  
-
-node -r module-alias/register uploadSampleCSV.js & cd ../../.. && ^
-
-  
-
-cd mentoring/src/scripts & node psqlFunction.js & node viewsScript.js & cd ../../..
-
-  
-
-```
-
-  
-
-  
-
 11.  **Start The Portal**
 
   
 
   
 
-MentorEd portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
+Survey portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
 
   
 
