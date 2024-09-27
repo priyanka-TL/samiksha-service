@@ -801,7 +801,7 @@ cd observation-survey-projects-pwa && npm install --force && cd ..
 -  **Ubuntu/Linux**
 
 ```
-curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/samiksha_service_env && \
+curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
 
   
 
