@@ -583,15 +583,10 @@ Before setting up the following Survey application, dependencies given below sho
 
 ```
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
-
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
-
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
-
 chmod +x check-dependencies.sh && \
-
 chmod +x install-dependencies.sh && \
-
 chmod +x uninstall-dependencies.sh
 
 ```
@@ -712,13 +707,13 @@ chmod +x check-dependencies.sh
 
   
 
-1.  **Create Samiksha Directory:** Create a directory named **samiksha-service**.
+1.  **Create Elevate-service Directory:** Create a directory named **elevate-service**.
 
   
 
   
 
-> Example Command: `mkdir samiksha-service && cd samiksha-service/`
+> Example Command: `mkdir elevate-service && cd elevate-service/`
 
   
 
@@ -757,13 +752,13 @@ git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects
 
 -  **Ubuntu/Linux/MacOS**
 
-```
-cd samiksha-service && npm install && cd ../ && \
-cd user/src && npm install && cd ../.. && \
-cd notification/src && npm install && cd ../.. && \
-cd interface-service/src && npm install && cd ../.. && \
-cd scheduler/src && npm install && cd ../.. && \
-cd observation-survey-projects-pwa && npm install --force && cd ..
+    ```
+    cd samiksha-service && npm install && cd ../ && \
+    cd user/src && npm install && cd ../.. && \
+    cd notification/src && npm install && cd ../.. && \
+    cd interface-service/src && npm install && cd ../.. && \
+    cd scheduler/src && npm install && cd ../.. && \
+    cd observation-survey-projects-pwa && npm install --force && cd ..
 
 ```  
 
@@ -773,39 +768,39 @@ cd observation-survey-projects-pwa && npm install --force && cd ..
 
   
 
--  **Ubuntu/Linux**
+    -  **Ubuntu/Linux**
 
-```
-curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
+    ```
+    curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
 
-curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
+    curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
 
-curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
+    curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
 
-curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
+    curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
 
-curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
+    curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
 
-curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+    curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
 
 ```
 
 -  **MacOS**
 
-```
-curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
+    ```
+    curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
 
-curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
+    curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
 
-curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
+    curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
 
-curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
+    curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
 
-curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
+    curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
 
-curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+    curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
 
-```
+    ```
 
 >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Survey](https://github.com/ELEVATE-Project/samiksha/blob/master/src/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), and [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) repositories for reference.
 
