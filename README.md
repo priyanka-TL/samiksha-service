@@ -322,7 +322,7 @@ chmod +x citus_setup.sh
 
 ```
 
-./citus_setup.sh user postgres://postgres:postgres@citus_master:5432/user
+./citus_setup.sh user postgres://postgres:postgres@localhost:5432/user
 
 ```
 <!-- - **Windows**
