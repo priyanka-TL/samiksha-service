@@ -121,6 +121,7 @@ services:
       - ${scheduler_env}
   samiksha:
     image: shikshalokamqa/elevate-samiksha-service:0.0.6
+    container_name: samiksha
     ports:
       - '4301:4301'
     command: ['nodemon', 'dev']
