@@ -465,7 +465,7 @@ curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-
 
 curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
 
-curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/observation-survey-projects-pwa/refs/heads/main/src/environments/environment.ts
 ```
 - **MacOS**
 
@@ -483,7 +483,7 @@ curl -L -o interface-service/src/.env https://github.com/ELEVATE-Project/mentori
 
 curl -L -o scheduler/src/.env https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/2.6.1/native/envs/scheduler_env && \
 
-curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://github.com/ELEVATE-Project/observation-survey-projects-pwa/blob/release-2.0.0/src/environments/environment.ts
+curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/observation-survey-projects-pwa/refs/heads/main/src/environments/environment.ts
 
 ```
 
@@ -505,7 +505,7 @@ curl -L -o interface-service\src\.env https://github.com/ELEVATE-Project/mentori
 
 curl -L -o scheduler\src\.env https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/2.6.1/native/envs/scheduler_env & ^
 
-curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://github.com/ELEVATE-Project/observation-survey-projects-pwa/blob/release-2.0.0/src/environments/environment.ts
+curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/observation-survey-projects-pwa/refs/heads/main/src/environments/environment.ts
 
 ```
 
@@ -919,13 +919,13 @@ sudo npm install -g @angular/cli
 
   
 
-3. Navigate to `mentoring-mobile-app` directory:
+3. Navigate to `observation-survey-projects-pwa` directory:
 
   
 
 ```
 
-cd mentoring-mobile-app
+cd observation-survey-projects-pwa
 
 ```
 
@@ -947,7 +947,7 @@ ionic build
 
 ```
 
-pm2 start pm2.config.json && cd ..
+ionic serve
 
 ```
 
@@ -981,13 +981,13 @@ sudo npm install -g @angular/cli
 
   
 
-3. Navigate to `mentoring-mobile-app` directory:
+3. Navigate to `observation-survey-projects-pwa` directory:
 
   
 
 ```
 
-cd mentoring-mobile-app
+cd observation-survey-projects-pwa
 
 ```
 
@@ -1009,7 +1009,7 @@ npx ionic build
 
 ```
 
-npx pm2 start pm2.config.json && cd ..
+npx ionix serve
 
 ```
 
@@ -1043,13 +1043,13 @@ npm install -g @angular/cli
 
   
 
-3. Navigate to `mentoring-mobile-app` directory:
+3. Navigate to `observation-survey-projects-pwa` directory:
 
   
 
 ```
 
-cd mentoring-mobile-app
+cd observation-survey-projects-pwa
 
 ```
 
@@ -1071,13 +1071,13 @@ ionic build
 
 ```
 
-pm2 start pm2.config.json & cd ..
+ionic serve
 
 ```
 
   
 
-Navigate to http://localhost:7601 to access the MentorEd Portal.
+Navigate to http://localhost:8100 to access the MentorEd Portal.
 
   
 
