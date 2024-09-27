@@ -37,23 +37,16 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 
 2.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose-project.yml)** file from the Project service repository and save it to the project directory.
 
-  
-
 ```
 
 curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose-project.yml
 
 ```
-
-  
-
 > Note: All commands are run from the project directory.
 
   
 
 Directory structure:
-
-  
 
 ```
 
@@ -62,9 +55,6 @@ Directory structure:
 └── docker-compose.yml
 
 ```
-
-  
-
 3.  **Download Environment Files**: Using the OS specific commands given below, download environment files for all the services.
 
   
@@ -93,8 +83,6 @@ curl -L \
 
 -  **Windows**
 
-  
-
 ```
 
 curl -L ^
@@ -114,9 +102,6 @@ curl -L ^
 -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
 
 ```
-
-  
-
 >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Samiksha](https://github.com/ELEVATE-Project/samiksha-service/blob/main/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) and [Entity-management](https://github.com/ELEVATE-Project/entity-management/blob/main/src/.env.sample) repositories for reference.
 
   
@@ -131,21 +116,14 @@ curl -L ^
 
 -  **Ubuntu/Linux/Mac**
 
-  
-
 ```
 
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/mac-linux/replace_volume_path.sh
 
 ```
-
-  
-
 <!--
 
 - **Windows**
-
-  
 
 ```
 
@@ -193,56 +171,35 @@ chmod +x replace_volume_path.sh
 
 1. Download the files.
 
-  
-
 ```
 
 curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-up.sh
 
 ```
-
-  
-
 ```
 
 curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-down.sh
 
 ```
-
-  
-
 2. Make the files executable by running the following commands.
-
-  
 
 ```
 
 chmod +x docker-compose-up.sh
 
 ```
-
-  
-
 ```
 
 chmod +x docker-compose-down.sh
 
 ```
-
-  
-
 <!-- - **Windows**
-
-  
 
 ```
 
 curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
 
 ```
-
-  
-
 ```
 
 curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose-down.bat
@@ -266,9 +223,6 @@ curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documenta
 ./docker-compose-up.sh
 
 ```
-
-  
-
 <!-- - **Windows**
 
 ```
@@ -302,9 +256,6 @@ All docker containers can be stopped and removed by using the `docker-compose-do
 ./docker-compose-down.sh
 
 ```
-
-  
-
 <!-- - **Windows**
 
 ```
@@ -355,28 +306,18 @@ mkdir user && curl -o ./user/distributionColumns.sql -JL https://github.com/ELEV
 
 1. Download the `citus_setup.sh` file.
 
-  
-
 ```
 
 curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/citus_setup.sh
 
 ```
-
-  
-
 2. Make the setup file executable by running the following command.
-
-  
 
 ```
 
 chmod +x citus_setup.sh
 
 ```
-
-  
-
 3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
 
 ```
@@ -384,9 +325,6 @@ chmod +x citus_setup.sh
 ./citus_setup.sh user postgres://postgres:postgres@citus_master:5432/user
 
 ```
-
-  
-
 <!-- - **Windows**
 
 1. Download the `citus_setup.bat` file.
@@ -424,8 +362,6 @@ To ensure the persistence of database data when running `docker compose down`, i
   
 
 Begin by opening the `docker-compose-project.yml` file. Locate the section pertaining to the Citus and mongo container and proceed to uncomment the volume specification. This action is demonstrated in the snippet provided below:
-
-  
 
 ```yaml
 
@@ -468,16 +404,11 @@ volumes:
 - citus-data:/var/lib/postgresql/data
 
 ```
-
-  
-
 2.  **Uncommenting Volume Names Under The Volumes Section:**
 
   
 
 Next, navigate to the volumes section of the file and proceed to uncomment the volume names as illustrated in the subsequent snippet:
-
-  
 
 ```yaml
 
@@ -496,9 +427,6 @@ citus-data:
 mongo-data:
 
 ```
-
-  
-
 By implementing these adjustments, the configuration ensures that when the `docker-compose down` command is executed, the database data is securely stored within the specified volumes. Consequently, this data will be retained and remain accessible, even after the containers are terminated and subsequently reinstated using the `docker-compose up` command.
 
   
@@ -525,8 +453,6 @@ In such cases, you can generate sample user accounts using the steps below. This
 
 -  **Ubuntu/Linux/Mac**
 
-  
-
 ```
 
 mkdir -p sample-data/user && \
@@ -534,12 +460,7 @@ mkdir -p sample-data/user && \
 curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/mac-linux/user/sampleData.sql -o sample-data/user/sampleData.sql
 
 ```
-
-  
-
 <!-- - **Windows**
-
-  
 
 ```
 
@@ -548,28 +469,18 @@ mkdir sample-data\user 2>nul & ^
 curl -L "https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/windows/user/sampleData.sql" -o sample-data\user\sampleData.sql
 
 --> ```
-
-  
-
 2.  **Download The `insert_sample_data` Script File:**
 
   
 
 -  **Ubuntu/Linux/Mac**
 
-  
-
 ```
 
 curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
 
 ```
-
-  
-
 <!-- - **Windows**
-
-  
 
 ```
 
@@ -587,19 +498,12 @@ curl -L -o insert_sample_data.bat https://raw.githubusercontent.com/ELEVATE-Proj
 
 -  **Ubuntu/Linux/Mac**
 
-  
-
 ```
 
 ./insert_sample_data.sh user postgres://postgres:postgres@citus_master:5432/user
 
 ```
-
-  
-
 <!-- - **Windows**
-
-  
 
 ```
 
@@ -677,12 +581,7 @@ Before setting up the following Survey application, dependencies given below sho
 
 1. Download dependency management scripts:
 
-  
-
 ```
-
-  
-
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
 
   
@@ -705,25 +604,11 @@ chmod +x install-dependencies.sh && \
 
 chmod +x uninstall-dependencies.sh
 
-  
-
 ```
-
-  
-
 2. Verify installed dependencies by running `check-dependencies.sh`:
 
-  
-
-  
-
 ```
-
-  
-
 ./check-dependencies.sh
-
-  
 
 ```
 
@@ -735,37 +620,18 @@ chmod +x uninstall-dependencies.sh
 
 3. Install dependencies by running `install-dependencies.sh`:
 
-  
-
 ```
-
-  
-
 ./install-dependencies.sh
 
-  
-
 ```
-
-  
-
 > Note: Install all missing dependencies and use check-dependencies script to ensure everything is installed and running.
 
   
 
 4. Uninstall dependencies by running `uninstall-dependencies.sh`:
 
-  
-
-  
-
 ```
-
-  
-
 ./uninstall-dependencies.sh
-
-  
 
 ```
 
@@ -789,150 +655,67 @@ chmod +x uninstall-dependencies.sh
 
 1. Install Node.js 20:
 
-  
-
-  
-
 ```
-
-  
-
 brew install node@20
 
-  
-
 ```
 
 ```
-
-  
-
 brew link --overwrite node@20
-
-  
 
 ```
 
 2. Install Kafka:
 
-  
-
-  
-
 ```
-
-  
-
 brew install kafka
-
-  
 
 ```
 
 3. Install PostgreSQL 16:
 
-  
-
-  
-
 ```
-
-  
-
 brew install postgresql@16
-
-  
 
 ```
 
 4. Install PM2:
 
-  
-
-  
-
 ```
-
-  
-
 sudo npm install pm2@latest -g
-
-  
 
 ```
 
 5. Install Redis:
 
-  
-
-  
-
 ```
-
-  
-
 brew install redis
 
-  
-
 ```
-
-  
-
 6. Install Mongo:
 
-  
-
-  
-
 ```
-
-  
-
 brew install mongodb-community@7.0
-
-  
 
 ```
 
 7. Download `check-dependencies.sh` file:
 
-  
-
-  
-
 ```
-
-  
-
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
 
   
 
 chmod +x check-dependencies.sh
 
-  
-
 ```
 
 8. Verify installed dependencies by running `check-dependencies.sh`:
 
-  
-
-  
-
 ```
-
-  
-
 ./check-dependencies.sh
 
-  
-
 ```
-
-  
-
 ## Installation
 
   
@@ -959,14 +742,7 @@ chmod +x check-dependencies.sh
 
 -  **Ubuntu/Linux/MacOS**
 
-  
-
-  
-
 ```
-
-  
-
 git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
 
 git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
@@ -981,8 +757,6 @@ git clone -b release-2.6.1 https://github.com/ELEVATE-Project/scheduler.git && \
 
 git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
 
-  
-
 ``` 
 
 3.  **Install NPM Packages**
@@ -993,14 +767,7 @@ git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects
 
 -  **Ubuntu/Linux/MacOS**
 
-  
-
-  
-
 ```
-
-  
-
 cd samiksha-service && npm install && cd ../ && \
 
   
@@ -1023,8 +790,6 @@ cd scheduler/src && npm install && cd ../.. && \
 
 cd observation-survey-projects-pwa && npm install --force && cd ..
 
-  
-
 ```  
 
 4.  **Download Environment Files**
@@ -1035,14 +800,7 @@ cd observation-survey-projects-pwa && npm install --force && cd ..
 
 -  **Ubuntu/Linux**
 
-  
-
-  
-
 ```
-
-  
-
 curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/samiksha_service_env && \
 
   
@@ -1069,14 +827,7 @@ curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https
 
 -  **MacOS**
 
-  
-
-  
-
 ```
-
-  
-
 curl -L -o samiksha-service/.env https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/2.6.1/native/envs/non-citus/mentoring_env && \
 
   
@@ -1098,8 +849,6 @@ curl -L -o scheduler/src/.env https://github.com/ELEVATE-Project/mentoring/raw/m
   
 
 curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/observation-survey-projects-pwa/refs/heads/main/src/environments/environment.ts
-
-  
 
 ```
 
@@ -1141,52 +890,22 @@ curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https
 
 1. Download `create-databases.sh` Script File:
 
-  
-
 ```
-
-  
-
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/create-databases.sh
 
-  
-
 ```
-
-  
-
 2. Make the executable by running the following command:
 
-  
-
 ```
-
-  
-
 chmod +x create-databases.sh
 
-  
-
 ```
-
-  
-
 3. Run the script file:
 
-  
-
 ```
-
-  
-
 ./create-databases.sh
 
-  
-
 ```
-
-  
-
 -  **MacOS**
 
   
@@ -1195,47 +914,20 @@ chmod +x create-databases.sh
 
 1. Download `create-databases.sh` Script File:
 
-  
-
 ```
-
-  
-
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/macos/create-databases.sh
 
-  
-
 ```
-
-  
-
 2. Make the executable by running the following command:
 
-  
-
 ```
-
-  
-
 chmod +x create-databases.sh
 
-  
-
 ```
-
-  
-
 3. Run the script file:
 
-  
-
 ```
-
-  
-
 ./create-databases.sh
-
-  
 
 ```
 
@@ -1253,33 +945,16 @@ chmod +x create-databases.sh
 
 1. Install Sequelize-cli globally:
 
-  
-
 ```
-
-  
-
 sudo npm i sequelize-cli -g
 
-  
-
 ```
-
-  
-
 2. Run Migrations:
 
-  
-
 ```
-
-  
-
 cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
 
 cd notification/src && npx sequelize-cli db:migrate && cd ../..
-
-  
 
 ```
 
@@ -1300,16 +975,11 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 
 1. Download user `distributionColumns.sql` file.
 
-  
-
 ```
 
 curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
 
 ```
-
-  
-
 2. Set up the `citus_setup` file by following the steps given below.
 
   
@@ -1320,30 +990,18 @@ curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELE
 
 1. Download the `citus_setup.sh` file:
 
-  
-
 ```
 
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/citus_setup.sh
 
-  
-
 ```
-
-  
-
 2. Make the setup file executable by running the following command:
-
-  
 
 ```
 
 chmod +x citus_setup.sh
 
 ```
-
-  
-
 3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
 
 ```
@@ -1351,9 +1009,6 @@ chmod +x citus_setup.sh
 ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
 
 ```
-
-  
-
 8.  **Insert Initial Data**
 
   
@@ -1388,10 +1043,6 @@ Following the steps given below, 2 instances of each MentorEd backend service wi
 
 -  **Ubuntu/Linux**
 
-  
-
-  
-
 ```
 cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
 cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
@@ -1404,10 +1055,6 @@ cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
 ```
 
 -  **MacOS**
-
-  
-
-  
 
 ```
 
@@ -1427,10 +1074,6 @@ cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../.
   
 
 -  **Ubuntu/Linux/MacOS**
-
-  
-
-  
 
 ```
 cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
@@ -1459,79 +1102,36 @@ Survey portal utilizes Ionic and Angular CLI for building the browser bundle, fo
 
 1. Install Ionic CLI globally:
 
-  
-
-  
-
 ```
-
-  
-
 sudo npm install -g @ionic/cli
-
-  
 
 ```
 
 2. Install Angular CLI globally:
 
-  
-
-  
-
 ```
-
-  
-
 sudo npm install -g @angular/cli
-
-  
 
 ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
-  
-
-  
-
 ```
-
-  
-
 cd observation-survey-projects-pwa
-
-  
 
 ```
 
 4. Build the portal
 
-  
-
-  
-
 ```
-
-  
-
 ionic build
-
-  
 
 ```
 
 5. Start the portal:
 
-  
-
 ```
-
-  
-
 ionic serve
-
-  
 
 ```
 
@@ -1543,79 +1143,36 @@ ionic serve
 
 1. Install Ionic CLI globally:
 
-  
-
-  
-
 ```
-
-  
-
 sudo npm install -g @ionic/cli
-
-  
 
 ```
 
 2. Install Angular CLI globally:
 
-  
-
-  
-
 ```
-
-  
-
 sudo npm install -g @angular/cli
-
-  
 
 ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
-  
-
-  
-
 ```
-
-  
-
 cd observation-survey-projects-pwa
-
-  
 
 ```
 
 4. Build the portal:
 
-  
-
-  
-
 ```
-
-  
-
 npx ionic build
-
-  
 
 ```
 
 5. Start the portal:
 
-  
-
 ```
-
-  
-
 npx ionix serve
-
-  
 
 ```
 
@@ -1627,79 +1184,36 @@ npx ionix serve
 
 1. Install Ionic CLI globally:
 
-  
-
-  
-
 ```
-
-  
-
 npm install -g @ionic/cli
-
-  
 
 ```
 
 2. Install Angular CLI globally:
 
-  
-
-  
-
 ```
-
-  
-
 npm install -g @angular/cli
-
-  
 
 ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
-  
-
-  
-
 ```
-
-  
-
 cd observation-survey-projects-pwa
-
-  
 
 ```
 
 4. Build the portal
 
-  
-
-  
-
 ```
-
-  
-
 ionic build
-
-  
 
 ```
 
 5. Start the portal:
 
-  
-
 ```
-
-  
-
 ionic serve
-
-  
 
 ```
 
@@ -1733,8 +1247,6 @@ In such cases, you can generate sample user accounts using the steps below. This
 
 -  **Ubuntu/Linux**
 
-  
-
 ```
 
 curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/insert_sample_data.sh && \
@@ -1744,9 +1256,6 @@ chmod +x insert_sample_data.sh && \
 ./insert_sample_data.sh
 
 ```
-
-  
-
 After successfully running the script mentioned above, the following user accounts will be created and available for login:
 
   
@@ -1777,10 +1286,6 @@ After successfully running the script mentioned above, the following user accoun
 
 </details>
 
-  
-
-  
-
 ```sql
 
   
@@ -1802,7 +1307,5 @@ Citus 12.1.1  on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 9.4.0-1ubuntu1~20.
   
 
 (1  row)
-
-  
 
 ```
