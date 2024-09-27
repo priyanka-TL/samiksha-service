@@ -1402,49 +1402,13 @@ Use Survey in-build seeders to insert the initial data.
 
 -  **Ubuntu/Linux/MacOS**
 
-  
-
-  
 
 ```
-
-  
-
 cd mentoring/src && npm run db:seed:all && cd ../.. && \
-
-  
 
 cd user/src && npm run db:seed:all && cd ../..
 
-  
-
-```
-
-  
-
-  
-
--  **Windows**
-
-  
-
-```
-
-  
-
-cd mentoring/src & npm run db:seed:all & cd ../.. & ^
-
-  
-
-cd user/src & npm run db:seed:all & cd ../..
-
-  
-
-```
-
-  
-
-  
+```  
 
 9.  **Start The Services**
 
@@ -1465,34 +1429,15 @@ Following the steps given below, 2 instances of each MentorEd backend service wi
   
 
 ```
-
-  
-
 cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
-
-  
-
 cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-
-  
-
 cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-
-  
 
 cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
 
-  
-
 cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
 
-  
-
 ```
-
-  
-
-  
 
 -  **MacOS**
 
@@ -1502,27 +1447,11 @@ cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
 
 ```
 
-  
-
 cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
-
-  
-
 cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-
-  
-
 cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-
-  
-
 cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-
-  
-
 cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-
-  
 
 ```
 
@@ -1540,24 +1469,9 @@ cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../.
   
 
 ```
-
-  
-
 cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
-
-  
-
 node -r module-alias/register uploadSampleCSV.js && cd ../../.. && \
-
-/*
-
 cd mentoring/src/scripts && node psqlFunction.js && node viewsScript.js && cd ../../..
-
-  
-
-*/
-
-  
 
 ```
 
