@@ -769,25 +769,10 @@ git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects
 
 ```
 cd samiksha-service && npm install && cd ../ && \
-
-  
-
 cd user/src && npm install && cd ../.. && \
-
-  
-
 cd notification/src && npm install && cd ../.. && \
-
-  
-
 cd interface-service/src && npm install && cd ../.. && \
-
-  
-
 cd scheduler/src && npm install && cd ../.. && \
-
-  
-
 cd observation-survey-projects-pwa && npm install --force && cd ..
 
 ```  
@@ -1047,9 +1032,7 @@ Following the steps given below, 2 instances of each MentorEd backend service wi
 cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
 cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
 cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-
 cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-
 cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
 
 ```
