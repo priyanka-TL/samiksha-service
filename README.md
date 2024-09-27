@@ -486,87 +486,40 @@ cd notification/src && npx sequelize-cli db:migrate && cd ../..
 
 ```  
 
+
 7. **Enabling Citus And Setting Distribution Columns (Optional)**
 
-To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
+    To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
 
-> NOTE: Currently only available for Linux based operation systems.
+    > NOTE: Currently only available for Linux based operation systems.
 
-  
+    1. Download user `distributionColumns.sql` file.
 
-1. Download user `distributionColumns.sql` file.
+        ```
+        curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
+        ```
 
-  
+    2. Set up the `citus_setup` file by following the steps given below.
 
-```
+        - **Ubuntu/Linux**
 
-curl -o ./mentoring/distributionColumns.sql -JL https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/2.6.1/distribution-columns/mentoring/distributionColumns.sql
+            1. Download the `citus_setup.sh` file:
 
-```
+                ```
+                curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/citus_setup.sh
 
-  
+                ```
 
-2. Download user `distributionColumns.sql` file.
+            2. Make the setup file executable by running the following command:
 
-  
+                ```
+                chmod +x citus_setup.sh
+                ```
 
-```
-
-curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/2.6.1/distribution-columns/user/distributionColumns.sql
-
-```
-
-  
-
-3. Set up the `citus_setup` file by following the steps given below.
-
-  
-
-- **Ubuntu/Linux**
-
-  
-
-1. Download the `citus_setup.sh` file:
-
-  
-
-```
-
-curl -OJL https://github.com/ELEVATE-Project/mentoring/raw/master/documentation/2.6.1/native/scripts/linux/citus_setup.sh
-
-```
-
-  
-
-2. Make the setup file executable by running the following command:
-
-  
-
-```
-
-chmod +x citus_setup.sh
-
-```
-
-  
-
-3. Enable Citus and set distribution columns for `mentoring` database by running the `citus_setup.sh` with the following arguments.
-
-```
-
-./citus_setup.sh mentoring postgres://postgres:postgres@localhost:9700/mentoring
-
-```
-
-4. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
-
-```
-
-./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
-
-```
-
-  
+            3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
+                ```
+                ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
+                ```
 
 8. **Insert Initial Data**
 
