@@ -688,9 +688,6 @@ brew install mongodb-community@7.0
 
 ```
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
-
-  
-
 chmod +x check-dependencies.sh
 
 ```
