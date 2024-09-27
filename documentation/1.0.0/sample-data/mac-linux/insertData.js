@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 
 const url = 'mongodb://localhost:27017'; // MongoDB URL
-const dbName = 'test-sample-db2';
+const dbName = 'surveydb';
 const surveyData = require('./data.js');
 
 const observationData = require('./data2.js');
