@@ -429,7 +429,7 @@ cd observation-survey-projects-pwa && npm install --force && cd ..
 
 ```
 
-cd samiksha-service\src & npm install & cd ..\.. & ^
+cd samiksha-service & npm install & cd ..\.. & ^
 
 cd user\src & npm install & cd ..\.. & ^
 
