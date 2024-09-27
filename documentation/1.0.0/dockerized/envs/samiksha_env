@@ -18,8 +18,8 @@ CLOUD_STORAGE = "GC"
 # Google Cloud Configuration
 GCP_PATH = "./generics/helpers/credentials/sl-dev-storage.json"
 GCP_BUCKET_NAME = "gcp bucket name"
-# MONGODB_URL = mongodb://localhost:27017
-MONGODB_URL =mongodb://10.148.0.43:27017
+MONGODB_URL = mongodb://localhost:27017
+; MONGODB_URL =mongodb://10.148.0.43:27017
 PUBLIC_FOLDER_PATH = "public"
 # DB = "sl-prod"
 DB = "elevate-samiksha"
