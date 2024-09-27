@@ -321,6 +321,7 @@ In such cases, you can generate sample user accounts using the steps below. This
     | aaravpatel@example.com   | Password1@ | State Education Officer |
 
 ## Sample Data Creation For Projects
+</details>
 <details>
 
 <summary>Natively Installed Services & Dependencies </summary>
