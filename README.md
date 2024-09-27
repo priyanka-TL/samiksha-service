@@ -1030,8 +1030,7 @@ cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../.
 
 ```
 cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
-node -r module-alias/register uploadSampleCSV.js && cd ../../.. && \
-cd mentoring/src/scripts && node psqlFunction.js && node viewsScript.js && cd ../../..
+node -r module-alias/register uploadSampleCSV.js && cd ../../..
 
 ```
 
