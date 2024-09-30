@@ -1,4 +1,5 @@
 
+
 <details><summary>Dockerized Services & Dependencies Using Docker-Compose File</summary>
 
   
@@ -529,7 +530,14 @@ After successfully running the script mentioned above, the following user accoun
 
 | aaravpatel@example.com | Password1@ | State Education Officer |
 
-  
+## Insert Initial Data
+
+-  **Ubuntu/Linux**
+
+  ```
+docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
+  ```
+
 
 ## Sample Data Creation For Projects
 
