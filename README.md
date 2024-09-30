@@ -594,7 +594,6 @@ chmod +x uninstall-dependencies.sh
 
 ```
 ./check-dependencies.sh
-
 ```
 
 > Note: Keep note of any missing dependencies.
@@ -607,7 +606,6 @@ chmod +x uninstall-dependencies.sh
 
 ```
 ./install-dependencies.sh
-
 ```
 > Note: Install all missing dependencies and use check-dependencies script to ensure everything is installed and running.
 
@@ -617,7 +615,6 @@ chmod +x uninstall-dependencies.sh
 
 ```
 ./uninstall-dependencies.sh
-
 ```
 
 > Warning: Due to the destructive nature of the script (without further warnings), it should only be used during the initial setup of the dependencies. For example, Uninstalling PostgreSQL/Citus using script will lead to data loss. USE EXTREME CAUTION.
@@ -696,7 +693,6 @@ chmod +x check-dependencies.sh
 
 ```
 ./check-dependencies.sh
-
 ```
 ## Installation
 
@@ -950,7 +946,7 @@ Use Survey in-build seeders to insert the initial data.
 
 
 ```
-cd samiksha-service && npm run db:populate-data && cd ../.. && \
+cd samiksha-service && npm run db:populate-data && cd ../ && \
 
 cd user/src && npm run db:seed:all && cd ../..
 
