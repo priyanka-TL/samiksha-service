@@ -731,10 +731,10 @@ chmod +x check-dependencies.sh
 ```
 git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
 git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/user.git && \
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/notification.git && \
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/interface-service.git && \
-git clone -b release-2.6.1 https://github.com/ELEVATE-Project/scheduler.git && \
+git clone -b master https://github.com/ELEVATE-Project/user.git && \
+git clone -b master https://github.com/ELEVATE-Project/notification.git && \
+git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
+git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
 git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
 
 ``` 
