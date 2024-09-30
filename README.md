@@ -882,12 +882,10 @@ sudo npm i sequelize-cli -g
 ```
 2. Run Migrations:
 
-```
-cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
-
-cd notification/src && npx sequelize-cli db:migrate && cd ../..
-
-```
+ ```
+ cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
+ cd notification/src && npx sequelize-cli db:migrate && cd ../..
+ ```
 
   
   
@@ -980,19 +978,16 @@ cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
 cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
 cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
 cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-
 ```
 
 -  **MacOS**
 
 ```
-
 cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
 cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
 cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
 cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
 cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-
 ```
 
 
@@ -1128,21 +1123,18 @@ npm install -g @angular/cli
 
 ```
 cd observation-survey-projects-pwa
-
 ```
 
 4. Build the portal
 
 ```
 ionic build
-
 ```
 
 5. Start the portal:
 
 ```
 ionic serve
-
 ```
 
 Navigate to http://localhost:8100 to access the Survey Portal.
@@ -1176,13 +1168,11 @@ In such cases, you can generate sample user accounts using the steps below. This
 -  **Ubuntu/Linux**
 
 ```
-
 curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/insert_sample_data.sh && \
 
 chmod +x insert_sample_data.sh && \
 
 ./insert_sample_data.sh
-
 ```
 After successfully running the script mentioned above, the following user accounts will be created and available for login:
 
