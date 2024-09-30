@@ -5,7 +5,7 @@ let programData = [{
     "externalId" : "PGM_DIET_DARBHANGA_MIP_20-08-24_testing131",
     "name" : "DIET DARBHANGA _MIP_प्राथमिक कक्षाओं में चित्र-पठन कौशल_testing131",
     "description" : "शिक्षकों  में पाठयपुस्तकों दिए  गए चित्रों के पीछे छिपे संदेशों को पहचानने और उनका मूल्यांकन करने की क्षमता विकसित होगी |",
-    "owner" : "162",
+    "owner" : "2",
     "createdBy" : "162",
     "updatedBy" : "162",
     "status" : "active",

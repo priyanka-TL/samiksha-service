@@ -18,8 +18,7 @@ CLOUD_STORAGE = "GC"
 # Google Cloud Configuration
 GCP_PATH = "./generics/helpers/credentials/sl-dev-storage.json"
 GCP_BUCKET_NAME = "gcp bucket name"
-MONGODB_URL = mongodb://localhost:27017
-; MONGODB_URL =mongodb://10.148.0.43:27017
+MONGODB_URL = mongodb://mongo:27017
 PUBLIC_FOLDER_PATH = "public"
 # DB = "sl-prod"
 DB = "elevate-samiksha"
@@ -36,7 +35,7 @@ INTERNAL_ACCESS_TOKEN = "8c3a94f0931e01a4940a"
 
 CSV_REPORTS_PATH = "reports"
 # Access token is same as user service AccessToken for validating JWT token
-ACCESS_TOKEN_SECRET = "bsj82AHBxahusub12yexlashsbxAXADHBlaj"
+ACCESS_TOKEN_SECRET=hsghasghjab1273JHajnbabsjdj1273981273jhajksdh8y3123yhjkah812398yhjqwe7617237yuhdhhdqwu271
 # ACCESS_TOKEN_SECRET = "asadsd8as7df9as8df987asdf"
 
 USER_SERVICE_URL="http://localhost:3001/user"

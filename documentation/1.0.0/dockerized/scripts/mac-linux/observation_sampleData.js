@@ -7,7 +7,7 @@ let solutionData = [
     "isReusable" : true,
     "name" : "NISHTHA 2.0 Feedback Form",
     "description" : "NISHTHA 2.0 feedback form",
-    "author" : "",
+    "author" : "2",
     "resourceType" : [ 
         "Observations Framework"
     ],
@@ -2198,7 +2198,7 @@ let frameworkData = [
     "externalId" : "606d92fa-42d8-11ec-ac61-26092024-1011",
     "name" : "NISHTHA 2.0 Feedback Form",
     "description" : "NISHTHA 2.0 feedback form",
-    "author" : "",
+    "author" : "2",
     "parentId" : null,
     "resourceType" : [ 
         "Observations Framework"
