@@ -194,10 +194,12 @@ module.exports = class SolutionsHelper {
     pageNo,
     search,
     filter,
-    surveyReportPage = ''
+    surveyReportPage = '',
+    currentScopeOnly = false
   ) {
     return new Promise(async (resolve, reject) => {
       try {
+         currentScopeOnly =gen.utils.convertStringToBoolean(currentScopeOnly)
         //fetch the assigned solutions for the user
         let assignedSolutions = await this.assignedUserSolutions(
           solutionType,
@@ -413,9 +415,9 @@ module.exports = class SolutionsHelper {
         if (validateEntity !== messageConstants.common.OFF) {
           // Getting entities and entity types from request body
           Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((requestedDataKey) => {
-            if (requestedDataKey == 'entities') entities.push(...data[requestedDataKey]);
+             entities.push(...data[requestedDataKey]);
             // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
-            if (requestedDataKey == 'entityType') entityTypes.push(requestedDataKey);
+            entityTypes.push(requestedDataKey);
           });
           if (!(entities.length > 0)) {
             throw {
@@ -525,7 +527,6 @@ module.exports = class SolutionsHelper {
 
           filterQuery = _.merge(filterQuery, data.filter);
         }
-
         return resolve({
           success: true,
           data: filterQuery,
@@ -560,12 +561,12 @@ module.exports = class SolutionsHelper {
       try {
         //Getting query based on roles and entity
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType, programId);
+
         if (!queryData.success) {
           return resolve(queryData);
         }
-
         let matchQuery = queryData.data;
-
+      
         if (type === '' && subType === '') {
           let targetedTypes = _targetedSolutionTypes();
 
@@ -597,7 +598,6 @@ module.exports = class SolutionsHelper {
         if (programId !== '') {
           matchQuery['programId'] = ObjectId(programId);
         }
-
         //matchQuery['startDate'] = { $lte: new Date() };
         //listing the solution based on type and query
         let targetedSolutions = await this.list(type, subType, matchQuery, pageNo, pageSize, searchText, [
@@ -673,9 +673,9 @@ module.exports = class SolutionsHelper {
         //if program documents has scope update the scope in solution document
         let currentSolutionScope;
         if (programId && programData[0].scope) {
-          let currentSolutionScope = JSON.parse(JSON.stringify(programData[0].scope));
+          scopeData = JSON.parse(JSON.stringify(programData[0].scope));
         }
-        if (validateEntity !== messageConstants.common.OFF) {
+        // if (validateEntity !== messageConstants.common.OFF) {
           // if (Object.keys(scopeData).length > 0) {
           //   if (scopeData.entityType) {
           //     // let bodyData = { type: scopeData.entityType };
@@ -801,16 +801,34 @@ module.exports = class SolutionsHelper {
             });
             scopeData = _.omit(scopeData, keysCannotBeAdded);
           }
-          currentSolutionScope = scopeData;
-        } else {
-          currentSolutionScope = scopeData;
-        }
+          const updateObject = {
+            $set: {},
+          }
+          // Assign the scopeData to the scope field in updateObject
+				updateObject['$set']['scope'] = scopeData
 
+				// Extract all keys from scopeData except 'roles', and merge their values into a single array
+				const entities = Object.keys(scopeData)
+					.filter((key) => key !== 'roles')
+					.reduce((acc, key) => acc.concat(scopeData[key]), [])
+
+				// Assign the entities array to the entities field in updateObject
+				updateObject.$set.entities = entities
+
+				// Create a comma-separated string of all keys in scopeData except 'roles'
+				scopeData['entityType'] = Object.keys(_.omit(scopeData, ['roles'])).join(',')
+
+				// Assign the entityType string to the entityType field in updateObject
+				updateObject['$set']['entityType'] = scopeData.entityType
+        // }
+        //  else {
+        //   currentSolutionScope = scopeData;
+        // }
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
           },
-          { $set: { scope: currentSolutionScope } },
+          updateObject,
           { new: true }
         );
         if (!updateSolution._id) {
