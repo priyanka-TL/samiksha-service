@@ -1223,15 +1223,6 @@ After successfully running the script mentioned above, the following user accoun
 
 </details>
 
-<<<<<<< HEAD
 ## Postman Collections
 
 -   [Survey Service](https://github.com/ELEVATE-Project/samiksha-service/tree/main/api-doc)
-=======
-```sql
-
-  
-
-
-```
->>>>>>> c00cd679ff7e40113bbf2015f1e428b58ce2b146
