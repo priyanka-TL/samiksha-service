@@ -1166,4 +1166,4 @@ After successfully running the script mentioned above, the following user accoun
 
 ## Postman Collections
 
--   [Project Service](https://github.com/ELEVATE-Project/samiksha-service/tree/main/api-doc)
+-   [Survey Service](https://github.com/ELEVATE-Project/samiksha-service/tree/main/api-doc)
