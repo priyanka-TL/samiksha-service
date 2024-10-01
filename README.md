@@ -635,65 +635,74 @@ chmod +x uninstall-dependencies.sh
 
   
 
-  
+  -   **MacOS**
 
--  **MacOS**
+    1. Install Node.js 20:
 
-  
+        ```
+        brew install node@20
+        ```
 
-  
+        ```
+        brew link --overwrite node@20
+        ```
 
-1. Install Node.js 20:
+    2. Install Kafka:
 
-```
-brew install node@20
-```
+        ```
+        brew install kafka
+        ```
 
-```
-brew link --overwrite node@20
-```
+    3. Install PostgreSQL 16:
 
-2. Install Kafka:
+        ```
+        brew install postgresql@16
+        ```
 
-```
-brew install kafka
-```
+    4. Install PM2:
 
-3. Install PostgreSQL 16:
+        ```
+        sudo npm install pm2@latest -g
+        ```
 
-```
-brew install postgresql@16
-```
+    5. Install Redis:
 
-4. Install PM2:
+        ```
+        brew install redis
+        ```
 
-```
-sudo npm install pm2@latest -g
-```
+    6. Install mongDB:
 
-5. Install Redis:
+        ```
+        brew tap mongodb/brew
+        ```
 
-```
-brew install redis
-```
-6. Install Mongo:
+        ```
+        brew install mongodb-community@4.4
+        ```
 
-```
-brew install mongodb-community@7.0
-```
+        ```
+        brew link mongodb-community@4.4 --force
+        ```
 
-7. Download `check-dependencies.sh` file:
+        ```
+        brew services start mongodb-community@4.4
+        ```
 
-```
-curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
-chmod +x check-dependencies.sh
-```
+    7. Download `check-dependencies.sh` file:
 
-8. Verify installed dependencies by running `check-dependencies.sh`:
+        ```
+        curl -OJL curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
+chmod +x check-dependencies.sh && \
+        chmod +x check-dependencies.sh
+        ```
 
-```
-./check-dependencies.sh
-```
+    8. Verify installed dependencies by running `check-dependencies.sh`:
+
+        ```
+        ./check-dependencies.sh
+        ```
+
 ## Installation
 
   
