@@ -1126,13 +1126,22 @@ In such cases, you can generate sample user accounts using the steps below. This
 
 -  **Ubuntu/Linux**
 
-```
-curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/insert_sample_data.sh && \
+    ```
+    curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/insert_sample_data.sh && \
 
-chmod +x insert_sample_data.sh && \
+    chmod +x insert_sample_data.sh && \
 
-./insert_sample_data.sh
-```
+    ./insert_sample_data.sh
+    ```
+
+-   **MacOS**
+
+    ```
+    curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/project-service/refs/heads/main/documentation/1.0.0/native/scripts/macos/insert_sample_data.sh && \
+    chmod +x insert_sample_data.sh && \
+    ./insert_sample_data.sh
+    ```
+
 After successfully running the script mentioned above, the following user accounts will be created and available for login:
 
   
