@@ -647,46 +647,39 @@ chmod +x uninstall-dependencies.sh
 
 ```
 brew install node@20
-
 ```
 
 ```
 brew link --overwrite node@20
-
 ```
 
 2. Install Kafka:
 
 ```
 brew install kafka
-
 ```
 
 3. Install PostgreSQL 16:
 
 ```
 brew install postgresql@16
-
 ```
 
 4. Install PM2:
 
 ```
 sudo npm install pm2@latest -g
-
 ```
 
 5. Install Redis:
 
 ```
 brew install redis
-
 ```
 6. Install Mongo:
 
 ```
 brew install mongodb-community@7.0
-
 ```
 
 7. Download `check-dependencies.sh` file:
@@ -694,7 +687,6 @@ brew install mongodb-community@7.0
 ```
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
 chmod +x check-dependencies.sh
-
 ```
 
 8. Verify installed dependencies by running `check-dependencies.sh`:
@@ -728,22 +720,18 @@ chmod +x check-dependencies.sh
 
 -  **Ubuntu/Linux/MacOS**
 
-```
-git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
-git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
-git clone -b master https://github.com/ELEVATE-Project/user.git && \
-git clone -b master https://github.com/ELEVATE-Project/notification.git && \
-git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
-git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
-git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
+    ```
+    git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
+    git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
+    git clone -b master https://github.com/ELEVATE-Project/user.git && \
+    git clone -b master https://github.com/ELEVATE-Project/notification.git && \
+    git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
+    git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
+    git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
 
-``` 
+    ``` 
 
 3.  **Install NPM Packages**
-
-  
-
-  
 
 -  **Ubuntu/Linux/MacOS**
 
@@ -823,19 +811,16 @@ git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects
 
 ```
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/create-databases.sh
-
 ```
 2. Make the executable by running the following command:
 
 ```
 chmod +x create-databases.sh
-
 ```
 3. Run the script file:
 
 ```
 ./create-databases.sh
-
 ```
 -  **MacOS**
 
@@ -847,19 +832,16 @@ chmod +x create-databases.sh
 
 ```
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/macos/create-databases.sh
-
 ```
 2. Make the executable by running the following command:
 
 ```
 chmod +x create-databases.sh
-
 ```
 3. Run the script file:
 
 ```
 ./create-databases.sh
-
 ```
 
 6.  **Run Migrations To Create Tables**
@@ -905,9 +887,7 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 1. Download user `distributionColumns.sql` file.
 
 ```
-
 curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
-
 ```
 2. Set up the `citus_setup` file by following the steps given below.
 
@@ -920,23 +900,17 @@ curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELE
 1. Download the `citus_setup.sh` file:
 
 ```
-
 curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/citus_setup.sh
-
 ```
 2. Make the setup file executable by running the following command:
 
 ```
-
 chmod +x citus_setup.sh
-
 ```
 3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
 
 ```
-
 ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
-
 ```
 8.  **Insert Initial Data**
 
@@ -953,9 +927,7 @@ Use Survey in-build seeders to insert the initial data.
 
 ```
 cd samiksha-service && npm run db:populate-data && cd ../ && \
-
 cd user/src && npm run db:seed:all && cd ../..
-
 ```  
 
 9.  **Start The Services**
@@ -1002,7 +974,6 @@ cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../.
 ```
 cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
 node -r module-alias/register uploadSampleCSV.js && cd ../../..
-
 ```
 
 11.  **Start The Portal**
@@ -1027,35 +998,30 @@ Survey portal utilizes Ionic and Angular CLI for building the browser bundle, fo
 
 ```
 sudo npm install -g @ionic/cli
-
 ```
 
 2. Install Angular CLI globally:
 
 ```
 sudo npm install -g @angular/cli
-
 ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
 ```
 cd observation-survey-projects-pwa
-
 ```
 
 4. Build the portal
 
 ```
 ionic build
-
 ```
 
 5. Start the portal:
 
 ```
 ionic serve
-
 ```
 
 -  **MacOS**
@@ -1068,35 +1034,30 @@ ionic serve
 
 ```
 sudo npm install -g @ionic/cli
-
 ```
 
 2. Install Angular CLI globally:
 
 ```
 sudo npm install -g @angular/cli
-
 ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
 ```
 cd observation-survey-projects-pwa
-
 ```
 
 4. Build the portal:
 
 ```
 npx ionic build
-
 ```
 
 5. Start the portal:
 
 ```
 npx ionix serve
-
 ```
 
 -  **Windows**
@@ -1109,14 +1070,12 @@ npx ionix serve
 
 ```
 npm install -g @ionic/cli
-
 ```
 
 2. Install Angular CLI globally:
 
 ```
 npm install -g @angular/cli
-
 ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
