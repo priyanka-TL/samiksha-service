@@ -634,75 +634,63 @@ chmod +x uninstall-dependencies.sh
 > Warning: This script should only be used to uninstall dependencies that were installed via installation script in step 3. If same dependencies were installed using other methods, refrain from using this script. This script is provided in-order to reverse installation in-case issues arise from a bad install.
 
   
+-  **MacOS**
 
-  -   **MacOS**
+  
 
-    1. Install Node.js 20:
+  
 
-        ```
-        brew install node@20
-        ```
+1. Install Node.js 20:
 
-        ```
-        brew link --overwrite node@20
-        ```
+```
+brew install node@20
+```
 
-    2. Install Kafka:
+```
+brew link --overwrite node@20
+```
 
-        ```
-        brew install kafka
-        ```
+2. Install Kafka:
 
-    3. Install PostgreSQL 16:
+```
+brew install kafka
+```
 
-        ```
-        brew install postgresql@16
-        ```
+3. Install PostgreSQL 16:
 
-    4. Install PM2:
+```
+brew install postgresql@16
+```
 
-        ```
-        sudo npm install pm2@latest -g
-        ```
+4. Install PM2:
 
-    5. Install Redis:
+```
+sudo npm install pm2@latest -g
+```
 
-        ```
-        brew install redis
-        ```
+5. Install Redis:
 
-    6. Install mongDB:
+```
+brew install redis
+```
+6. Install Mongo:
 
-        ```
-        brew tap mongodb/brew
-        ```
+```
+brew install mongodb-community@7.0
+```
 
-        ```
-        brew install mongodb-community@4.4
-        ```
+7. Download `check-dependencies.sh` file:
 
-        ```
-        brew link mongodb-community@4.4 --force
-        ```
+```
+curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
+chmod +x check-dependencies.sh
+```
 
-        ```
-        brew services start mongodb-community@4.4
-        ```
+8. Verify installed dependencies by running `check-dependencies.sh`:
 
-    7. Download `check-dependencies.sh` file:
-
-        ```
-        curl -OJL curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
-chmod +x check-dependencies.sh && \
-        chmod +x check-dependencies.sh
-        ```
-
-    8. Verify installed dependencies by running `check-dependencies.sh`:
-
-        ```
-        ./check-dependencies.sh
-        ```
-
+```
+./check-dependencies.sh
+```
 ## Installation
 
   
