@@ -596,7 +596,6 @@ curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/ref
 chmod +x check-dependencies.sh && \
 chmod +x install-dependencies.sh && \
 chmod +x uninstall-dependencies.sh
-
 ```
 2. Verify installed dependencies by running `check-dependencies.sh`:
 
@@ -725,7 +724,6 @@ chmod +x check-dependencies.sh
     git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
     git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
     git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
-
     ``` 
 
 3.  **Install NPM Packages**
@@ -739,7 +737,6 @@ chmod +x check-dependencies.sh
     cd interface-service/src && npm install && cd ../.. && \
     cd scheduler/src && npm install && cd ../.. && \
     cd observation-survey-projects-pwa && npm install --force && cd ..
-
     ```  
 
 4.  **Download Environment Files**
@@ -1166,6 +1163,11 @@ After successfully running the script mentioned above, the following user accoun
   
 
 </details>
+
+## Postman Collections
+
+-   [Project Service](https://github.com/ELEVATE-Project/samiksha-service/tree/main/api-doc)
+
 
 ```sql
 
