@@ -35,7 +35,7 @@ check_kafka() {
     fi
 }
 
-# Function to check Redis installation and service
+# Function to check Redis installation and service status
 check_redis() {
     if command -v redis-server > /dev/null 2>&1; then
         echo -e "${GREEN}Redis server is installed. Version: $(redis-server --version)${NC}"
@@ -87,9 +87,10 @@ check_postgres() {
 # Function to check MongoDB installation and service
 check_mongo() {
     if command -v mongod > /dev/null 2>&1; then
-        echo -e "${GREEN}MongoDB is installed. Version: $(mongod --version | grep 'db version')${NC}"
+        echo -e "${GREEN}MongoDB is installed. Version: $(mongod --version | head -n 1)${NC}"
     else
         echo -e "${RED}MongoDB is not installed.${NC}"
+        return
     fi
 
     if systemctl is-active --quiet mongod; then
@@ -116,7 +117,7 @@ check_gotenberg() {
 }
 
 # Main execution flow of the script
-echo "Survey Service Dependencies Status"
+echo "ELEVATE-Survey Dependencies Status"
 
 check_nodejs
 check_kafka
@@ -125,4 +126,5 @@ check_pm2
 check_postgres
 check_citus
 check_mongo
+# check_bullmq
 check_gotenberg
