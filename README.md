@@ -1167,28 +1167,3 @@ After successfully running the script mentioned above, the following user accoun
 ## Postman Collections
 
 -   [Project Service](https://github.com/ELEVATE-Project/samiksha-service/tree/main/api-doc)
-
-
-```sql
-
-  
-
-postgres=# select citus_version();
-
-  
-
-citus_version
-
-  
-
-----------------------------------------------------------------------------------------------------
-
-  
-
-Citus 12.1.1  on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0, 64-bit
-
-  
-
-(1  row)
-
-```
