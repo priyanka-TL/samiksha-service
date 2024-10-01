@@ -811,7 +811,7 @@ module.exports = class ProgramsHelper {
 
         let scope = {};
         // check if validate entity on or off
-        if (validateEntity !== messageConstants.common.OFF) {
+        // if (validateEntity !== messageConstants.common.OFF) {
           let scopeDatas = Object.keys(scopeData);
           let scopeDataIndex = scopeDatas.map((index) => {
             return `scope.${index}`;
@@ -828,14 +828,36 @@ module.exports = class ProgramsHelper {
             });
             scopeData = _.omit(scopeData, keysCannotBeAdded);
           }
+                  // }
+
+                  const updateObject = {
+                    $set: {},
                   }
+          
+                  // Set the scope in updateObject to the updated scopeData
+                  updateObject['$set']['scope'] = scopeData
+          
+                  // Extract entities from scopeData excluding the 'roles' key
+                  const entities = Object.keys(scopeData)
+                    .filter((key) => key !== 'roles')
+                    .reduce((acc, key) => acc.concat(scopeData[key]), [])
+          
+                  // Add the entities array to updateObject
+                  updateObject.$set.entities = entities
+          
+                  // Join all keys except 'roles' into a comma-separated string and set it as entityType
+                  scopeData['entityType'] = Object.keys(_.omit(scopeData, ['roles'])).join(',')
+          
+                  // Add the entityType to updateObject
+                  updateObject['$set']['entityType'] = scopeData.entityType
+          
 
         //Updating or set scope in program document
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
             _id: programId,
           },
-          { $set: { scope: scopeData } },
+          updateObject,
           { new: true }
         );
         if (!updateProgram._id) {

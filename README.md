@@ -1,4 +1,63 @@
+<div align="center">
 
+# Survey Service
+
+<a href="https://shikshalokam.org/elevate/">
+<img
+    src="https://shikshalokam.org/wp-content/uploads/2021/06/elevate-logo.png"
+    height="140"
+    width="300"
+  />
+</a>
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/mentoring/tree/master.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/mentoring/tree/master)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=duplicated_lines_density&branch=master)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io)
+[![Docs](https://img.shields.io/badge/Docs-success-informational)](https://elevate-docs.shikshalokam.org/mentorEd/intro)
+
+![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/ELEVATE-Project/mentoring?filename=src%2Fpackage.json)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+<details><summary>CircleCI insights</summary>
+
+[![CircleCI](https://dl.circleci.com/insights-snapshot/gh/ELEVATE-Project/mentoring/master/buil-and-test/badge.svg?window=30d)](https://app.circleci.com/insights/github/ELEVATE-Project/mentoring/workflows/buil-and-test/overview?branch=integration-testing&reporting-window=last-30-days&insights-snapshot=true)
+
+</details>
+
+<details><summary>develop</summary>
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/mentoring/tree/develop.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/mentoring/tree/develop)
+![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/ELEVATE-Project/mentoring/develop?filename=src%2Fpackage.json)
+
+[![CircleCI](https://dl.circleci.com/insights-snapshot/gh/ELEVATE-Project/mentoring/dev/buil-and-test/badge.svg?window=30d)](https://app.circleci.com/insights/github/ELEVATE-Project/mentoring/workflows/buil-and-test/overview?branch=develop&reporting-window=last-30-days&insights-snapshot=true)
+
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=duplicated_lines_density&branch=develop)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=coverage&branch=develop)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=vulnerabilities&branch=develop)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+
+</details>
+
+</br>
+The Project building block enables creation, consumption of micro-improvement projects
+
+</div>
+
+# System Requirements
+
+-   **Operating System:** Ubuntu 22/Windows 11/macos 12
+-   **Node.js®:** v20
+-   **PostgreSQL:** 16
+-   **Apache Kafka®:** 3.5.0
+-   **MongoDB:** 4.4.14
+-   **Gotenberg:** 8.5.0
+
+# Setup Options
+
+**Elevate services can be setup in local using two methods:**
+
+  
 
 <details><summary>Dockerized Services & Dependencies Using Docker-Compose File</summary>
 
@@ -1164,6 +1223,15 @@ After successfully running the script mentioned above, the following user accoun
 
 </details>
 
+<<<<<<< HEAD
 ## Postman Collections
 
 -   [Survey Service](https://github.com/ELEVATE-Project/samiksha-service/tree/main/api-doc)
+=======
+```sql
+
+  
+
+
+```
+>>>>>>> c00cd679ff7e40113bbf2015f1e428b58ce2b146
