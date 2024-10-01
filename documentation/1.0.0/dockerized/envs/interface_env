@@ -13,3 +13,6 @@ REQUIRED_PACKAGES=elevate-user@1.1.77 elevate-mentoring@1.1.47 elevate-scheduler
 SCHEDULER_SERVICE_BASE_URL=http://scheduler:4000
 SUPPORTED_HTTP_TYPES=GET POST PUT PATCH DELETE
 USER_SERVICE_BASE_URL=http://user:3001
+ALLOWED_HOST=http://localhost:7007
+SURVEY_SERVICE_BASE_URL= http://localhost:4301
+SAMIKSHA_SERVICE_BASE_URL = http://localhost:4301

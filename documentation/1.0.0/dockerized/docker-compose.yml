@@ -192,7 +192,7 @@ services:
       - '8100:8100'
     volumes:
       #  relative path of env.js file {relative_path}:/app/src/environments/environment.ts
-      - /home/joffin/elevate/single-click/linux/env.js:/app/src/environments/environment.ts
+      - /home/joffin/elevate/single-click/linux/env.js:/usr/src/app/www/assets/env/env.js
     # command: >
     #   /bin/bash -c "ionic build --prod && ionic serve --host 0.0.0.0"
     networks:
