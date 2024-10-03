@@ -1,5 +1,11 @@
 const { ObjectId } = require('mongodb');
 
+const {
+    entities,
+    entityType,
+    userRoleExtension
+} = require('./data3');
+
 let solutionData = [
 {
     "_id" : new ObjectId("66f4e62d8ea984c17a5b374a"),
@@ -82,7 +88,18 @@ let solutionData = [
     "sections" : {
         "S1" : "Observation Question"
     },
-    "status" : "active"
+    "status" : "active",
+    "scope":{
+        "state" : [ 
+            entities[0]._id
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 },
 {
     "_id" : new ObjectId("66f4e6d98ea984c17a5b3789"),
@@ -169,7 +186,18 @@ let solutionData = [
     "createdAt" : new Date("2024-09-26T04:45:13.581Z"),
     "deleted" : false,
     "__v" : 0,
-    "link" : "8f563917c4f3bfa2e179a960af2360be"
+    "link" : "8f563917c4f3bfa2e179a960af2360be",
+    "scope":{
+        "state" : [ 
+            entities[0]._id
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 }
 ]
 

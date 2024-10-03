@@ -1,5 +1,11 @@
 const { ObjectId } = require('mongodb');
 
+const {
+    entities,
+    entityType,
+    userRoleExtension
+} = require('./data3');
+
 let programData = [{
     "_id" : new ObjectId("66f3c3e13bda47893722b496"),
     "externalId" : "PGM_DIET_DARBHANGA_MIP_20-08-24_testing131",
@@ -53,15 +59,15 @@ let programData = [{
     "createdAt" : new Date("2024-09-25T08:03:45.008Z"),
     "__v" : 0,
     "scope" : {
-        "cluster" : [ 
-            "6682424ba845ef3e891daee1", 
-            "668242835fb8bc3e93ceae44"
+        "state" : [ 
+            entities[0]._id
         ],
         "roles" : [ 
             "district_education_officer", 
-            "TEACHER"
+            "TEACHER",
+            "state_education_officer", 
         ],
-        "entityType" : "cluster"
+        "entityType" : entityType[0].name
     }
 }]
 
@@ -138,6 +144,17 @@ let solutionData = [
         "deleted" : false,
         "updatedAt" : new Date("2024-09-25T09:53:05.235Z"),
         "createdAt" : new Date("2024-09-25T09:53:05.235Z"),
+        "scope":{
+            "state" : [ 
+                entities[0]._id
+            ],
+            "roles" : [ 
+                "district_education_officer", 
+                "TEACHER",
+                "state_education_officer", 
+            ],
+            "entityType" : entityType[0].name
+        },
         "__v" : 0
     },
     {
@@ -213,7 +230,18 @@ let solutionData = [
         "createdAt" : new Date("2024-09-25T09:55:24.777Z"),
         "deleted" : false,
         "__v" : 0,
-        "link" : "912444588cb29f78ad25b3c278f84b03"
+        "link" : "912444588cb29f78ad25b3c278f84b03",
+        "scope":{
+            "state" : [ 
+                entities[0]._id
+            ],
+            "roles" : [ 
+                "district_education_officer", 
+                "TEACHER",
+                "state_education_officer", 
+            ],
+            "entityType" : entityType[0].name
+        }
     },
 {
     "_id" : new ObjectId("66f401e7953231bda15108dd"),
@@ -296,7 +324,18 @@ let solutionData = [
     "sections" : {
         "S1" : "Observation Question"
     },
-    "status" : "active"
+    "status" : "active",
+    "scope":{
+        "state" : [ 
+            entities[0]._id
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 },
 {
     "_id" : new ObjectId("66f40275953231bda151091c"),
@@ -383,7 +422,18 @@ let solutionData = [
     "createdAt" : new Date("2024-09-25T12:30:45.504Z"),
     "deleted" : false,
     "__v" : 0,
-    "link" : "dd92e92aa827554cfff6d86171976f51"
+    "link" : "dd92e92aa827554cfff6d86171976f51",
+    "scope":{
+        "state" : [ 
+            entities[0]._id
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 }
 
 
