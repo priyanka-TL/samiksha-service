@@ -132,29 +132,29 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 3.  **Download Environment Files**: Using the OS specific commands given below, download environment files for all the services.
 
 
--  **Ubuntu/Linux/Mac**
+    -  **Ubuntu/Linux/Mac**
 
-    ```
-    curl -L \ -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env \
-    -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env \
-    -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env \
-    -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env \
-    -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/scheduler_env \
-    -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/user_env \
-    -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
-    ```
+         ```
+         curl -L \ -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/scheduler_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/user_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
+        ```
     
--  **Windows**
+    -  **Windows**
 
-    ```
-    curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env
-    curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env
-    curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env
-    curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env
-    curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/scheduler_env
-    curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/user_env
-    curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
-    ```
+        ```
+        curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env
+        curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env
+        curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env
+        curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env
+        curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/scheduler_env
+        curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/user_env
+        curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
+        ```
 
 >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Samiksha](https://github.com/ELEVATE-Project/samiksha-service/blob/main/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) and [Entity-management](https://github.com/ELEVATE-Project/entity-management/blob/main/src/.env.sample) repositories for reference.
 
@@ -162,56 +162,56 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 
 4.  **Download `replace_volume_path` Script File**
 
--  **Ubuntu/Linux/Mac**
+    -  **Ubuntu/Linux/Mac**
 
-    ```
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/mac-        linux/replace_volume_path.sh
-    ```
+       ```
+        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/mac-linux/replace_volume_path.sh
+       ```
     
--  **Windows**
+    -  **Windows**
 
-    ```
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
-    service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/replace_volume_path.bat
-    ```
+        ```
+        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
+        service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/replace_volume_path.bat
+        ```
 5.  **Run `replace_volume_path` Script File**
  
--  **Ubuntu/Linux/Mac**
+    -  **Ubuntu/Linux/Mac**
 
-1. Make the `replace_volume_path.sh` file an executable.
+       a. Make the `replace_volume_path.sh` file an executable.
 
-    ```
-    chmod +x replace_volume_path.sh
-    ```
-2. Run the script file using the following command.
+         ```
+         chmod +x replace_volume_path.sh
+         ```
+       b. Run the script file using the following command.
 
-    ```
-    ./replace_volume_path.sh
-    ```
+         ```
+         ./replace_volume_path.sh
+         ```
 
--  **Windows**
+    -  **Windows**
 
-1. Run the script file using the following command.
+       Run the script file using the following command.
 
-    ```
-    replace_volume_path.sh
-    ```
+       ```
+       replace_volume_path.sh
+       ```
 
 6. ** Download `docker-compose-up` & `docker-compose-down` Script Files **
 
--  **Ubuntu/Linux/Mac**
+   -   **Ubuntu/Linux/Mac**
 
-1. Download the files.
+       1. Download the files.
 
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-up.sh
-    ```
+          ```
+          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-up.sh
+          ```
 
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-         down.sh
-    ```
+          ```
+          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-         down.sh
+          ```
 
-2. Make the files executable by running the following commands.
+8. Make the files executable by running the following commands.
 
     ```
     chmod +x docker-compose-up.sh
@@ -220,7 +220,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
     chmod +x docker-compose-down.sh
     ```
 
- -  **Windows**
+    -    **Windows**
 
     ```
     curl -OJL https://github.com/ELEVATE-Project/samiksha-      
@@ -232,15 +232,15 @@ Service also uses gotenberg for creation of project certificate. You can read mo
     down.bat
     ```
 
-7.  **Run All Services & Dependencies:**All services and dependencies can be started using the `docker-compose-up` script file.
+9.  **Run All Services & Dependencies:**All services and dependencies can be started using the `docker-compose-up` script file.
 
--  **Ubuntu/Linux/Mac**
+    -   **Ubuntu/Linux/Mac**
 
     ```
     ./docker-compose-up.sh
     ```
 
-- **Windows**
+    -   **Windows**
 
     ```
     docker-compose-up.bat
@@ -256,7 +256,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 -->
 
 
-8.  **Access The Survey Application**:Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:7007](http://localhost:7007/)** to access the Survey app.
+1.  **Access The Survey Application**:Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:7007](http://localhost:7007/)** to access the Survey app.
 
   
 
