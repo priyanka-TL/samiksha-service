@@ -6,6 +6,11 @@ const {
     userRoleExtension
 } = require('./data3');
 
+
+const {
+    getEndDate
+} = require('./common');
+
 let programData = [{
     "_id" : new ObjectId("66f3c3e13bda47893722b496"),
     "externalId" : "PGM_DIET_DARBHANGA_MIP_20-08-24_testing131",
@@ -16,7 +21,7 @@ let programData = [{
     "updatedBy" : "162",
     "status" : "active",
     "startDate" : new Date("2024-08-19T18:30:00.000Z"),
-    "endDate" : new Date("2025-08-25T18:29:59.000Z"),
+    "endDate" :  getEndDate('2025-06-15 18:50:00'),
     "resourceType" : [ 
         "program"
     ],
@@ -110,7 +115,7 @@ let solutionData = [
         "subType" : "survey",
         "entities" : [],
         "startDate" : new Date("2022-04-29T13:57:28.259Z"),
-        "endDate" : new Date("2026-05-02T12:00:00.259Z"),
+        "endDate" :  getEndDate('2025-06-15 18:50:00'),
         "status" : "active",
         "evidenceMethods" : {
             "SF" : {
@@ -195,7 +200,7 @@ let solutionData = [
         "subType" : "survey",
         "entities" : [],
         "startDate" : new Date("2022-04-29T13:57:28.259Z"),
-        "endDate" : new Date("2026-05-02T12:00:00.259Z"),
+        "endDate" :  getEndDate('2025-06-15 18:50:00'),
         "status" : "active",
         "evidenceMethods" : {
             "SF" : {
@@ -385,7 +390,7 @@ let solutionData = [
     "subType" : "",
     "entities" : [],
     "startDate" : new Date("2024-09-25T12:30:45.504Z"),
-    "endDate" : new Date("2025-09-25T12:30:45.504Z"),
+    "endDate" : getEndDate('2025-06-15 18:50:00'),
     "status" : "active",
     "evidenceMethods" : {
         "OB" : {
@@ -448,7 +453,7 @@ let surveysData = [{
     "solutionId" : new ObjectId("66f3de0c953231bda15108c6"),
     "solutionExternalId" : "a383af8d-7e4e-4c3b-a79d-ccf2bd14de58-1727258124738",
     "startDate" : new Date("2024-09-25T09:55:43.705Z"),
-    "endDate" : new Date("2026-05-02T12:00:00.259Z"),
+    "endDate" :  getEndDate('2025-06-15 18:50:00'),
     "status" : "published",
     "createdFor" : [],
     "rootOrganisations" : [],

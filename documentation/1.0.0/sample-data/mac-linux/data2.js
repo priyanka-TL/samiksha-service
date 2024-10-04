@@ -6,6 +6,10 @@ const {
     userRoleExtension
 } = require('./data3');
 
+const {
+    getEndDate
+} = require('./common');
+
 let solutionData = [
 {
     "_id" : new ObjectId("66f4e62d8ea984c17a5b374a"),
@@ -149,7 +153,7 @@ let solutionData = [
     "subType" : "",
     "entities" : [],
     "startDate" : new Date("2024-09-26T04:45:13.581Z"),
-    "endDate" : new Date("2025-09-26T04:45:13.581Z"),
+    "endDate" :  getEndDate('2025-06-15 18:50:00'),
     "status" : "active",
     "evidenceMethods" : {
         "OB" : {
@@ -2363,7 +2367,7 @@ let observationSubmissionData = [
             "solutionId" : new ObjectId("66f4e6d98ea984c17a5b3789"),
             "solutionExternalId" : "606d92fa-42d8-11ec-ac61-26092024-1011-OBSERVATION-TEMPLATE-1727325913582",
             "startDate" : new Date("2024-09-26T04:45:25.000Z"),
-            "endDate" : new Date("2025-09-26T04:45:25.000Z"),
+            "endDate" :  getEndDate('2025-06-15 18:50:00'),
             "status" : "published",
             "entityType" : "school",
             "createdFor" : [ 
@@ -2408,7 +2412,7 @@ let observationData = [
         "solutionId" : new ObjectId("66f4e6d98ea984c17a5b3789"),
         "solutionExternalId" : "606d92fa-42d8-11ec-ac61-26092024-1011-OBSERVATION-TEMPLATE-1727325913582",
         "startDate" : new Date("2024-09-26T04:45:25.000Z"),
-        "endDate" : new Date("2025-09-26T04:45:25.000Z"),
+        "endDate" : getEndDate('2025-06-15 18:50:00'),
         "status" : "published",
         "entityType" : "school",
         "entities" : [ 

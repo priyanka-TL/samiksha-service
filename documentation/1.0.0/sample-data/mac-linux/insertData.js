@@ -1,14 +1,14 @@
 const { MongoClient } = require('mongodb');
 
 const url = 'mongodb://localhost:27017'; // MongoDB URL
-const dbName = 'surveydb1';
-const dbName2 = 'elevate-entity1';
+const dbName = 'surveydb';
+const dbName2 = 'elevate-entity';
 
 const surveyData = require('./data.js');
 const entityData = require('./data3.js')
 const observationData = require('./data2.js');
 
-async function insertData(collectionName, dataFile,curretDB = dbName) {
+async function insertData(collectionName, dataFile,currentDB = dbName) {
     const client = new MongoClient(url);
 
     try {
@@ -16,7 +16,7 @@ async function insertData(collectionName, dataFile,curretDB = dbName) {
         await client.connect();
         console.log(`Connected to MongoDB for ${collectionName}`);
 
-        const db = client.db(curretDB);
+        const db = client.db(currentDB);
         const collection = db.collection(collectionName);
 
         // Read the data from the file
@@ -54,7 +54,7 @@ async function main({dataToBeInserted}) {
 }
 
 main({dataToBeInserted:entityData}).then(()=>{
-    console.log('survey data populated successfully.')
+    console.log('Entity data populated successfully.')
 }).catch(console.error);
 main({dataToBeInserted:surveyData}).then(()=>{
     console.log('survey data populated successfully.')
