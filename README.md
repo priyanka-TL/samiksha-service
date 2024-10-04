@@ -1,23 +1,13 @@
-<div  align="center">
-
-  
+<div align="center">
 
 # Survey Service
 
-  
-
-<a  href="https://shikshalokam.org/elevate/">
-
+<a href="https://shikshalokam.org/elevate/">
 <img
-
-src="https://shikshalokam.org/wp-content/uploads/2021/06/elevate-logo.png"
-
-height="140"
-
-width="300"
-
-/>
-
+    src="https://shikshalokam.org/wp-content/uploads/2021/06/elevate-logo.png"
+    height="140"
+    width="300"
+  />
 </a>
 
 </br>
