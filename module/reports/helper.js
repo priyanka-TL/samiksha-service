@@ -245,7 +245,7 @@ module.exports = class ReportsHelper {
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
     } else {
-      result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
+      result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,true,criteriaWise);
     }
     responseObject.reportSections = result;
 
