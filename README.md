@@ -453,10 +453,6 @@ After successfully running the script mentioned above, the following user accoun
 
 <details>
 
-</details>
-
-  
-
 
 <summary>Natively Installed Services & Dependencies </summary>
 
@@ -664,76 +660,58 @@ Before setting up the following Survey application, dependencies given below sho
 
 1. Download `create-databases.sh` Script File:
 
-```
-curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/create-databases.sh
-```
+   ```
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/create-databases.sh
+   ```
 2. Make the executable by running the following command:
 
-```
-chmod +x create-databases.sh
-```
+   ```
+   chmod +x create-databases.sh
+   ```
 3. Run the script file:
 
-```
-./create-databases.sh
-```
+   ```
+   ./create-databases.sh
+   ```
 -  **MacOS**
-
-  
-
-  
 
 1. Download `create-databases.sh` Script File:
 
-```
-curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/macos/create-databases.sh
-```
+   ```
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/macos/create-databases.sh
+   ```
 2. Make the executable by running the following command:
 
-```
-chmod +x create-databases.sh
-```
+   ```
+   chmod +x create-databases.sh
+   ```
 3. Run the script file:
 
-```
-./create-databases.sh
-```
+   ```
+   ./create-databases.sh
+   ```
 
 6.  **Run Migrations To Create Tables**
 
-  
-
-  
-
 -  **Ubuntu/Linux/MacOS**
-
-  
-
-  
 
 1. Install Sequelize-cli globally:
 
-```
-sudo npm i sequelize-cli -g
-
-```
+   ```
+   sudo npm i sequelize-cli -g
+   ```
 2. Run Migrations:
 
- ```
- cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
- cd notification/src && npx sequelize-cli db:migrate && cd ../..
- ```
-
-  
-  
+   ```
+   cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
+   cd notification/src && npx sequelize-cli db:migrate && cd ../..
+   ```
 
 7.  **Enabling Citus And Setting Distribution Columns (Optional)**
 
-  
-
 To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
-
-  
 
 > NOTE: Currently only available for Linux based operation systems.
 
@@ -741,243 +719,183 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 
 1. Download user `distributionColumns.sql` file.
 
-```
-curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
-```
+   ```
+   curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
+   ```
 2. Set up the `citus_setup` file by following the steps given below.
 
-  
-
 -  **Ubuntu/Linux**
-
-  
 
 1. Download the `citus_setup.sh` file:
 
-```
-curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/citus_setup.sh
-```
+   ```
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/citus_setup.sh
+   ```
 2. Make the setup file executable by running the following command:
 
-```
-chmod +x citus_setup.sh
-```
+   ```
+   chmod +x citus_setup.sh
+   ```
 3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
 
-```
-./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
-```
+   ```
+   ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
+   ```
 8.  **Insert Initial Data**
-
-  
 
 Use Survey in-build seeders to insert the initial data.
 
-  
-
-  
-
 -  **Ubuntu/Linux/MacOS**
 
-
-```
-cd samiksha-service && npm run db:populate-data && cd ../ && \
-cd user/src && npm run db:seed:all && cd ../..
-```  
-
+   ```
+   cd samiksha-service && npm run db:populate-data && cd ../ && \
+   cd user/src && npm run db:seed:all && cd ../..
+   ```  
 9.  **Start The Services**
-
-  
-
-  
 
 Following the steps given below, 2 instances of each MentorEd backend service will be deployed and be managed by PM2 process manager.
 
-  
-
-  
-
 -  **Ubuntu/Linux**
 
-```
-cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
-cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-```
+   ```
+   cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
+   cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
+   cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
+   cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
+   cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+   ```
 
 -  **MacOS**
 
-```
-cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
-cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-```
+   ```
+   cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
+   cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
+   cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
+   cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
+   cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+   ```
 
 
 10.  **Run Service Scripts**
 
-  
-
-  
-
 -  **Ubuntu/Linux/MacOS**
 
-```
-cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
-node -r module-alias/register uploadSampleCSV.js && cd ../../..
-```
+   ```
+   cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
+   node -r module-alias/register uploadSampleCSV.js && cd ../../..
+   ```
 
 11.  **Start The Portal**
 
-  
-
-  
-
 Survey portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
-
   
-
-  
-
 -  **Ubuntu/Linux**
-
-  
-
-  
 
 1. Install Ionic CLI globally:
 
-```
-sudo npm install -g @ionic/cli
-```
+   ```
+   sudo npm install -g @ionic/cli
+   ```
 
 2. Install Angular CLI globally:
 
-```
-sudo npm install -g @angular/cli
-```
+   ```
+   sudo npm install -g @angular/cli
+   ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
-```
-cd observation-survey-projects-pwa
-```
+   ```
+   cd observation-survey-projects-pwa
+   ```
 
 4. Build the portal
 
-```
-ionic build
-```
+   ```
+   ionic build
+   ```
 
 5. Start the portal:
 
-```
-ionic serve
-```
+   ```
+   ionic serve
+   ```
 
 -  **MacOS**
 
-  
-
-  
-
 1. Install Ionic CLI globally:
 
-```
-sudo npm install -g @ionic/cli
-```
+   ```
+   sudo npm install -g @ionic/cli
+   ```
 
 2. Install Angular CLI globally:
 
-```
-sudo npm install -g @angular/cli
-```
+   ```
+   sudo npm install -g @angular/cli
+   ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
-```
-cd observation-survey-projects-pwa
-```
+   ```
+   cd observation-survey-projects-pwa
+   ```
 
 4. Build the portal:
 
-```
-npx ionic build
-```
+   ```
+   npx ionic build
+   ```
 
 5. Start the portal:
 
-```
-npx ionix serve
-```
+   ```
+   npx ionix serve
+   ```
 
 -  **Windows**
 
-  
-
-  
-
 1. Install Ionic CLI globally:
 
-```
-npm install -g @ionic/cli
-```
+   ```
+   npm install -g @ionic/cli
+   ```
 
 2. Install Angular CLI globally:
 
-```
-npm install -g @angular/cli
-```
+   ```
+   npm install -g @angular/cli
+   ```
 
 3. Navigate to `observation-survey-projects-pwa` directory:
 
-```
-cd observation-survey-projects-pwa
-```
+   ```
+   cd observation-survey-projects-pwa
+   ```
 
 4. Build the portal
 
-```
-ionic build
-```
+  ```
+  ionic build
+  ```
 
 5. Start the portal:
 
-```
-ionic serve
-```
+  ```
+  ionic serve
+  ```
 
 Navigate to http://localhost:8100 to access the Survey Portal.
 
-  
-
-  
-
 ## Sample User Accounts Generation
-
-  
-
-  
 
 During the initial setup of Survey services with the default configuration, you may encounter issues creating new accounts through the regular SignUp flow on the Survey portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
 
-  
-
-  
-
 In such cases, you can generate sample user accounts using the steps below. This allows you to explore the Survey services and portal immediately after setup.
 
-  
-
-  
-
 >  **Warning:** Use this generator only immediately after the initial system setup and before any normal user accounts are created through the portal. It should not be used under any circumstances thereafter.
-
-  
 
 -  **Ubuntu/Linux**
 
