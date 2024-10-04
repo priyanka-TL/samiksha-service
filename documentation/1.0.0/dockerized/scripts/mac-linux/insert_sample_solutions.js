@@ -3,10 +3,12 @@ console.log(process.env.MONGODB_URL ,"this is mongoURL")
 
 const url = process.env.MONGODB_URL // MongoDB URL
 const dbName = 'elevate-samiksha';
+const dbName2 = 'elevate-entity1';
 const surveyData = require('./survey_sampleData.js');
-
+const entityData = require('./entity_sampleData.js')
 const observationData = require('./observation_sampleData.js');
-async function insertData(collectionName, dataFile) {
+
+async function insertData(collectionName, dataFile,curretDB = dbName) {
     const client = new MongoClient(url);
 
     try {
@@ -14,7 +16,7 @@ async function insertData(collectionName, dataFile) {
         await client.connect();
         console.log(`Connected to MongoDB for ${collectionName}`);
 
-        const db = client.db(dbName);
+        const db = client.db(curretDB);
         const collection = db.collection(collectionName);
 
         // Read the data from the file
@@ -33,6 +35,12 @@ async function insertData(collectionName, dataFile) {
 }
 
 async function main({dataToBeInserted}) {
+
+
+    await insertData('entities', dataToBeInserted.entities,dbName2);
+    await insertData('entityTypes',dataToBeInserted.entityType,dbName2);
+    await insertData('userRoleExtension', dataToBeInserted.userRoleExtension,dbName2);
+
     await insertData('programs', dataToBeInserted.programData);
     await insertData('solutions',dataToBeInserted.solutionData);
     await insertData('survey', dataToBeInserted.surveysData);
@@ -45,12 +53,16 @@ async function main({dataToBeInserted}) {
 
 }
 
+main({dataToBeInserted:entityData}).then(()=>{
+    console.log('survey data populated successfully.')
+}).catch(console.error);
 main({dataToBeInserted:surveyData}).then(()=>{
     console.log('survey data populated successfully.')
 }).catch(console.error);
 main({dataToBeInserted:observationData}).then(()=>{
     console.log('Observation data populated successfully.')
 }).catch(console.error);
+
 
 
 
