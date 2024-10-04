@@ -197,7 +197,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
        replace_volume_path.sh
        ```
 
-6. ** Download `docker-compose-up` & `docker-compose-down` Script Files **
+6. **Download `docker-compose-up` & `docker-compose-down` Script Files**
 
    -   **Ubuntu/Linux/Mac**
 
@@ -211,14 +211,15 @@ Service also uses gotenberg for creation of project certificate. You can read mo
           curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-         down.sh
           ```
 
-8. Make the files executable by running the following commands.
+        2. Make the files executable by running the following commands.
 
-	  ```
-	 chmod +x docker-compose-up.sh
-	 ```
-    ```
-    chmod +x docker-compose-down.sh
-    ```
+            ```
+            chmod +x docker-compose-up.sh
+            ```
+
+            ```
+            chmod +x docker-compose-down.sh
+            ```
 
     -    **Windows**	
 			```
@@ -229,7 +230,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 		    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose-down.bat
 			```
 
-9.  **Run All Services & Dependencies:**All services and dependencies can be started using the `docker-compose-up` script file.
+9.  **Run All Services & Dependencies:** All services and dependencies can be started using the `docker-compose-up` script file.
 
     -   **Ubuntu/Linux/Mac**
 
