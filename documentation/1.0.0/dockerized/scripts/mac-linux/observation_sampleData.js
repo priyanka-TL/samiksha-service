@@ -1,5 +1,11 @@
 const { ObjectId } = require('mongodb');
 
+const {
+    entities,
+    entityType,
+    userRoleExtension
+} = require('./entity_sampleData.js');
+const {getEndDate}= require('./common')
 let solutionData = [
 {
     "_id" : new ObjectId("66f4e62d8ea984c17a5b374a"),
@@ -7,7 +13,7 @@ let solutionData = [
     "isReusable" : true,
     "name" : "NISHTHA 2.0 Feedback Form",
     "description" : "NISHTHA 2.0 feedback form",
-    "author" : "2",
+    "author" : "",
     "resourceType" : [ 
         "Observations Framework"
     ],
@@ -82,7 +88,18 @@ let solutionData = [
     "sections" : {
         "S1" : "Observation Question"
     },
-    "status" : "active"
+    "status" : "active",
+    "scope":{
+        "state" : [ 
+            entities[0]._id.toString()
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 },
 {
     "_id" : new ObjectId("66f4e6d98ea984c17a5b3789"),
@@ -131,8 +148,8 @@ let solutionData = [
     "type" : "observation",
     "subType" : "",
     "entities" : [],
-    "startDate" : new Date("2024-09-26T04:45:13.581Z"),
-    "endDate" : new Date("2025-09-26T04:45:13.581Z"),
+    "startDate" : new Date("2022-08-25T18:29:59"),
+    "endDate" : getEndDate("2025-06-15 18:50:00"),
     "status" : "active",
     "evidenceMethods" : {
         "OB" : {
@@ -169,7 +186,18 @@ let solutionData = [
     "createdAt" : new Date("2024-09-26T04:45:13.581Z"),
     "deleted" : false,
     "__v" : 0,
-    "link" : "8f563917c4f3bfa2e179a960af2360be"
+    "link" : "8f563917c4f3bfa2e179a960af2360be",
+    "scope":{
+        "state" : [ 
+            entities[0]._id.toString()
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 }
 ]
 
@@ -2198,7 +2226,7 @@ let frameworkData = [
     "externalId" : "606d92fa-42d8-11ec-ac61-26092024-1011",
     "name" : "NISHTHA 2.0 Feedback Form",
     "description" : "NISHTHA 2.0 feedback form",
-    "author" : "2",
+    "author" : "",
     "parentId" : null,
     "resourceType" : [ 
         "Observations Framework"
@@ -2334,8 +2362,8 @@ let observationSubmissionData = [
             "frameworkExternalId" : "606d92fa-42d8-11ec-ac61-26092024-1011",
             "solutionId" : new ObjectId("66f4e6d98ea984c17a5b3789"),
             "solutionExternalId" : "606d92fa-42d8-11ec-ac61-26092024-1011-OBSERVATION-TEMPLATE-1727325913582",
-            "startDate" : new Date("2024-09-26T04:45:25.000Z"),
-            "endDate" : new Date("2025-09-26T04:45:25.000Z"),
+            "startDate" : new Date("2024-08-25T18:29:59"),
+            "endDate" : getEndDate("2025-06-15 18:50:00"),
             "status" : "published",
             "entityType" : "school",
             "createdFor" : [ 
@@ -2379,8 +2407,8 @@ let observationData = [
         "frameworkExternalId" : "606d92fa-42d8-11ec-ac61-26092024-1011",
         "solutionId" : new ObjectId("66f4e6d98ea984c17a5b3789"),
         "solutionExternalId" : "606d92fa-42d8-11ec-ac61-26092024-1011-OBSERVATION-TEMPLATE-1727325913582",
-        "startDate" : new Date("2024-09-26T04:45:25.000Z"),
-        "endDate" : new Date("2025-09-26T04:45:25.000Z"),
+        "startDate" :new Date("2023-08-25T18:29:59"),
+        "endDate" :getEndDate("2025-06-15 18:50:00"),
         "status" : "published",
         "entityType" : "school",
         "entities" : [ 

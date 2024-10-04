@@ -1,7 +1,7 @@
 API_DOC_URL=http://localhost:3569/interface/api-doc
 APPLICATION_ENV=development
 APPLICATION_PORT=3569
-ENTITY_MANAGEMENT_SERVICE_BASE_URL=http://entity-management:5002
+ENTITY_MANAGEMENT_SERVICE_BASE_URL=http://entity_management:5001
 INSTALLED_PACKAGES=elevate-user elevate-mentoring elevate-scheduler elevate-project elevate-entity-management elevate-self-creation-portal elevate-survey
 NOTIFICATION_SERVICE_BASE_URL=http://notification:3002
 PROJECT_SERVICE_BASE_URL=http://project:5000
@@ -13,3 +13,6 @@ REQUIRED_PACKAGES=elevate-user@1.1.77 elevate-mentoring@1.1.47 elevate-scheduler
 SCHEDULER_SERVICE_BASE_URL=http://scheduler:4000
 SUPPORTED_HTTP_TYPES=GET POST PUT PATCH DELETE
 USER_SERVICE_BASE_URL=http://user:3001
+ALLOWED_HOST=http://localhost:7007
+SURVEY_SERVICE_BASE_URL= http://samiksha:4301
+SAMIKSHA_SERVICE_BASE_URL = http://samiksha:4301
