@@ -213,38 +213,35 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 
 8. Make the files executable by running the following commands.
 
-    ```
-    chmod +x docker-compose-up.sh
-    ```
+	  ```
+	 chmod +x docker-compose-up.sh
+	 ```
     ```
     chmod +x docker-compose-down.sh
     ```
 
-    -    **Windows**
-
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-      
-    service/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
-    ```
-
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose- 
-    down.bat
-    ```
+    -    **Windows**	
+			```
+		    curl -OJL https://github.com/ELEVATE-Project/samiksha-      
+			s  ervice/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
+			```
+		    ```
+		    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose-down.bat
+			```
 
 9.  **Run All Services & Dependencies:**All services and dependencies can be started using the `docker-compose-up` script file.
 
     -   **Ubuntu/Linux/Mac**
 
-    ```
-    ./docker-compose-up.sh
-    ```
+	    ```
+	    ./docker-compose-up.sh
+	    ```
 
     -   **Windows**
 
-    ```
-    docker-compose-up.bat
-    ```
+	    ```
+	    docker-compose-up.bat
+	    ```
 
 > Double-click the file or run the above command from the terminal.
 
