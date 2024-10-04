@@ -21,9 +21,6 @@ The Survey building block enables creation, consumption of Survey,Observation an
   
 
 # System Requirements
-
-  
-
 -  **Operating System:** Ubuntu 22/Windows 11/macos 12
 
 -  **Node.js®:** v20
@@ -36,75 +33,30 @@ The Survey building block enables creation, consumption of Survey,Observation an
 
 -  **Gotenberg:** 8.5.0
 
-  
-
 # Setup Options
-
-  
 
 **Elevate services can be setup in local using two methods:**
 
-  
-
-  
-
 <details><summary>Dockerized Services & Dependencies Using Docker-Compose File</summary>
 
-  
-
-  
 
 ## Dockerized Services & Dependencies
 
-  
-
-  
-
 Expectation: Upon following the prescribed steps, you will achieve a fully operational Project application setup, complete with both the portal and backend services.
-
-  
-
-  
 
 ## Prerequisites
 
-  
-
-  
-
 To set up the Project application, ensure you have Docker and Docker Compose installed on your system. For Ubuntu users, detailed installation instructions for both can be found in the documentation here: [How To Install and Use Docker Compose on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04). For Windows and MacOS users, you can refer to the Docker documentation for installation instructions: [Docker Compose Installation Guide](https://docs.docker.com/compose/install/). Once these prerequisites are in place, you're all set to get started with setting up the Project application.
 
-  
-
-  
-
 Service also uses gotenberg for creation of project certificate. You can read more about it here : [Gotenberg](https://gotenberg.dev/docs/getting-started/introduction).
-
-  
-
-  
-
+ 
 ## Installation
-
-  
-
-  
 
 1.  **Create survey Directory:** Create a directory named **survey**.
 
-  
-
-  
-
 > Example Command: `mkdir survey && cd survey/`
 
-  
-
-  
-
 2.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml)** file from the Survey service repository and save it to the survey directory.
-
-  
 
     ```
     curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml
