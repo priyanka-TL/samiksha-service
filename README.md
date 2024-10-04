@@ -105,13 +105,10 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 4.  **Download `replace_volume_path` Script File**
 
     -  **Ubuntu/Linux/Mac**
-
        ```
         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/mac-linux/replace_volume_path.sh
        ```
-    
     -  **Windows**
-
         ```
         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
         service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/replace_volume_path.bat
@@ -121,20 +118,16 @@ Service also uses gotenberg for creation of project certificate. You can read mo
     -  **Ubuntu/Linux/Mac**
 
        a. Make the `replace_volume_path.sh` file an executable.
-
          ```
          chmod +x replace_volume_path.sh
          ```
        b. Run the script file using the following command.
-
          ```
          ./replace_volume_path.sh
          ```
 
     -  **Windows**
-
        Run the script file using the following command.
-
        ```
        replace_volume_path.sh
        ```
