@@ -23,13 +23,13 @@ module.exports = class Forms extends Abstract {
   }
 
   	/**
-	 * @api {post} /project/v1/forms/create
+	 * @api {post} /survey/v1/forms/create
 	 * @apiVersion 1.0.0
 	 * @apiName create
 	 * @apiGroup Forms
 	 * @apiParamExample {json} Request-Body:
 	 * @apiHeader {String} X-authenticated-user-token Authenticity token
-	 * @apiSampleRequest /project/v1/forms/create
+	 * @apiSampleRequest /survey/v1/forms/create
 	 * @apiUse successBody
 	 * @apiUse errorBody
 	 * @apiParamExample {json} Request-Body:
@@ -84,7 +84,6 @@ module.exports = class Forms extends Abstract {
 
 				return resolve(createdForm)
 			} catch (error) {
-        console.log(error)
 				return resolve({
 					status: error.status || httpStatusCode.internal_server_error.status,
 					message: error.message || httpStatusCode.internal_server_error.message,
@@ -94,13 +93,13 @@ module.exports = class Forms extends Abstract {
 		})
 	}
   	/**
-	 * @api {post} /project/v1/forms/update/:_id
+	 * @api {post} /survey/v1/forms/update/:_id
 	 * @apiVersion 1.0.0
 	 * @apiName update
 	 * @apiGroup Forms
 	 * @apiParamExample {json} Request-Body:
 	 * @apiHeader {String} X-authenticated-user-token Authenticity token
-	 * @apiSampleRequest /project/v1/forms/update/663cc73584f1a0eb4e97e3db
+	 * @apiSampleRequest /survey/v1/forms/update/663cc73584f1a0eb4e97e3db
 	 * @apiUse successBody
 	 * @apiUse errorBody
 	 * @apiParamExample {json} Request-Body:
@@ -163,13 +162,13 @@ module.exports = class Forms extends Abstract {
 		})
 	}
   	/**
-	 * @api {get} /project/v1/forms/read/:_id
+	 * @api {get} /survey/v1/forms/read/:_id
 	 * @apiVersion 1.0.0
 	 * @apiName read
 	 * @apiGroup Forms
 	 * @apiParamExample {json} Request-Body:
 	 * @apiHeader {String} X-authenticated-user-token Authenticity token
-	 * @apiSampleRequest /project/v1/forms/read/663cc73584f1a0eb4e97e3db
+	 * @apiSampleRequest /survey/v1/forms/read/663cc73584f1a0eb4e97e3db
 	 * @apiUse successBody
 	 * @apiUse errorBody
 	 * @apiParamExample {json} Request-Body:
@@ -226,7 +225,6 @@ module.exports = class Forms extends Abstract {
 					return resolve(formData)
 				}
 			} catch (error) {
-        console.log(error)
 				return resolve({
 					status: error.status || httpStatusCode.internal_server_error.status,
 					message: error.message || httpStatusCode.internal_server_error.message,

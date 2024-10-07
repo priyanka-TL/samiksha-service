@@ -99,8 +99,6 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 				},
 			}
-            console.log(url,'url')
-            console.log('**********')
 			request.get(url, options, userReadCallback)
 			let result = {
 				success: true,

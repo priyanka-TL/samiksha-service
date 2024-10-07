@@ -31,7 +31,6 @@ module.exports = class FormsHelper {
 					process.env.DEFAULT_ORGANISATION_CODE,
 					userToken
 				)
-				console.log(defaultOrgDetails,'defaultOrgDetails')
 				if (defaultOrgDetails.success && defaultOrgDetails.data) {
 					return resolve(defaultOrgDetails.data.id)
 				} else resolve(null) 
@@ -156,7 +155,6 @@ module.exports = class FormsHelper {
 				if (!form || !form._id) {
 					// call getDefaultOrgId() to get default organization details from user-service
 					const defaultOrgId = await this.getDefaultOrgId(userToken)
-					console.log(defaultOrgId,'<--defaultOrgId')
 					if (!defaultOrgId) {
 						return resolve({
 							success: false,
