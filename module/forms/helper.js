@@ -13,7 +13,6 @@
 
 const formQueries = require(DB_QUERY_BASE_PATH + '/forms')
 const userService = require(ROOT_PATH + '/generics/services/users');
-const ObjectId = require('mongodb').ObjectID
 
 
 module.exports = class FormsHelper {
@@ -32,9 +31,10 @@ module.exports = class FormsHelper {
 					process.env.DEFAULT_ORGANISATION_CODE,
 					userToken
 				)
+				console.log(defaultOrgDetails,'defaultOrgDetails')
 				if (defaultOrgDetails.success && defaultOrgDetails.data) {
 					return resolve(defaultOrgDetails.data.id)
-				} else return null
+				} else resolve(null) 
 			} catch (error) {
 				throw error
 			}
@@ -55,8 +55,8 @@ module.exports = class FormsHelper {
 				const form = await formQueries.createForm(bodyData)
 				if (!form || !form._id) {
 					throw {
-						status: HTTP_STATUS_CODE.bad_request.status,
-						message: CONSTANTS.apiResponses.FORM_NOT_CREATED,
+						status: httpStatusCode.bad_request.status,
+						message: messageConstants.apiResponses.FORM_NOT_CREATED,
 					}
 				}
 
@@ -66,7 +66,7 @@ module.exports = class FormsHelper {
 
 				return resolve({
 					success: true,
-					message: CONSTANTS.apiResponses.FORM_CREATED_SUCCESSFULLY,
+					message: messageConstants.apiResponses.FORM_CREATED_SUCCESSFULLY,
 					data: form,
 					result: form,
 				})
@@ -96,7 +96,7 @@ module.exports = class FormsHelper {
 				let filter = {}
 				if (_id) {
 					filter = {
-						_id: ObjectId(_id),
+						_id: new ObjectId(_id),
 						organizationId: orgId,
 					}
 				} else {
@@ -112,13 +112,13 @@ module.exports = class FormsHelper {
 				const updatedForm = await formQueries.updateOneForm(filter, updateData, { new: true })
 				if (!updatedForm || !updatedForm._id) {
 					return resolve({
-						status: HTTP_STATUS_CODE.bad_request.status,
-						message: CONSTANTS.apiResponses.FORM_NOT_UPDATED,
+						status: httpStatusCode.bad_request.status,
+						message: messageConstants.apiResponses.FORM_NOT_UPDATED,
 					})
 				}
 				return resolve({
 					success: true,
-					message: CONSTANTS.apiResponses.FORM_UPDATED_SUCCESSFULLY,
+					message: messageConstants.apiResponses.FORM_UPDATED_SUCCESSFULLY,
 					data: updatedForm,
 					result: updatedForm,
 				})
@@ -147,7 +147,7 @@ module.exports = class FormsHelper {
 				_id = _id === ':_id' ? null : _id
 				let filter = {}
 				if (_id) {
-					filter = { _id: ObjectId(_id), organizationId: orgId }
+					filter = { _id: new ObjectId(_id), organizationId: orgId }
 				} else {
 					filter = { ...bodyData, organizationId: orgId }
 				}
@@ -156,10 +156,11 @@ module.exports = class FormsHelper {
 				if (!form || !form._id) {
 					// call getDefaultOrgId() to get default organization details from user-service
 					const defaultOrgId = await this.getDefaultOrgId(userToken)
+					console.log(defaultOrgId,'<--defaultOrgId')
 					if (!defaultOrgId) {
 						return resolve({
 							success: false,
-							message: CONSTANTS.apiResponses.DEFAULT_ORG_ID_NOT_SET,
+							message: messageConstants.apiResponses.DEFAULT_ORG_ID_NOT_SET,
 						})
 					}
 					filter = _id
@@ -169,20 +170,20 @@ module.exports = class FormsHelper {
 				}
 				if (!form && !defaultOrgForm) {
 					throw {
-						status: HTTP_STATUS_CODE.bad_request.status,
-						message: CONSTANTS.apiResponses.FORM_NOT_FOUND,
+						status: httpStatusCode.bad_request.status,
+						message: messageConstants.apiResponses.FORM_NOT_FOUND,
 					}
 				}
 				return resolve({
 					success: true,
-					message: CONSTANTS.apiResponses.FORM_FETCHED_SUCCESSFULLY,
+					message: messageConstants.apiResponses.FORM_FETCHED_SUCCESSFULLY,
 					data: form ? form : defaultOrgForm,
 					result: form ? form : defaultOrgForm,
 				})
 			} catch (error) {
 				return resolve({
-					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					status: error.status || httpStatusCode.internal_server_error.status,
+					message: error.message || httpStatusCode.internal_server_error.message,
 				})
 			}
 		})
@@ -202,20 +203,20 @@ module.exports = class FormsHelper {
 				const getAllFormsVersion = await formQueries.formDocuments(filter, projectFields)
 				if (!getAllFormsVersion || !getAllFormsVersion.length > 0) {
 					throw {
-						status: HTTP_STATUS_CODE.bad_request.status,
-						message: CONSTANTS.apiResponses.FORM_VERSION_NOT_FETCHED,
+						status: httpStatusCode.bad_request.status,
+						message: messageConstants.apiResponses.FORM_VERSION_NOT_FETCHED,
 					}
 				}
 				return resolve({
 					success: true,
-					message: CONSTANTS.apiResponses.FORM_VERSION_FETCHED_SUCCESSFULLY,
+					message: messageConstants.apiResponses.FORM_VERSION_FETCHED_SUCCESSFULLY,
 					data: getAllFormsVersion ? getAllFormsVersion : [],
 					result: getAllFormsVersion ? getAllFormsVersion : [],
 				})
 			} catch (error) {
 				return resolve({
-					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					status: error.status || httpStatusCode.internal_server_error.status,
+					message: error.message || httpStatusCode.internal_server_error.message,
 				})
 			}
 		})

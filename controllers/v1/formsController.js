@@ -73,20 +73,21 @@ module.exports = class Forms extends Abstract {
 	 * @method
 	 * @name create
 	 * @param {Object} req.body -request data.
-	 * @param {Number} req.userDetails.userInformation.organizationId -organization id.
+	 * @param {Number} req.userDetails.organizationId -organization id.
 	 * @returns {JSON} - forms creation object.
 	 */
 
 	async create(req) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let createdForm = await formsHelpers.create(req.body, req.userDetails.userInformation.organizationId)
+				let createdForm = await formsHelper.create(req.body, req.userDetails.organizationId)
 
 				return resolve(createdForm)
 			} catch (error) {
+        console.log(error)
 				return resolve({
-					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					status: error.status || httpStatusCode.internal_server_error.status,
+					message: error.message || httpStatusCode.internal_server_error.message,
 					errorObject: error,
 				})
 			}
@@ -139,23 +140,23 @@ module.exports = class Forms extends Abstract {
 	 * @name update
 	 * @param {String} req.params._id - form id.
 	 * @param {Object} req.body - request data.
-	 * @param {Number} req.userDetails.userInformation.organizationId -organization id.
+	 * @param {Number} req.userDetails.organizationId -organization id.
 	 * @returns {JSON} - forms updation response.
 	 */
 
 	async update(req) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const updatedForm = await formsHelpers.update(
+				const updatedForm = await formsHelper.update(
 					req.params._id,
 					req.body,
-					req.userDetails.userInformation.organizationId
+					req.userDetails.organizationId
 				)
 				return resolve(updatedForm)
 			} catch (error) {
 				return resolve({
-					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					status: error.status || httpStatusCode.internal_server_error.status,
+					message: error.message || httpStatusCode.internal_server_error.message,
 					errorObject: error,
 				})
 			}
@@ -204,7 +205,7 @@ module.exports = class Forms extends Abstract {
 	 * @name read
 	 * @param {String} req.params._id - form id.
 	 * @param {Object} req.body - request data.
-	 * @param {Number} req.userDetails.userInformation.organizationId -organization id.
+	 * @param {Number} req.userDetails.organizationId -organization id.
 	 * @param {String} req.userDetails.userToken -userToken.
 	 * @returns {JSON} - form object.
 	 */
@@ -213,21 +214,22 @@ module.exports = class Forms extends Abstract {
 		return new Promise(async (resolve, reject) => {
 			try {
 				if (!req.params._id && Object.keys(req.body).length === 0) {
-					const formData = await formsHelpers.readAllFormsVersion()
+					const formData = await formsHelper.readAllFormsVersion()
 					return resolve(formData)
 				} else {
-					const formData = await formsHelpers.read(
+					const formData = await formsHelper.read(
 						req.params._id,
 						req.body,
-						req.userDetails.userInformation.organizationId,
+						req.userDetails.organizationId,
 						req.userDetails.userToken
 					)
 					return resolve(formData)
 				}
 			} catch (error) {
+        console.log(error)
 				return resolve({
-					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					status: error.status || httpStatusCode.internal_server_error.status,
+					message: error.message || httpStatusCode.internal_server_error.message,
 					errorObject: error,
 				})
 			}
