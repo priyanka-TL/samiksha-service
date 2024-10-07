@@ -1,23 +1,16 @@
 /**
  * name : helper.js
- * author : Aman
- * created-date : 04-Jun-2020
- * Description : Forms helper
+ * author : prajwal
+ * created-date : 09-May-2024
+ * Description :  Forms Helper.
  */
-
-/**
- * FormsHelper
- * @class
- */
-
 
 const formQueries = require(DB_QUERY_BASE_PATH + '/forms')
-const userService = require(ROOT_PATH + '/generics/services/users');
+const userService = require(SERVICES_BASE_PATH + '/users')
 const ObjectId = require('mongodb').ObjectID
 
-
 module.exports = class FormsHelper {
-  	/**
+	/**
 	 * Get default org id.
 	 * @method
 	 * @name getDefaultOrgId
@@ -40,7 +33,8 @@ module.exports = class FormsHelper {
 			}
 		})
 	}
-  	/**
+
+	/**
 	 * Create Form.
 	 * @method
 	 * @name create
@@ -79,7 +73,7 @@ module.exports = class FormsHelper {
 		})
 	}
 
-  	/**
+	/**
 	 * Update Form.
 	 * @method
 	 * @name update
@@ -130,6 +124,7 @@ module.exports = class FormsHelper {
 			}
 		})
 	}
+
 	/**
 	 * Read Form.
 	 * @method
@@ -187,6 +182,7 @@ module.exports = class FormsHelper {
 			}
 		})
 	}
+
 	/**
 	 * Read Form Version.
 	 * @method
@@ -220,41 +216,4 @@ module.exports = class FormsHelper {
 			}
 		})
 	}
-  /**
-   * List of forms
-   * @method
-   * @name formDocuments
-   * @param {Object} filterData - filter form data.
-   * @param {Array} fieldsArray - projected field.
-   * @param {Array} skipFields - field to be skip.
-   * @returns {Array} List of forms.
-   */
-
-  static formDocuments(filterData = 'all', fieldsArray = 'all', skipFields = 'none') {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let queryObject = filterData != 'all' ? filterData : {};
-
-        let projection = {};
-
-        if (fieldsArray != 'all') {
-          fieldsArray.forEach((field) => {
-            projection[field] = 1;
-          });
-        }
-
-        if (skipFields !== 'none') {
-          skipFields.forEach((field) => {
-            projection[field] = 0;
-          });
-        }
-
-        let formDocuments = await database.models.forms.find(queryObject, projection).lean();
-
-        return resolve(formDocuments);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
-};
+}
