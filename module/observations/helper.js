@@ -2031,6 +2031,11 @@ module.exports = class ObservationsHelper {
       try {
         let responseMessage = 'Updated successfully.';
 
+        console.log(          {
+          _id: observationId,
+          createdBy: userId,
+          status: { $ne: 'inactive' },
+        },'<---chekchere')
         let observationDocument = await this.observationDocuments(
           {
             _id: observationId,
