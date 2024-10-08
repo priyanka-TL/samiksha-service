@@ -1,14 +1,14 @@
 const { MongoClient } = require('mongodb');
 
 const url = 'mongodb://localhost:27017'; // MongoDB URL
-const dbName = 'surveydb';
-const dbName2 = 'elevate-entity';
+const surveyDb = 'surveydb';
+const entityDb = 'elevate-entity';
 
 const surveyData = require('./data.js');
 const entityData = require('./data3.js')
 const observationData = require('./data2.js');
 
-async function insertData(collectionName, dataFile,currentDB = dbName) {
+async function insertData(collectionName, dataFile,currentDB = surveyDb) {
     const client = new MongoClient(url);
 
     try {
@@ -37,9 +37,9 @@ async function insertData(collectionName, dataFile,currentDB = dbName) {
 async function main({dataToBeInserted}) {
 
 
-    await insertData('entities', dataToBeInserted.entities,dbName2);
-    await insertData('entityTypes',dataToBeInserted.entityType,dbName2);
-    await insertData('userRoleExtension', dataToBeInserted.userRoleExtension,dbName2);
+    await insertData('entities', dataToBeInserted.entities,entityDb);
+    await insertData('entityTypes',dataToBeInserted.entityType,entityDb);
+    await insertData('userRoleExtension', dataToBeInserted.userRoleExtension,entityDb);
 
     await insertData('programs', dataToBeInserted.programData);
     await insertData('solutions',dataToBeInserted.solutionData);
