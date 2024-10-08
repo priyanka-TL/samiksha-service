@@ -108,7 +108,7 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 					result.success = false
 				} else {
 					let response = JSON.parse(data.body)
-					if (response.responseCode === httpStatusCode['ok'].code) {
+					if (response.responseCode === httpStatusCode['ok_userService'].message) {
 						result['data'] = response.result
 					} else {
 						result.success = false
