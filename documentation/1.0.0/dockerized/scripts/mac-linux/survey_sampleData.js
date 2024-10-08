@@ -1,16 +1,23 @@
 const { ObjectId } = require('mongodb');
 
+const {
+    entities,
+    entityType,
+    userRoleExtension
+} = require('./entity_sampleData');
+
+const {getEndDate}= require('./common')
 let programData = [{
     "_id" : new ObjectId("66f3c3e13bda47893722b496"),
     "externalId" : "PGM_DIET_DARBHANGA_MIP_20-08-24_testing131",
     "name" : "DIET DARBHANGA _MIP_प्राथमिक कक्षाओं में चित्र-पठन कौशल_testing131",
     "description" : "शिक्षकों  में पाठयपुस्तकों दिए  गए चित्रों के पीछे छिपे संदेशों को पहचानने और उनका मूल्यांकन करने की क्षमता विकसित होगी |",
-    "owner" : "2",
+    "owner" : "162",
     "createdBy" : "162",
     "updatedBy" : "162",
     "status" : "active",
-    "startDate" : new Date("2024-08-19T18:30:00.000Z"),
-    "endDate" : new Date("2025-08-25T18:29:59.000Z"),
+    "startDate" : new Date("2023-08-25T18:29:59"),
+    "endDate" : getEndDate("2025-06-15 18:50:00"),
     "resourceType" : [ 
         "program"
     ],
@@ -53,15 +60,15 @@ let programData = [{
     "createdAt" : new Date("2024-09-25T08:03:45.008Z"),
     "__v" : 0,
     "scope" : {
-        "cluster" : [ 
-            "6682424ba845ef3e891daee1", 
-            "668242835fb8bc3e93ceae44"
+        "state" : [ 
+            entities[0]._id.toString()
         ],
         "roles" : [ 
             "district_education_officer", 
-            "TEACHER"
+            "TEACHER",
+            "state_education_officer", 
         ],
-        "entityType" : "cluster"
+        "entityType" : entityType[0].name
     }
 }]
 
@@ -103,8 +110,8 @@ let solutionData = [
         "type" : "survey",
         "subType" : "survey",
         "entities" : [],
-        "startDate" : new Date("2022-04-29T13:57:28.259Z"),
-        "endDate" : new Date("2026-05-02T12:00:00.259Z"),
+        "startDate" : new Date("2023-08-25T18:29:59"),
+        "endDate" : getEndDate("2025-06-15 18:50:00"),
         "status" : "active",
         "evidenceMethods" : {
             "SF" : {
@@ -138,6 +145,17 @@ let solutionData = [
         "deleted" : false,
         "updatedAt" : new Date("2024-09-25T09:53:05.235Z"),
         "createdAt" : new Date("2024-09-25T09:53:05.235Z"),
+        "scope":{
+            "state" : [ 
+                entities[0]._id.toString()
+            ],
+            "roles" : [ 
+                "district_education_officer", 
+                "TEACHER",
+                "state_education_officer", 
+            ],
+            "entityType" : entityType[0].name
+        },
         "__v" : 0
     },
     {
@@ -177,8 +195,8 @@ let solutionData = [
         "type" : "survey",
         "subType" : "survey",
         "entities" : [],
-        "startDate" : new Date("2022-04-29T13:57:28.259Z"),
-        "endDate" : new Date("2026-05-02T12:00:00.259Z"),
+        "startDate" : new Date("2023-08-25T18:29:59"),
+        "endDate" : getEndDate("2025-06-15 18:50:00"),
         "status" : "active",
         "evidenceMethods" : {
             "SF" : {
@@ -213,7 +231,18 @@ let solutionData = [
         "createdAt" : new Date("2024-09-25T09:55:24.777Z"),
         "deleted" : false,
         "__v" : 0,
-        "link" : "912444588cb29f78ad25b3c278f84b03"
+        "link" : "912444588cb29f78ad25b3c278f84b03",
+        "scope":{
+            "state" : [ 
+                entities[0]._id.toString()
+            ],
+            "roles" : [ 
+                "district_education_officer", 
+                "TEACHER",
+                "state_education_officer", 
+            ],
+            "entityType" : entityType[0].name
+        }
     },
 {
     "_id" : new ObjectId("66f401e7953231bda15108dd"),
@@ -296,7 +325,18 @@ let solutionData = [
     "sections" : {
         "S1" : "Observation Question"
     },
-    "status" : "active"
+    "status" : "active",
+    "scope":{
+        "state" : [ 
+            entities[0]._id.toString()
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 },
 {
     "_id" : new ObjectId("66f40275953231bda151091c"),
@@ -345,8 +385,8 @@ let solutionData = [
     "type" : "observation",
     "subType" : "",
     "entities" : [],
-    "startDate" : new Date("2024-09-25T12:30:45.504Z"),
-    "endDate" : new Date("2025-09-25T12:30:45.504Z"),
+    "startDate" : new Date("2022-08-25T18:29:59"),
+    "endDate" : getEndDate("2025-06-15 18:50:00"),
     "status" : "active",
     "evidenceMethods" : {
         "OB" : {
@@ -383,7 +423,18 @@ let solutionData = [
     "createdAt" : new Date("2024-09-25T12:30:45.504Z"),
     "deleted" : false,
     "__v" : 0,
-    "link" : "dd92e92aa827554cfff6d86171976f51"
+    "link" : "dd92e92aa827554cfff6d86171976f51",
+    "scope":{
+        "state" : [ 
+            entities[0]._id.toString()
+        ],
+        "roles" : [ 
+            "district_education_officer", 
+            "TEACHER",
+            "state_education_officer", 
+        ],
+        "entityType" : entityType[0].name
+    }
 }
 
 
@@ -397,8 +448,8 @@ let surveysData = [{
     "createdBy" : "2",
     "solutionId" : new ObjectId("66f3de0c953231bda15108c6"),
     "solutionExternalId" : "a383af8d-7e4e-4c3b-a79d-ccf2bd14de58-1727258124738",
-    "startDate" : new Date("2024-09-25T09:55:43.705Z"),
-    "endDate" : new Date("2026-05-02T12:00:00.259Z"),
+    "startDate" :new Date("2024-06-25T18:29:59"),
+    "endDate" : getEndDate("2025-06-15 18:50:00"),
     "status" : "published",
     "createdFor" : [],
     "rootOrganisations" : [],

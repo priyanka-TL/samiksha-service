@@ -6,4 +6,4 @@ APPLICATION_ENV=development
 APPLICATION_HOST=entity-management
 APPLICATION_PORT=5001
 INTERNAL_ACCESS_TOKEN=Fqn0m0HQ0gXydRtBCg5l
-MONGODB_URL=mongodb://mongo:27017/elevate-entity
+MONGODB_URL=mongodb://mongo:27017/elevate-entity1

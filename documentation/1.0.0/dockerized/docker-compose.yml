@@ -120,7 +120,7 @@ services:
     env_file:
       - ${scheduler_env}
   samiksha:
-    image: shikshalokamqa/elevate-samiksha-service:0.0.6
+    image: shikshalokamqa/elevate-samiksha-service:1.0
     container_name: samiksha
     ports:
       - '4301:4301'
@@ -133,6 +133,7 @@ services:
       - mongo
     networks:
       - elevate_net
+
   interface:
     # Update with latest image
     image: shikshalokamqa/elevate-interface:3.1.1
@@ -160,8 +161,8 @@ services:
       POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
     networks:
       - elevate_net
-    #volumes:
-    #  - citus-data:/var/lib/postgresql/data
+    # volumes:
+    #   - citus-data:/var/lib/postgresql/data
   pgadmin:
     image: dpage/pgadmin4
     container_name: elevate-pgadmin
@@ -184,19 +185,7 @@ services:
     networks:
       - elevate_net
     restart: 'always'
-  portal:
-    # Update with latest image
-    image: shikshalokamqa/mentoring-mobile-app:2.6.1
-    container_name: portal
-    ports:
-      - '8100:8100'
-    volumes:
-      #  relative path of env.js file {relative_path}:/app/src/environments/environment.ts
-      - /home/joffin/elevate/single-click/linux/env.js:/app/src/environments/environment.ts
-    # command: >
-    #   /bin/bash -c "ionic build --prod && ionic serve --host 0.0.0.0"
-    networks:
-      - elevate_net
+ 
    # Entity-management config
   entity_management:
     image: shikshalokamqa/elevate-entity-management:1.0.0
@@ -209,9 +198,21 @@ services:
       - mongo
     networks:
       - elevate_net
+  portal:
+    # Update with latest image
+    image: shikshalokamqa/elevate-project-obervation-pwa:2.2
+    container_name: portal
+    ports:
+      - '7007:7007'
+    volumes:
+      - /home/praveendass/Desktop/survey/env.js:/usr/src/app/www/assets/env/env.js
+    # command: >
+    #   /bin/bash -c "ionic build --prod && ionic serve --host 0.0.0.0"
+    networks:
+      - elevate_net
 networks:
   elevate_net:
-      external: false
+     external: false
 
 # volumes:
 #   mongo-data:
