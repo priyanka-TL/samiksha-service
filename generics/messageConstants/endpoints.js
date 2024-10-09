@@ -21,5 +21,6 @@ module.exports = {
   LIST_BY_ENTITY_TYPE: '/v1/entities/listByEntityType',
   FIND_ENTITY_TYPE_DOCUMENTS :'/v1/entityTypes/find',
   GET_TEMPLATE_DETAILS: '/v1/project/templates/details',
-  USER_READ:"/v1/user/read"
+  USER_READ:"/v1/user/read",
+	ORGANIZATION_READ: '/v1/organization/read',
 };

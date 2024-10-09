@@ -269,6 +269,14 @@ let enviromentVariables = {
     "message" : "Gotenberg url is Required",
     "optional" : false
   },
+  API_DOC_URL: {
+		message: 'Required api doc url',
+		optional: false,
+	},
+  DEFAULT_ORGANISATION_CODE:{
+    message: 'Required default organisation code.',
+		optional: false,
+  }
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
   //   message: 'ON/OFF',
   //   optional: false,
