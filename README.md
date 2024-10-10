@@ -465,33 +465,33 @@ Before setting up the following Survey application, dependencies given below sho
          brew install node@20
         ```
 
-       ```
+        ```
          brew link --overwrite node@20
-       ```
+        ```
 
      2. Install Kafka:
-
-       ```
+ 
+        ```
          brew install kafka
-       ```
+        ```
 
      3. Install PostgreSQL 16:
 
-       ```
+        ```
          brew install postgresql@16
-       ```
+        ```
 
      4. Install PM2:
 
-       ```
-        sudo npm install pm2@latest -g
-       ```
+        ```
+         sudo npm install pm2@latest -g
+        ```
 
      5. Install Redis:
-
-       ```
-         brew install redis
-       ```
+   
+        ```
+          brew install redis
+        ```
      6. Install Mongo:
 
         ```
@@ -500,11 +500,11 @@ Before setting up the following Survey application, dependencies given below sho
 
      7. Download `check-dependencies.sh` file:
 
-       ```
-        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-    
-        service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
-        chmod +x check-dependencies.sh
-       ```
+        ```
+         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-    
+         service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/check-dependencies.sh && \
+         chmod +x check-dependencies.sh
+        ```
 
     8. Verify installed dependencies by running `check-dependencies.sh`:
 
@@ -544,9 +544,9 @@ Before setting up the following Survey application, dependencies given below sho
            ```  
 4.  **Download Environment Files**
 
- -  **Ubuntu/Linux**
+  -  **Ubuntu/Linux**
 
-   ```
+        ```
             curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
             curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -559,12 +559,11 @@ Before setting up the following Survey application, dependencies given below sho
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
             curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+        ```
 
-   ```
+ -  **MacOS**
 
--  **MacOS**
-
-  ```
+       ```
            curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
            service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
            curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -578,7 +577,7 @@ Before setting up the following Survey application, dependencies given below sho
            curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
            service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
 
-  ```
+      ```
 
 
  >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your 
@@ -670,10 +669,10 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 
   1. Download user `distributionColumns.sql` file.
 
-     ```
-      curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-      service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
-     ```
+      ```
+        curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+        service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
+       ```
   2. Set up the `citus_setup` file by following the steps given below.
 
 -  **Ubuntu/Linux**
