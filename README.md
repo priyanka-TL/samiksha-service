@@ -598,14 +598,9 @@ Before setting up the following Survey application, dependencies given below sho
 
   
 >  **Important:** As mentioned in the above linked document, the **User SignUp** functionality may be compromised if key environment variables are not set correctly during deployment. If you opt to skip this setup, consider using the sample user account generator detailed in the `Sample User Accounts Generation` section of this document.
-
 5.  **Create Databases**
 
-  
-
-  
-
-    -  **Ubuntu/Linux**
+ -  **Ubuntu/Linux**
 
   
 
@@ -661,23 +656,23 @@ Before setting up the following Survey application, dependencies given below sho
         ```
 7.  **Enabling Citus And Setting Distribution Columns (Optional)**
 
-To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
+      To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
 
-> NOTE: Currently only available for Linux based operation systems.
+     > NOTE: Currently only available for Linux based operation systems.
 
   
 
-  1. Download user `distributionColumns.sql` file.
+    1. Download user `distributionColumns.sql` file.
 
       ```
         curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
         service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
        ```
-  2. Set up the `citus_setup` file by following the steps given below.
+    2. Set up the `citus_setup` file by following the steps given below.
 
 -  **Ubuntu/Linux**
 
-   1. Download the `citus_setup.sh` file:
+    1. Download the `citus_setup.sh` file:
 
        ```
         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -695,7 +690,7 @@ To boost performance and scalability, users can opt to enable the Citus extensio
       ```
 8.  **Insert Initial Data**
 
-    Use Survey in-build seeders to insert the initial data.
+     Use Survey in-build seeders to insert the initial data.
 
   -  **Ubuntu/Linux/MacOS**
 
