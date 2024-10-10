@@ -415,26 +415,26 @@ Before setting up the following Survey application, dependencies given below sho
 
 -  **Ubuntu/Linux**
 
-1. Download dependency management scripts:
+     1. Download dependency management scripts:
 
-    ```
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-    
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
-    chmod +x check-dependencies.sh && \
-    chmod +x install-dependencies.sh && \
-    chmod +x uninstall-dependencies.sh
-   ```
-2. Verify installed dependencies by running `check-dependencies.sh`:
+        ```
+        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-    
+        service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
+        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
+        service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
+        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+        service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
+        chmod +x check-dependencies.sh && \
+        chmod +x install-dependencies.sh && \
+        chmod +x uninstall-dependencies.sh
+        ```
+    2. Verify installed dependencies by running `check-dependencies.sh`:
 
-   ```
-   ./check-dependencies.sh
-   ```
+       ```
+       ./check-dependencies.sh
+       ```
 
-> Note: Keep note of any missing dependencies.
+       > Note: Keep note of any missing dependencies.
 
 3. Install dependencies by running `install-dependencies.sh`:
 
