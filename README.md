@@ -52,39 +52,39 @@ Service also uses gotenberg for creation of project certificate. You can read mo
  
 ## Installation
 
-1.  **Create survey Directory:** Create a directory named **survey**.
+   1.  **Create survey Directory:** Create a directory named **survey**.
 
-> Example Command: `mkdir survey && cd survey/`
+       > Example Command: `mkdir survey && cd survey/`
 
-2.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml)** file from the Survey service repository and save it to the survey directory.
+   2.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml)** file from the Survey service repository and save it to the survey directory.
 
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml
-    ```
+      ```
+      curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml
+      ```
 
-    > Note: All commands are run from the survey directory.
+      > Note: All commands are run from the survey directory.
 
-    Directory structure:
+      Directory structure:
    
-     ```
-     ./survey
-     └── docker-compose.yml
-     ```
+        ```
+          ./survey
+             └── docker-compose.yml
+        ```
 
-3.  **Download Environment Files**: Using the OS specific commands given below, download environment files for all the services.
+  3.  **Download Environment Files**: Using the OS specific commands given below, download environment files for all the services.
 
 
     -  **Ubuntu/Linux/Mac**
 
+          ```
+          curl -L  -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env \
+          -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env \
+          -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env \
+          -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env \
+          -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/scheduler_env \
+          -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/user_env \
+          -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
          ```
-         curl -L \ -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/scheduler_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/user_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
-        ```
     
     -  **Windows**
 
@@ -143,7 +143,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
           ```
 
           ```
-          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-         down.sh
+          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-down.sh
           ```
 
         2. Make the files executable by running the following commands.
@@ -159,34 +159,34 @@ Service also uses gotenberg for creation of project certificate. You can read mo
     -    **Windows**	
 			```
 		    curl -OJL https://github.com/ELEVATE-Project/samiksha-      
-			s  ervice/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
+			service/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
 			```
 		    ```
 		    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose-down.bat
-			```
+		    ```
 
 9.  **Run All Services & Dependencies:** All services and dependencies can be started using the `docker-compose-up` script file.
 
-    -   **Ubuntu/Linux/Mac**
+   - **Ubuntu/Linux/Mac**
 
 	    ```
 	    ./docker-compose-up.sh
 	    ```
 
-    -   **Windows**
+  - **Windows**
 
 	    ```
 	    docker-compose-up.bat
 	    ```
 
-> Double-click the file or run the above command from the terminal.
+       > Double-click the file or run the above command from the terminal.
 
   
 
-> **Note**: During the first Docker Compose run, the database, migration seeder files, and the script to set the default organization will be executed automatically.
+       > **Note**: During the first Docker Compose run, the database, migration seeder files, and the script to set the default organization will be executed 
+       automatically.
 
-  
--->
+
 
 
 1.  **Access The Survey Application**:Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:7007](http://localhost:7007/)** to access the Survey app.
