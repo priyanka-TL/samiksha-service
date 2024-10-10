@@ -457,7 +457,7 @@ Before setting up the following Survey application, dependencies given below sho
        install.
 
   
--  **MacOS**
+ -  **MacOS**
 
      1. Install Node.js 20:
 
@@ -520,15 +520,15 @@ Before setting up the following Survey application, dependencies given below sho
 
       -  **Ubuntu/Linux/MacOS**
 
-              ```
-                git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
-                git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
-                git clone -b master https://github.com/ELEVATE-Project/user.git && \
-                git clone -b master https://github.com/ELEVATE-Project/notification.git && \
-                git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
-                git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
-                git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
-              ``` 
+        ```
+          git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
+          git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
+          git clone -b master https://github.com/ELEVATE-Project/user.git && \
+          git clone -b master https://github.com/ELEVATE-Project/notification.git && \
+          git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
+          git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
+          git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
+        ``` 
 
  3.  **Install NPM Packages**
 
@@ -546,7 +546,7 @@ Before setting up the following Survey application, dependencies given below sho
 
  -  **Ubuntu/Linux**
 
-          ```
+   ```
             curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
             curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -560,11 +560,11 @@ Before setting up the following Survey application, dependencies given below sho
             curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
 
-          ```
+   ```
 
 -  **MacOS**
 
-          ```
+  ```
            curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
            service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
            curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -578,7 +578,7 @@ Before setting up the following Survey application, dependencies given below sho
            curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
            service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
 
-         ```
+  ```
 
 
  >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your 
@@ -649,12 +649,12 @@ Before setting up the following Survey application, dependencies given below sho
 
  -  **Ubuntu/Linux/MacOS**
 
-      1. Install Sequelize-cli globally:
+    1. Install Sequelize-cli globally:
 
         ```
           sudo npm i sequelize-cli -g
         ```
-      2. Run Migrations:
+    2. Run Migrations:
 
         ```
          cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
@@ -664,7 +664,7 @@ Before setting up the following Survey application, dependencies given below sho
 
 To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
 
-    > NOTE: Currently only available for Linux based operation systems.
+> NOTE: Currently only available for Linux based operation systems.
 
   
 
@@ -676,9 +676,9 @@ To boost performance and scalability, users can opt to enable the Citus extensio
      ```
   2. Set up the `citus_setup` file by following the steps given below.
 
-  -  **Ubuntu/Linux**
+-  **Ubuntu/Linux**
 
-    1. Download the `citus_setup.sh` file:
+   1. Download the `citus_setup.sh` file:
 
        ```
         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
