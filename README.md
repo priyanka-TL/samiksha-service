@@ -512,12 +512,11 @@ Before setting up the following Survey application, dependencies given below sho
        ./check-dependencies.sh
        ```
 ## Installation
-
-   1.  **Create Elevate-survey Directory:** Create a directory named **elevate-survey**.
+ 1.  **Create Elevate-survey Directory:** Create a directory named **elevate-survey**.
 
       > Example Command: `mkdir elevate-survey && cd elevate-survey/`
 
-   2.  **Git Clone Services And Portal Repositories**
+ 2.  **Git Clone Services And Portal Repositories**
 
       -  **Ubuntu/Linux/MacOS**
 
@@ -531,7 +530,7 @@ Before setting up the following Survey application, dependencies given below sho
                 git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
               ``` 
 
-   3.  **Install NPM Packages**
+ 3.  **Install NPM Packages**
 
       -  **Ubuntu/Linux/MacOS**
 
@@ -543,10 +542,9 @@ Before setting up the following Survey application, dependencies given below sho
              cd scheduler/src && npm install && cd ../.. && \
              cd observation-survey-projects-pwa && npm install --force && cd ..
            ```  
+4.  **Download Environment Files**
 
-   4.  **Download Environment Files**
-
-      -  **Ubuntu/Linux**
+ -  **Ubuntu/Linux**
 
           ```
             curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -564,7 +562,7 @@ Before setting up the following Survey application, dependencies given below sho
 
           ```
 
-    -  **MacOS**
+-  **MacOS**
 
           ```
            curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -582,38 +580,25 @@ Before setting up the following Survey application, dependencies given below sho
 
          ```
 
-         >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your 
-            environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files 
-           provided at the [Survey](https://github.com/ELEVATE-Project/samiksha/blob/master/src/.env.sample), [User](https://github.com/ELEVATE- 
-           Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler] 
-           (https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), and [Interface](https://github.com/ELEVATE-Project/interface- 
-           service/blob/main/src/.env.sample) repositories for reference.
+
+ >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your 
+      environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files 
+     provided at the [Survey](https://github.com/ELEVATE-Project/samiksha/blob/master/src/.env.sample), [User](https://github.com/ELEVATE- 
+     Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler] 
+    (https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), and [Interface](https://github.com/ELEVATE-Project/interface- 
+     service/blob/main/src/.env.sample) repositories for reference.
 
   
-
   
 
-        >  **Caution:** While the default values in the downloaded environment files enable the Survey Application to operate, certain features may not function 
-            correctly or could be impaired unless the adopter-specific environment variables are properly configured.
+>  **Caution:** While the default values in the downloaded environment files enable the Survey Application to operate, certain features may not function 
+ correctly or could be impaired unless the adopter-specific environment variables are properly configured.
+
+> For detailed instructions on adjusting these values, please consult the **[Survey Environment Variable Modification Guide](https://github.com/ELEVATE- 
+  Project/mentoring/blob/master/documentation/1.0.0/Survey-Env-Modification-README.md)**.
 
   
-
-
-
-  
-
-       > For detailed instructions on adjusting these values, please consult the **[Survey Environment Variable Modification Guide](https://github.com/ELEVATE- 
-         Project/mentoring/blob/master/documentation/1.0.0/Survey-Env-Modification-README.md)**.
-
-  
-
-  
-
 >  **Important:** As mentioned in the above linked document, the **User SignUp** functionality may be compromised if key environment variables are not set correctly during deployment. If you opt to skip this setup, consider using the sample user account generator detailed in the `Sample User Accounts Generation` section of this document.
-
-  
-
-  
 
 5.  **Create Databases**
 
@@ -675,7 +660,6 @@ Before setting up the following Survey application, dependencies given below sho
          cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
          cd notification/src && npx sequelize-cli db:migrate && cd ../..
         ```
-
 7.  **Enabling Citus And Setting Distribution Columns (Optional)**
 
 To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
@@ -736,13 +720,13 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 
    -  **MacOS**
 
-      ```
-        cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
-        cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-        cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-        cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-        cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-      ```
+       ```
+         cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
+         cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
+         cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
+         cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
+         cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+       ```
 
 
 10.  **Run Service Scripts**
@@ -753,18 +737,17 @@ To boost performance and scalability, users can opt to enable the Citus extensio
          cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
          node -r module-alias/register uploadSampleCSV.js && cd ../../..
         ```
-
 11.  **Start The Portal**
 
-    Survey portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
+      Survey portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
   
    -  **Ubuntu/Linux**
 
        1. Install Ionic CLI globally:
-
-          ```
-           sudo npm install -g @ionic/cli
-          ```
+ 
+           ```
+             sudo npm install -g @ionic/cli
+           ```
 
        2. Install Angular CLI globally:
 
@@ -774,21 +757,21 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 
        3. Navigate to `observation-survey-projects-pwa` directory:
 
-        ```
+           ```
            cd observation-survey-projects-pwa
-        ```
+           ```
 
       4. Build the portal
 
-       ```
-           ionic build
-       ```
+          ```
+          ionic build
+          ```
 
       5. Start the portal:
 
-       ```
-         ionic serve
-       ```
+          ```
+            ionic serve
+          ```
 
 -  **MacOS**
 
