@@ -416,7 +416,7 @@ Before setting up the following Survey application, dependencies given below sho
 -  **Ubuntu/Linux**
 
      1. Download dependency management scripts:
-
+ 
         ```
         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-    
         service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
@@ -520,7 +520,7 @@ Before setting up the following Survey application, dependencies given below sho
 
       -  **Ubuntu/Linux/MacOS**
 
-        ```
+          ```
           git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
           git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
           git clone -b master https://github.com/ELEVATE-Project/user.git && \
@@ -528,25 +528,25 @@ Before setting up the following Survey application, dependencies given below sho
           git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
           git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
           git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
-        ``` 
+         ``` 
 
  3.  **Install NPM Packages**
 
       -  **Ubuntu/Linux/MacOS**
 
            ```
-             cd samiksha-service && npm install && cd ../ && \
-             cd user/src && npm install && cd ../.. && \
-             cd notification/src && npm install && cd ../.. && \
-             cd interface-service/src && npm install && cd ../.. && \
-             cd scheduler/src && npm install && cd ../.. && \
-             cd observation-survey-projects-pwa && npm install --force && cd ..
+           cd samiksha-service && npm install && cd ../ && \
+           cd user/src && npm install && cd ../.. && \
+           cd notification/src && npm install && cd ../.. && \
+           cd interface-service/src && npm install && cd ../.. && \
+           cd scheduler/src && npm install && cd ../.. && \
+           cd observation-survey-projects-pwa && npm install --force && cd ..
            ```  
 4.  **Download Environment Files**
 
-  -  **Ubuntu/Linux**
+     -  **Ubuntu/Linux**
 
-        ```
+          ```
             curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
             curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -559,11 +559,11 @@ Before setting up the following Survey application, dependencies given below sho
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
             curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
             service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
-        ```
+         ```
 
- -  **MacOS**
+    -  **MacOS**
 
-       ```
+         ```
            curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
            service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
            curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
@@ -577,7 +577,7 @@ Before setting up the following Survey application, dependencies given below sho
            curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
            service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
 
-      ```
+          ```
 
 
  >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your 
@@ -600,7 +600,7 @@ Before setting up the following Survey application, dependencies given below sho
 >  **Important:** As mentioned in the above linked document, the **User SignUp** functionality may be compromised if key environment variables are not set correctly during deployment. If you opt to skip this setup, consider using the sample user account generator detailed in the `Sample User Accounts Generation` section of this document.
 5.  **Create Databases**
 
- -  **Ubuntu/Linux**
+  -  **Ubuntu/Linux**
 
   
 
@@ -610,12 +610,12 @@ Before setting up the following Survey application, dependencies given below sho
          curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
          service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/create-databases.sh
         ```
-     2. Make the executable by running the following command:
+      2. Make the executable by running the following command:
 
         ```
          chmod +x create-databases.sh
         ```
-     3. Run the script file:
+      3. Run the script file:
 
         ```
          ./create-databases.sh
@@ -704,23 +704,23 @@ Before setting up the following Survey application, dependencies given below sho
 
     -  **Ubuntu/Linux**
 
-       ```
-        cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
-        cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-        cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-        cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-        cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-       ```
+         ```
+           cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
+           cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
+           cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
+           cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
+           cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+         ```
 
    -  **MacOS**
 
-       ```
+        ```
          cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
          cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
          cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
          cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
          cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-       ```
+        ```
 
 
 10.  **Run Service Scripts**
@@ -767,27 +767,27 @@ Before setting up the following Survey application, dependencies given below sho
             ionic serve
           ```
 
--  **MacOS**
+ -  **MacOS**
 
-    1. Install Ionic CLI globally:
+     1. Install Ionic CLI globally:
 
        ```
         sudo npm install -g @ionic/cli
        ```
 
-    2. Install Angular CLI globally:
+     2. Install Angular CLI globally:
 
        ```
         sudo npm install -g @angular/cli
        ```
 
-    3. Navigate to `observation-survey-projects-pwa` directory:
+     3. Navigate to `observation-survey-projects-pwa` directory:
 
        ```
         cd observation-survey-projects-pwa
        ```
 
-    4. Build the portal:
+     4. Build the portal:
 
        ```
          npx ionic build
