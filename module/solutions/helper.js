@@ -632,7 +632,7 @@ module.exports = class SolutionsHelper {
             matchQuery['type'] = type;
             if (type === messageConstants.common.SURVEY) {
               const currentDate = new Date();
-              currentDate.setDate(currentDate.getDate() - 1500);
+              currentDate.setDate(currentDate.getDate() - 15);
               matchQuery['endDate'] = { $gte: currentDate };
             } else {
               matchQuery['endDate'] = { $gte: new Date() };
