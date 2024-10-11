@@ -301,7 +301,7 @@ module.exports = async function (req, res, next) {
 			console.error('Error parsing config.json:', error)
 		}
 	} else {
-		// If file doesn't exist, set defaultTokenExtraction to false
+		// If file doesn't exist, set defaultTokenExtraction to true
 		defaultTokenExtraction = true
 	}
 
