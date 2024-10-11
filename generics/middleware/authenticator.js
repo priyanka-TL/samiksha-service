@@ -316,7 +316,6 @@ module.exports = async function (req, res, next) {
     userToken: token,
     userId: JSON.stringify(decodedToken.data.id),
     userName: decodedToken.data.name,
-    // email: decodedToken.data.email,
     firstName: decodedToken.data.name,
     organizationId: decodedToken.data.organization_id,
   }
