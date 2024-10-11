@@ -330,18 +330,6 @@ module.exports = class SolutionsHelper {
 						})
             
 						if (currentScopeOnly) {
-							filteredTargetedSolutions.forEach((solution) => {
-								// Find the corresponding observation/survey in mergedData where solutionId matches _id
-								const matchingRecord = _.find(mergedData, (record) => {
-									return String(record.solutionId) === String(solution.solutionId)
-								})
-
-								if (matchingRecord) {
-									// Add all keys from the matching survey/observation to the solution object
-									Object.assign(solution, matchingRecord)
-								}
-							})
-
 							mergedData = filteredTargetedSolutions
 							totalCount = mergedData.length
 						} else {
