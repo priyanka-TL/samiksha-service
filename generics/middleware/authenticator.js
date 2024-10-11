@@ -289,20 +289,28 @@ module.exports = async function (req, res, next) {
 	let configData = {}
 	let defaultTokenExtraction = false
 
-  	// Check if config.json exists
-	if (fs.existsSync(configFilePath)) {
+  if (fs.existsSync(configFilePath)) {
 		// Read and parse the config.json file
 		const rawData = fs.readFileSync(configFilePath)
 		try {
 			configData = JSON.parse(rawData)
+			if (!configData.authTokenUserInformation) {
+				defaultTokenExtraction = true
+			}
+			configData = configData.authTokenUserInformation
 		} catch (error) {
 			console.error('Error parsing config.json:', error)
 		}
 	} else {
-		// If file doesn't exist, set defaultTokenExtraction to true
+		// If file doesn't exist, set defaultTokenExtraction to false
 		defaultTokenExtraction = true
 	}
 
+  let userInformation = {}
+	// Create user details to request
+	req.userDetails = {
+		userToken: token,
+	}
   	// performing default token data extraction
 	if (defaultTokenExtraction) {
 		userInformation = {
@@ -315,11 +323,8 @@ module.exports = async function (req, res, next) {
   }
 	} else {
 		// Iterate through each key in the config object
-    console.log(configData,"configData")
 		for (let key in configData) {
-      console.log(key,'key')
 			if (configData.hasOwnProperty(key)) {
-        console.log(configData[key],'searching for....')
 				let keyValue = getNestedValue(decodedToken, configData[key])
 				if (key === 'userId') {
 					keyValue = keyValue.toString()
@@ -334,7 +339,6 @@ module.exports = async function (req, res, next) {
 
 	// Helper function to access nested properties
 	function getNestedValue(obj, path) {
-    console.log(obj,path,'obj & path')
 		return path.split('.').reduce((acc, part) => acc && acc[part], obj)
 	}
 
