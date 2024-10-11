@@ -330,6 +330,18 @@ module.exports = class SolutionsHelper {
 						})
             
 						if (currentScopeOnly) {
+              filteredTargetedSolutions.forEach((solution) => {
+								// Find the corresponding project in mergedData where solutionId matches _id
+								const matchingProject = _.find(mergedData, (project) => {
+									return String(project.solutionId) === String(solution.solutionId)
+								})
+
+								if (matchingProject) {
+									// Add all keys from the matching project to the solution object
+									Object.assign(solution, matchingProject)
+								}
+							})
+
 							mergedData = filteredTargetedSolutions
 							totalCount = mergedData.length
 						} else {
