@@ -284,7 +284,6 @@ module.exports = async function (req, res, next) {
 
   // Path to config.json
 	const configFilePath = path.resolve(__dirname, '../../', 'config.json')
-  console.log(configFilePath,'configFilePath')
   	// Initialize variables
 	let configData = {}
 	let defaultTokenExtraction = false
