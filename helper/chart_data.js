@@ -151,7 +151,7 @@ function getKeysToBeDeletedFromAnswers(data) {
  * @param {boolean} [criteriaWise=false] - Flag to create criteria-wise report.
  * @returns {Promise<Array>} Formatted combined answer array.
  */
-exports.generateObservationReportForNonRubricWithoutDruid = async function (data,generateChart=false,criteriaWise=false) {
+exports.generateObservationReportForNonRubricWithoutDruid = async function (data,generateChart=false,criteriaWise=false,chartType) {
   const answerArr = extractAnswers(data);
   const { questionRecordsIdArr, cachedCriteriaIdArr } = extractIds(answerArr);
 
@@ -160,7 +160,7 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
     fetchQuestionRecords(questionRecordsIdArr)
   ]);
 
-  let formattedCombinedAnswerArr = await formatAnswers(answerArr, criteriaInfoArr, questionRecordArr);
+  let formattedCombinedAnswerArr = await formatAnswers(answerArr, criteriaInfoArr, questionRecordArr,chartType);
 
   if (generateChart) {
     formattedCombinedAnswerArr = createObservationChartWithoutRubric(formattedCombinedAnswerArr);
@@ -240,7 +240,7 @@ async function fetchQuestionRecords(questionIds) {
  * @param {Array} questionRecordArr - Array of question records.
  * @returns {Promise<Array>} Formatted combined answer array.
  */
-async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr) {
+async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr,chartType) {
   const formattedCombinedAnswerArr = [];
 
   for (const submissionInstance of answerArr) {
@@ -250,7 +250,7 @@ async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr) {
       const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(questionInstance.qid));
       const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(questionInstance.criteriaId));
 
-      await updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo);
+      await updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo,chartType);
     }
   }
 
@@ -264,13 +264,13 @@ async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr) {
  * @param {Object} questionRecordSingleElement - Question record.
  * @param {Object} criteriaInfo - Criteria information.
  */
-async function updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo) {
+async function updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo,chartType) {
   const index = formattedCombinedAnswerArr.findIndex(obj => obj.qid === questionInstance.qid);
 
   if (index !== -1) {
     await updateExistingAnswer(formattedCombinedAnswerArr[index], questionInstance);
   } else {
-    const newValue = await createNewFormattedAnswer(questionInstance, questionRecordSingleElement, criteriaInfo);
+    const newValue = await createNewFormattedAnswer(questionInstance, questionRecordSingleElement, criteriaInfo,chartType);
     formattedCombinedAnswerArr.push(newValue);
   }
 }
@@ -296,15 +296,20 @@ async function updateExistingAnswer(existingAnswer, questionInstance) {
  * @param {Object} criteriaInfo - Criteria information.
  * @returns {Promise<Object>} New formatted answer.
  */
-async function createNewFormattedAnswer(questionInstance, questionRecordSingleElement, criteriaInfo) {
+async function createNewFormattedAnswer(questionInstance, questionRecordSingleElement, criteriaInfo,chartType) {
   const evidence = await processFileEvidences(questionInstance.fileName, questionInstance.submissionId);
+
+  let answer = [questionInstance.value];
+  if(chartType == 'instance' && questionInstance.responseType == 'multiselect'){
+     answer  = Array.isArray(questionInstance.value) ? questionInstance.value : [questionInstance.value];  
+  }
 
   return {
     qid: questionInstance.qid,
     order: questionRecordSingleElement.externalId,
     question: questionInstance.payload.question[0],
     responseType: questionInstance.responseType,
-    answers: [questionInstance.value],
+    answers: answer,
     chart: {},
     instanceQuestions: [],
     options: questionRecordSingleElement.options,
