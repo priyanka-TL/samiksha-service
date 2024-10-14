@@ -183,6 +183,7 @@ module.exports = class SolutionsHelper {
    * @param {Number} pageSize       - Size of page.
    * @param {String} search         - search text.
    * @param {String} [ filter = ""] - filter text.
+   * @param {String} currentScopeOnly - flag to return records only based on scope
    * @returns {Object} - Details of the solution.
    */
 
