@@ -299,6 +299,7 @@ async function updateExistingAnswer(existingAnswer, questionInstance) {
 async function createNewFormattedAnswer(questionInstance, questionRecordSingleElement, criteriaInfo,chartType) {
   const evidence = await processFileEvidences(questionInstance.fileName, questionInstance.submissionId);
 
+  //this change done to address multiselect response appearing in array in instance chart which is not required
   let answer = [questionInstance.value];
   if(chartType == 'instance' && questionInstance.responseType == 'multiselect'){
      answer  = Array.isArray(questionInstance.value) ? questionInstance.value : [questionInstance.value];  
