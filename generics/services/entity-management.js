@@ -9,7 +9,7 @@
 const request = require('request');
 
 const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL;
-
+const validateEntity = process.env.VALIDATE_ENTITIES;
 /**
  * List of entity data.
  * @function
@@ -136,21 +136,29 @@ const validateEntities = async function (entityIds, entityTypeId) {
       try {
         let ids = [];
 
-		  let bodyData = {
-			_id : { $in: gen.utils.arrayIdsTobjectIdsNew(entityIds) },
-			entityTypeId: entityTypeId,
-		  };
+      if(validateEntity == 'ON'){
+        let bodyData = {
+          _id : { $in: gen.utils.arrayIdsTobjectIdsNew(entityIds) },
+          entityTypeId: entityTypeId,
+          };
+    
+          let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
+          let entitiesDocuments = entitiesDocumentsAPIData.data;
+    
+            if (entitiesDocuments.length > 0) {
+              ids = entitiesDocuments.map((entityId) => entityId._id);
+            }
+    
+            return resolve({
+              entityIds: ids,
+            });
+      }else {
+            return resolve({
+             entityIds: entityIds,
+            });
 
-		  let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
-      let entitiesDocuments = entitiesDocumentsAPIData.data;
+      }
 
-        if (entitiesDocuments.length > 0) {
-          ids = entitiesDocuments.map((entityId) => entityId._id);
-        }
-
-        return resolve({
-          entityIds: ids,
-        });
       } catch (error) {
         return reject(error);
       }
