@@ -1643,6 +1643,8 @@ module.exports = class ObservationsHelper {
             description: 1,
             solutionId: 1,
             programId: 1,
+            entityType:1,
+            entities:1
           },
         };
 
@@ -1706,6 +1708,7 @@ module.exports = class ObservationsHelper {
           },
         });
       } catch (error) {
+        console.log(error)
         return resolve({
           success: false,
           message: error.message,
