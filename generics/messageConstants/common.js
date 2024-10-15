@@ -91,5 +91,5 @@ module.exports = {
   status_success:'success',
   azure: "AZURE",
   SERVER_TIME_OUT: 5000,
-  
+  SOLUTION_MODEL_NAME: 'solutions'
 };

@@ -5,6 +5,7 @@
  * Description : Admin Related information.
  */
 
+
 // Dependencies
 const adminHelper = require(MODULES_BASE_PATH + '/admin/helper');
 
@@ -95,31 +96,41 @@ module.exports = class Admin {
     });
   }
 
+  /**
+     * @api {post} /survey/v1/admin/createIndex/:collectionName
+     * List of data based on collection
+     * @apiVersion 1.0.0
+     * @apiGroup Admin
+     * @apiSampleRequest /survey/v1/admin/createIndex/projects
+     * @param {json} Request-Body:
+      {
+          "keys": ["scope.state","name","description"]
+          
+      }
+     * @apiParamExample {json} Response:
+      {
+          "message": "Keys indexed successfully",
+          "status": 200
+      }
+     * @apiUse successBody
+     * @apiUse errorBody
+     */
+
+  /**
+   * Indexes keys based on the collection name and passed key 
+   * @method
+   * @name createIndex
+   * @param {String} _id - MongoDB Collection Name
+   * @param {Object} req - Req Body
+   * @returns {JSON} list of data.
+   */
   async createIndex(req) {
     return new Promise(async (resolve, reject) => {
       try {
         let collection = req.params._id;
         let keys = req.body.keys;
-
-        let presentIndex = await database.models[collection].listIndexes({}, { key: 1 });
-        let indexes = presentIndex.map((indexedKeys) => {
-          return Object.keys(indexedKeys.key)[0];
-        });
-        let indexNotPresent = _.differenceWith(keys, indexes);
-        if (indexNotPresent.length > 0) {
-          indexNotPresent.forEach(async (key) => {
-            await database.models.solutions.db.collection(collection).createIndex({ [key]: 1 });
-          });
-          return resolve({
-            message: messageConstants.apiResponses.KEYS_INDEXED_SUCCESSFULL,
-            success: true,
-          });
-        } else {
-          return resolve({
-            message: messageConstants.apiResponses.KEYS_ALREADY_INDEXED_SUCCESSFULL,
-            success: true,
-          });
-        }
+        let result = await adminHelper.createIndex(collection,keys);
+        resolve(result);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
