@@ -67,7 +67,6 @@ module.exports = class ConfigurationsHelper {
 					result: result,
 				})
 			} catch (error) {
-                console.log(error)
 				return resolve({
 					status: error.status ? error.status : httpStatusCode.internal_server_error.status,
 					success: false,

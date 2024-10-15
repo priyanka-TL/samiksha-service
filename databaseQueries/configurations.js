@@ -54,7 +54,6 @@ module.exports = class Configurations {
 	static findDocument(filterData, fieldsArray = []) {
 		return new Promise(async (resolve, reject) => {
 			try {
-                console.log(filterData, fieldsArray,'filterData, fieldsArray')
 				let configurationDetails = await database.models.configurations.find(filterData, fieldsArray).lean()
 				return resolve(configurationDetails)
 			} catch (error) {
