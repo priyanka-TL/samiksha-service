@@ -1708,7 +1708,6 @@ module.exports = class ObservationsHelper {
           },
         });
       } catch (error) {
-        console.log(error)
         return resolve({
           success: false,
           message: error.message,
