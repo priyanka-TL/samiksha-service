@@ -93,6 +93,14 @@ module.exports = class adminHelper {
     return query;
   }
 
+  /**
+   * creates indexes based on collection and keys
+   * @method
+   * @name list
+   * @param {String} collection - name of the collection.
+   * @param {Array} [keys] - keys in array to be indexed.
+   * @returns {Object} returns a object.
+   */
   static async createIndex(collection,keys){
     let presentIndex = await database.models[collection].listIndexes({}, { key: 1 });
     let indexes = presentIndex.map((indexedKeys) => {

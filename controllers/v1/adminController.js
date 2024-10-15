@@ -96,12 +96,39 @@ module.exports = class Admin {
     });
   }
 
+  /**
+     * @api {post} /survey/v1/admin/createIndex/:collectionName
+     * List of data based on collection
+     * @apiVersion 1.0.0
+     * @apiGroup Admin
+     * @apiSampleRequest /survey/v1/admin/createIndex/projects
+     * @param {json} Request-Body:
+      {
+          "keys": ["scope.state","name","description"]
+          
+      }
+     * @apiParamExample {json} Response:
+      {
+          "message": "Keys indexed successfully",
+          "status": 200
+      }
+     * @apiUse successBody
+     * @apiUse errorBody
+     */
+
+  /**
+   * Indexes keys based on the collection name and passed key 
+   * @method
+   * @name createIndex
+   * @param {String} _id - MongoDB Collection Name
+   * @param {Object} req - Req Body
+   * @returns {JSON} list of data.
+   */
   async createIndex(req) {
     return new Promise(async (resolve, reject) => {
       try {
         let collection = req.params._id;
         let keys = req.body.keys;
-
         let result = await adminHelper.createIndex(collection,keys);
         resolve(result);
       } catch (error) {
