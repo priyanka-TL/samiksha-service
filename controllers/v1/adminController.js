@@ -5,7 +5,6 @@
  * Description : Admin Related information.
  */
 
-const ConfigurationsHelper = require(MODULES_BASE_PATH+"/configurations/helper");
 
 // Dependencies
 const adminHelper = require(MODULES_BASE_PATH + '/admin/helper');
@@ -103,36 +102,8 @@ module.exports = class Admin {
         let collection = req.params._id;
         let keys = req.body.keys;
 
-        let presentIndex = await database.models[collection].listIndexes({}, { key: 1 });
-        let indexes = presentIndex.map((indexedKeys) => {
-          return Object.keys(indexedKeys.key)[0];
-        });
-        let indexNotPresent = _.differenceWith(keys, indexes);
-        if (indexNotPresent.length > 0) {
-          indexNotPresent.forEach(async (key) => {
-            await database.models.solutions.db.collection(collection).createIndex({ [key]: 1 });
-          });
-
-          if (collection === messageConstants.common.SOLUTION_MODEL_NAME) {
-						// Filter keys that start with "scope." and extract the part after "scope."
-						const scopeKeys = keys
-							.filter((key) => key.startsWith('scope.')) // Filter out keys that start with "scope."
-							.map((key) => key.split('scope.')[1]) // Extract the part after "scope."
-						if (scopeKeys.length > 0) {
-							 await ConfigurationsHelper.createOrUpdate('keysAllowedForTargeting', scopeKeys)
-						}
-					}
-
-          return resolve({
-            message: messageConstants.apiResponses.KEYS_INDEXED_SUCCESSFULL,
-            success: true,
-          });
-        } else {
-          return resolve({
-            message: messageConstants.apiResponses.KEYS_ALREADY_INDEXED_SUCCESSFULL,
-            success: true,
-          });
-        }
+        let result = await adminHelper.createIndex(collection,keys);
+        resolve(result);
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
