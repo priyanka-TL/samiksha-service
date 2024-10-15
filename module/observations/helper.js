@@ -1852,6 +1852,8 @@ module.exports = class ObservationsHelper {
             ['_id'],
           );
 
+          console.log(observationData,userId,'<--***')
+
           if (observationData.length > 0) {
             observationId = observationData[0]._id;
           } else {
@@ -1894,16 +1896,16 @@ module.exports = class ObservationsHelper {
             observationId = observation._id;
           }
         }
-
+        console.log(observationId,'observationId**1')
         let entitiesList = await this.listEntities(observationId);
-
+        console.log(entitiesList,'entitiesList')
         let observationData = await this.observationDocuments(
           {
             _id: observationId,
           },
           ['_id', 'solutionId'],
         );
-
+        console.log(observationData,'observationData')
         let solutionData;
         if (observationData[0]) {
           solutionData = await solutionsQueries.solutionDocuments(
@@ -1962,12 +1964,24 @@ module.exports = class ObservationsHelper {
         let entities = [];
 
         if (observationDocument[0].entities && observationDocument[0].entities.length > 0) {
-          let entitiesData = await entitiesHelper.entityDocuments(
+          
+          /*let entitiesData = await entitiesHelper.entityDocuments(
             {
               _id: { $in: observationDocument[0].entities },
             },
             ['metaInformation.externalId', 'metaInformation.name'],
           );
+
+          */
+
+          let entitiesData = await entityManagementService.entityDocuments(
+            {
+              _id: { $in: observationDocument[0].entities },
+            },
+            ['metaInformation.externalId', 'metaInformation.name'],
+          );
+
+          entitiesData = entitiesData.data;
 
           if (!entitiesData.length > 0) {
             throw {
@@ -2007,6 +2021,7 @@ module.exports = class ObservationsHelper {
           },
         });
       } catch (error) {
+        console.log(error,'error')
         return resolve({
           success: false,
           message: error.message,

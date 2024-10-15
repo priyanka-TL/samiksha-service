@@ -23,6 +23,11 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
 const entityDocuments = function (filterData = 'all', projection = 'all') {
   return new Promise(async (resolve, reject) => {
     try {
+
+      // if(validateEntity == "OFF"){
+      //   return resolve({data:});
+      // }
+
       // Function to find entity documents based on the given filter and projection
       const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_DOCUMENTS;
       // Set the options for the HTTP POST request
@@ -36,7 +41,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           projection: projection,
         },
       };
-	  
+      console.log(options.json.query,'url, options')
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
 
@@ -51,7 +56,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           result.success = false;
         } else {
           let response = data.body;
-          
+          console.log(response,'**response')
           // Check if the response status is OK (HTTP 200)
           if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
