@@ -1,3 +1,11 @@
+/*
+This Node.js script is designed to add default records to the configurations collection in the database,
+ specifically targeting the initial setup of configuration keys. 
+ The script checks if there are any existing records in the collection.
+  If none are found, it will insert a predefined set of keys that are used for targeting purposes. 
+  This ensures that the necessary configuration is in place for the application to function correctly.
+*/
+
 require('dotenv').config({ path: '../.env' });
 global.config = require('../config');
 require('../config/globalVariable')();
