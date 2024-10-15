@@ -143,7 +143,7 @@ module.exports = class Configurations extends Abstract {
 		})
 	}
 
-  	/**
+/**
   * @api {post} /survey/v1/configurations/createOrUpdate
   * @apiVersion 1.0.0
   * @apiName createOrUpdate
