@@ -1314,7 +1314,20 @@
             ]
         },
         {
-            "sourceRoute": "/survey/v1/profile/createOrUpdate",
+            "sourceRoute": "/survey/v1/configurations/createOrUpdate",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/configurations/read",
             "type": "POST",
             "priority": "MUST_HAVE",
             "inSequence": false,

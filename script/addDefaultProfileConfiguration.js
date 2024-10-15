@@ -19,14 +19,7 @@ let profileKeys = [
   'school',
   'block',
   'cluster',
-  'board',
-  'class',
-  'roles',
-  'entities',
-  'entityTypeId',
-  'entityType',
-  'subject',
-  'medium',
+  'roles'
 ];
 
 async function addDefaultRecords() {
