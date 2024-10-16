@@ -1890,7 +1890,7 @@ module.exports = class ObservationsHelper {
 
                 if(!entitiesDocument.success){
                   throw new Error({
-                    message:'Entity Not found.'
+                    message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
                   });
                  }
                  let entityInfo = entitiesDocument.data[0];
@@ -2192,7 +2192,7 @@ module.exports = class ObservationsHelper {
 
          if(!entitiesDocument.success){
           throw new Error({
-            message:'Entity Not found.'
+            message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
           });
          }
   
