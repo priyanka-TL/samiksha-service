@@ -27,6 +27,7 @@ const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const validateEntity = process.env.VALIDATE_ENTITIES;
 
 /**
  * ObservationsHelper
@@ -1975,14 +1976,23 @@ module.exports = class ObservationsHelper {
 
           */
 
-          let entitiesData = await entityManagementService.entityDocuments(
-            {
-              _id: { $in: observationDocument[0].entities },
-            },
-            ['metaInformation.externalId', 'metaInformation.name'],
-          );
-
-          entitiesData = entitiesData.data;
+          let entitiesData;
+          if(validateEntity == 'ON'){
+             entitiesData = await entityManagementService.entityDocuments(
+              {
+                _id: { $in: observationDocument[0].entities },
+              },
+              ['metaInformation.externalId', 'metaInformation.name'],
+            );
+  
+            entitiesData = entitiesData.data;
+          }
+          else {
+            entitiesData = observationDocument[0].entities;
+            entitiesData = entitiesData.map((data)=>{
+              return {"_id":data}
+            });
+          }
 
           if (!entitiesData.length > 0) {
             throw {
@@ -2000,8 +2010,8 @@ module.exports = class ObservationsHelper {
 
             let entity = {
               _id: currentEntities._id,
-              externalId: currentEntities.metaInformation.externalId,
-              name: currentEntities.metaInformation.name,
+              externalId: currentEntities.metaInformation?.externalId,
+              name: currentEntities.metaInformation?.name,
               submissionsCount: observationSubmissions.length > 0 ? observationSubmissions.length : 0,
             };
 
