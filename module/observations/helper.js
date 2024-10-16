@@ -1879,13 +1879,22 @@ module.exports = class ObservationsHelper {
             let entityTypes = Object.keys(_.omit(bodyData, ['role']));
             if (validateEntities == 'ON') {
               if (entityTypes.includes(solutionData.data.entityType)) {
-                let entityData = await entitiesHelper.listByLocationIds([bodyData[solutionData.data.entityType]]);
+                let filterData = {
+                  _id:bodyData[solutionData.data.entityType],
+                  entityType: solutionData.data.entityType,
+                };
+          
+                let entitiesDocument = await entityManagementService.entityDocuments(
+                  filterData
+                );
 
-                if (!entityData.success) {
-                  return resolve(entityData);
-                }
-
-                solutionData.data['entities'] = [entityData.data[0]._id];
+                if(!entitiesDocument.success){
+                  throw new Error({
+                    message:'Entity Not found.'
+                  });
+                 }
+                 let entityInfo = entitiesDocument.data[0];
+                solutionData.data['entities'] = [entityInfo._id];
               }
             } else {
               solutionData.data['entities'] = [bodyData[solutionData.data.entityType]];
@@ -1894,7 +1903,6 @@ module.exports = class ObservationsHelper {
             delete solutionData.data._id;
 
             let observation = await this.create(solutionId, solutionData.data, userId, token);
-
             observationId = observation._id;
           }
         }    
