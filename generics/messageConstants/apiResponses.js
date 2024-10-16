@@ -413,4 +413,5 @@ module.exports = {
   FORM_FETCHED_SUCCESSFULLY: 'Data fetched successfully',
   FORM_VERSION_NOT_FETCHED:'Forms version not able to fetch',
   FORM_VERSION_FETCHED_SUCCESSFULLY: 'Forms version fetched successfully',
+  CONFIGURATION_FETCHED_SUCCESSFULLY: 'Configuration fetched successfully'
 };
