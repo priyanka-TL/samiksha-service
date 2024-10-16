@@ -1972,6 +1972,13 @@ module.exports = class ObservationsHelper {
 
         if (observationDocument[0].entities && observationDocument[0].entities.length > 0) {
           let entitiesData;
+          /*
+          If validateEntity is set to ON, a call will be made to the Entity Management
+          service to fetch information about the entities.
+          Conversely, if validateEntity is OFF, the entities will be used directly without validation,
+           and the response will not include the entity's name or additional information.
+          */
+
           if(validateEntity == 'ON'){
              entitiesData = await entityManagementService.entityDocuments(
               {
@@ -2251,7 +2258,7 @@ module.exports = class ObservationsHelper {
   
          if(!entityTypeDocumentsAPICall.success){
           throw new Error({
-            message:'Entity Not found.'
+            message:messageConstants.apiResponses.ENTITY_NOT_FOUND
           });
          }
   
