@@ -36,7 +36,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           projection: projection,
         },
       };
-      console.log(options.json.query,'url, options')
+
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
 
@@ -51,7 +51,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
           result.success = false;
         } else {
           let response = data.body;
-          console.log(response,'**response')
           // Check if the response status is OK (HTTP 200)
           if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
