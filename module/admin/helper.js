@@ -12,6 +12,9 @@
  * @class
  */
 
+
+const ConfigurationsHelper = require(MODULES_BASE_PATH+"/configurations/helper");
+
 module.exports = class adminHelper {
   /**
    * List of data based on collection.
@@ -89,4 +92,47 @@ module.exports = class adminHelper {
 
     return query;
   }
-};
+
+  /**
+   * creates indexes based on collection and keys
+   * @method
+   * @name list
+   * @param {String} collection - name of the collection.
+   * @param {Array} [keys] - keys in array to be indexed.
+   * @returns {Object} returns a object.
+   */
+  static async createIndex(collection,keys){
+    let presentIndex = await database.models[collection].listIndexes({}, { key: 1 });
+    let indexes = presentIndex.map((indexedKeys) => {
+      return Object.keys(indexedKeys.key)[0];
+    });
+    let indexNotPresent = _.differenceWith(keys, indexes);
+    if (indexNotPresent.length > 0) {
+      indexNotPresent.forEach(async (key) => {
+        await database.models.solutions.db.collection(collection).createIndex({ [key]: 1 });
+      });
+
+      if (collection === messageConstants.common.SOLUTION_MODEL_NAME) {
+        // Filter keys that start with "scope." and extract the part after "scope."
+        const scopeKeys = keys
+          .filter((key) => key.startsWith('scope.')) // Filter out keys that start with "scope."
+          .map((key) => key.split('scope.')[1]) // Extract the part after "scope."
+        if (scopeKeys.length > 0) {
+           await ConfigurationsHelper.createOrUpdate('keysAllowedForTargeting', scopeKeys)
+        }
+      }
+
+      return {
+        message: messageConstants.apiResponses.KEYS_INDEXED_SUCCESSFULL,
+        success: true,
+      }
+
+  }else{
+    return {
+      message: messageConstants.apiResponses.KEYS_ALREADY_INDEXED_SUCCESSFULL,
+      success: true,
+    }
+  }
+
+}
+}
