@@ -70,6 +70,7 @@ isProgramnamePresent = None
 solutionLanguage = None
 keyWords = None
 entityTypeId = None
+rolesPGMID = None
 solutionDescription = None
 creator = None
 dikshaLoginId = None
@@ -77,6 +78,7 @@ criteriaName = None
 solutionId = None
 API_log = None
 listOfFoundRoles = []
+stateEntitiesPGM = []
 entityToUpload = None
 programID = None
 programExternalId = None
@@ -280,7 +282,7 @@ def programCreation(accessToken, parentFolder, externalId, pName, pDescription, 
         "author": creatorKeyCloakId,
         "scope": scope,
         "metaInformation": {
-            "state":entitiesPGM.split(","),
+            "state":stateEntitiesPGM.split(","),
             "roles": mainRole.split(",")
             },
             "requestForPIIConsent":True
@@ -480,10 +482,21 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                                       col_index_env in range(detailsEnvSheet.ncols)}
                     programNameInp = dictDetailsEnv['Title of the Program'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Title of the Program'] else terminatingMessage("\"Title of the Program\" must not be Empty in \"Program details\" sheet")
                     extIdPGM = dictDetailsEnv['Program ID'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Program ID'] else terminatingMessage("\"Program ID\" must not be Empty in \"Program details\" sheet")
+                    descriptionPGM = dictDetailsEnv['Description of the Program'].encode('utf-8').decode('utf-8') if dictDetailsEnv[
+                            'Description of the Program'] else terminatingMessage(
+                            "\"Description of the Program\" must not be Empty in \"Program details\" sheet")
+                    keywordsPGM = dictDetailsEnv['Keywords'].encode('utf-8').decode('utf-8')
                     returnvalues = []
                     global entitiesPGM
                     entitiesPGM = dictDetailsEnv['Targeted entities at program level'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Targeted entities at program level'] else terminatingMessage("\"Targeted entities at program level\" must not be Empty in \"Program details\" sheet")
-                    districtentitiesPGM = dictDetailsEnv['Targeted district at program level'].encode('utf-8').decode('utf-8')
+                    global stateEntitiesPGM
+                    stateEntitiesPGM = dictDetailsEnv['Targeted state at program level'].encode('utf-8').decode('utf-8')
+                    global mainRole
+                    mainRole = dictDetailsEnv['Targeted role at program level'] if dictDetailsEnv['Targeted role at program level'] else terminatingMessage("\"Targeted role at program level\" must not be Empty in \"Program details\" sheet")
+                    global rolesPGM
+                    rolesPGM = dictDetailsEnv['Targeted subrole at program level'] if dictDetailsEnv['Targeted subrole at program level'] else terminatingMessage("\"Targeted subrole at program level\" must not be Empty in \"Program details\" sheet")  
+                    global rolesPGMID
+                    rolesPGMID=rolesPGM.lstrip().rstrip().split(",")
                     global startDateOfProgram, endDateOfProgram
                     startDateOfProgram = dictDetailsEnv['Start date of program']
                     endDateOfProgram = dictDetailsEnv['End date of program']
@@ -502,12 +515,8 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                     global entitiesType
                     entitiesType = fetchEntityType(parentFolder, accessToken,
                                                   entitiesPGM.lstrip().rstrip().split(","), scopeEntityType)
-                    if districtentitiesPGM:
-                        entitiesPGM = districtentitiesPGM
-                        EntityType = "district"
-                    else:
+                    if entitiesPGM:
                         entitiesPGM = entitiesPGM
-                        # EntityType = entitiesType
                         scopeEntityType = entitiesType
 
                     global entitiesPGMID
@@ -526,23 +535,20 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                             "\"Description of the Program\" must not be Empty in \"Program details\" sheet")
                         keywordsPGM = dictDetailsEnv['Keywords'].encode('utf-8').decode('utf-8')
                         entitiesPGM = dictDetailsEnv['Targeted entities at program level'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Targeted entities at program level'] else terminatingMessage("\"Targeted entities at program level\" must not be Empty in \"Program details\" sheet")
-                        districtentitiesPGM = dictDetailsEnv['Targeted district at program level'].encode('utf-8').decode('utf-8')
+                        stateEntitiesPGM = dictDetailsEnv['Targeted state at program level'].encode('utf-8').decode('utf-8')
                         # selecting entity type based on the users input 
-                        if districtentitiesPGM:
-                            entitiesPGM = districtentitiesPGM
-                            EntityType = "district"
-                        else:
+                        if entitiesPGM:
                             entitiesPGM = entitiesPGM
                             scopeEntityType = entitiesType
 
 
                         mainRole = dictDetailsEnv['Targeted role at program level'] if dictDetailsEnv['Targeted role at program level'] else terminatingMessage("\"Targeted role at program level\" must not be Empty in \"Program details\" sheet")
-                        global rolesPGM
+                        # global rolesPGM
                         rolesPGM = dictDetailsEnv['Targeted subrole at program level'] if dictDetailsEnv['Targeted subrole at program level'] else terminatingMessage("\"Targeted subrole at program level\" must not be Empty in \"Program details\" sheet")
                         
                         if "teacher" in mainRole.strip().lower():
                             rolesPGM = str(rolesPGM).strip() + ",TEACHER"
-                        userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['Diksha username/user id/email id/phone no. of Program Designer'])
+                        userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['Elevate username/user id/email id/phone no. of Program Designer'])
                         OrgName=userDetails[4]
                         # orgIds=fetchOrgId(environment, accessToken, parentFolder, OrgName)
                         creatorKeyCloakId = userDetails[0]
@@ -557,6 +563,7 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         # sys.exit()
                         # fetch sub-role details 
                         # rolesPGMID = fetchScopeRole(parentFolder, accessToken, rolesPGM.lstrip().rstrip().split(","))
+                        # global rolesPGMID
                         rolesPGMID=rolesPGM.lstrip().rstrip().split(",")
                         # sys.exit()
                         # call function to create program 
@@ -572,6 +579,14 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                             print("Program Created SuccessFully.")
                         else :
                             terminatingMessage("Program creation failed! Please check logs.")
+                    else :
+                         userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['Elevate username/user id/email id/phone no. of Program Designer'])
+                         OrgName=userDetails[4]
+                         # orgIds=fetchOrgId(environment, accessToken, parentFolder, OrgName)
+                         creatorKeyCloakId = userDetails[0]
+                         creatorName = userDetails[2]
+                         programCreation(accessToken, parentFolder, extIdPGM, programNameInp, descriptionPGM,keywordsPGM.lstrip().rstrip().split(","), entitiesPGMID, rolesPGMID, orgIds,creatorKeyCloakId, creatorName,entitiesPGM,mainRole,rolesPGM)
+                         getProgramInfo(accessToken, parentFolder, extIdPGM)
 
             elif sheetEnv.strip().lower() == 'resource details':
                 # checking Resource details sheet 
@@ -856,7 +871,6 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
                         print("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         messageArr.append("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         createAPILog(solutionName_for_folder_path, messageArr)
-                        terminatingMessage("Aborting...")
 
                     else:
                         programID = getProgramDetails[0][0]
@@ -1309,7 +1323,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
             else:
                 if sheetEnv.strip().lower() == 'details':
                     print("--->Checking details sheet...")
-                    detailsCols = ["observation_solution_name", "observation_solution_description", "Diksha_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type","start_date","end_date"]
+                    detailsCols = ["observation_solution_name", "observation_solution_description", "Elevate_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type","start_date","end_date"]
                     detailsEnvSheet = wbObservation1.sheet_by_name(sheetEnv)
                     keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
                                range(detailsEnvSheet.ncols)]
@@ -1319,7 +1333,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             col_index_env in range(detailsEnvSheet.ncols)}
                         if set(detailsCols) == set(dictDetailsEnv.keys()):
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
-                            dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
+                            dikshaLoginId = dictDetailsEnv['Elevate_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Elevate_loginId'] else terminatingMessage("\"Elevate_loginId\" must not be Empty in \"details\" sheet")
                             ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
                             # if not "CONTENT_CREATOR" in ccUserDetails[3]:
                             #     terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)

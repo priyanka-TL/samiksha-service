@@ -2,11 +2,11 @@
 
 Python script to upload a program and add multiple resources like   Surveys , Observations (with and without rubrics) to it.
 ### Resource templates
-- [Programs](https://docs.google.com/spreadsheets/d/1Q4z1d1aUHY5VVrco2TvHPuWEq7314glUjFxB-jYjfiY/edit?usp=share_link)
+- [Programs](https://github.com/ELEVATE-Project/samiksha-service/blob/main/implementation-script/sampleTempletes/ProgramTemplete.xlsx)
 
-- [Surveys](https://docs.google.com/spreadsheets/d/1iA0lm_jq0IAgrvZRed8Vdj3uVdtvKAqni-SshiPbCo4/edit?usp=share_link)
-- [Observation with out rubrics](https://docs.google.com/spreadsheets/d/1uErekrCkuOXMdIvXsCSOr7YiBk4HcS4iJrh0tdALlsw/edit?usp=share_link)
-- [Observation with rubrics](https://docs.google.com/spreadsheets/d/1doPfZrAlKc62E6YAS050E0keMyiPbDGLDQAjFNIn1AY/edit?usp=share_link)
+- [Surveys](https://github.com/ELEVATE-Project/samiksha-service/blob/main/implementation-script/sampleTempletes/SurveyTemplete.xlsx)
+- [Observation with out rubrics](https://github.com/ELEVATE-Project/samiksha-service/blob/main/implementation-script/sampleTempletes/ObservationWithoutRubrics.xlsx)
+- [Observation with rubrics](https://github.com/ELEVATE-Project/samiksha-service/blob/main/implementation-script/sampleTempletes/Copy%20of%20Observation%20with%20rubrics%20.xlsx)
 
 
 ## Initial steps to set up script in local
@@ -32,14 +32,14 @@ In Windows
 We have ```dev ``` and ``` development ``` as environment.
 
 i. For programTemplate :
-for QA  python3 main.py --env QA --programFile ProgramTemplate.xlsx
+for QA  python3 main.py --env qa --programFile ProgramTemplate.xlsx
 This command will upload the program data from ProgramTemplate.xlsx to the QA environment. -for DEV  python3 main.py --env dev --programFile ProgramTemplate.xlsx
 This command will upload the program data from ProgramTemplate.xlsx to the development environment. -for LOCAL  python3 main.py --env local --programFile ProgramTemplate.xlsx
-This command will upload the program data from ProgramTemplate.xlsx to the local environment. ii. For projectTemplate : -for QA  python3 main.py --QA --project ProjectTemplate.xlsx
+This command will upload the program data from ProgramTemplate.xlsx to the local environment.
 
 ii. For ResourceTemplate :
 
-for QA  python3 main.py --env QA --resourceFile surveyTemplate.xlsx
+for QA  python3 main.py --env qa --resourceFile surveyTemplate.xlsx
 This command will upload the resource (Survey, Observation) from surveyTemplate.xlsx to the QA environment.
  -for DEV  python3 main.py --env dev --resourceFile surveyTemplate.xlsx
 This command will upload the resource (Survey, Observation) from surveyTemplate.xlsx to the development environment.
