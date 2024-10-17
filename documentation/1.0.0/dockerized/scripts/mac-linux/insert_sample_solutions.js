@@ -43,7 +43,7 @@ async function main({dataToBeInserted}) {
 
     await insertData('programs', dataToBeInserted.programData);
     await insertData('solutions',dataToBeInserted.solutionData);
-    await insertData('survey', dataToBeInserted.surveysData);
+    await insertData('surveys', dataToBeInserted.surveysData);
     await insertData('criteria',dataToBeInserted.criteriaData);
     await insertData('criteriaQuestions',dataToBeInserted.criteriaQuestionsData);
     await insertData('questions',dataToBeInserted.questionsData);

@@ -539,10 +539,10 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         mainRole = dictDetailsEnv['Targeted role at program level'] if dictDetailsEnv['Targeted role at program level'] else terminatingMessage("\"Targeted role at program level\" must not be Empty in \"Program details\" sheet")
                         global rolesPGM
                         rolesPGM = dictDetailsEnv['Targeted subrole at program level'] if dictDetailsEnv['Targeted subrole at program level'] else terminatingMessage("\"Targeted subrole at program level\" must not be Empty in \"Program details\" sheet")
-                        
+                        print(mainRole.strip().lower())
                         if "teacher" in mainRole.strip().lower():
                             rolesPGM = str(rolesPGM).strip() + ",TEACHER"
-                        userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['Diksha username/user id/email id/phone no. of Program Designer'])
+                        userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['Elevate username/user id/email id/phone no. of Program Designer'])
                         OrgName=userDetails[4]
                         # orgIds=fetchOrgId(environment, accessToken, parentFolder, OrgName)
                         creatorKeyCloakId = userDetails[0]
