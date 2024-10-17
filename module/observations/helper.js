@@ -27,6 +27,7 @@ const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const validateEntity = process.env.VALIDATE_ENTITIES;
 
 /**
  * ObservationsHelper
@@ -1643,6 +1644,7 @@ module.exports = class ObservationsHelper {
             description: 1,
             solutionId: 1,
             programId: 1,
+            entityType:1
           },
         };
 
@@ -1852,6 +1854,8 @@ module.exports = class ObservationsHelper {
             ['_id'],
           );
 
+          
+
           if (observationData.length > 0) {
             observationId = observationData[0]._id;
           } else {
@@ -1875,13 +1879,22 @@ module.exports = class ObservationsHelper {
             let entityTypes = Object.keys(_.omit(bodyData, ['role']));
             if (validateEntities == 'ON') {
               if (entityTypes.includes(solutionData.data.entityType)) {
-                let entityData = await entitiesHelper.listByLocationIds([bodyData[solutionData.data.entityType]]);
+                let filterData = {
+                  _id:bodyData[solutionData.data.entityType],
+                  entityType: solutionData.data.entityType,
+                };
+          
+                let entitiesDocument = await entityManagementService.entityDocuments(
+                  filterData
+                );
 
-                if (!entityData.success) {
-                  return resolve(entityData);
-                }
-
-                solutionData.data['entities'] = [entityData.data[0]._id];
+                if(!entitiesDocument.success){
+                  throw new Error({
+                    message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
+                  });
+                 }
+                 let entityInfo = entitiesDocument.data[0];
+                solutionData.data['entities'] = [entityInfo._id];
               }
             } else {
               solutionData.data['entities'] = [bodyData[solutionData.data.entityType]];
@@ -1890,20 +1903,16 @@ module.exports = class ObservationsHelper {
             delete solutionData.data._id;
 
             let observation = await this.create(solutionId, solutionData.data, userId, token);
-
             observationId = observation._id;
           }
-        }
-
-        let entitiesList = await this.listEntities(observationId);
-
+        }    
+        let entitiesList = await this.listEntities(observationId);      
         let observationData = await this.observationDocuments(
           {
             _id: observationId,
           },
           ['_id', 'solutionId'],
-        );
-
+        );       
         let solutionData;
         if (observationData[0]) {
           solutionData = await solutionsQueries.solutionDocuments(
@@ -1962,12 +1971,30 @@ module.exports = class ObservationsHelper {
         let entities = [];
 
         if (observationDocument[0].entities && observationDocument[0].entities.length > 0) {
-          let entitiesData = await entitiesHelper.entityDocuments(
-            {
-              _id: { $in: observationDocument[0].entities },
-            },
-            ['metaInformation.externalId', 'metaInformation.name'],
-          );
+          let entitiesData;
+          /*
+          If validateEntity is set to ON, a call will be made to the Entity Management
+          service to fetch information about the entities.
+          Conversely, if validateEntity is OFF, the entities will be used directly without validation,
+           and the response will not include the entity's name or additional information.
+          */
+
+          if(validateEntity == 'ON'){
+             entitiesData = await entityManagementService.entityDocuments(
+              {
+                _id: { $in: observationDocument[0].entities },
+              },
+              ['metaInformation.externalId', 'metaInformation.name'],
+            );
+  
+            entitiesData = entitiesData.data;
+          }
+          else {
+            entitiesData = observationDocument[0].entities;
+            entitiesData = entitiesData.map((data)=>{
+              return {"_id":data}
+            });
+          }
 
           if (!entitiesData.length > 0) {
             throw {
@@ -1985,8 +2012,8 @@ module.exports = class ObservationsHelper {
 
             let entity = {
               _id: currentEntities._id,
-              externalId: currentEntities.metaInformation.externalId,
-              name: currentEntities.metaInformation.name,
+              externalId: currentEntities.metaInformation?.externalId,
+              name: currentEntities.metaInformation?.name,
               submissionsCount: observationSubmissions.length > 0 ? observationSubmissions.length : 0,
             };
 
@@ -2170,7 +2197,7 @@ module.exports = class ObservationsHelper {
 
          if(!entitiesDocument.success){
           throw new Error({
-            message:'Entity Not found.'
+            message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
           });
          }
   
@@ -2236,7 +2263,7 @@ module.exports = class ObservationsHelper {
   
          if(!entityTypeDocumentsAPICall.success){
           throw new Error({
-            message:'Entity Not found.'
+            message:messageConstants.apiResponses.ENTITY_NOT_FOUND
           });
          }
   

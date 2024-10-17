@@ -403,5 +403,15 @@ module.exports = {
   USER_ROLES_NOT_FOUND: 'No user roles found',
   OBSERVATION_REPORT_SUCCESS: 'Observation Report generated successfully',
   pdf_report_generated : "Pdf report generated successfully",
-  could_not_generate_pdf : "Could not generate pdf report"
+  could_not_generate_pdf : "Could not generate pdf report",
+  FORM_NOT_CREATED:'Form creation failed',
+  FORM_CREATED_SUCCESSFULLY: 'Form created successfully',
+  FORM_NOT_UPDATED:'Form updation failed',
+  FORM_UPDATED_SUCCESSFULLY: 'Form updated successfully',
+  DEFAULT_ORG_ID_NOT_SET:'Default orgId not set',
+  FORM_NOT_FOUND:'Form not found',
+  FORM_FETCHED_SUCCESSFULLY: 'Data fetched successfully',
+  FORM_VERSION_NOT_FETCHED:'Forms version not able to fetch',
+  FORM_VERSION_FETCHED_SUCCESSFULLY: 'Forms version fetched successfully',
+  CONFIGURATION_FETCHED_SUCCESSFULLY: 'Configuration fetched successfully'
 };

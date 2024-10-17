@@ -89,5 +89,7 @@ module.exports = {
 	READ_PERMISSION: 'r',
   status_failure:'failure',
   status_success:'success',
-  azure: "AZURE"
+  azure: "AZURE",
+  SERVER_TIME_OUT: 5000,
+  SOLUTION_MODEL_NAME: 'solutions'
 };

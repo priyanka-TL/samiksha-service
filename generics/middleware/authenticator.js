@@ -5,7 +5,8 @@ var messageUtil = require('./lib/messageUtil');
 var responseCode = require('../httpStatusCodes');
 const jwt = require('jsonwebtoken');
 const instance = require("./Instance.json")
-
+const path = require('path')
+const fs = require('fs');
 // var shikshalokam = require("../helpers/shikshalokam");
 
 var reqMsg = messageUtil.REQUEST;
@@ -280,14 +281,76 @@ module.exports = async function (req, res, next) {
   if (!decodedToken) {
     return res.status(responseCode['bad_request'].status).send(respUtil(rspObj));
   }
+
+  // Path to config.json
+	const configFilePath = path.resolve(__dirname, '../../', 'config.json')
+  	// Initialize variables
+	let configData = {}
+	let defaultTokenExtraction = false
+
+  if (fs.existsSync(configFilePath)) {
+		// Read and parse the config.json file
+		const rawData = fs.readFileSync(configFilePath)
+		try {
+			configData = JSON.parse(rawData)
+			if (!configData.authTokenUserInformation) {
+				defaultTokenExtraction = true
+			}
+			configData = configData.authTokenUserInformation
+		} catch (error) {
+			console.error('Error parsing config.json:', error)
+		}
+	} else {
+		// If file doesn't exist, set defaultTokenExtraction to true
+		defaultTokenExtraction = true
+	}
+
+  let userInformation = {}
+	// Create user details to request
+	req.userDetails = {
+		userToken: token,
+	}
+  	// performing default token data extraction
+	if (defaultTokenExtraction) {
+		userInformation = {
+    userToken: token,
+    userId: JSON.stringify(decodedToken.data.id),
+    userName: decodedToken.data.name,
+    firstName: decodedToken.data.name,
+    organizationId: decodedToken.data.organization_id,
+  }
+	} else {
+		// Iterate through each key in the config object
+		for (let key in configData) {
+			if (configData.hasOwnProperty(key)) {
+				let keyValue = getNestedValue(decodedToken, configData[key])
+				if (key === 'userId') {
+					keyValue = keyValue.toString()
+				}
+				// For each key in config, assign the corresponding value from decodedToken
+				userInformation[key] = keyValue
+			}
+		}
+	}
+  	// Update user details object
+	req.userDetails = userInformation
+
+	// Helper function to access nested properties
+	function getNestedValue(obj, path) {
+		return path.split('.').reduce((acc, part) => acc && acc[part], obj)
+	}
+
   // let userDetails = await getUserDetails(decodedToken)
+  /*
   req.userDetails = {
     userToken: token,
     userId: JSON.stringify(decodedToken.data.id),
     userName: decodedToken.data.name,
     // email: decodedToken.data.email,
     firstName: decodedToken.data.name,
+    organizationId: decodedToken.data.organization_id,
   };
+  */
   next();
 
   // if (!token) {

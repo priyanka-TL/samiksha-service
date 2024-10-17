@@ -179,7 +179,8 @@ module.exports = class ReportsHelper {
       result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(
         submissionDocumentArr,
         true,
-        criteriaWise
+        criteriaWise,
+        'entity'
       );
     }
     responseObject.reportSections = result;
@@ -245,7 +246,7 @@ module.exports = class ReportsHelper {
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
     } else {
-      result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr);
+      result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,true,criteriaWise,'instance');
     }
     responseObject.reportSections = result;
 

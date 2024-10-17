@@ -183,6 +183,7 @@ module.exports = class SolutionsHelper {
    * @param {Number} pageSize       - Size of page.
    * @param {String} search         - search text.
    * @param {String} [ filter = ""] - filter text.
+   * @param {String} currentScopeOnly - flag to return records only based on scope
    * @returns {Object} - Details of the solution.
    */
 
@@ -290,10 +291,28 @@ module.exports = class SolutionsHelper {
         if (getTargetedSolution) {
           targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search);
         }
+        
         if (targetedSolutions.success) {
-          if (targetedSolutions.success && targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
-            totalCount += targetedSolutions.data.count;
-            targetedSolutions.data.data.forEach((targetedSolution) => {
+					// When targetedSolutions is empty and currentScopeOnly is set to true send empty response
+					if (!(targetedSolutions.data.data.length > 0) && currentScopeOnly) {
+						return resolve({
+							success: true,
+							message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+							data: {
+								data: targetedSolutions.data.data,
+								count: targetedSolutions.data.data.length,
+							},
+							result: {
+								data: targetedSolutions.data.data,
+								count: targetedSolutions.data.data.length,
+							},
+						})
+					}
+					// When targetedSolutions is not empty alter the response based on the value of currentScopeOnly
+					if (targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
+						let filteredTargetedSolutions = []
+						targetedSolutions.data.data.forEach((targetedSolution) => {
+
               targetedSolution.solutionId = targetedSolution._id;
               targetedSolution._id = '';
 
@@ -305,12 +324,43 @@ module.exports = class SolutionsHelper {
                 targetedSolution.isCreator = false;
               }
 
-              mergedData.push(targetedSolution);
+							filteredTargetedSolutions.push(targetedSolution)
               delete targetedSolution.type;
               delete targetedSolution.externalId;
-            });
-          }
-        }
+
+						})
+            
+						if (currentScopeOnly) {
+              filteredTargetedSolutions.forEach((solution) => {
+								// Find the corresponding project in mergedData where solutionId matches _id
+								const matchingRecord = _.find(mergedData, (record) => {
+									return String(record.solutionId) === String(solution.solutionId)
+								})
+
+								if (matchingRecord) {
+									// Add all keys from the matching project to the solution object
+									Object.assign(solution, matchingRecord)
+								}
+							})
+
+							mergedData = filteredTargetedSolutions
+							totalCount = mergedData.length
+						} else {
+							filteredTargetedSolutions.forEach((solution) => {
+								// Check if the solution _id exists in mergedData solutionId
+								const existsInMergedData = _.some(mergedData, (record) => {
+									return String(record.solutionId) === String(solution.solutionId)
+								})
+
+								if (!existsInMergedData) {
+									mergedData.push(solution)
+								}
+							})
+
+							totalCount = mergedData.length
+						}
+					}
+				}
 
         if (mergedData.length > 0) {
           let startIndex = pageSize * (pageNo - 1);
@@ -3355,7 +3405,7 @@ module.exports = class SolutionsHelper {
           data: solutionDocuments[0],
         });
       } catch (error) {
-        return resolve({
+      return resolve({
           success: false,
           message: error.message,
           data: {},

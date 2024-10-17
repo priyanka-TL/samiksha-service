@@ -273,6 +273,10 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
+  DEFAULT_ORGANISATION_CODE:{
+    message: 'Required default organisation code.',
+		optional: false,
+  }
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
   //   message: 'ON/OFF',
   //   optional: false,
