@@ -888,14 +888,13 @@ module.exports = class ProgramsHelper {
   static userPrivatePrograms(userId) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programsData = await this.list(
-          {
-            createdBy: userId,
-            isAPrivateProgram: true,
-          },
-          ['name', 'externalId', 'description', '_id']
-        );
-
+        let programsData = await programsQueries.programDocuments(
+					{
+						createdBy: userId,
+						isAPrivateProgram: true,
+					},
+					['name', 'externalId', 'description', '_id', 'isAPrivateProgram',"metaInformation"]
+				)
         if (!programsData.length > 0) {
           return resolve({
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
@@ -1230,9 +1229,12 @@ module.exports = class ProgramsHelper {
             matchQuery['isAPrivateProgram'] = false;
           }
         }
+        matchQuery['startDate'] ={ $lte: new Date() }
+        matchQuery['endDate'] =  { $gte: new Date() }
         //adding programIds array to matchQuery
-        matchQuery['_id'] = { $in: programIds };
+        // matchQuery['_id'] = { $in: programIds };
         let projection = [
+          "_id",
           'name',
           'description',
           'externalId',
@@ -1240,6 +1242,7 @@ module.exports = class ProgramsHelper {
           'createdBy',
           'status',
           'resourceType',
+          "metaInformation"
         ];
         //listing the solution based on type and query
         let targetedPrograms = await this.list(matchQuery, projection, pageNo, pageSize, searchText);
@@ -1267,53 +1270,54 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Auto targeted solutions query.
    */
 
-  static queryBasedOnRoleAndLocation(data) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let entities = [];
-        let entityTypes = [];
-        let filterQuery = {
-          isDeleted: false,
-        };
-        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type'])).forEach((key) => {
+  static queryBasedOnRoleAndLocation(data, type = '') {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let registryIds = []
+				let entityTypes = []
+				let filterQuery = {
+					isDeleted: false,
+				}
+				Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type'])).forEach((key) => {
 					data[key] = data[key].split(',')
 				})
-        //Check for validate entities ON or OFF
-        if (validateEntity !== messageConstants.common.OFF) {
-          // Getting entities and entity types from request body
-          Object.keys(_.omit(data, ['filter', 'role', 'factors',"type"])).forEach((requestedDataKey) => {
-            if (requestedDataKey == 'entities') entities.push(...data[requestedDataKey]);
-            if (requestedDataKey == 'entityType') entityTypes.push(requestedDataKey);
-          });
-          if (!(entities.length > 0)) {
-            throw {
-              message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
-            };
-          }
-          if (!data.role) {
+
+				// If validate entity set to ON . strict scoping should be applied
+				if (validateEntity !== messageConstants.common.OFF) {
+					Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((requestedDataKey) => {
+						registryIds.push(...data[requestedDataKey])
+						entityTypes.push(requestedDataKey)
+					})
+					if (!registryIds.length > 0) {
+						throw {
+							message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
+						}
+					}
+
+					if (!data.role) {
 						throw {
 							message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
 						}
 					}
 
-          filterQuery['scope.roles'] = {
-            $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
-          };
-          // filterQuery['scope.entities'] = { $in: entities };
-          filterQuery.$or = []
+					filterQuery['scope.roles'] = {
+						$in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
+					}
+
+					filterQuery.$or = []
 					Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((key) => {
 						filterQuery.$or.push({
 							[`scope.${key}`]: { $in: data[key] },
 						})
 					})
-          filterQuery['scope.entityType'] = { $in: entityTypes };
-        } else {
-          let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role']);
-          let userRoleKeys = Object.keys(userRoleInfo);
+					filterQuery['scope.entityType'] = { $in: entityTypes }
+				} else {
+					// Obtain userInfo
+					let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type'])
+					let userRoleKeys = Object.keys(userRoleInfo)
+					let queryFilter = []
 
-          let queryFilter = []
-
-          // if factors are passed or query has to be build based on the keys passed
+					// if factors are passed or query has to be build based on the keys passed
 					if (data.hasOwnProperty('factors') && data.factors.length > 0) {
 						let factors = data.factors
 						// Build query based on each key
@@ -1322,7 +1326,7 @@ module.exports = class ProgramsHelper {
 							let values = userRoleInfo[factor]
 							if (factor === 'role') {
 								queryFilter.push({
-									['scope.roles']: { $in: [CONSTANTS.common.ALL_ROLES, ...data.role.split(',')] },
+									['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
 								})
 							} else if (!Array.isArray(values)) {
 								queryFilter.push({ [scope]: { $in: values.split(',') } })
@@ -1350,24 +1354,26 @@ module.exports = class ProgramsHelper {
 						}
 
 						// append query filter
-            if(queryFilter.length > 0){
 						filterQuery['$and'] = queryFilter
-            }
 					}
-        }
+				}
 
-        return resolve({
-          success: true,
-          data: filterQuery,
-        });
-      } catch (error) {
-        return resolve({
-          success: false,
-          status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
-          message: error.message,
-          data: {},
-        });
-      }
-    });
-  }
+				filterQuery.status = messageConstants.common.ACTIVE_STATUS
+				if (type != '') {
+					filterQuery.type = type
+				}
+				return resolve({
+					success: true,
+					data: filterQuery,
+				})
+			} catch (error) {
+				return resolve({
+					success: false,
+					status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+					message: error.message,
+					data: {},
+				})
+			}
+		})
+	}
 };
