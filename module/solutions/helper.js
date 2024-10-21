@@ -646,7 +646,7 @@ module.exports = class SolutionsHelper {
         }
 
         if (programId !== '') {
-          matchQuery['programId'] = ObjectId(programId);
+          matchQuery['programId'] = new ObjectId(programId);
         }
         //matchQuery['startDate'] = { $lte: new Date() };
         //listing the solution based on type and query

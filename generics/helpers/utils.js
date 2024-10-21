@@ -222,7 +222,9 @@ function arrayIdsTobjectIds(ids) {
 function arrayIdsTobjectIdsNew(ids) {
   return ids.map((id) => new ObjectId(id));
 }
-
+function arrayOfObjectToArrayOfObjectId(ids) {
+	return ids.map((obj) => obj._id)
+}
 function checkIfEnvDataExistsOrNot(data) {
   let value;
 
@@ -457,7 +459,18 @@ function getGotenbergConnection() {
 
   return options;
 }
+/**
+ * Returns array of objects in string format and accepts array of objectId
+ * @function
+ * @name convertArrayObjectIdtoStringOfObjectId
+ * @returns {Boolean} returns a array of objectIds in string format
+ * Input = [ObjectId(6319a4d53c40dd000978dacb), ObjectId(6319a4d53c40dd000978dacb)] This array will contain buffer of objectId
+ * Output = ["6319a4d53c40dd000978dacb","6319a4d53c40dd000978dacb"] This is the output in format of string
+ */
 
+function convertArrayObjectIdtoStringOfObjectId(ids) {
+  return ids.map((obj) => obj._id.toString());
+}
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
   lowerCase: lowerCase,
@@ -488,5 +501,7 @@ module.exports = {
   getEndDate: getEndDate,
   getStartDate: getStartDate,
   checkIfValidUUID:checkIfValidUUID,
-  getGotenbergConnection:getGotenbergConnection
+  getGotenbergConnection:getGotenbergConnection,
+  arrayOfObjectToArrayOfObjectId:arrayOfObjectToArrayOfObjectId,
+  convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId
 };
