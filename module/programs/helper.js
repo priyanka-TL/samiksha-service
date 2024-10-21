@@ -885,17 +885,21 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - List of programs that user created on app.
    */
 
-  static userPrivatePrograms(userId) {
+  static userPrivatePrograms(userId,pageNo,pageSize,searchText) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programsData = await programsQueries.programDocuments(
+        let programsData = await this.list(
 					{
 						createdBy: userId,
 						isAPrivateProgram: true,
 					},
-					['name', 'externalId', 'description', '_id', 'isAPrivateProgram',"metaInformation"]
+					['name', 'externalId', 'description', '_id', 'isAPrivateProgram',"metaInformation"],
+          pageNo,
+          pageSize,
+          searchText
 				)
-        if (!programsData.length > 0) {
+        programsData =programsData.data
+        if (!programsData.data.length > 0) {
           return resolve({
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
             result: [],

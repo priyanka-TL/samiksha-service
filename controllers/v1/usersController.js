@@ -96,22 +96,27 @@ module.exports = class Users {
   programs(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let isAPrivateProgram = gen.utils.convertStringToBoolean(req.query.isAPrivateProgram)
-        if(isAPrivateProgram){
-          let programsData = await usersHelper.privatePrograms(req.userDetails.userId)
-					return resolve(programsData)
-        }else{
-        let userPrograms = await usersHelper.programs(
-          req.body,
-          req.pageNo,
-          req.pageSize,
-          req.searchText,
-          req.userDetails.userId
-        )
-      
-        userPrograms.result = userPrograms.data
-        return resolve(userPrograms);
-       }
+        let isAPrivateProgram = gen.utils.convertStringToBoolean(req.query.isAPrivateProgram);
+        if (isAPrivateProgram) {
+          let programsData = await usersHelper.privatePrograms(
+            userId,
+            req.pageSize,
+            req.pageNo,
+            req.searchText
+          );
+          return resolve(programsData);
+        } else {
+          let userPrograms = await usersHelper.programs(
+            req.body,
+            req.pageNo,
+            req.pageSize,
+            req.searchText,
+            req.userDetails.userId
+          );
+
+          userPrograms.result = userPrograms.data;
+          return resolve(userPrograms);
+        }
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
@@ -121,7 +126,7 @@ module.exports = class Users {
       }
     });
   }
-  
+
   /**
    * @api {post} /survey/v1/users/solutions/:programId?page=:page&limit=:limit&search=:searchText
    * @apiVersion 1.0.0
@@ -141,70 +146,78 @@ module.exports = class Users {
    * @apiUse errorBody
    * @apiParamExample {json} Response:
    * {
-        "message": "Program solutions fetched successfully",
-        "status": 200,
-        "result": {
-            "programName": "Certificate test VVP4",
-            "programId": "66bb85bebf682a1f367c55b9",
-            "programEndDate": "2025-12-16T18:29:59.000Z",
-            "description": "The discipline studies the sound system of Sanskrit, including the rules governing the sounds and their combinations. It analyzes how sounds are produced and how they interact within the language.",
-            "rootOrganisations": "",
-            "data": [
-                {
-                    "_id": "66bf077ae74aa1727af8b1d4",
-                    "language": [
-                        "English"
-                    ],
-                    "name": "Certificate_Testing_VVP5",
-                    "entityType": "state",
-                    "type": "improvementProject",
-                    "externalId": "sol-1-IM-5",
-                    "endDate": "2025-12-16T18:29:59.000Z",
-                    "projectTemplateId": "66bf07a1e74aa1727af8b1dc",
-                    "certificateTemplateId": "66bf0822e74aa1727af8b1e7",
-                    "link": "beb6e72ad73a097b9d7910e45a613431",
-                    "projectId": "66bf5f3b1f4f6aa3de42d312"
-                }
-            ],
-            "count": 2,
-            "requestForPIIConsent": true
-        }
+    "message": "Program solutions fetched successfully",
+    "status": 200,
+    "result": {
+        "programName": "Testing by dev team ap",
+        "programId": "669a9836c5da53e877b8969e",
+        "description": "testing by dev team",
+        "rootOrganisations": "",
+        "data": [
+            {
+                "_id": "66c2eb3e39f69eb48f2980f7",
+                "externalId": "Test-survey2-1724050238923",
+                "name": "Test survey 1",
+                "description": "Test survey 1",
+                "language": [
+                    "English"
+                ],
+                "type": "survey",
+                "endDate": "2026-12-25T00:00:00.000Z",
+                "link": "abad9308b93222bb9d0ccc8e79efdbe8",
+                "entityType": ""
+            },
+            {
+                "_id": "66d055bbdf92822366029c1c",
+                "externalId": "606d92fa-42d8-11ec-ac61-29082024-15-57-OBSERVATION-TEMPLATE-1724929467852",
+                "name": "dev_testing",
+                "description": "dev testing",
+                "language": [
+                    "English"
+                ],
+                "entityType": "school",
+                "type": "observation",
+                "endDate": "2025-08-29T11:04:27.852Z",
+                "link": "464f9f5d68282096a190b583748cf8ec"
+             }
+        ],
+        "count": 2
+      }
     }
    **/
 
-	/**
-	 * User targeted solutions.
-	 * @method
-	 * @name solutions
-	 * @param  {req}  - requested data.
-	 * @returns {json} List of targeted solutions.
-	 */
+  /**
+   * User targeted solutions.
+   * @method
+   * @name solutions
+   * @param  {req}  - requested data.
+   * @returns {json} List of targeted solutions.
+   */
 
-	solutions(req) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				let targetedSolutions = await usersHelper.solutions(
-					req.params._id,
-					req.body,
-					req.pageSize,
-					req.pageNo,
-					req.searchText,
-					req.userDetails.userId
-				)
+  solutions(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let targetedSolutions = await usersHelper.solutions(
+          req.params._id,
+          req.body,
+          req.pageSize,
+          req.pageNo,
+          req.searchText,
+          req.userDetails.userId
+        );
 
-				return resolve(targetedSolutions)
-			} catch (error) {
-				return reject({
-					status: error.status || httpStatusCode.internal_server_error.status,
+        return resolve(targetedSolutions);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
 
-					message: error.message || httpStatusCode.internal_server_error.message,
+          message: error.message || httpStatusCode.internal_server_error.message,
 
-					errorObject: error,
-				})
-			}
-		})
-	}
-
+          errorObject: error,
+        });
+      }
+    });
+  }
 
   /**
     * @api {get} /assessment/api/v1/users/entities/:userId List of user entities
@@ -315,7 +328,7 @@ module.exports = class Users {
     return new Promise(async (resolve, reject) => {
       try {
         let programsData = await usersHelper.privatePrograms(
-          req.params._id && req.params._id != '' ? req.params._id : req.userDetails.userId,
+          req.params._id && req.params._id != '' ? req.params._id : req.userDetails.userId
         );
 
         return resolve(programsData);
@@ -425,7 +438,7 @@ module.exports = class Users {
         let createdProgramAndSolution = await usersHelper.createProgramAndSolution(
           req.params._id && req.params._id != '' ? req.params._id : req.userDetails.id,
           req.body,
-          req.userDetails.userToken,
+          req.userDetails.userToken
         );
 
         return resolve(createdProgramAndSolution);
