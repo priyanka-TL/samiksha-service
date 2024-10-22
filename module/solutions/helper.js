@@ -262,7 +262,7 @@ module.exports = class SolutionsHelper {
         }
 
         requestedData['filter'] = {};
-        if (solutionIds.length > 0) {
+        if (solutionIds.length > 0 && !currentScopeOnly) {
           requestedData['filter']['skipSolutions'] = solutionIds;
         }
 
