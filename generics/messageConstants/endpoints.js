@@ -23,4 +23,5 @@ module.exports = {
   GET_TEMPLATE_DETAILS: '/v1/project/templates/details',
   USER_READ:"/v1/user/read",
 	ORGANIZATION_READ: '/v1/organization/read',
+  USER_ROLE_EXTENSION:'/v1/userRoleExtension/find'
 };

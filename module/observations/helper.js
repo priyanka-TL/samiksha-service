@@ -2428,4 +2428,205 @@ module.exports = class ObservationsHelper {
   
 
   }
+
+  static async targetedEntityHelper(solutionId,requestedData){
+
+    let solutionData = await solutionsQueries.solutionDocuments(
+      {
+        _id: solutionId,
+        isDeleted: false,
+      },
+      ["entityType", "type"]
+    );
+
+    if (!solutionData.length > 0) {
+      return resolve({
+        status: httpStatusCode.bad_request.status,
+        message: constants.apiResponses.SOLUTION_NOT_FOUND,
+      });
+    }
+
+
+    ///roles code
+
+    /*
+
+    entityManagementService
+
+
+    */
+
+    let rolesDocument = await entityManagementService.userRoleExtension(          {
+      code: requestedData.role,
+    },
+    ["entityTypes.entityType"])
+
+
+    console.log(rolesDocument,'rolesDocument')
+
+    if (!rolesDocument.data > 0) {
+      throw {
+        status: httpStatusCode["bad_request"].status,
+        message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+      };
+    }
+
+    let requestedEntityTypes = Object.keys(_.omit(requestedData, ["role"]));
+    console.log(requestedEntityTypes,'requestedEntityTypes')
+    let targetedEntityType = "";
+    
+    rolesDocument.data[0].entityTypes.forEach((singleEntityType) => {
+      if (requestedEntityTypes.includes(singleEntityType.entityType)) {
+        targetedEntityType = singleEntityType.entityType;
+      }
+    });
+
+
+    console.log(targetedEntityType,'targetedEntityType')
+
+    let filterData = {};
+    if (solutionData[0].entityType === targetedEntityType) {
+      console.log(requestedData[targetedEntityType],'requestedData[targetedEntityType]')
+      console.log(gen.utils.checkValidUUID(requestedData[targetedEntityType]),'<---gen.utils.checkValidUUID(requestedData[targetedEntityType])')
+      // if solution entity type and user tageted entity type are same
+      if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+        console.log('here')
+        filterData = {
+          parentId: requestedData[targetedEntityType],
+        };
+        console.log(filterData,'filterData')
+        let entitiesDocument = await entityManagementService.entityDocuments(
+          filterData
+        );
+
+        if(!entitiesDocument.success){
+          throw new Error({
+            message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
+          });
+         }
+         let entityInfo = entitiesDocument.data[0];
+        if (entitiesData.success) {
+          targetedEntityType = constants.common.STATE_ENTITY_TYPE;
+        }
+      } else if (targetedEntityType === constants.common.SCHOOL) {
+        targetedEntityType = constants.common.STATE_ENTITY_TYPE;
+      }
+    }
+
+
+    if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+      filterData = {
+        id: requestedData[targetedEntityType],
+      };
+    } else {
+      filterData = {
+        code: requestedData[targetedEntityType],
+      };
+    }
+    let entitiesDocument = await entityManagementService.entityDocuments(
+      filterData
+    );
+    if (!entitiesDocument.success) {
+      throw {
+        message: constants.apiResponses.ENTITY_NOT_FOUND,
+      };
+    }
+
+    let entityData = entitiesDocument.data;
+    let entityDataFormated = {
+      _id: entityData[0].id,
+      entityType: entityData[0].type,
+      entityName: entityData[0].name,
+    };
+
+    return {
+      message: constants.apiResponses.SOLUTION_TARGETED_ENTITY,
+      success: true,
+      data: entityDataFormated,
+    };
+
+  }
+  
+  static async targetedEntity(req){
+
+    return new Promise(async (resolve, reject)=>{
+
+      try{
+        let roleArray = req.body.role.split(",");
+        let targetedEntities = {};
+        if ( roleArray.length === 1 ) {
+          console.log(1)
+  
+          const detailEntity = 
+          await this.targetedEntityHelper(
+              req.params._id,
+              req.body
+          );
+
+          console.log(detailEntity,'detailEntity')
+  
+          detailEntity["result"] = detailEntity.data;
+  
+          return resolve(detailEntity);
+  
+      } else {
+         console.log(2)
+          let roleWiseTargetedEntities = new Array();
+  
+          for ( let roleCount = 0; roleCount < roleArray.length; roleCount++ ) {
+  
+              const eachRole = roleArray[roleCount];
+              let bodyData = _.omit(req.body, ['role']);
+              bodyData.role = eachRole;
+              
+              const detailEntity = 
+              await this.targetedEntityHelper(
+                  req.params._id,
+                  bodyData
+              );
+  
+              if ( detailEntity.data && Object.keys(detailEntity.data).length > 0 ) {
+                  roleWiseTargetedEntities.push(detailEntity.data);
+              }
+          }
+          //no targeted entity
+          if ( roleWiseTargetedEntities.length  == 0 ) {
+              throw {
+                  status: httpStatusCode["bad_request"].status,
+                  message: constants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE
+              };
+          } 
+          //one targeted entity 
+          else if ( roleWiseTargetedEntities && roleWiseTargetedEntities.length == 1 ) {
+              
+              targetedEntities.result = roleWiseTargetedEntities[0];
+  
+          } 
+          // multiple targeted entity
+          else if ( roleWiseTargetedEntities && roleWiseTargetedEntities.length > 1 ) {
+              // request body contain role and entity information
+              let targetedEntity = await this.getHighestTargetedEntity(
+                  roleWiseTargetedEntities, req.body
+              );
+     
+              if ( !targetedEntity.data ) {
+                  throw {
+                      status: httpStatusCode["bad_request"].status,
+                      message: constants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE
+                  };
+              }
+              targetedEntities.result = targetedEntity.data;
+          }
+      }
+  
+      return resolve(targetedEntities);
+  
+      }catch(err){
+          console.log(err);
+          return reject(err);
+      }
+    
+    })
+
+  }
 };

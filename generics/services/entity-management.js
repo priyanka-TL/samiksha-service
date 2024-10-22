@@ -218,9 +218,74 @@ const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo)
     });
   }
 
+/**
+ * List of user role extension data.
+ * @function
+ * @name userRoleExtension
+ * @param {Object} filterData - Filter data.
+ * @param {Array} projection - Projected data.
+ * @param {String} authToken - Authentication token.
+ * @returns {JSON} - List of user role extension data.
+ */
+
+// Function to find user role extension documents based on the given filter and projection
+const userRoleExtension = function (filterData = 'all', projection = 'all', authToken) {
+  console.log({filterData,projection,authToken})
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Define the URL for the user role extension API
+      const url = entityManagementServiceUrl+messageConstants.endpoints.USER_ROLE_EXTENSION;
+
+      // Set the options for the HTTP POST request
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+          'X-auth-token': authToken, // Use the passed authentication token
+        },
+        json: {
+          query: filterData,
+          projection: projection,
+        },
+      };
+
+      // Make the HTTP POST request to the user role extension API
+      request.post(url, options, requestCallBack);
+
+      // Callback function to handle the response from the HTTP POST request
+      function requestCallBack(err, data) {
+        let result = {
+          success: true,
+        };
+
+        if (err) {
+          result.success = false;
+        } else {
+
+          let response = data.body;
+
+          console.log(response)
+          // Check if the response status is OK (HTTP 200)
+          if (response.status === httpStatusCode['ok'].status) {
+            result['data'] = response.result;
+          } else {
+            result.success = false;
+          }
+        }
+
+        return resolve(result);
+      }
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
+
+
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
   validateEntities:validateEntities,
-  listByEntityType:listByEntityType
+  listByEntityType:listByEntityType,
+  userRoleExtension:userRoleExtension
 };

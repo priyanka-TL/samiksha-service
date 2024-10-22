@@ -627,6 +627,23 @@ module.exports = class Observations extends Abstract {
     });
   }
 
+  async targetedEntity(req) {
+    return new Promise(async (resolve, reject) => {
+      try{
+        let searchEntitiesResult = await observationsHelper.targetedEntity(req);
+        resolve(searchEntitiesResult);
+      }catch(error){
+        console.log(error);
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+
   /**
    * @api {get} /assessment/api/v1/observations/assessment/:observationId?entityId=:entityId&submissionNumber=submissionNumber&ecmMethod=ecmMethod Assessments
    * @apiVersion 1.0.0
