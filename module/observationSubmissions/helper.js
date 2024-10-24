@@ -1017,11 +1017,11 @@ module.exports = class ObservationSubmissionsHelper {
           ['metaInformation.externalId', 'metaInformation.name'],
         );
 
-        if(!entitiesDocumentAPICall.success){
+        if(!entitiesDetails.success){
           throw new Error("Entity Management Service down.")
         }
 
-        let entitiesData = entitiesDocumentAPICall.data;
+        let entitiesData = entitiesDetails.data;
 
         if (!entitiesData.length > 0) {
           throw {
