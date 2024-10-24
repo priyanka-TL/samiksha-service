@@ -1210,6 +1210,19 @@
             ]
         },
         {
+            "sourceRoute": "/survey/v1/observationSubmissions/solutionList",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
             "sourceRoute": "/survey/v1/forms/create",
             "type": "POST",
             "priority": "MUST_HAVE",

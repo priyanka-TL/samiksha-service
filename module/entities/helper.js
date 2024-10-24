@@ -1483,13 +1483,13 @@ module.exports = class EntitiesHelper {
               };
       
               
-            let entitiesDocumentAPICall = await entityManagementService.entityDocuments(filterData);
+            let entitiesDetails = await entityManagementService.entityDocuments(filterData);
 
-            if(!entitiesDocumentAPICall.success){
-              throw new Error()
+            if(!entitiesDetails.success){
+              throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN)
             }
 
-            let entitiesDocument = entitiesDocumentAPICall.data;  
+            let entitiesDocument = entitiesDetails.data;  
 
             if( entitiesDocument.length > 0 && entitiesDocument[0].groups && entitiesDocument[0].groups[result.entityType]  ) {
                 userAllowedEntities = 
@@ -1562,19 +1562,19 @@ module.exports = class EntitiesHelper {
             })
         }
 
-        let entitiesDocumentAPICall = await entityManagementService.listByEntityType(
+        let entitiesDetails = await entityManagementService.listByEntityType(
           result.entityTypeId,
           req.userDetails.userToken,
           req.pageSize,
           req.pageNo
         );
 
-        if(!entitiesDocumentAPICall.success){
+        if(!entitiesDetails.success){
           //API call failed
-          throw new Error('Entity Management call failed.');
+          throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN);
         }
 
-        let entityDocuments = entitiesDocumentAPICall;
+        let entityDocuments = entitiesDetails;
         //adding logic to filter out entity records based on userAllowedEntities
 
         let filteredRecordBasedOnUserAllowedEntities = [];

@@ -417,5 +417,5 @@ module.exports = {
   PROGRAM_DESCRIPTION:
 		'View and participate in educational programs active in your location and designed for the role you selected',
   PROGRAM_SOLUTIONS_FETCHED: 'Program solutions fetched successfully',
-
+  ENTITY_SERVICE_DOWN:'Entity Management Service down.'
 };
