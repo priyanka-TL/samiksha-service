@@ -850,8 +850,6 @@ module.exports = class Observations extends Abstract {
           status: 'started',
         };
 
-        console.log(submissionDocument,'submissionDocument')
-
         if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
           submissionDocument['criteriaLevelReport'] = solutionDocument['criteriaLevelReport'];
         }
