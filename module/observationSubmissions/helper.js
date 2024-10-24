@@ -1009,7 +1009,7 @@ module.exports = class ObservationSubmissionsHelper {
           entityIds.push(submission.entityId);
         });
 
-        let entitiesDocumentAPICall = await entityManagementService.entityDocuments(
+        let entitiesDetails = await entityManagementService.entityDocuments(
           {
             _id: { $in: entityIds },
           },
