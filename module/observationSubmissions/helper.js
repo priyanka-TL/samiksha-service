@@ -68,7 +68,6 @@ module.exports = class ObservationSubmissionsHelper {
         }
         return resolve(submissionDocuments);
       } catch (error) {
-        console.log(error)
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
