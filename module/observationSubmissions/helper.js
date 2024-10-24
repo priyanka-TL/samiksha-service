@@ -17,6 +17,8 @@ const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const solutionHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
+
 /**
  * ObservationSubmissionsHelper
  * @class
@@ -1009,6 +1011,9 @@ module.exports = class ObservationSubmissionsHelper {
           entityIds.push(submission.entityId);
         });
 
+        let entitiesData;
+        if (validateEntities == 'ON') { 
+
         let entitiesDetails = await entityManagementService.entityDocuments(
           {
             _id: { $in: entityIds },
@@ -1017,11 +1022,18 @@ module.exports = class ObservationSubmissionsHelper {
         );
 
         if(!entitiesDetails.success){
-          throw new Error("Entity Management Service down.")
+          throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN)
         }
+      
+         entitiesData = entitiesDetails.data;
+      }else {
+        entitiesData = entityIds.map((id)=>{
+          return {
+            _id:id
+          }
+        });
 
-        let entitiesData = entitiesDetails.data;
-
+      }
         if (!entitiesData.length > 0) {
           throw {
             message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
@@ -1035,8 +1047,8 @@ module.exports = class ObservationSubmissionsHelper {
 
           let entity = {
             _id: currentEntities._id,
-            externalId: currentEntities.metaInformation.externalId,
-            name: currentEntities.metaInformation.name,
+            externalId: currentEntities.metaInformation?.externalId,
+            name: currentEntities.metaInformation?.name,
           };
 
           entities[currentEntities._id] = entity;
