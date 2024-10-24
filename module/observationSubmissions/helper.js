@@ -56,7 +56,7 @@ module.exports = class ObservationSubmissionsHelper {
           });
         }
 
-        console.log(queryObject, projection,'queryObject, projection')
+
         let submissionDocuments; 
         if (sortedData !== 'all') { 
           submissionDocuments = await database.models.observationSubmissions
@@ -66,7 +66,6 @@ module.exports = class ObservationSubmissionsHelper {
         } else { 
           submissionDocuments = await database.models.observationSubmissions.find(queryObject, projection).lean();
         }
-        console.log(submissionDocuments,'submissionDocuments')
         return resolve(submissionDocuments);
       } catch (error) {
         console.log(error)
