@@ -262,7 +262,7 @@ module.exports = class SolutionsHelper {
         }
 
         requestedData['filter'] = {};
-        if (solutionIds.length > 0) {
+        if (solutionIds.length > 0 && !currentScopeOnly) {
           requestedData['filter']['skipSolutions'] = solutionIds;
         }
 
@@ -646,7 +646,7 @@ module.exports = class SolutionsHelper {
         }
 
         if (programId !== '') {
-          matchQuery['programId'] = ObjectId(programId);
+          matchQuery['programId'] = new ObjectId(programId);
         }
         //matchQuery['startDate'] = { $lte: new Date() };
         //listing the solution based on type and query

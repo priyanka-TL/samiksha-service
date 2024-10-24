@@ -714,6 +714,13 @@ module.exports = class Observations extends Abstract {
               message: responseMessage,
             });
           }
+        }else{
+
+          entityDocument =  {
+            _id: req.query.entityId,
+            metaInformation:{}
+          }
+
         }
 
         if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {
