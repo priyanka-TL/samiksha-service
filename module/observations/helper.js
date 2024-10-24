@@ -403,7 +403,6 @@ module.exports = class ObservationsHelper {
 
           let observationEntitySubmissions = {};
           submissions.forEach((observationEntitySubmission) => {
-            console.log(observationEntitySubmission,'<--target')
             if (!observationEntitySubmissions[observationEntitySubmission.entityId.toString()]) {
               observationEntitySubmissions[observationEntitySubmission.entityId.toString()] = {
                 submissionStatus: '',
