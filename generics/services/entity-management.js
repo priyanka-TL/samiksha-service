@@ -25,7 +25,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page=nu
     try {
       // Function to find entity documents based on the given filter and projection
       const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_DOCUMENTS;
-      console.log(filterData,projection)
       let requestJSON = {
         query: filterData,
         projection: projection,
@@ -306,7 +305,6 @@ async function getSubEntitiesBasedOnEntityType(parentIds, entityType, result) {
   };
 
   let entityDetails = await entityDocuments(bodyData);
-  console.log(entityDetails,'entityDetails')
   if (!entityDetails.success) {
     return result;
   }
