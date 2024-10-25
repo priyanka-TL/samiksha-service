@@ -834,7 +834,7 @@ module.exports = class SolutionsHelper {
           // }
 
           let scopeDatas = Object.keys(scopeData);
-          console.log(scopeDatas,'scope.datas')
+          
           let scopeDataIndex = scopeDatas.map((index) => {
             return `scope.${index}`;
           });
@@ -874,7 +874,7 @@ module.exports = class SolutionsHelper {
         //  else {
         //   currentSolutionScope = scopeData;
         // }
-        console.log(updateObject,'updateObject')
+        
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
@@ -996,7 +996,7 @@ module.exports = class SolutionsHelper {
 
         // If req body has scope to update for the solution document
         if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
-          console.log('***here')
+          
           let solutionScope = await this.setScope(
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
@@ -1346,7 +1346,7 @@ module.exports = class SolutionsHelper {
 
         return resolve(csvArray);
       } catch (error) {
-        console.log(error);
+        
         return reject(error);
       }
     });
@@ -3393,7 +3393,7 @@ module.exports = class SolutionsHelper {
           },
         };
 
-        console.log(matchQuery,'matchQuery')
+        
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {
@@ -3622,7 +3622,7 @@ module.exports = class SolutionsHelper {
           data: targetedSolutionDetails[0],
         });
       } catch (error) {
-        console.log(error)
+        
         return resolve({
           success: false,
           message: error.message,

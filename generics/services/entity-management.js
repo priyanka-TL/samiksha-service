@@ -45,7 +45,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page=nu
         json: requestJSON
       };
 
-      console.log(requestJSON,'***********requestJSON')
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
 
@@ -71,7 +70,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page=nu
         return resolve(result);
       }
     } catch (error) {
-      console.log(error)
       return reject(error);
     }
   });
