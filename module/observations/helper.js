@@ -2446,25 +2446,12 @@ module.exports = class ObservationsHelper {
       });
     }
 
-
-    ///roles code
-
-    /*
-
-    entityManagementService
-
-
-    */
-
-    let rolesDocument = await entityManagementService.userRoleExtension(          {
+    let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
       code: requestedData.role,
     },
     ["entityTypes.entityType"])
 
-
-    console.log(rolesDocument,'rolesDocument')
-
-    if (!rolesDocument.data > 0) {
+    if (!rolesDocumentAPICall.success) {
       throw {
         status: httpStatusCode["bad_request"].status,
         message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
@@ -2472,81 +2459,164 @@ module.exports = class ObservationsHelper {
     }
 
     let requestedEntityTypes = Object.keys(_.omit(requestedData, ["role"]));
-    console.log(requestedEntityTypes,'requestedEntityTypes')
     let targetedEntityType = "";
     
-    rolesDocument.data[0].entityTypes.forEach((singleEntityType) => {
+
+    
+    rolesDocumentAPICall.data[0].entityTypes.forEach((singleEntityType) => {
       if (requestedEntityTypes.includes(singleEntityType.entityType)) {
         targetedEntityType = singleEntityType.entityType;
       }
     });
 
-
-    console.log(targetedEntityType,'targetedEntityType')
-
-    let filterData = {};
     if (solutionData[0].entityType === targetedEntityType) {
-      console.log(requestedData[targetedEntityType],'requestedData[targetedEntityType]')
-      console.log(gen.utils.checkValidUUID(requestedData[targetedEntityType]),'<---gen.utils.checkValidUUID(requestedData[targetedEntityType])')
-      // if solution entity type and user tageted entity type are same
-      if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
-        console.log('here')
-        filterData = {
-          parentId: requestedData[targetedEntityType],
-        };
-        console.log(filterData,'filterData')
-        let entitiesDocument = await entityManagementService.entityDocuments(
-          filterData
-        );
 
-        if(!entitiesDocument.success){
-          throw new Error({
-            message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
-          });
-         }
-         let entityInfo = entitiesDocument.data[0];
-        if (entitiesData.success) {
-          targetedEntityType = constants.common.STATE_ENTITY_TYPE;
-        }
-      } else if (targetedEntityType === constants.common.SCHOOL) {
-        targetedEntityType = constants.common.STATE_ENTITY_TYPE;
+      let filterQuery = {
+        "registryDetails.code": requestedData[targetedEntityType]
+      };
+
+      if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+        filterQuery = {
+          "registryDetails.locationId": requestedData[targetedEntityType]
+        };
+      }
+
+      let entitiesAPICall = await entityManagementService.entityDocuments(filterQuery, [
+        "groups",
+      ]);
+
+      
+
+      const entityDetails = entitiesAPICall.data
+      
+      if (!entityDetails.length > 0) {
+        throw {
+          message: messageConstants.apiResponses.ENTITY_NOT_FOUND
+        };
+      }
+      
+      let entities = entitiesAPICall.data;
+      if (
+        entities[0] &&
+        entities[0].groups &&
+        Object.keys(entities[0].groups).length > 0
+      ) {
+        targetedEntityType = messageConstants.common.STATE_ENTITY_TYPE;
       }
     }
 
+    let filterData = {
+      "registryDetails.code": requestedData[targetedEntityType]
+    };
 
     if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
       filterData = {
-        id: requestedData[targetedEntityType],
-      };
-    } else {
-      filterData = {
-        code: requestedData[targetedEntityType],
-      };
-    }
-    let entitiesDocument = await entityManagementService.entityDocuments(
-      filterData
-    );
-    if (!entitiesDocument.success) {
-      throw {
-        message: constants.apiResponses.ENTITY_NOT_FOUND,
+        "registryDetails.locationId": requestedData[targetedEntityType]
       };
     }
 
-    let entityData = entitiesDocument.data;
-    let entityDataFormated = {
-      _id: entityData[0].id,
-      entityType: entityData[0].type,
-      entityName: entityData[0].name,
-    };
+    
+    let entitiesAPICall = await entityManagementService.entityDocuments(filterData, [
+      "metaInformation.name",
+      "entityType"
+    ]);
+
+    if (!entitiesAPICall.success) {
+      throw {
+        message: messageConstants.apiResponses.ENTITY_NOT_FOUND
+      };
+    }
+
+    let entities = entitiesAPICall.data;
+
+    
+
+    if (entities[0].metaInformation && entities[0].metaInformation.name) {
+      entities[0]['entityName'] = entities[0].metaInformation.name;
+      delete entities[0].metaInformation;
+    }
 
     return {
-      message: constants.apiResponses.SOLUTION_TARGETED_ENTITY,
+      message: messageConstants.apiResponses.SOLUTION_TARGETED_ENTITY,
       success: true,
-      data: entityDataFormated,
+      data: entities[0]
     };
 
   }
-  
+  /**
+   * Highest Targeted entity.
+   * @method
+   * @name getHighestTargetedEntity
+   * @param {Object} requestedData - requested data
+   * @returns {Object} - Entity.
+   */
+
+  static getHighestTargetedEntity( roleWiseTargetedEntities ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let allTargetedEntities = {};
+        let targetedEntity = {};
+
+        for( let pointerToEntities = 0 ; pointerToEntities < roleWiseTargetedEntities.length ; pointerToEntities++ ) {
+
+          let currentEntity = roleWiseTargetedEntities[pointerToEntities];
+
+          if ( !allTargetedEntities.hasOwnProperty(currentEntity._id) ) {
+            allTargetedEntities[currentEntity._id] = new Array();
+          }
+
+          let otherEntities = roleWiseTargetedEntities.filter((entity) => entity.entityType !== currentEntity.entityType);
+          
+          if ( !otherEntities || !otherEntities.length > 0 ) {
+            continue; 
+          }
+
+          let entitiesDocument = await entityManagementService.entityDocuments({
+              _id: currentEntity._id
+          }, ["groups"]);
+
+          if (!entitiesDocument.success || entitiesDocument.data.length == 0 ) {
+            continue;
+          }
+
+          entitiesDocument = entitiesDocument.data[0];
+
+          for( let entityCounter = 0 ; entityCounter < otherEntities.length ; entityCounter++ ) {
+
+            let entityDoc = otherEntities[entityCounter];
+          
+            if ( !entitiesDocument.groups || !entitiesDocument.groups.hasOwnProperty(entityDoc.entityType) ) {
+              break;
+            }
+
+            allTargetedEntities[currentEntity._id].push(true);
+            if ( allTargetedEntities[currentEntity._id].length == otherEntities.length ) {
+              targetedEntity = roleWiseTargetedEntities.filter((entity) => entity._id == currentEntity._id);
+              break;
+            }
+          }
+
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.SOLUTION_TARGETED_ENTITY,
+          success: true,
+          data: targetedEntity
+        });
+        
+      } catch (error) {
+        
+        return resolve({
+          success: false,
+          status: error.status
+            ? error.status
+            : httpStatusCode['internal_server_error'].status,
+          message: error.message
+        });
+      }
+    });
+  }
   static async targetedEntity(req){
 
     return new Promise(async (resolve, reject)=>{
@@ -2555,74 +2625,62 @@ module.exports = class ObservationsHelper {
         let roleArray = req.body.role.split(",");
         let targetedEntities = {};
         if ( roleArray.length === 1 ) {
-          console.log(1)
-  
+          
           const detailEntity = 
           await this.targetedEntityHelper(
               req.params._id,
               req.body
           );
-
-          console.log(detailEntity,'detailEntity')
-  
           detailEntity["result"] = detailEntity.data;
-  
           return resolve(detailEntity);
   
       } else {
-         console.log(2)
+         
           let roleWiseTargetedEntities = new Array();
-  
           for ( let roleCount = 0; roleCount < roleArray.length; roleCount++ ) {
   
-              const eachRole = roleArray[roleCount];
+              const eachRole = roleArray[roleCount];            
               let bodyData = _.omit(req.body, ['role']);
-              bodyData.role = eachRole;
-              
+              bodyData.role = eachRole;         
               const detailEntity = 
               await this.targetedEntityHelper(
                   req.params._id,
                   bodyData
-              );
-  
-              if ( detailEntity.data && Object.keys(detailEntity.data).length > 0 ) {
+              );       
+              if ( detailEntity.data && Object.keys(detailEntity.data).length > 0 ) {              
                   roleWiseTargetedEntities.push(detailEntity.data);
               }
           }
+
           //no targeted entity
           if ( roleWiseTargetedEntities.length  == 0 ) {
               throw {
                   status: httpStatusCode["bad_request"].status,
-                  message: constants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE
+                  message: messageConstants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE
               };
           } 
           //one targeted entity 
-          else if ( roleWiseTargetedEntities && roleWiseTargetedEntities.length == 1 ) {
-              
-              targetedEntities.result = roleWiseTargetedEntities[0];
-  
-          } 
+          else if (roleWiseTargetedEntities && roleWiseTargetedEntities.length == 1) {
+            targetedEntities.result = roleWiseTargetedEntities[0];
+          }
           // multiple targeted entity
-          else if ( roleWiseTargetedEntities && roleWiseTargetedEntities.length > 1 ) {
-              // request body contain role and entity information
-              let targetedEntity = await this.getHighestTargetedEntity(
-                  roleWiseTargetedEntities, req.body
-              );
-     
-              if ( !targetedEntity.data ) {
-                  throw {
-                      status: httpStatusCode["bad_request"].status,
-                      message: constants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE
-                  };
-              }
-              targetedEntities.result = targetedEntity.data;
+          else if (roleWiseTargetedEntities && roleWiseTargetedEntities.length > 1) {
+            // request body contain role and entity information
+            let targetedEntity = await this.getHighestTargetedEntity(roleWiseTargetedEntities, req.body);
+
+            if (!targetedEntity.data) {
+              throw {
+                status: httpStatusCode['bad_request'].status,
+                message: messageConstants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE,
+              };
+            }
+            targetedEntities.result = targetedEntity.data;
+            targetedEntities.message = messageConstants.apiResponses.SOLUTION_TARGETED_ENTITY;
           }
       }
-  
       return resolve(targetedEntities);
   
       }catch(err){
-          console.log(err);
           return reject(err);
       }
     

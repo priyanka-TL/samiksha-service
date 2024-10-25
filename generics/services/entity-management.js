@@ -20,23 +20,32 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  */
 
 // Function to find entity documents based on the given filter and projection
-const entityDocuments = function (filterData = 'all', projection = 'all') {
+const entityDocuments = function (filterData = 'all', projection = 'all',page=null,limit=null) {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
       const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_DOCUMENTS;
+      console.log(filterData,projection)
+      let requestJSON = {
+        query: filterData,
+        projection: projection,
+      }
+     // Include pagination if pageNumber and pageLimit are explicitly provided
+      if (page !== null && limit !== null) {
+        requestJSON.query.page = page;
+        requestJSON.query.limit = limit;
+      }
+
       // Set the options for the HTTP POST request
       const options = {
         headers: {
           'content-type': 'application/json',
           'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
         },
-        json: {
-          query: filterData,
-          projection: projection,
-        },
+        json: requestJSON
       };
 
+      console.log(requestJSON,'***********requestJSON')
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
 
@@ -62,7 +71,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all') {
         return resolve(result);
       }
     } catch (error) {
-      
+      console.log(error)
       return reject(error);
     }
   });
@@ -230,7 +239,7 @@ const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo)
 
 // Function to find user role extension documents based on the given filter and projection
 const userRoleExtension = function (filterData = 'all', projection = 'all', authToken) {
-  console.log({filterData,projection,authToken})
+  
   return new Promise(async (resolve, reject) => {
     try {
       // Define the URL for the user role extension API
@@ -264,7 +273,7 @@ const userRoleExtension = function (filterData = 'all', projection = 'all', auth
 
           let response = data.body;
 
-          console.log(response)
+          
           // Check if the response status is OK (HTTP 200)
           if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
@@ -280,12 +289,53 @@ const userRoleExtension = function (filterData = 'all', projection = 'all', auth
     }
   });
 };
+/**
+ * get subEntities of matching type by recursion.
+ * @method
+ * @name getSubEntitiesBasedOnEntityType
+ * @param {Array} entityIds - Array of entity Ids - parent entities.
+ * @param {String} entityType - Entity type.
+ * @param {Array} result - subentities of type {entityType} of {entityIds}
+ * @returns {Array} - Sub entities matching the type.
+ */
 
+async function getSubEntitiesBasedOnEntityType(parentIds, entityType, result) {
+  if (!parentIds.length > 0) {
+    return result;
+  }
+  let bodyData = {
+    parentId: parentIds,
+  };
+
+  let entityDetails = await entityDocuments(bodyData);
+  console.log(entityDetails,'entityDetails')
+  if (!entityDetails.success) {
+    return result;
+  }
+
+  let entityData = entityDetails.data;
+  let parentEntities = [];
+  entityData.map((entity) => {
+    if (entity.type == entityType) {
+      result.push(entity.id);
+    } else {
+      parentEntities.push(entity.id);
+    }
+  });
+
+  if (parentEntities.length > 0) {
+    await getSubEntitiesBasedOnEntityType(parentEntities, entityType, result);
+  }
+
+  let uniqueEntities = _.uniq(result);
+  return uniqueEntities;
+}
 
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
   validateEntities:validateEntities,
   listByEntityType:listByEntityType,
-  userRoleExtension:userRoleExtension
+  userRoleExtension:userRoleExtension,
+  getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType
 };

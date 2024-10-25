@@ -614,10 +614,11 @@ module.exports = class Observations extends Abstract {
   async searchEntities(req) {
     return new Promise(async (resolve, reject) => {
       try{
+        
         let searchEntitiesResult = await entitiesHelper.searchEntitiesHelper(req);
         resolve(searchEntitiesResult);
       }catch(error){
-        console.log(error);
+        
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
@@ -630,10 +631,9 @@ module.exports = class Observations extends Abstract {
   async targetedEntity(req) {
     return new Promise(async (resolve, reject) => {
       try{
-        let searchEntitiesResult = await observationsHelper.targetedEntity(req);
+        let searchEntitiesResult = await observationsHelper.targetedEntity(req);  
         resolve(searchEntitiesResult);
-      }catch(error){
-        console.log(error);
+      }catch(error){       
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,

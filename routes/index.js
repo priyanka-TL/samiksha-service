@@ -85,7 +85,7 @@ module.exports = function (app) {
         }
 
         console.info('-------------------Response log starts here-------------------');
-        console.info('%j', result);
+     //   console.info('%j', result);
         console.info('-------------------Response log ends here-------------------');
       } catch (error) {
         res.status(error.status ? error.status : httpStatusCode.bad_request.status).json({
