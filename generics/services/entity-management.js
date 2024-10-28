@@ -16,11 +16,13 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  * @name entityDocuments
  * @param {Object} filterData - Filter data.
  * @param {Array} projection - Projected data.
+ * @param {number} page - The page number for pagination.
+ * @param {number} limit - The maximum number of results per page.
  * @returns {JSON} - List of entity data.
  */
 
 // Function to find entity documents based on the given filter and projection
-const entityDocuments = function (filterData = 'all', projection = 'all',page=null,limit=null) {
+const entityDocuments = function (filterData = 'all', projection = 'all',page = null,limit = null) {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
@@ -235,7 +237,7 @@ const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo)
  */
 
 // Function to find user role extension documents based on the given filter and projection
-const userRoleExtension = function (filterData = 'all', projection = 'all', authToken) {
+const userRoleExtension = function (filterData = 'all', projection = 'all') {
   
   return new Promise(async (resolve, reject) => {
     try {
@@ -247,7 +249,6 @@ const userRoleExtension = function (filterData = 'all', projection = 'all', auth
         headers: {
           'content-type': 'application/json',
           'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-          'X-auth-token': authToken, // Use the passed authentication token
         },
         json: {
           query: filterData,

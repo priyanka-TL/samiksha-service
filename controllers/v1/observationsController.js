@@ -628,6 +628,46 @@ module.exports = class Observations extends Abstract {
     });
   }
 
+       /**
+    * @api {post} /survey/api/v1/observations/targetedEntity/:solutionId Targeted entity.
+    * @apiVersion 1.0.0
+    * @apiName Targeted entity.
+    * @apiGroup Observations
+    * @apiParamExample {json} Request-Body:
+    {
+    "cluster": "22763910-f79f-4746-900b-b429fb7f9d24",
+    "district": "24c36610-0640-45a3-b88e-fa92c9ebbec2",
+    "state": "bc75cc99-9205-463e-a722-5326857838f8",
+    "block": "e5be5e9c-3eea-4822-8754-9009c47c6782",
+    "school": "b840c173-5d17-4ebf-b76e-567763ff2c4e",
+    "role": "senior_teacher,test2"
+    }
+    * @apiHeader {String} X-auth-token Authenticity token
+    * @apiSampleRequest /survey/api/v1/observations/targetedEntity/601d41607d4c835cf8b724ad
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+{
+    "message": "Targeted Entity Types Fetched",
+    "status": 200,
+    "result": [
+        {
+            "_id": "5fd1b52ab53a6416aaeefb84",
+            "entityType": "block",
+            "entityName": "ADDATEEGALA"
+        }
+    ]
+}
+    */
+
+     /**
+   * Targeted entity
+   * @method
+   * @name targetedEntity
+   * @param {Object} req - requested data.
+   * @param {Object} req.body - requested bidy data.
+   * @returns {Array} Details entity.
+   */
   async targetedEntity(req) {
     return new Promise(async (resolve, reject) => {
       try{
