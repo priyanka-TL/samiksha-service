@@ -417,5 +417,7 @@ module.exports = {
   PROGRAM_DESCRIPTION:
 		'View and participate in educational programs active in your location and designed for the role you selected',
   PROGRAM_SOLUTIONS_FETCHED: 'Program solutions fetched successfully',
-  ENTITY_SERVICE_DOWN:'Entity Management Service down.'
+  ENTITY_SERVICE_DOWN:'Entity Management Service down.',
+  SOLUTION_TARGETED_ENTITY:'Targeted Entity Types Fetched',
+  ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role'
 };

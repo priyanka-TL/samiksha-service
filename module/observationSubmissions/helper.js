@@ -58,7 +58,6 @@ module.exports = class ObservationSubmissionsHelper {
           });
         }
 
-
         let submissionDocuments; 
         if (sortedData !== 'all') { 
           submissionDocuments = await database.models.observationSubmissions
@@ -70,6 +69,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
         return resolve(submissionDocuments);
       } catch (error) {
+        
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
@@ -897,6 +897,7 @@ module.exports = class ObservationSubmissionsHelper {
          userRoleFilterArray.push(new RegExp(eachRole))
         })
 
+        
         let query = {
           createdBy: userId,
           deleted: false,
@@ -964,7 +965,6 @@ module.exports = class ObservationSubmissionsHelper {
           },
         );
 
-
         let observationSubmissions = await database.models.observationSubmissions.aggregate(aggregateData);
 
         if (observationSubmissions.length == 0 || observationSubmissions[0].data.length == 0) {
@@ -986,6 +986,7 @@ module.exports = class ObservationSubmissionsHelper {
 
         query['solutionId'] = { $in: solutionIds };
 
+        
         let submissions = await this.observationSubmissionsDocument(
           _.omit(query, ['userRoleInformation.role']),
           [

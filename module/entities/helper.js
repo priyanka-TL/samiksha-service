@@ -13,6 +13,7 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const observationsHelper = require(MODULES_BASE_PATH + '/observations/helper');
 const userExtensionHelper = require(MODULES_BASE_PATH + '/userExtension/helper');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper')
 /**
  * EntitiesHelper
  * @class
@@ -1418,204 +1419,167 @@ module.exports = class EntitiesHelper {
  * @throws {Error} If search process fails.
  */
   static searchEntitiesHelper(req){
-    return new Promise(async (resolve, reject) => {
-      try {
-        let formatForSearchEntities = true;
-        let response = {
-          result: {},
-        };
-        
-        let userId = req.userDetails.userId;
-        let result;
-
-        let projection = [];
-
-        if (!req.query.observationId && !req.query.solutionId) {
-          throw {
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.OBSERVATION_SOLUTION_ID_REQUIRED,
-          };
-        }
-
-        if (req.query.observationId) {
-          let findObject = {
-            _id: req.query.observationId,
-            createdBy: userId,
-          };
-
-          projection.push('entities', 'entityType','entityTypeId');
-
-          let observationDocument = await observationsHelper.observationDocuments(findObject, projection);
-          result = observationDocument[0];
-        }
-
-        if (req.query.solutionId) {
-          let findQuery = {
-            _id: ObjectId(req.query.solutionId),
-          };
-          projection.push('entityType','entityTypeId');
-
-          let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projection);
-          result = _.merge(solutionDocument[0]);
-        }
-
-        let userAllowedEntities = new Array;
-        let messageData = messageConstants.apiResponses.ENTITY_FETCHED;
-
-        if(req.query.parentEntityId ) {
-
-            let entityType = entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP+"."+result.entityType;
     
-            let entitiesData = await entitiesHelper.entityDocuments({
-                _id:req.query.parentEntityId
-              }, [
-                entityType,
-                "entityType",
-                "metaInformation.name",
-                "metaInformation.addressLine1",
-                "metaInformation.addressLine2",
-                "metaInformation.externalId",
-                "metaInformation.districtName"
-              ]);
+    return new Promise(async (resolve, reject) => {
 
-              let filterData = {
-                _id: req.query.parentEntityId
+      try {
+
+          let formatForSearchEntities = true;
+          let response = {
+              result: {}
+          };
+
+          let userId = req.userDetails.userId;
+          let result;
+
+          let projection = [];
+
+          if ( !req.query.observationId && !req.query.solutionId ) {
+              throw {
+                  status: httpStatusCode.bad_request.status,
+                  message: messageConstants.apiResponses.OBSERVATION_SOLUTION_ID_REQUIRED
               };
-      
+          }
+
+          if ( req.query.observationId ) {
+              let findObject = {
+                  "_id" : req.query.observationId,
+                  "createdBy" : userId
+              };
+
+              projection.push(
+                  "entities",
+                  "entityType"
+              );
+
+              let observationDocument = 
+              await observationsHelper.observationDocuments(findObject, projection);
+              result = observationDocument[0];
+
+          }
+
+          if ( req.query.solutionId ) {
+              let findQuery = {
+                  _id: ObjectId(req.query.solutionId)
+              };
+              projection.push(
+                  "entityType"
+              );
+
+              let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projection);
+              result = _.merge(solutionDocument[0]);
+          }
+         
+          let userAllowedEntities = new Array;
+          
+          // try {
+          //     userAllowedEntities = await userExtensionHelper.getUserEntitiyUniverseByEntityType(userId, result.entityType);
+          // } catch (error) {
+          //     userAllowedEntities = [];
+          // }
+
+          if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
+              let filterData = {
+                  "_id" : req.query.parentEntityId
+              };
+                  
+              let entitiesDetails = await entityManagementService.entityDocuments(filterData);
               
-            let entitiesDetails = await entityManagementService.entityDocuments(filterData);
+              if ( !entitiesDetails.success ) {
+                  return resolve({
+                      "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                      "result" : [{
+                          "count":0,
+                          "data" : []
+                      }]
+                  })
+              }
 
-            if(!entitiesDetails.success){
-              throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN)
-            }
+              let entitiesData = entitiesDetails.data;
 
-            let entitiesDocument = entitiesDetails.data;  
+              if( entitiesData && entitiesData[0].entityType === result.entityType ) {
+                  response.result = [];
+                  
+                  let data = 
+                  await this.observationSearchEntitiesResponse(
+                      entitiesData,
+                      result.entities
+                  );
 
-            if( entitiesDocument.length > 0 && entitiesDocument[0].groups && entitiesDocument[0].groups[result.entityType]  ) {
-                userAllowedEntities = 
-                entitiesDocument[0][entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_GROUP][result.entityType];
-            } else {
-                response.result = [];
-                if( entitiesDocument[0] && entitiesDocument[0].entityType === result.entityType ) {
+                  response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
 
-                    if( entitiesDocument[0].metaInformation ) {
-                        
-                        if( entitiesDocument[0].metaInformation.name ) {
-                            entitiesDocument[0]["name"] = entitiesDocument[0].metaInformation.name;
-                        }
+                  response.result.push({
+                      "data" : data,
+                      "count" : 1
+                  });
+                  return resolve(response);
 
-                        if( entitiesDocument[0].metaInformation.externalId ) {
-                            entitiesDocument[0]["externalId"] = entitiesDocument[0].metaInformation.externalId;
-                        }
-
-                        if( entitiesDocument[0].metaInformation.addressLine1 ) {
-                            entitiesDocument[0]["addressLine1"] = entitiesDocument[0].metaInformation.addressLine1;
-                        }
-
-                        if( entitiesDocument[0].metaInformation.addressLine2 ) {
-                            entitiesDocument[0]["addressLine2"] = entitiesDocument[0].metaInformation.addressLine2;
-                        }
-
-                        if( entitiesDocument[0].metaInformation.districtName ) {
-                            entitiesDocument[0]["districtName"] = entitiesDocument[0].metaInformation.districtName;
-                        }
-
-                        entitiesDocument[0] = _.pick(
-                            entitiesDocument[0],
-                            ["_id","name","externalId","addressLine1","addressLine2","districtName"]
-                        )
-                    }
-
-                    let data = 
-                    await entitiesHelper.observationSearchEntitiesResponse(
-                        entitiesDocument,
-                        result.entities
-                    );
-
-                    response["message"] = messageData;
-
-                    response.result = data;
-
-                } else {
-                    response["message"] = 
-                    messageConstants.apiResponses.ENTITY_NOT_FOUND;
+              } else {
                     
-                    response.result = []
-                }  
+                response["message"] = 
+                messageConstants.apiResponses.ENTITY_NOT_FOUND;
+                
+                response.result.push({
+                    "count":0,
+                    "data" : []
+                });
 
                 return resolve(response);
+                      
+              }
+              
+          } else {
+
+            response.result = [];
+            let filterData = {
+              "entityType":result.entityType,
+
             }
-        }
-
-        let userAclInformation = await userExtensionHelper.userAccessControlList(
-            userId
-        );
-
-        let tags = [];
-        
-        if( 
-            userAclInformation.success && 
-            Object.keys(userAclInformation.acl).length > 0 
-        ) {
-            Object.values(userAclInformation.acl).forEach(acl=>{
-                tags = tags.concat(acl);
-            })
-        }
-
-        let entitiesDetails = await entityManagementService.listByEntityType(
-          result.entityTypeId,
-          req.userDetails.userToken,
-          req.pageSize,
-          req.pageNo
-        );
-
-        if(!entitiesDetails.success){
-          //API call failed
-          throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN);
-        }
-
-        let entityDocuments = entitiesDetails;
-        //adding logic to filter out entity records based on userAllowedEntities
-
-        let filteredRecordBasedOnUserAllowedEntities = [];
-
-        if(userAllowedEntities.length > 0)
-        {
-          for(let record of entityDocuments.data)
-            {
-              if(userAllowedEntities.includes(record._id)){
-                filteredRecordBasedOnUserAllowedEntities.push(record);
-              }    
+            let entitiesDetails = await entityManagementService.entityDocuments(filterData);
+            
+            if ( !entitiesDetails.success ) {
+                return resolve({
+                    "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                    "result" : [{
+                        "count":0,
+                        "data" : []
+                    }]
+                })
             }
 
-            entityDocuments.data = filteredRecordBasedOnUserAllowedEntities;
-        }
+            let entityDocuments = entitiesDetails.data;
 
-        let data = 
-        await this.observationSearchEntitiesResponse(
-            entityDocuments.data,
-            result.entities
-        )
+              let data = 
+              await this.observationSearchEntitiesResponse(
+                entityDocuments,
+                  result.entities
+              )
 
-        entityDocuments.data = data;
+              response.result.push({
+                "data" : data,
+                "count" : data.length
+              });
+              
+              response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
 
-        if ( entityDocuments.data.length <= 0 ) {
-            entityDocuments.count = 0;
-            messageData = messageConstants.apiResponses.ENTITY_NOT_FOUND;
-        }
-        response.result = entityDocuments.data;
-        response["message"] = messageData;
+              response.result.push({
+                  "data" : data,
+                  "count" : data.length
+              });
 
-        return resolve(response);
+          }
+          
+          return resolve(response);
+
       } catch (error) {
-        console.log(error, 'ERROR');
-        return reject({
-          status: error.status || httpStatusCode.internal_server_error.status,
-          message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error,
-        });
+          return reject({
+              status: error.status || httpStatusCode.internal_server_error.status,
+              message: error.message || httpStatusCode.internal_server_error.message,
+              errorObject: error
+          });
       }
-    });
+
+  });
 
 
   }

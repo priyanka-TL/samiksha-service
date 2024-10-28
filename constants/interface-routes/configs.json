@@ -1158,6 +1158,32 @@
             ]
         },
         {
+            "sourceRoute": "/survey/v1/observations/targetedEntity",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/observations/targetedEntity/:id",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
             "sourceRoute": "/survey/v1/observationSubmissions/update",
             "type": "POST",
             "priority": "MUST_HAVE",

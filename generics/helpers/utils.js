@@ -207,7 +207,7 @@ function arrayIdsTobjectIds(ids) {
   /**
  * Converts an array of IDs into an array of `ObjectId` instances.
  */
-  return ids.map((id) => ObjectId(id));
+  return ids.map((id) => new ObjectId(id));
 }
 /**
  * Converts an array of string IDs to an array of ObjectId instances
