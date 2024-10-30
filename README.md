@@ -77,7 +77,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
     -  **Ubuntu/Linux/Mac**
 
          ```
-         curl -L \ -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env \
+         curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env \
         -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env \
         -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env \
         -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env \
@@ -143,7 +143,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
           ```
 
           ```
-          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-         down.sh
+          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-down.sh
           ```
 
         2. Make the files executable by running the following commands.
@@ -185,8 +185,6 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 
 > **Note**: During the first Docker Compose run, the database, migration seeder files, and the script to set the default organization will be executed automatically.
 
-  
--->
 
 
 1.  **Access The Survey Application**:Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:7007](http://localhost:7007/)** to access the Survey app.
@@ -219,7 +217,7 @@ All docker containers can be stopped and removed by using the `docker-compose-do
     docker-compose-down.bat
     ```
   
->  **Caution**: As per the default configuration in the `docker-compose-mentoring.yml` file, using the `down` command will lead to data loss since the database container does not persist data. To persist data across `down` commands and subsequent container removals, refer to the "Persistence of Database Data in Docker Containers" section of this documentation.
+>  **Caution**: As per the default configuration in the `docker-compose.yml` file, using the `down` command will lead to data loss since the database container does not persist data. To persist data across `down` commands and subsequent container removals, refer to the "Persistence of Database Data in Docker Containers" section of this documentation.
 
 
 ## Enable Citus Extension
@@ -234,8 +232,8 @@ To enable the Citus extension for mentoring and user services, follow these step
 1. Create a sub-directory named `user` and download `distributionColumns.sql` into it.
 
     ```
-    mkdir user && curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-          
-    service/raw/main/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
+    mkdir user && \
+    curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
     ```
 2. Set up the citus_setup file by following the steps given below.
 
@@ -256,7 +254,7 @@ To enable the Citus extension for mentoring and user services, follow these step
 3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
 
     ```
-    ./citus_setup.sh user postgres://postgres:postgres@localhost:5432/user
+    ./citus_setup.sh user postgres://postgres:postgres@citus_master:5432/user
     ```
 
  - **Windows**
@@ -279,11 +277,11 @@ To enable the Citus extension for mentoring and user services, follow these step
 
 ## Persistence Of Database Data In Docker Container 
 
-To ensure the persistence of database data when running `docker compose down`, it is necessary to modify the `docker-compose-project.yml` file according to the steps given below:
+To ensure the persistence of database data when running `docker compose down`, it is necessary to modify the `docker-compose.yml` file according to the steps given below:
 
-1.  **Modification Of The `docker-compose-project.yml` File:**
+1.  **Modification Of The `docker-compose.yml` File:**
 
-Begin by opening the `docker-compose-project.yml` file. Locate the section pertaining to the Citus and mongo container and proceed to uncomment the volume specification. This action is demonstrated in the snippet provided below:
+Begin by opening the `docker-compose.yml` file. Locate the section pertaining to the Citus and mongo container and proceed to uncomment the volume specification. This action is demonstrated in the snippet provided below:
 
 ```yaml
 
@@ -336,9 +334,7 @@ In such cases, you can generate sample user accounts using the steps below. This
 -  **Ubuntu/Linux/Mac**
 
     ```
-    mkdir -p sample-data/user && \
-    curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/mac-  
-    linux/user/sampleData.sql -o sample-data/user/sampleData.sql
+    mkdir -p sample-data/user && curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/mac-linux/user/sampleData.sql -o sample-data/user/sampleData.sql
     ```
 
  - **Windows**
@@ -353,8 +349,7 @@ In such cases, you can generate sample user accounts using the steps below. This
 -  **Ubuntu/Linux/Mac**
 
     ```
-    curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-      
-    service/main/documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
+    curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
     ```
 
 - **Windows**

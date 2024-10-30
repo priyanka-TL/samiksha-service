@@ -15,8 +15,7 @@ CURRENT_DIR=$(pwd)
 # Escape the current directory path to be used in a sed expression
 ESCAPED_CURRENT_DIR=$(printf '%s\n' "$CURRENT_DIR" | sed -e 's/[\/&]/\\&/g')
 
-# Use sed to replace the path leading up to 'environment.ts' in the docker-compose file
-# The pattern ensures that it only replaces the path component up to ':/app/src/environments/environment.ts'
-sed -i -e "s|/[^:]*\(\/environment\.ts\):/app/src/environments/environment.ts|$ESCAPED_CURRENT_DIR\1:/app/src/environments/environment.ts|" "$DOCKER_COMPOSE_FILE"
-
-echo "Updated volume path for 'environment.ts' in $DOCKER_COMPOSE_FILE"
+# Use sed to replace the path leading up to 'env.js' in the docker-compose file
+# The pattern ensures that it only replaces the path component up to ':/usr/src/app/www/assets/env/env.js'
+sed -i -e "s|/[^:]*\(\/env\.js\):/usr/src/app/www/assets/env/env.js|$ESCAPED_CURRENT_DIR\1:/usr/src/app/www/assets/env/env.js|" "$DOCKER_COMPOSE_FILE"
+echo "Updated volume path for 'env.js' in $DOCKER_COMPOSE_FILE"
