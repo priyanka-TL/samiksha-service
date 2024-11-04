@@ -418,15 +418,12 @@ Before setting up the following Survey application, dependencies given below sho
 1. Download dependency management scripts:
 
     ```
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-    
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
-    chmod +x check-dependencies.sh && \
-    chmod +x install-dependencies.sh && \
-    chmod +x uninstall-dependencies.sh
+    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
+   chmod +x check-dependencies.sh && \
+   chmod +x install-dependencies.sh && \
+   chmod +x uninstall-dependencies.sh
    ```
 2. Verify installed dependencies by running `check-dependencies.sh`:
 
@@ -606,8 +603,7 @@ Before setting up the following Survey application, dependencies given below sho
 1. Download `create-databases.sh` Script File:
 
    ```
-   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/create-databases.sh
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/create-databases.sh
    ```
 2. Make the executable by running the following command:
 
@@ -665,8 +661,7 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 1. Download user `distributionColumns.sql` file.
 
    ```
-   curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
+   curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/user/distributionColumns.sql
    ```
 2. Set up the `citus_setup` file by following the steps given below.
 
@@ -675,8 +670,7 @@ To boost performance and scalability, users can opt to enable the Citus extensio
 1. Download the `citus_setup.sh` file:
 
    ```
-   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/citus_setup.sh
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/citus_setup.sh
    ```
 2. Make the setup file executable by running the following command:
 
