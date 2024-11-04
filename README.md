@@ -852,33 +852,38 @@ In such cases, you can generate sample user accounts using the steps below. This
     ./insert_sample_data.sh
     ```
 
-After successfully running the script mentioned above, the following user accounts will be created and available for login:
+    After successfully running the script mentioned above, the following user accounts will be created and available for login:
+   
+| Email ID                 | Password   | Role                      |
+| ------------------------ | ---------- | ------------------------- |
+| aaravpatel@example.com   | Password1@ | state_educational_officer |
+| arunimareddy@example.com | Password1@ | state_educational_officer |
+| devikasingh@example.com  | Password1@ | state_educational_officer |
 
-  
 
-  
+## Sample Data Creation For Projects
 
-| Email ID | Password | Role |
+This step will guide us in implementing a sample project solution following the initial setup of the project service.
 
-  
+1. **Insert Sample Data To Database:**
 
-| ------------------------ | ---------- | ------------------ |
+    - **Ubuntu/Linux/Mac**
 
-  
+        1. Download `insert_sample_solutions.js` Script File:
 
-| aaravpatel@example.com | Password1@ | Mentee |
+            ```
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/insert_sample_solutions.js && \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/common.js && \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/entity_sampleData.js&& \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/observation_sampleData && \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/survey_sampleData.js
+            ```
 
-  
+        2. Make the setup file executable by running the following command.
 
-| arunimareddy@example.com | Password1@ | Mentor |
-
-  
-
-| devikasingh@example.com | Password1@ | Organization Admin |
-
-  
-
-  
+            ```
+            node insert_sample_solutions.js
+            ```
 
 </details>
 
