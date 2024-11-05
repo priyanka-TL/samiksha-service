@@ -1477,14 +1477,14 @@ module.exports = class EntitiesHelper {
           // } catch (error) {
           //     userAllowedEntities = [];
           // }
+          let entityProjections = ['entityType','metaInformation.externalId', 'metaInformation.name']
 
           if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
               let filterData = {
                   "_id" : req.query.parentEntityId
               };
                   
-              let entitiesDetails = await entityManagementService.entityDocuments(filterData);
-              
+              let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
               if ( !entitiesDetails.success ) {
                   return resolve({
                       "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
@@ -1496,6 +1496,13 @@ module.exports = class EntitiesHelper {
               }
 
               let entitiesData = entitiesDetails.data;
+
+              entitiesData = entitiesData.map(item => ({
+                _id: item._id,
+                externalId: item.metaInformation?.externalId || null,
+                name: item.metaInformation?.name || null,
+                entityType:item.entityType
+              }));
 
               if( entitiesData && entitiesData[0].entityType === result.entityType ) {
                   response.result = [];
@@ -1515,7 +1522,7 @@ module.exports = class EntitiesHelper {
                   return resolve(response);
 
               } else {
-                    
+                response.result = [];
                 response["message"] = 
                 messageConstants.apiResponses.ENTITY_NOT_FOUND;
                 
@@ -1535,8 +1542,7 @@ module.exports = class EntitiesHelper {
               "entityType":result.entityType,
 
             }
-            let entitiesDetails = await entityManagementService.entityDocuments(filterData);
-            
+            let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
             if ( !entitiesDetails.success ) {
                 return resolve({
                     "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
@@ -1548,6 +1554,13 @@ module.exports = class EntitiesHelper {
             }
 
             let entityDocuments = entitiesDetails.data;
+
+            entityDocuments = entityDocuments.map(item => ({
+              _id: item._id,
+              externalId: item.metaInformation?.externalId || null,
+              name: item.metaInformation?.name || null,
+              entityType:item.entityType
+            }));
 
               let data = 
               await this.observationSearchEntitiesResponse(
