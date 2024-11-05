@@ -544,14 +544,13 @@ Before setting up the following Survey application, dependencies given below sho
 -  **Ubuntu/Linux**
 
     ```
-    curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
-    curl -L -o entity-management/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/entity_management_env && \
-    curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
-    curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
-    curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
-    curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
-    curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
-
+    curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/survey_service_env && \
+    curl -L -o entity-management/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/entity_management_env && \
+    curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/user_env && \
+    curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/notification_env && \
+    curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/interface_env && \
+    curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/scheduler_env && \
+    curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/environment.ts
     ```
 
 -  **MacOS**
@@ -701,13 +700,15 @@ Following the steps given below, 2 instances of each MentorEd backend service wi
 -  **Ubuntu/Linux**
 
    ```
-   cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
-   cd entity-management/src && pm2 start app.js -i 2 --name survey-entity-management && cd ../.. && \
-   cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-   cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-   cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-   cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+   cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && 
+   cd entity-management/src && pm2 start app.js --name survey-entity-management && cd ../.. && 
+   cd user/src && pm2 start app.js --name survey-user && cd ../.. && 
+   cd notification/src && pm2 start app.js --name survey-notification && cd ../.. && 
+   cd interface-service/src && pm2 start app.js --name survey-interface && cd ../.. && 
+   cd scheduler/src && pm2 start app.js --name survey-scheduler && cd ../..
    ```
+
+
 
 -  **MacOS**
 
