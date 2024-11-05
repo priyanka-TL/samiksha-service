@@ -531,6 +531,7 @@ Before setting up the following Survey application, dependencies given below sho
 
     ```
     cd samiksha-service && npm install && cd ../ && \
+    cd entity-management/src && npm install && cd ../.. && \
     cd user/src && npm install && cd ../.. && \
     cd notification/src && npm install && cd ../.. && \
     cd interface-service/src && npm install && cd ../.. && \
@@ -544,6 +545,7 @@ Before setting up the following Survey application, dependencies given below sho
 
     ```
     curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
+    curl -L -o entity-management/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/entity_management_env && \
     curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
     curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
     curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
@@ -700,6 +702,7 @@ Following the steps given below, 2 instances of each MentorEd backend service wi
 
    ```
    cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
+   cd entity-management/src && pm2 start app.js -i 2 --name survey-entity-management && cd ../.. && \
    cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
    cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
    cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
