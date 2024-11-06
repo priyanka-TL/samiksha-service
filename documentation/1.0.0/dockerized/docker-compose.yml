@@ -32,6 +32,7 @@ services:
 # Mongo config
   mongo:
     image: 'mongo:4.4.14'
+    container_name: survey_mongo_1
     restart: 'always'
     ports:
       - '27017:27017'

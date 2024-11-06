@@ -14,7 +14,7 @@ echo "DB_PORT: $DB_PORT"
 echo "DB_NAME: $DB_NAME"
 
 # Check if the MongoDB container is up
-if [ "$(docker ps -q -f name=project_mongo_1)" ]; then
+if [ "$(docker ps -q -f name=survey_mongo_1)" ]; then
     echo "MongoDB container is up."
 else
     echo "MongoDB container is not running."
@@ -23,7 +23,7 @@ fi
 
 # Wait for MongoDB to be ready
 echo "Waiting for MongoDB to be ready..."
-until docker exec project_mongo_1 mongo --host $DB_HOST --port $DB_PORT --eval "print(\"waited for connection\")"; do
+until docker exec survey_mongo_1 mongo --host $DB_HOST --port $DB_PORT --eval "print(\"waited for connection\")"; do
     sleep 1
 done
 
@@ -62,17 +62,17 @@ echo "Checking contents of /tmp/forms_with_orgId.json:"
 cat /tmp/forms_with_orgId.json
 
 # Copy the modified JSON file into the MongoDB container
-docker cp /tmp/forms_with_orgId.json project_mongo_1:/tmp/forms_with_orgId.json
+docker cp /tmp/forms_with_orgId.json survey_mongo_1:/tmp/forms_with_orgId.json
 
 # Delete existing documents from the forms collection
 echo "Deleting existing documents from the forms collection..."
-docker exec project_mongo_1 mongo --host $DB_HOST --port $DB_PORT $DB_NAME --eval 'db.forms.deleteMany({})'
+docker exec survey_mongo_1 mongo --host $DB_HOST --port $DB_PORT $DB_NAME --eval 'db.forms.deleteMany({})'
 
 # Insert new documents from modified forms.json into MongoDB
 echo "Inserting new documents from modified forms.json into MongoDB..."
-docker exec project_mongo_1 mongoimport --host $DB_HOST --port $DB_PORT --db $DB_NAME --collection forms --file /tmp/forms_with_orgId.json --jsonArray
+docker exec survey_mongo_1 mongoimport --host $DB_HOST --port $DB_PORT --db $DB_NAME --collection forms --file /tmp/forms_with_orgId.json --jsonArray
 
 # Clean up
 rm forms.json /tmp/forms_with_orgId.json
-docker exec project_mongo_1 rm /tmp/forms_with_orgId.json
+docker exec survey_mongo_1 rm /tmp/forms_with_orgId.json
 rm modify_forms.js
