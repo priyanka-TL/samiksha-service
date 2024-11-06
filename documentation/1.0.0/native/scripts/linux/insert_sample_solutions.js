@@ -39,13 +39,14 @@ async function main({dataToBeInserted}) {
     await insertData('entities', dataToBeInserted.entities,dbName2);
     await insertData('entityTypes',dataToBeInserted.entityType,dbName2);
     await insertData('userRoleExtension', dataToBeInserted.userRoleExtension,dbName2);
-
     await insertData('programs', dataToBeInserted.programData);
     await insertData('solutions',dataToBeInserted.solutionData);
-    await insertData('survey', dataToBeInserted.surveysData);
+    await insertData('surveys', dataToBeInserted.surveysData);
     await insertData('criteria',dataToBeInserted.criteriaData);
     await insertData('criteriaQuestions',dataToBeInserted.criteriaQuestionsData);
     await insertData('questions',dataToBeInserted.questionsData);
+    await insertData('forms',dataToBeInserted.formsData);
+    await insertData('configurations',dataToBeInserted.configurationsData);
     await insertData('frameworks',dataToBeInserted.frameworkData);
     await insertData('observationSubmissions',dataToBeInserted.observationSubmissionData);
     await insertData('observations',dataToBeInserted.observationData);

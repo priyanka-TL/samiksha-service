@@ -13,7 +13,7 @@ let solutionData = [
     "isReusable" : true,
     "name" : "NISHTHA 2.0 Feedback Form",
     "description" : "NISHTHA 2.0 feedback form",
-    "author" : "",
+    "author" : "1",
     "resourceType" : [ 
         "Observations Framework"
     ],
@@ -105,9 +105,9 @@ let solutionData = [
     "_id" : new ObjectId("66f4e6d98ea984c17a5b3789"),
     "externalId" : "606d92fa-42d8-11ec-ac61-26092024-1011-OBSERVATION-TEMPLATE-1727325913582",
     "isReusable" : false,
-    "name" : "dev_testing",
-    "description" : "dev testing",
-    "author" : "2",
+    "name" : "Shiksha 2.0 Feedback Form",
+    "description" : "Sikshka 2.0 Feedback Form",
+    "author" : "1",
     "parentSolutionId" : new ObjectId("66f4e62d8ea984c17a5b374a"),
     "resourceType" : [ 
         "Observations Framework"
@@ -145,7 +145,7 @@ let solutionData = [
     ],
     "flattenedThemes" : [],
     "entityType" : "school",
-    "type" : "observation",
+    "type" : "survey",
     "subType" : "",
     "entities" : [],
     "startDate" : new Date("2022-08-25T18:29:59"),
