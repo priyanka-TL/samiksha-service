@@ -136,7 +136,7 @@ services:
 
   interface:
     # Update with latest image
-    image: shikshalokamqa/elevate-interface:3.1.2
+    image: shikshalokamqa/elevate-interface:3.1.5
     ports:
       - '3569:3569'
     command: ['node', 'app.js']
@@ -200,7 +200,7 @@ services:
       - elevate_net
   portal:
     # Update with latest image
-    image: shikshalokamqa/elevate-project-obervation-pwa:2.2
+    image: shikshalokamqa/elevate-project-obervation-pwa:1.0
     container_name: portal
     ports:
       - '7007:7007'
