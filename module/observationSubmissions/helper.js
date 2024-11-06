@@ -509,6 +509,9 @@ module.exports = class ObservationSubmissionsHelper {
           'evidencesStatus.externalId',
           'evidencesStatus.isSubmitted',
           'evidencesStatus.submissions',
+          "evidencesStatus.canBeNotApplicable",
+          "evidencesStatus.canBeNotAllowed",
+          "evidencesStatus.notApplicable"
         ];
 
         let result = await this.observationSubmissionsDocument(queryObject, projection, {
