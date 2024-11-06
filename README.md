@@ -40,8 +40,6 @@ Expectation: By diligently following the outlined steps, you will successfully e
 ## Prerequisites
 
 To set up the Survey application, ensure you have Docker and Docker Compose installed on your system. For Ubuntu users, detailed installation instructions for both can be found in the documentation here: [How To Install and Use Docker Compose on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04). For Windows and MacOS users, you can refer to the Docker documentation for installation instructions: [Docker Compose Installation Guide](https://docs.docker.com/compose/install/). Once these prerequisites are in place, you're all set to get started with setting up the Survey application.
-
-Service also uses gotenberg for creation of project certificate. You can read more about it here : [Gotenberg](https://gotenberg.dev/docs/getting-started/introduction).
  
 ## Installation
 
@@ -382,6 +380,12 @@ After successfully running the script mentioned above, the following user accoun
     docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
     ```
     
+#### Insert Forms Data into Database
+
+- **Ubuntu/Linux/Mac**:
+    ```
+    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/import_forms_mongo.sh && chmod +x import_forms_mongo.sh && ./import_forms_mongo.sh mongodb://mongo:27017/elevate-samiksha
+    ```
 </details>
 
 <details>
