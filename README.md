@@ -19,34 +19,27 @@ The Survey building block enables creation, consumption of Survey,Observation an
 </div>
 
   
+# Supported Operating Systems
 
-# System Requirements
--  **Operating System:** Ubuntu 22/Windows 11/macos 12
-
--  **Node.js®:** v20
-
--  **PostgreSQL:** 16
-
--  **Apache Kafka®:** 3.5.0
-
--  **MongoDB:** 4.4.14
-
--  **Gotenberg:** 8.5.0
+-   **Ubuntu (Recommended: Version 20 and above)** 
+-   **Windows (Recommended: Version 11 and above)** 
+-   **macOs (Recommended: Version 12 and above)**
 
 # Setup Options
 
-**Elevate services can be setup in local using two methods:**
+**Survey service can be setup in using two methods:**
+> Note : This guide outlines two setup methods, detailed below. For a quick, beginner-friendly setup and walkthrough of services, it is recommended to use the Dockerized Services & Dependencies setup with the Docker-Compose file.
 
 <details><summary>Dockerized Services & Dependencies Using Docker-Compose File</summary>
 
 
 ## Dockerized Services & Dependencies
 
-Expectation: Upon following the prescribed steps, you will achieve a fully operational Project application setup, complete with both the portal and backend services.
+Expectation: By diligently following the outlined steps, you will successfully establish a fully operational Survey application setup, including both the portal and backend services.
 
 ## Prerequisites
 
-To set up the Project application, ensure you have Docker and Docker Compose installed on your system. For Ubuntu users, detailed installation instructions for both can be found in the documentation here: [How To Install and Use Docker Compose on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04). For Windows and MacOS users, you can refer to the Docker documentation for installation instructions: [Docker Compose Installation Guide](https://docs.docker.com/compose/install/). Once these prerequisites are in place, you're all set to get started with setting up the Project application.
+To set up the Survey application, ensure you have Docker and Docker Compose installed on your system. For Ubuntu users, detailed installation instructions for both can be found in the documentation here: [How To Install and Use Docker Compose on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04). For Windows and MacOS users, you can refer to the Docker documentation for installation instructions: [Docker Compose Installation Guide](https://docs.docker.com/compose/install/). Once these prerequisites are in place, you're all set to get started with setting up the Survey application.
 
 Service also uses gotenberg for creation of project certificate. You can read more about it here : [Gotenberg](https://gotenberg.dev/docs/getting-started/introduction).
  
@@ -59,7 +52,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 2.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml)** file from the Survey service repository and save it to the survey directory.
 
     ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml
+    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/docker-compose.yml
     ```
 
     > Note: All commands are run from the survey directory.
@@ -77,13 +70,13 @@ Service also uses gotenberg for creation of project certificate. You can read mo
     -  **Ubuntu/Linux/Mac**
 
          ```
-         curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/interface_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/entity_management_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/samiksha_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/notification_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/scheduler_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/user_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
+         curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/interface_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/entity_management_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/samiksha_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/notification_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/scheduler_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/user_env \
+        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/env.js
         ```
     
     -  **Windows**
@@ -98,7 +91,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
         curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/envs/env.js
         ```
 
->  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Samiksha](https://github.com/ELEVATE-Project/samiksha-service/blob/main/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) and [Entity-management](https://github.com/ELEVATE-Project/entity-management/blob/main/src/.env.sample) repositories for reference.
+>  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Survey](https://github.com/ELEVATE-Project/samiksha-service/blob/main/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) and [Entity-management](https://github.com/ELEVATE-Project/entity-management/blob/main/src/.env.sample) repositories for reference.
 
 >  **Caution:** While the default values in the downloaded environment files enable the Project Application to operate, certain features may not function correctly or could be impaired unless the adopter-specific environment variables are properly configured.
 
@@ -106,7 +99,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
 
     -  **Ubuntu/Linux/Mac**
        ```
-        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/mac-linux/replace_volume_path.sh
+        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/replace_volume_path.sh
        ```
     -  **Windows**
         ```
@@ -139,11 +132,11 @@ Service also uses gotenberg for creation of project certificate. You can read mo
        1. Download the files.
 
           ```
-          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-up.sh
+          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-up.sh
           ```
 
           ```
-          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-down.sh
+          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-down.sh
           ```
 
         2. Make the files executable by running the following commands.
@@ -159,7 +152,7 @@ Service also uses gotenberg for creation of project certificate. You can read mo
     -    **Windows**	
 			```
 		    curl -OJL https://github.com/ELEVATE-Project/samiksha-      
-			s  ervice/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
+			service/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
 			```
 		    ```
 		    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose-down.bat
@@ -233,7 +226,7 @@ To enable the Citus extension for mentoring and user services, follow these step
 
     ```
     mkdir user && \
-    curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
+    curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
     ```
 2. Set up the citus_setup file by following the steps given below.
 
@@ -242,7 +235,7 @@ To enable the Citus extension for mentoring and user services, follow these step
 1. Download the `citus_setup.sh` file.
 
     ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/citus_setup.sh
+    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/citus_setup.sh
     ```
 
 2. Make the setup file executable by running the following command.
@@ -334,7 +327,7 @@ In such cases, you can generate sample user accounts using the steps below. This
 -  **Ubuntu/Linux/Mac**
 
     ```
-    mkdir -p sample-data/user && curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/mac-linux/user/sampleData.sql -o sample-data/user/sampleData.sql
+    mkdir -p sample-data/user && curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/documentation-docker/documentation/1.0.0/sample-data/mac-linux/user/sampleData.sql -o sample-data/user/sampleData.sql
     ```
 
  - **Windows**
@@ -349,7 +342,7 @@ In such cases, you can generate sample user accounts using the steps below. This
 -  **Ubuntu/Linux/Mac**
 
     ```
-    curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
+    curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
     ```
 
 - **Windows**

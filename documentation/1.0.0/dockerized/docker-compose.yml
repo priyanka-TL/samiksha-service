@@ -51,7 +51,7 @@ services:
     logging:
       driver: none
   user:
-    image: shikshalokamqa/elevate-user:3.1.1
+    image: shikshalokamqa/elevate-user:3.1.2
     ports:
       - '3001:3001'
     command: >
@@ -120,7 +120,7 @@ services:
     env_file:
       - ${scheduler_env}
   samiksha:
-    image: shikshalokamqa/elevate-samiksha-service:1.0
+    image: shikshalokamqa/elevate-samiksha-service:1.0.1
     container_name: samiksha
     ports:
       - '4301:4301'
@@ -136,7 +136,7 @@ services:
 
   interface:
     # Update with latest image
-    image: shikshalokamqa/elevate-interface:3.1.1
+    image: shikshalokamqa/elevate-interface:3.1.2
     ports:
       - '3569:3569'
     command: ['node', 'app.js']
@@ -188,7 +188,7 @@ services:
  
    # Entity-management config
   entity_management:
-    image: shikshalokamqa/elevate-entity-management:1.0.0
+    image: shikshalokamqa/elevate-entity-management:1.0.1
     ports:
       - '5001:5001'
     command: ['nodemon', 'app.js']
@@ -205,7 +205,7 @@ services:
     ports:
       - '7007:7007'
     volumes:
-      - /home/praveendass/Desktop/survey/env.js:/usr/src/app/www/assets/env/env.js
+      - /home/shikshalokam/Desktop/survey/env.js:/usr/src/app/www/assets/env/env.js
     # command: >
     #   /bin/bash -c "ionic build --prod && ionic serve --host 0.0.0.0"
     networks:
