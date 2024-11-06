@@ -17,6 +17,7 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const assessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 
 /**
  * Observations
@@ -738,22 +739,25 @@ module.exports = class Observations extends Abstract {
             _id: req.query.entityId,
             entityType: observationDocument.entityType,
           };
-          entityDocument = await database.models.entities
-            .findOne(entityQueryObject, {
-              metaInformation: 1,
-              entityTypeId: 1,
-              entityType: 1,
-              registryDetails: 1,
-            })
-            .lean();
+        let entitiesDetails = await entityManagementService.entityDocuments(
+          entityQueryObject,
+          ['metaInformation','entityTypeId','entityType','registryDetails'],
+        );
 
-          if (!entityDocument) {
+        if(!entitiesDetails.success){
+          throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN)
+        }
+      
+         let entitiesData = entitiesDetails.data;
+
+          if (!entitiesData.length > 0) {
             let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
             return resolve({
               status: httpStatusCode.bad_request.status,
               message: responseMessage,
             });
           }
+          entityDocument = entitiesData[0];
         }else{
 
           entityDocument =  {
