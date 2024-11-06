@@ -537,6 +537,9 @@ module.exports = class ObservationSubmissionsHelper {
               name: evidence.name,
               code: evidence.externalId,
               status: messageConstants.common.SUBMISSION_STATUS_COMPLETED,
+              canBeNotApplicable : evidence.canBeNotApplicable,
+              canBeNotAllowed : evidence.canBeNotAllowed,
+              notApplicable : evidence.notApplicable
             };
 
             if (!evidence.isSubmitted) {
