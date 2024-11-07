@@ -17,6 +17,7 @@ const FileStream = require(ROOT_PATH + '/generics/fileStream');
 const assessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 
 /**
  * Observations
@@ -614,10 +615,11 @@ module.exports = class Observations extends Abstract {
   async searchEntities(req) {
     return new Promise(async (resolve, reject) => {
       try{
+        
         let searchEntitiesResult = await entitiesHelper.searchEntitiesHelper(req);
         resolve(searchEntitiesResult);
       }catch(error){
-        console.log(error);
+        
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
@@ -626,6 +628,62 @@ module.exports = class Observations extends Abstract {
       }
     });
   }
+
+       /**
+    * @api {post} /survey/api/v1/observations/targetedEntity/:solutionId Targeted entity.
+    * @apiVersion 1.0.0
+    * @apiName Targeted entity.
+    * @apiGroup Observations
+    * @apiParamExample {json} Request-Body:
+    {
+    "cluster": "22763910-f79f-4746-900b-b429fb7f9d24",
+    "district": "24c36610-0640-45a3-b88e-fa92c9ebbec2",
+    "state": "bc75cc99-9205-463e-a722-5326857838f8",
+    "block": "e5be5e9c-3eea-4822-8754-9009c47c6782",
+    "school": "b840c173-5d17-4ebf-b76e-567763ff2c4e",
+    "role": "senior_teacher,test2"
+    }
+    * @apiHeader {String} X-auth-token Authenticity token
+    * @apiSampleRequest /survey/api/v1/observations/targetedEntity/601d41607d4c835cf8b724ad
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+{
+    "message": "Targeted Entity Types Fetched",
+    "status": 200,
+    "result": [
+        {
+            "_id": "5fd1b52ab53a6416aaeefb84",
+            "entityType": "block",
+            "entityName": "ADDATEEGALA"
+        }
+    ]
+}
+    */
+
+     /**
+   * Targeted entity
+   * @method
+   * @name targetedEntity
+   * @param {Object} req - requested data.
+   * @param {Object} req.body - requested bidy data.
+   * @returns {Array} Details entity.
+   */
+  async targetedEntity(req) {
+    return new Promise(async (resolve, reject) => {
+      try{
+        let searchEntitiesResult = await observationsHelper.targetedEntity(req);  
+        resolve(searchEntitiesResult);
+      }catch(error){       
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
 
   /**
    * @api {get} /assessment/api/v1/observations/assessment/:observationId?entityId=:entityId&submissionNumber=submissionNumber&ecmMethod=ecmMethod Assessments
@@ -681,22 +739,32 @@ module.exports = class Observations extends Abstract {
             _id: req.query.entityId,
             entityType: observationDocument.entityType,
           };
-          entityDocument = await database.models.entities
-            .findOne(entityQueryObject, {
-              metaInformation: 1,
-              entityTypeId: 1,
-              entityType: 1,
-              registryDetails: 1,
-            })
-            .lean();
+        let entitiesDetails = await entityManagementService.entityDocuments(
+          entityQueryObject,
+          ['metaInformation','entityTypeId','entityType','registryDetails'],
+        );
 
-          if (!entityDocument) {
+        if(!entitiesDetails.success){
+          throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN)
+        }
+      
+         let entitiesData = entitiesDetails.data;
+
+          if (!entitiesData.length > 0) {
             let responseMessage = messageConstants.apiResponses.ENTITY_NOT_FOUND;
             return resolve({
               status: httpStatusCode.bad_request.status,
               message: responseMessage,
             });
           }
+          entityDocument = entitiesData[0];
+        }else{
+
+          entityDocument =  {
+            _id: req.query.entityId,
+            metaInformation:{}
+          }
+
         }
 
         if (entityDocument.registryDetails && Object.keys(entityDocument.registryDetails).length > 0) {

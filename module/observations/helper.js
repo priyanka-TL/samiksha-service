@@ -2433,4 +2433,263 @@ module.exports = class ObservationsHelper {
   
 
   }
+
+  static async targetedEntityHelper(solutionId,requestedData){
+
+    let solutionData = await solutionsQueries.solutionDocuments(
+      {
+        _id: solutionId,
+        isDeleted: false,
+      },
+      ["entityType", "type"]
+    );
+
+    if (!solutionData.length > 0) {
+      return resolve({
+        status: httpStatusCode.bad_request.status,
+        message: constants.apiResponses.SOLUTION_NOT_FOUND,
+      });
+    }
+
+    let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
+      code: requestedData.role,
+    },
+    ["entityTypes.entityType"])
+
+    if (!rolesDocumentAPICall.success) {
+      throw {
+        status: httpStatusCode["bad_request"].status,
+        message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+      };
+    }
+
+    let requestedEntityTypes = Object.keys(_.omit(requestedData, ["role"]));
+    let targetedEntityType = "";
+    
+
+    
+    rolesDocumentAPICall.data[0].entityTypes.forEach((singleEntityType) => {
+      if (requestedEntityTypes.includes(singleEntityType.entityType)) {
+        targetedEntityType = singleEntityType.entityType;
+      }
+    });
+
+    if (solutionData[0].entityType === targetedEntityType) {
+
+      let filterQuery = {
+        "registryDetails.code": requestedData[targetedEntityType]
+      };
+
+      if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+        filterQuery = {
+          "registryDetails.locationId": requestedData[targetedEntityType]
+        };
+      }
+
+      let entitiesAPICall = await entityManagementService.entityDocuments(filterQuery, [
+        "groups",
+      ]);
+
+      
+
+      const entityDetails = entitiesAPICall.data
+      
+      if (!entityDetails.length > 0) {
+        throw {
+          message: messageConstants.apiResponses.ENTITY_NOT_FOUND
+        };
+      }
+      
+      let entities = entitiesAPICall.data;
+      if (
+        entities[0] &&
+        entities[0].groups &&
+        Object.keys(entities[0].groups).length > 0
+      ) {
+        targetedEntityType = messageConstants.common.STATE_ENTITY_TYPE;
+      }
+    }
+
+    let filterData = {
+      "registryDetails.code": requestedData[targetedEntityType]
+    };
+
+    if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+      filterData = {
+        "registryDetails.locationId": requestedData[targetedEntityType]
+      };
+    }
+
+    
+    let entitiesAPICall = await entityManagementService.entityDocuments(filterData, [
+      "metaInformation.name",
+      "entityType"
+    ]);
+
+    if (!entitiesAPICall.success) {
+      throw {
+        message: messageConstants.apiResponses.ENTITY_NOT_FOUND
+      };
+    }
+
+    let entities = entitiesAPICall.data;
+
+    
+
+    if (entities[0].metaInformation && entities[0].metaInformation.name) {
+      entities[0]['entityName'] = entities[0].metaInformation.name;
+      delete entities[0].metaInformation;
+    }
+
+    return {
+      message: messageConstants.apiResponses.SOLUTION_TARGETED_ENTITY,
+      success: true,
+      data: entities[0]
+    };
+
+  }
+  /**
+   * Highest Targeted entity.
+   * @method
+   * @name getHighestTargetedEntity
+   * @param {Object} requestedData - requested data
+   * @returns {Object} - Entity.
+   */
+
+  static getHighestTargetedEntity( roleWiseTargetedEntities ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let allTargetedEntities = {};
+        let targetedEntity = {};
+
+        for( let pointerToEntities = 0 ; pointerToEntities < roleWiseTargetedEntities.length ; pointerToEntities++ ) {
+
+          let currentEntity = roleWiseTargetedEntities[pointerToEntities];
+
+          if ( !allTargetedEntities.hasOwnProperty(currentEntity._id) ) {
+            allTargetedEntities[currentEntity._id] = new Array();
+          }
+
+          let otherEntities = roleWiseTargetedEntities.filter((entity) => entity.entityType !== currentEntity.entityType);
+          
+          if ( !otherEntities || !otherEntities.length > 0 ) {
+            continue; 
+          }
+
+          let entitiesDocument = await entityManagementService.entityDocuments({
+              _id: currentEntity._id
+          }, ["groups"]);
+
+          if (!entitiesDocument.success || entitiesDocument.data.length == 0 ) {
+            continue;
+          }
+
+          entitiesDocument = entitiesDocument.data[0];
+
+          for( let entityCounter = 0 ; entityCounter < otherEntities.length ; entityCounter++ ) {
+
+            let entityDoc = otherEntities[entityCounter];
+          
+            if ( !entitiesDocument.groups || !entitiesDocument.groups.hasOwnProperty(entityDoc.entityType) ) {
+              break;
+            }
+
+            allTargetedEntities[currentEntity._id].push(true);
+            if ( allTargetedEntities[currentEntity._id].length == otherEntities.length ) {
+              targetedEntity = roleWiseTargetedEntities.filter((entity) => entity._id == currentEntity._id);
+              break;
+            }
+          }
+
+        }
+
+        return resolve({
+          message: messageConstants.apiResponses.SOLUTION_TARGETED_ENTITY,
+          success: true,
+          data: targetedEntity
+        });
+        
+      } catch (error) {
+        
+        return resolve({
+          success: false,
+          status: error.status
+            ? error.status
+            : httpStatusCode['internal_server_error'].status,
+          message: error.message
+        });
+      }
+    });
+  }
+  static async targetedEntity(req){
+
+    return new Promise(async (resolve, reject)=>{
+
+      try{
+        let roleArray = req.body.role.split(",");
+        let targetedEntities = {};
+        if ( roleArray.length === 1 ) {
+          
+          const detailEntity = 
+          await this.targetedEntityHelper(
+              req.params._id,
+              req.body
+          );
+          detailEntity["result"] = detailEntity.data;
+          return resolve(detailEntity);
+  
+      } else {
+         
+          let roleWiseTargetedEntities = new Array();
+          for ( let roleCount = 0; roleCount < roleArray.length; roleCount++ ) {
+  
+              const eachRole = roleArray[roleCount];            
+              let bodyData = _.omit(req.body, ['role']);
+              bodyData.role = eachRole;         
+              const detailEntity = 
+              await this.targetedEntityHelper(
+                  req.params._id,
+                  bodyData
+              );       
+              if ( detailEntity.data && Object.keys(detailEntity.data).length > 0 ) {              
+                  roleWiseTargetedEntities.push(detailEntity.data);
+              }
+          }
+
+          //no targeted entity
+          if ( roleWiseTargetedEntities.length  == 0 ) {
+              throw {
+                  status: httpStatusCode["bad_request"].status,
+                  message: messageConstants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE
+              };
+          } 
+          //one targeted entity 
+          else if (roleWiseTargetedEntities && roleWiseTargetedEntities.length == 1) {
+            targetedEntities.result = roleWiseTargetedEntities[0];
+          }
+          // multiple targeted entity
+          else if (roleWiseTargetedEntities && roleWiseTargetedEntities.length > 1) {
+            // request body contain role and entity information
+            let targetedEntity = await this.getHighestTargetedEntity(roleWiseTargetedEntities, req.body);
+
+            if (!targetedEntity.data) {
+              throw {
+                status: httpStatusCode['bad_request'].status,
+                message: messageConstants.apiResponses.ENTITIES_NOT_ALLOWED_IN_ROLE,
+              };
+            }
+            targetedEntities.result = targetedEntity.data;
+            targetedEntities.message = messageConstants.apiResponses.SOLUTION_TARGETED_ENTITY;
+          }
+      }
+      return resolve(targetedEntities);
+  
+      }catch(err){
+          return reject(err);
+      }
+    
+    })
+
+  }
 };

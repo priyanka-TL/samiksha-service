@@ -1145,7 +1145,59 @@
             ]
         },
         {
+            "sourceRoute": "/survey/v1/observations/updateEntities",
+            "type": "DELETE",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/observations/updateEntities/:id",
+            "type": "DELETE",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
             "sourceRoute": "/survey/v1/observations/list",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/observations/targetedEntity",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/observations/targetedEntity/:id",
             "type": "POST",
             "priority": "MUST_HAVE",
             "inSequence": false,
@@ -1184,6 +1236,32 @@
             ]
         },
         {
+            "sourceRoute": "/survey/v1/observationSubmissions/update",
+            "type": "DELETE",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/observationSubmissions/update/:id",
+            "type": "DELETE",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
             "sourceRoute": "/survey/v1/observationSubmissions/list",
             "type": "POST",
             "priority": "MUST_HAVE",
@@ -1198,6 +1276,32 @@
         },
         {
             "sourceRoute": "/survey/v1/observationSubmissions/list/:id",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/observationSubmissions/solutionList",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/observationSubmissions/create",
             "type": "POST",
             "priority": "MUST_HAVE",
             "inSequence": false,
@@ -1315,7 +1419,7 @@
         },
         {
             "sourceRoute": "/survey/v1/profile/read",
-            "type": "POST",
+            "type": "GET",
             "priority": "MUST_HAVE",
             "inSequence": false,
             "orchestrated": false,
@@ -1341,6 +1445,45 @@
         },
         {
             "sourceRoute": "/survey/v1/configurations/read",
+            "type": "GET",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/users/programs",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/users/solutions/:id",
+            "type": "POST",
+            "priority": "MUST_HAVE",
+            "inSequence": false,
+            "orchestrated": false,
+            "targetPackages": [
+                {
+                    "basePackageName": "survey",
+                    "packageName": "elevate-survey"
+                }
+            ]
+        },
+        {
+            "sourceRoute": "/survey/v1/users/solutions",
             "type": "POST",
             "priority": "MUST_HAVE",
             "inSequence": false,

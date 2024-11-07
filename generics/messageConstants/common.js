@@ -91,5 +91,7 @@ module.exports = {
   status_success:'success',
   azure: "AZURE",
   SERVER_TIME_OUT: 5000,
-  SOLUTION_MODEL_NAME: 'solutions'
+  SOLUTION_MODEL_NAME: 'solutions',
+  TARGETED_SOLUTION_TEXT:
+		'View and participate in educational programs active in your location and designed for the role you selected',
 };
