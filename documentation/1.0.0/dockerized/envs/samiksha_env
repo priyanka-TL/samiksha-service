@@ -22,11 +22,20 @@ MONGODB_URL = mongodb://mongo:27017
 PUBLIC_FOLDER_PATH = "public"
 # DB = "sl-prod"
 DB = "elevate-samiksha"
-
-
+KAFKA_COMMUNICATIONS_ON_OFF = "ON"
+KAFKA_GROUP_ID = elevate_samiksha_service
+KAFKA_URL = 127.0.0.1:9092
+COMPLETED_OBSERVATION_SUBMISSION_TOPIC = elevate_observations_dev
+COMPLETED_SUBMISSION_TOPIC = elevate_submissions_dev
+COMPLETED_SURVEY_SUBMISSION_TOPIC = elevate_surveys_raw
+INCOMPLETE_OBSERVATION_SUBMISSION_TOPIC = incompletee_observation
+SUBMISSION_RATING_QUEUE_TOPIC = queue_topic
+INCOMPLETE_SUBMISSION_TOPIC = incomplete_submission
+DEFAULT_ORGANISATION_CODE = 1
+NOTIFICATIONS_TOPIC = notificaation_topic
 # For reports generation.
 
-INTERNAL_ACCESS_TOKEN = "8c3a94f0931e01a4940a"
+INTERNAL_ACCESS_TOKEN = "Fqn0m0HQ0gXydRtBCg5l"
 # INTERNAL_ACCESS_TOKEN="Fqn0m0HQ0gXydRtBCg5l"
 
 # CSV Config
@@ -38,11 +47,11 @@ CSV_REPORTS_PATH = "reports"
 ACCESS_TOKEN_SECRET=hsghasghjab1273JHajnbabsjdj1273981273jhajksdh8y3123yhjkah812398yhjqwe7617237yuhdhhdqwu271
 # ACCESS_TOKEN_SECRET = "asadsd8as7df9as8df987asdf"
 
-USER_SERVICE_URL=/user
+USER_SERVICE_URL=http://interface:3569/user
 # ENTITY_SERVICE_URL="http://localhost:9000/entity_management"
-ENTITY_MANAGEMENT_SERVICE_URL=/entity-management
+ENTITY_MANAGEMENT_SERVICE_URL=http://interface:3569/entity-management
 
-# IMPROVEMENT_PROJECT_BASE_URL = "http://localhost:5000"
+IMPROVEMENT_PROJECT_BASE_URL = "http://localhost:5000"
 TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC=+05:30
 VALIDATE_ENTITIES = ON
 CLOUD_STORAGE_PROVIDER=gcloud
