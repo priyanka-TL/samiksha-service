@@ -67,12 +67,12 @@ EOF
 # USER_EXTENSION_ID=$(clean_object_id "$USER_EXTENSION_ID")
 # echo "UserExtention ID: $USER_EXTENSION_ID"
 
-echo "Configurations data being added to $CONFIGURATIONS_COLLECTION collection in $PROJECT_DB_NAME database...."
+echo "Configurations data being added to $CONFIGURATIONS_COLLECTION collection into database...."
 
 # Insert CONFIGURATION_ID using docker exec
-CONFIGURATION_ID=$(docker exec -it project_mongo_1 mongo --host "$MONGO_HOST" --port "$MONGO_PORT" --quiet --eval "
+CONFIGURATION_ID=$(docker exec -it survey_mongo_1 mongo --host "$MONGO_HOST" --port "$MONGO_PORT" --quiet --eval "
     var doc = $CONFIGURATIONS_DOCUMENT;
-    var result = db.getSiblingDB('$PROJECT_DB_NAME').$CONFIGURATIONS_COLLECTION.insertOne(doc);
+    var result = db.getSiblingDB('elevate-samiksha').$CONFIGURATIONS_COLLECTION.insertOne(doc);
     if (result.insertedId) {
         print(result.insertedId);
     } else {
