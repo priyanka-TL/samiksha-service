@@ -262,7 +262,7 @@ module.exports = class SolutionsHelper {
         }
 
         requestedData['filter'] = {};
-        if (solutionIds.length > 0) {
+        if (solutionIds.length > 0 && !currentScopeOnly) {
           requestedData['filter']['skipSolutions'] = solutionIds;
         }
 
@@ -611,7 +611,7 @@ module.exports = class SolutionsHelper {
       try {
         //Getting query based on roles and entity
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType, programId);
-
+        
         if (!queryData.success) {
           return resolve(queryData);
         }
@@ -646,7 +646,7 @@ module.exports = class SolutionsHelper {
         }
 
         if (programId !== '') {
-          matchQuery['programId'] = ObjectId(programId);
+          matchQuery['programId'] = new ObjectId(programId);
         }
         //matchQuery['startDate'] = { $lte: new Date() };
         //listing the solution based on type and query
@@ -834,7 +834,7 @@ module.exports = class SolutionsHelper {
           // }
 
           let scopeDatas = Object.keys(scopeData);
-
+          
           let scopeDataIndex = scopeDatas.map((index) => {
             return `scope.${index}`;
           });
@@ -874,6 +874,7 @@ module.exports = class SolutionsHelper {
         //  else {
         //   currentSolutionScope = scopeData;
         // }
+        
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
@@ -995,6 +996,7 @@ module.exports = class SolutionsHelper {
 
         // If req body has scope to update for the solution document
         if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
+          
           let solutionScope = await this.setScope(
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
@@ -1344,7 +1346,7 @@ module.exports = class SolutionsHelper {
 
         return resolve(csvArray);
       } catch (error) {
-        console.log(error);
+        
         return reject(error);
       }
     });
@@ -3390,6 +3392,8 @@ module.exports = class SolutionsHelper {
             $arrayElemAt: ['$totalCount.count', 0],
           },
         };
+
+        
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {
@@ -3618,7 +3622,7 @@ module.exports = class SolutionsHelper {
           data: targetedSolutionDetails[0],
         });
       } catch (error) {
-        console.log(error)
+        
         return resolve({
           success: false,
           message: error.message,

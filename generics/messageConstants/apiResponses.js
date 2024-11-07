@@ -413,5 +413,11 @@ module.exports = {
   FORM_FETCHED_SUCCESSFULLY: 'Data fetched successfully',
   FORM_VERSION_NOT_FETCHED:'Forms version not able to fetch',
   FORM_VERSION_FETCHED_SUCCESSFULLY: 'Forms version fetched successfully',
-  CONFIGURATION_FETCHED_SUCCESSFULLY: 'Configuration fetched successfully'
+  CONFIGURATION_FETCHED_SUCCESSFULLY: 'Configuration fetched successfully',
+  PROGRAM_DESCRIPTION:
+		'View and participate in educational programs active in your location and designed for the role you selected',
+  PROGRAM_SOLUTIONS_FETCHED: 'Program solutions fetched successfully',
+  ENTITY_SERVICE_DOWN:'Entity Management Service down.',
+  SOLUTION_TARGETED_ENTITY:'Targeted Entity Types Fetched',
+  ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role'
 };

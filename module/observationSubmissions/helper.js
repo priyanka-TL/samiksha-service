@@ -15,6 +15,9 @@ const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const solutionHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 
 /**
  * ObservationSubmissionsHelper
@@ -64,9 +67,9 @@ module.exports = class ObservationSubmissionsHelper {
         } else { 
           submissionDocuments = await database.models.observationSubmissions.find(queryObject, projection).lean();
         }
-
         return resolve(submissionDocuments);
       } catch (error) {
+        
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,
@@ -506,6 +509,9 @@ module.exports = class ObservationSubmissionsHelper {
           'evidencesStatus.externalId',
           'evidencesStatus.isSubmitted',
           'evidencesStatus.submissions',
+          "evidencesStatus.canBeNotApplicable",
+          "evidencesStatus.canBeNotAllowed",
+          "evidencesStatus.notApplicable"
         ];
 
         let result = await this.observationSubmissionsDocument(queryObject, projection, {
@@ -534,6 +540,9 @@ module.exports = class ObservationSubmissionsHelper {
               name: evidence.name,
               code: evidence.externalId,
               status: messageConstants.common.SUBMISSION_STATUS_COMPLETED,
+              canBeNotApplicable : evidence.canBeNotApplicable,
+              canBeNotAllowed : evidence.canBeNotAllowed,
+              notApplicable : evidence.notApplicable
             };
 
             if (!evidence.isSubmitted) {
@@ -798,8 +807,9 @@ module.exports = class ObservationSubmissionsHelper {
           createdBy: userId,
         });
 
-        if (!submissionDocument.n) {
-          throw messageConstants.apiResponses.SUBMISSION_NOT_FOUND;
+        // Check if a document was deleted
+        if (!submissionDocument.deletedCount > 0) {
+          throw {message:messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
         }
 
         let response = {
@@ -887,17 +897,24 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         let result = {};
+        // Search for user roles
+        let userRoleFilterArray = new Array;
+         bodyData.role.split(",").forEach((eachRole) => {
+         userRoleFilterArray.push(new RegExp(eachRole))
+        })
 
+        
         let query = {
           createdBy: userId,
           deleted: false,
           status: messageConstants.common.SUBMISSION_STATUS_COMPLETED,
-          'userRoleInformation.role': bodyData.role,
+          "userRoleInformation.role" : {
+            $in : userRoleFilterArray
+        }
         };
 
         if (pageNo == 1) {
           let submissions = await this.observationSubmissionsDocument(query, ['entityType']);
-
           if (submissions.length == 0) {
             return resolve({
               success: true,
@@ -975,6 +992,7 @@ module.exports = class ObservationSubmissionsHelper {
 
         query['solutionId'] = { $in: solutionIds };
 
+        
         let submissions = await this.observationSubmissionsDocument(
           _.omit(query, ['userRoleInformation.role']),
           [
@@ -1000,13 +1018,29 @@ module.exports = class ObservationSubmissionsHelper {
           entityIds.push(submission.entityId);
         });
 
-        let entitiesData = await entitiesHelper.entityDocuments(
+        let entitiesData;
+        if (validateEntities == 'ON') { 
+
+        let entitiesDetails = await entityManagementService.entityDocuments(
           {
             _id: { $in: entityIds },
           },
           ['metaInformation.externalId', 'metaInformation.name'],
         );
 
+        if(!entitiesDetails.success){
+          throw new Error(messageConstants.apiResponses.ENTITY_SERVICE_DOWN)
+        }
+      
+         entitiesData = entitiesDetails.data;
+      }else {
+        entitiesData = entityIds.map((id)=>{
+          return {
+            _id:id
+          }
+        });
+
+      }
         if (!entitiesData.length > 0) {
           throw {
             message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
@@ -1020,14 +1054,14 @@ module.exports = class ObservationSubmissionsHelper {
 
           let entity = {
             _id: currentEntities._id,
-            externalId: currentEntities.metaInformation.externalId,
-            name: currentEntities.metaInformation.name,
+            externalId: currentEntities.metaInformation?.externalId,
+            name: currentEntities.metaInformation?.name,
           };
 
           entities[currentEntities._id] = entity;
         }
 
-        let solutionDocuments = await solutionHelper.solutionDocuments(
+        let solutionDocuments = await solutionsQueries.solutionDocuments(
           {
             _id: { $in: solutionIds },
           },
