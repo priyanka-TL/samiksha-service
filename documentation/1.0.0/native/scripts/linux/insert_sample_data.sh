@@ -10,7 +10,7 @@ sudo -u postgres psql -p 9700 -d users -c "INSERT INTO public.users_credentials 
 
 sudo -u postgres psql -p 9700 -d users -c "SELECT nextval('users_id_seq'::regclass) FROM public.users;"
 sudo -u postgres psql -p 9700 -d users -c "SELECT nextval('users_credentials_id_seq'::regclass) FROM public.users_credentials;"
+sudo -u postgres psql -p 9700 -d users -c "INSERT INTO public.user_roles (id, title, user_type, status, created_at, updated_at, deleted_at, visibility, organization_id, label) VALUES (8, 'state_education_officer', 1, 'ACTIVE', '2024-04-18 08:12:19.394+00', '2024-04-18 08:12:19.394+00', NULL, 'PUBLIC', 1, 'State Education Officer');"
 
 # psql -p 9700 -d users -c "INSERT INTO public.entity_types (id, value, label, status, created_by, updated_by, allow_filtering, data_type, organization_id, parent_id, has_entities, allow_custom_entities, model_names, created_at, updated_at, deleted_at, meta, external_entity_type, required, regex) VALUES (4, 'state', 'State', 'ACTIVE', 0, 0, true, 'STRING', 1, NULL, true, true, '{User}', '2024-04-18 08:12:19.394+00', '2024-04-18 08:12:19.394+00', NULL, NULL, true, false, NULL);"
-# psql -p 9700 -d users -c "INSERT INTO public.user_roles (id, title, user_type, status, created_at, updated_at, deleted_at, visibility, organization_id) VALUES (8, 'state_education_officer', 0, 'ACTIVE', '2024-04-18 08:12:19.394+00', '2024-04-18 08:12:19.394+00', NULL, 'PUBLIC', 1);"
 # psql -p 9700 -d users -c "UPDATE public.entity_types SET status = 'INACTIVE' WHERE id = 3;"
