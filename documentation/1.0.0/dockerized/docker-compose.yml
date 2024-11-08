@@ -32,6 +32,7 @@ services:
 # Mongo config
   mongo:
     image: 'mongo:4.4.14'
+    container_name: survey_mongo_1
     restart: 'always'
     ports:
       - '27017:27017'
@@ -51,7 +52,7 @@ services:
     logging:
       driver: none
   user:
-    image: shikshalokamqa/elevate-user:3.1.1
+    image: shikshalokamqa/elevate-user:3.1.2
     ports:
       - '3001:3001'
     command: >
@@ -120,7 +121,7 @@ services:
     env_file:
       - ${scheduler_env}
   samiksha:
-    image: shikshalokamqa/elevate-samiksha-service:1.0
+    image: shikshalokamqa/elevate-samiksha-service:1.0.2
     container_name: samiksha
     ports:
       - '4301:4301'
@@ -136,7 +137,7 @@ services:
 
   interface:
     # Update with latest image
-    image: shikshalokamqa/elevate-interface:3.1.1
+    image: shikshalokamqa/elevate-interface:3.1.5
     ports:
       - '3569:3569'
     command: ['node', 'app.js']
@@ -188,7 +189,7 @@ services:
  
    # Entity-management config
   entity_management:
-    image: shikshalokamqa/elevate-entity-management:1.0.0
+    image: shikshalokamqa/elevate-entity-management:1.0.1
     ports:
       - '5001:5001'
     command: ['nodemon', 'app.js']
@@ -200,12 +201,12 @@ services:
       - elevate_net
   portal:
     # Update with latest image
-    image: shikshalokamqa/elevate-project-obervation-pwa:2.2
+    image: shikshalokamqa/elevate-project-obervation-pwa:1.0
     container_name: portal
     ports:
       - '7007:7007'
     volumes:
-      - /home/praveendass/Desktop/survey/env.js:/usr/src/app/www/assets/env/env.js
+      - /home/shikshalokam/Desktop/survey/env.js:/usr/src/app/www/assets/env/env.js
     # command: >
     #   /bin/bash -c "ionic build --prod && ionic serve --host 0.0.0.0"
     networks:
