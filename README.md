@@ -688,15 +688,10 @@ Before setting up the following Survey application, dependencies given below sho
 
     -   **Ubuntu/Linux/MacOS/Windows**
 
-        1.  Download `import_forms.js` Script File:
+        1.  Download `import_forms.js` Script File And Make the setup file executable by running the following command:
 
             ```
-            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/import_forms.js
-            ```
-
-        2.  Make the setup file executable by running the following command.
-            ```
-            node import_forms.js
+            curl -s https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/import_forms.js | node
             ```
 
 10.  **Start The Services**
