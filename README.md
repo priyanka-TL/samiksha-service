@@ -52,7 +52,7 @@ To set up the Survey application, ensure you have Docker and Docker Compose inst
 
 >**Caution:** Before proceeding, please ensure that the ports given here are available and open. It is essential to verify their availability prior to moving forward. You can run below command in your teminal to check this
 ```
-for port in 3000 3001 3002 6000 5001 4000 9092 5432 7007 2181 2707 3569; do
+for port in 3000 3001 3002 5001 4000 4301 5500 9092 5432 7007 2181 2707 3569; do
     if lsof -iTCP:$port -sTCP:LISTEN &>/dev/null; then
         echo "Port $port is in use"
     else
@@ -63,7 +63,7 @@ done
 
 1.  **Download and execute main setup script:** Execute the following command in your terminal from the survey directory.
     ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/setup_survey.sh && chmod +x setup_survey.sh && ./setup_survey.sh
+    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/setup_survey.sh && chmod +x setup_survey.sh && ./setup_survey.sh
     ```
 
     > Note : The script will download all the essential files and launch the services in Docker. Once all services are successfully up and running, you can proceed to the next steps.
@@ -89,7 +89,7 @@ done
 1.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml)** file from the Survey service repository and save it to the survey directory.
 
     ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/docker-compose.yml
+    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml
     ```
 
     > Note: All commands are run from the survey directory.
@@ -176,7 +176,7 @@ To enable the Citus extension for mentoring and user services, follow these step
 
     ```
     mkdir user && \
-    curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
+    curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
     ```
 2. Set up the citus_setup file by following the steps given below.
 
@@ -299,20 +299,28 @@ After successfully running the script mentioned above, the following user accoun
 | arunimareddy@example.com | Password1@ | State Education Officer |
 | aaravpatel@example.com | Password1@ | State Education Officer |
 
-## Insert Initial Data
+## Sample Data Creation For Survey and Obseration
 
--  **Ubuntu/Linux** && **Windows**
+This step will guide us in implementing a sample survey and observation solutions following the initial setup of the survey service.
+   -  **Ubuntu/Linux** && **Windows**
 
-    ```
-    docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
-    ```
-    
-#### Insert Forms Data into Database
+      ```
+      docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
+      ```
+      
+## Insert Forms & Prfile Configs Data into Database
 
 - **Ubuntu/Linux/Mac**:
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/import_forms_mongo.sh && chmod +x import_forms_mongo.sh && ./import_forms_mongo.sh mongodb://mongo:27017/elevate-samiksha
-    ```
+   ```
+   curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/import_forms_mongo.sh && chmod +x import_forms_mongo.sh && ./import_forms_mongo.sh mongodb://mongo:27017/elevate-samiksha && \
+   curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/add_profile_configuation.sh && chmod +x add_profile_configuation.sh && ./add_profile_configuation.sh
+
+   ```
+
+## Explore the Portal
+Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:7007](http://localhost:7007/)** to access the survey app.
+
+> **Note:** In this setup, features such as **Sign-Up,file uploads** will not be available because cloud storage credentials have been masked in the environment files for security reasons.
 </details>
 
 <details>
@@ -810,3 +818,23 @@ After successfully running the script mentioned above, the following user accoun
 ## Postman Collections
 
 -   [Survey Service](https://github.com/ELEVATE-Project/samiksha-service/tree/main/api-doc)
+
+## Adding New Surveys & Observations to the System
+With implementation scripts, you can seamlessly add new projects to the system. Once a survey or observations are successfully added, it becomes visible on the portal, ready for use and interaction. For a comprehensive guide on setting up and using the implementation script, please refer to the [documentation here](https://github.com/ELEVATE-Project/samiksha-service/blob/main/implementation-script/README.md).
+
+
+# Team
+
+<a href="https://github.com/ELEVATE-Project/samiksha-service/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ELEVATE-Project/samiksha-service" />
+</a>
+
+# Open Source Dependencies
+
+Several open source dependencies that have aided Survey servie's development:
+
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![Jest](https://img.shields.io/badge/-jest-%23C21325?style=for-the-badge&logo=jest&logoColor=white)
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
