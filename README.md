@@ -43,11 +43,50 @@ To set up the Survey application, ensure you have Docker and Docker Compose inst
  
 ## Installation
 
-1.  **Create survey Directory:** Create a directory named **survey**.
+**Create survey Directory:** Create a directory named **survey**.
 
 > Example Command: `mkdir survey && cd survey/`
 
-2.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml)** file from the Survey service repository and save it to the survey directory.
+> Note: All commands are run from the survey directory.
+## Operating Systems: Linux / macOS
+
+>**Caution:** Before proceeding, please ensure that the ports given here are available and open. It is essential to verify their availability prior to moving forward. You can run below command in your teminal to check this
+```
+for port in 3000 3001 3002 6000 5001 4000 9092 5432 7007 2181 2707 3569; do
+    if lsof -iTCP:$port -sTCP:LISTEN &>/dev/null; then
+        echo "Port $port is in use"
+    else
+        echo "Port $port is available"
+    fi
+done
+```
+
+1.  **Download and execute main setup script:** Execute the following command in your terminal from the survey directory.
+    ```
+    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/setup_survey.sh && chmod +x setup_survey.sh && ./setup_survey.sh
+    ```
+
+    > Note : The script will download all the essential files and launch the services in Docker. Once all services are successfully up and running, you can proceed to the next steps.
+
+    **General Instructions :**
+
+    1. All containers which are part of the docker-compose can be gracefully stopped by pressing Ctrl + c in the same terminal where the services are running.
+
+    2. All docker containers can be stopped and removed by using below command.
+        ```
+        ./docker-compose-down.sh
+        ```
+    3. All services and dependencies can be started using below command.
+        ```
+        ./docker-compose-up.sh
+        ```
+**Keep the current terminal session active, and kindly open a new terminal window within the survey directory.**
+
+**After successfully completing this, please move to the next section: [Enable Citus Extension](#enable-citus-extension-optional)**
+
+## Operating Systems: Windows
+
+1.  **Download Docker Compose File:** Retrieve the **[docker-compose.yml](https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/docker-compose.yml)** file from the Survey service repository and save it to the survey directory.
 
     ```
     curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/docker-compose.yml
@@ -55,28 +94,7 @@ To set up the Survey application, ensure you have Docker and Docker Compose inst
 
     > Note: All commands are run from the survey directory.
 
-    Directory structure:
-   
-     ```
-     ./survey
-     └── docker-compose.yml
-     ```
-
-3.  **Download Environment Files**: Using the OS specific commands given below, download environment files for all the services.
-
-
-    -  **Ubuntu/Linux/Mac**
-
-         ```
-         curl -L -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/interface_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/entity_management_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/samiksha_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/notification_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/scheduler_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/user_env \
-        -O https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/envs/env.js
-        ```
-    
+2.  **Download Environment Files**: Using the OS specific commands given below, download environment files for all the services.
     -  **Windows**
 
         ```
@@ -93,59 +111,22 @@ To set up the Survey application, ensure you have Docker and Docker Compose inst
 
 >  **Caution:** While the default values in the downloaded environment files enable the Project Application to operate, certain features may not function correctly or could be impaired unless the adopter-specific environment variables are properly configured.
 
-4.  **Download `replace_volume_path` Script File**
+3.  **Download `replace_volume_path` Script File**
 
-    -  **Ubuntu/Linux/Mac**
-       ```
-        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/replace_volume_path.sh
-       ```
     -  **Windows**
         ```
         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
         service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/replace_volume_path.bat
         ```
 5.  **Run `replace_volume_path` Script File**
- 
-    -  **Ubuntu/Linux/Mac**
-
-       a. Make the `replace_volume_path.sh` file an executable.
-         ```
-         chmod +x replace_volume_path.sh
-         ```
-       b. Run the script file using the following command.
-         ```
-         ./replace_volume_path.sh
-         ```
-
+   
     -  **Windows**
        Run the script file using the following command.
        ```
        replace_volume_path.sh
        ```
 
-6. **Download `docker-compose-up` & `docker-compose-down` Script Files**
-
-   -   **Ubuntu/Linux/Mac**
-
-       1. Download the files.
-
-          ```
-          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-up.sh
-          ```
-
-          ```
-          curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/docker-compose-down.sh
-          ```
-
-        2. Make the files executable by running the following commands.
-
-            ```
-            chmod +x docker-compose-up.sh
-            ```
-
-            ```
-            chmod +x docker-compose-down.sh
-            ```
+5. **Download `docker-compose-up` & `docker-compose-down` Script Files**
 
     -    **Windows**	
 			```
@@ -156,13 +137,7 @@ To set up the Survey application, ensure you have Docker and Docker Compose inst
 		    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose-down.bat
 			```
 
-9.  **Run All Services & Dependencies:** All services and dependencies can be started using the `docker-compose-up` script file.
-
-    -   **Ubuntu/Linux/Mac**
-
-	    ```
-	    ./docker-compose-up.sh
-	    ```
+6.  **Run All Services & Dependencies:** All services and dependencies can be started using the `docker-compose-up` script file.
 
     -   **Windows**
 
@@ -170,37 +145,14 @@ To set up the Survey application, ensure you have Docker and Docker Compose inst
 	    docker-compose-up.bat
 	    ```
 
-> Double-click the file or run the above command from the terminal.
+      > Double-click the file or run the above command from the terminal.
 
   
 
-> **Note**: During the first Docker Compose run, the database, migration seeder files, and the script to set the default organization will be executed automatically.
+      > **Note**: During the first Docker Compose run, the database, migration seeder files, and the script to set the default organization will be executed automatically.
 
-
-
-1.  **Access The Survey Application**:Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:7007](http://localhost:7007/)** to access the Survey app.
-
-  
-
-9.  **Gracefully Stop All Services & Dependencies:**All containers which are part of the docker-compose can be gracefully stopped by pressing `Ctrl + c` in the same terminal where the services are running.
-
-  
-
-10.  **Remove All Service & Dependency Containers**:
-
-  
-
-All docker containers can be stopped and removed by using the `docker-compose-down` file.
-
-  
-
-  
-
--  **Ubuntu/Linux/Mac**
-
-    ```
-    ./docker-compose-down.sh
-    ```
+7.  **Remove All Service & Dependency Containers**:
+   All docker containers can be stopped and removed by using the `docker-compose-down` file.
 
  - **Windows**
 
@@ -211,7 +163,7 @@ All docker containers can be stopped and removed by using the `docker-compose-do
 >  **Caution**: As per the default configuration in the `docker-compose.yml` file, using the `down` command will lead to data loss since the database container does not persist data. To persist data across `down` commands and subsequent container removals, refer to the "Persistence of Database Data in Docker Containers" section of this documentation.
 
 
-## Enable Citus Extension
+## Enable Citus Extension (Optional)
  
 User management service comes with this bundle relies on PostgreSQL as its core database system. To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
   
@@ -220,7 +172,7 @@ For more information, refer **[Citus Data](https://www.citusdata.com/)**.
   
 To enable the Citus extension for mentoring and user services, follow these steps.
 
-1. Create a sub-directory named `user` and download `distributionColumns.sql` into it.
+1. Create a sub-directory named `user` and download `distributionColumns.sql` into it. (Skip for linux/mac setup)
 
     ```
     mkdir user && \
@@ -230,43 +182,31 @@ To enable the Citus extension for mentoring and user services, follow these step
 
 -  **Ubuntu/Linux/Mac**
 
-1. Download the `citus_setup.sh` file.
+   1. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
 
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/citus_setup.sh
-    ```
-
-2. Make the setup file executable by running the following command.
-
-    ```
-    chmod +x citus_setup.sh
-    ```
-
-3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
-
-    ```
-    ./citus_setup.sh user postgres://postgres:postgres@citus_master:5432/user
-    ```
+      ```
+      ./citus_setup.sh user postgres://postgres:postgres@citus_master:5432/user
+      ```
 
  - **Windows**
 
-1. Download the `citus_setup.bat` file.
+   1. Download the `citus_setup.bat` file.
 
-    ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/citus_setup.bat
-    ```
-    
-2. Enable Citus and set distribution columns for `user` database by running the `citus_setup.bat`with the following arguments.
+      ```
+      curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/citus_setup.bat
+      ```
+      
+   2. Enable Citus and set distribution columns for `user` database by running the `citus_setup.bat`with the following arguments.
 
-    ```
-    citus_setup.bat user postgres://postgres:postgres@citus_master:5432/user
-    ```
+      ```
+      citus_setup.bat user postgres://postgres:postgres@citus_master:5432/user
+      ```
 
-> **Note:** Since the `citus_setup.bat` file requires arguments, it must be run from a terminal.
+   > **Note:** Since the `citus_setup.bat` file requires arguments, it must be run from a terminal.
 
   
 
-## Persistence Of Database Data In Docker Container 
+## Persistence Of Database Data In Docker Container (Optional)
 
 To ensure the persistence of database data when running `docker compose down`, it is necessary to modify the `docker-compose.yml` file according to the steps given below:
 
@@ -320,49 +260,36 @@ In such cases, you can generate sample user accounts using the steps below. This
 
 >  **Warning:** Use this generator only immediately after the initial system setup and before any normal user accounts are created through the portal. It should not be used under any circumstances thereafter.
 
-1.  **Download The `sampleData.sql` Files:**
-
 -  **Ubuntu/Linux/Mac**
 
-    ```
-    mkdir -p sample-data/user && curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/documentation-docker/documentation/1.0.0/sample-data/mac-linux/user/sampleData.sql -o sample-data/user/sampleData.sql
-    ```
-
- - **Windows**
-
-    ```
-    mkdir sample-data\user 2>nul & ^
-    curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/windows/user/sampleData.sql     -o sample-data/user/sampleData.sql
-    ```
-
-2.  **Download The `insert_sample_data` Script File:**
-
--  **Ubuntu/Linux/Mac**
-
-    ```
-    curl -L -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/documentation-docker/documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_data.sh && chmod +x insert_sample_data.sh
-    ```
-
-- **Windows**
-
-    ```
-    curl -L -o insert_sample_data.bat https://github.com/ELEVATE-Project/samiksha-    
-    service/raw/main/documentation/1.0.0/dockerized/scripts/windows/insert_sample_data.bat
-    ```
-
-3.  **Run The `insert_sample_data` Script File:**
-
--  **Ubuntu/Linux/Mac**
-
+    
     ```
     ./insert_sample_data.sh user postgres://postgres:postgres@citus_master:5432/user
     ```
 
  - **Windows**
+   1.  **Download The `sampleData.sql` Files:**
 
-    ```
-    insert_sample_data.bat user postgres://postgres:postgres@citus_master:5432/user
-    ```
+      ```
+      mkdir sample-data\user 2>nul & ^
+      curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/windows/user/sampleData.sql     -o sample-data/user/sampleData.sql
+      ```
+
+   2.  **Download The `insert_sample_data` Script File:**
+   - **Windows**
+
+      ```
+      curl -L -o insert_sample_data.bat https://github.com/ELEVATE-Project/samiksha-    
+      service/raw/main/documentation/1.0.0/dockerized/scripts/windows/insert_sample_data.bat
+      ```
+
+   3.  **Run The `insert_sample_data` Script File:**
+
+   - **Windows**
+
+      ```
+      insert_sample_data.bat user postgres://postgres:postgres@citus_master:5432/user
+      ```
 
 After successfully running the script mentioned above, the following user accounts will be created and available for login:
 
