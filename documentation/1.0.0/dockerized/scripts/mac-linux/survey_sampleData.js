@@ -63,6 +63,9 @@ let programData = [{
         "state" : [ 
             entities[0]._id.toString()
         ],
+        "district" : [ 
+            entities[1]._id.toString()
+        ],
         "roles" : [ 
             "district_education_officer", 
             "TEACHER",
@@ -148,6 +151,9 @@ let solutionData = [
         "scope":{
             "state" : [ 
                 entities[0]._id.toString()
+            ],
+            "district" : [ 
+                entities[1]._id.toString()
             ],
             "roles" : [ 
                 "district_education_officer", 
@@ -235,6 +241,9 @@ let solutionData = [
         "scope":{
             "state" : [ 
                 entities[0]._id.toString()
+            ],
+            "district" : [ 
+                entities[1]._id.toString()
             ],
             "roles" : [ 
                 "district_education_officer", 
@@ -329,6 +338,9 @@ let solutionData = [
     "scope":{
         "state" : [ 
             entities[0]._id.toString()
+        ],
+        "district" : [ 
+            entities[1]._id.toString()
         ],
         "roles" : [ 
             "district_education_officer", 
@@ -427,6 +439,9 @@ let solutionData = [
     "scope":{
         "state" : [ 
             entities[0]._id.toString()
+        ],
+        "district" : [ 
+            entities[1]._id.toString()
         ],
         "roles" : [ 
             "district_education_officer", 
