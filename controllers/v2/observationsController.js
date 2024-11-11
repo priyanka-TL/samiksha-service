@@ -715,7 +715,6 @@ module.exports = class Observations extends v1Observation {
         assessment.description = solutionDocument.description;
         assessment.externalId = solutionDocument.externalId;
         assessment.pageHeading = solutionDocument.pageHeading;
-        assessment.endDate = solutionDocument.endDate;
         
         let criteriaId = new Array();
         let criteriaObject = {};

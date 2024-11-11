@@ -1890,7 +1890,6 @@ module.exports = class ObservationsHelper {
                   filterData
                 );
 
-                console.log(entitiesDocument,'entitiesDocument')
 
                 if(!entitiesDocument.success){
                   throw new Error({
@@ -2008,12 +2007,6 @@ module.exports = class ObservationsHelper {
 
           for (let pointerToEntities = 0; pointerToEntities < entitiesData.length; pointerToEntities++) {
             let currentEntities = entitiesData[pointerToEntities];
-
-            console.log({
-              observationId: observationId,
-              entityId: currentEntities._id,
-            })
-            console.log('queryings..............')
 
             let observationSubmissions = await observationSubmissionsHelper.observationSubmissionsDocument({
               observationId: observationId,
