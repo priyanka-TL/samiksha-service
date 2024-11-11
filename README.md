@@ -568,7 +568,7 @@ Before setting up the following Survey application, dependencies given below sho
 
    >  **Caution:** While the default values in the downloaded environment files enable the Survey Application to operate, certain features may not function correctly or could be impaired unless the adopter-specific environment variables are properly configured.
 
-   > For detailed instructions on adjusting these values, please consult the **[Survey Environment Variable Modification Guide](https://github.com/ELEVATE-Project/mentoring/blob/master/documentation/1.0.0/Survey-Env-Modification-README.md)**.
+   <!-- > For detailed instructions on adjusting these values, please consult the **[Survey Environment Variable Modification Guide](https://github.com/ELEVATE-Project/mentoring/blob/master/documentation/1.0.0/Survey-Env-Modification-README.md)**. -->
 
    >  **Important:** As mentioned in the above linked document, the **User SignUp** functionality may be compromised if key environment variables are not set correctly during deployment. If you opt to skip this setup, consider using the sample user account generator detailed in the `Sample User Accounts Generation` section of this document.
 
