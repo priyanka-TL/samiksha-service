@@ -308,7 +308,7 @@ This step will guide us in implementing a sample survey and observation solution
       docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
       ```
       
-## Insert Forms & Prfile Configs Data into Database
+## Insert Forms & Profile Configs Data into Database
 
 - **Ubuntu/Linux/Mac**:
    ```
