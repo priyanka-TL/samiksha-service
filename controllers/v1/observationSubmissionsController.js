@@ -1185,7 +1185,7 @@ module.exports = class ObservationSubmissions extends Abstract {
         } else if (req.method === 'DELETE') {
           response = await observationSubmissionsHelper.delete(req.params._id, req.userDetails.userId);
         }
-        console.log(req.body,'<--req.body')
+
         return resolve(response);
       } catch (error) {
         return reject({
