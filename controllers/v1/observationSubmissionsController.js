@@ -1124,6 +1124,8 @@ module.exports = class ObservationSubmissions extends Abstract {
               throw new Error(messageConstants.apiResponses.MULTIPLE_SUBMISSIONS_NOT_ALLOWED);
             }
 
+            //this code block is added to allow update field "notApplicable" ,  code is replicted 
+            //from ml-survey-5.1.0 code
             if(req.body.evidence.notApplicable && req.body.evidence.answers == undefined){
 
               let formattedEvidence = await observationSubmissionsHelper.addAnswersMarkedAsNA(
