@@ -2013,8 +2013,6 @@ module.exports = class ObservationsHelper {
               entityId: currentEntities._id,
             });
 
-            console.log(observationSubmissions,'observationSubmissions')
-
             let entity = {
               _id: currentEntities._id,
               externalId: currentEntities.metaInformation?.externalId,
