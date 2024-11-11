@@ -345,15 +345,12 @@ Before setting up the following Survey application, dependencies given below sho
 1. Download dependency management scripts:
 
     ```
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-    
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-    service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
-    chmod +x check-dependencies.sh && \
-    chmod +x install-dependencies.sh && \
-    chmod +x uninstall-dependencies.sh
+    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
+   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
+   chmod +x check-dependencies.sh && \
+   chmod +x install-dependencies.sh && \
+   chmod +x uninstall-dependencies.sh
    ```
 2. Verify installed dependencies by running `check-dependencies.sh`:
 
@@ -439,207 +436,209 @@ Before setting up the following Survey application, dependencies given below sho
 
 1.  **Create Elevate-survey Directory:** Create a directory named **elevate-survey**.
 
-> Example Command: `mkdir elevate-survey && cd elevate-survey/`
+   > Example Command: `mkdir elevate-survey && cd elevate-survey/`
 
 2.  **Git Clone Services And Portal Repositories**
 
--  **Ubuntu/Linux/MacOS**
+   -  **Ubuntu/Linux/MacOS**
 
-    ```
-    git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
-    git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
-    git clone -b master https://github.com/ELEVATE-Project/user.git && \
-    git clone -b master https://github.com/ELEVATE-Project/notification.git && \
-    git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
-    git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
-    git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
-    ``` 
+      ```
+      git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git && \
+      git clone -b main https://github.com/ELEVATE-Project/entity-management.git && \
+      git clone -b master https://github.com/ELEVATE-Project/user.git && \
+      git clone -b master https://github.com/ELEVATE-Project/notification.git && \
+      git clone -b main https://github.com/ELEVATE-Project/interface-service.git && \
+      git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
+      git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
+      ``` 
 
 3.  **Install NPM Packages**
 
--  **Ubuntu/Linux/MacOS**
+   -  **Ubuntu/Linux/MacOS**
 
-    ```
-    cd samiksha-service && npm install && cd ../ && \
-    cd user/src && npm install && cd ../.. && \
-    cd notification/src && npm install && cd ../.. && \
-    cd interface-service/src && npm install && cd ../.. && \
-    cd scheduler/src && npm install && cd ../.. && \
-    cd observation-survey-projects-pwa && npm install --force && cd ..
-    ```  
+      ```
+      cd samiksha-service && npm install && cd ../ && \
+      cd entity-management/src && npm install && cd ../.. && \
+      cd user/src && npm install && cd ../.. && \
+      cd notification/src && npm install && cd ../.. && \
+      cd interface-service/src && npm install && cd ../.. && \
+      cd scheduler/src && npm install && cd ../.. && \
+      cd observation-survey-projects-pwa && npm install --force && cd ..
+      ```  
 
 4.  **Download Environment Files**
 
--  **Ubuntu/Linux**
+   -  **Ubuntu/Linux**
 
-    ```
-    curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
-    curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
-    curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
-    curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
-    curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
-    curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+      ```
+      curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/survey_service_env && \
+      curl -L -o entity-management/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/entity_management_env && \
+      curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/user_env && \
+      curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/notification_env && \
+      curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/interface_env && \
+      curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/scheduler_env && \
+      curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/envs/environment.ts
+      ```
 
-    ```
+   -  **MacOS**
 
--  **MacOS**
+      ```
+      curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
+      curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
+      curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
+      curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
+      curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
+      curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+      ```
 
-    ```
-    curl -L -o samiksha-service/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/survey_service_env && \
-    curl -L -o user/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/user_env && \
-    curl -L -o notification/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/notification_env && \
-    curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
-    curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
-    curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+   >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Survey](https://github.com/ELEVATE-Project/samiksha/blob/master/src/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), and [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) repositories for reference.
 
-    ```
+   >  **Caution:** While the default values in the downloaded environment files enable the Survey Application to operate, certain features may not function correctly or could be impaired unless the adopter-specific environment variables are properly configured.
 
->  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Survey](https://github.com/ELEVATE-Project/samiksha/blob/master/src/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), and [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) repositories for reference.
+   <!-- > For detailed instructions on adjusting these values, please consult the **[Survey Environment Variable Modification Guide](https://github.com/ELEVATE-Project/mentoring/blob/master/documentation/1.0.0/Survey-Env-Modification-README.md)**. -->
 
-  
+   >  **Important:** As mentioned in the above linked document, the **User SignUp** functionality may be compromised if key environment variables are not set correctly during deployment. If you opt to skip this setup, consider using the sample user account generator detailed in the `Sample User Accounts Generation` section of this document.
 
-  
+5.  **Create Databases**
 
->  **Caution:** While the default values in the downloaded environment files enable the Survey Application to operate, certain features may not function correctly or could be impaired unless the adopter-specific environment variables are properly configured.
+   -  **Ubuntu/Linux**
 
-  
+      1. Download `create-databases.sh` Script File:
 
->
+            ```
+            curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/create-databases.sh
+            ```
+      2. Make the executable by running the following command:
 
-  
+            ```
+            chmod +x create-databases.sh
+            ```
+      3. Run the script file:
 
-> For detailed instructions on adjusting these values, please consult the **[Survey Environment Variable Modification Guide](https://github.com/ELEVATE-Project/mentoring/blob/master/documentation/1.0.0/Survey-Env-Modification-README.md)**.
+            ```
+            ./create-databases.sh
+            ```
+   -  **MacOS**
 
-  
+      1. Download `create-databases.sh` Script File:
 
-  
+         ```
+         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+         service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/macos/create-databases.sh
+         ```
+      2. Make the executable by running the following command:
 
->  **Important:** As mentioned in the above linked document, the **User SignUp** functionality may be compromised if key environment variables are not set correctly during deployment. If you opt to skip this setup, consider using the sample user account generator detailed in the `Sample User Accounts Generation` section of this document.
+         ```
+         chmod +x create-databases.sh
+         ```
+      3. Run the script file:
 
-  
-
-  
-
-1.  **Create Databases**
-
-  
-
-  
-
--  **Ubuntu/Linux**
-
-  
-
-1. Download `create-databases.sh` Script File:
-
-   ```
-   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/create-databases.sh
-   ```
-2. Make the executable by running the following command:
-
-   ```
-   chmod +x create-databases.sh
-   ```
-3. Run the script file:
-
-   ```
-   ./create-databases.sh
-   ```
--  **MacOS**
-
-1. Download `create-databases.sh` Script File:
-
-   ```
-   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/macos/create-databases.sh
-   ```
-2. Make the executable by running the following command:
-
-   ```
-   chmod +x create-databases.sh
-   ```
-3. Run the script file:
-
-   ```
-   ./create-databases.sh
-   ```
+         ```
+         ./create-databases.sh
+         ```
 
 6.  **Run Migrations To Create Tables**
 
--  **Ubuntu/Linux/MacOS**
+   -  **Ubuntu/Linux/MacOS**
 
-1. Install Sequelize-cli globally:
+      1. Install Sequelize-cli globally:
 
-   ```
-   sudo npm i sequelize-cli -g
-   ```
-2. Run Migrations:
+         ```
+         sudo npm i sequelize-cli -g
+         ```
+      2. Run Migrations:
 
-   ```
-   cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
-   cd notification/src && npx sequelize-cli db:migrate && cd ../..
-   ```
+         ```
+         cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
+         cd notification/src && npx sequelize-cli db:migrate && cd ../..
+         ```
 
 7.  **Enabling Citus And Setting Distribution Columns (Optional)**
 
-To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
+      To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
 
-> NOTE: Currently only available for Linux based operation systems.
+      > NOTE: Currently only available for Linux based operation systems.
 
   
 
-1. Download user `distributionColumns.sql` file.
-
-   ```
-   curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/user/distributionColumns.sql
-   ```
-2. Set up the `citus_setup` file by following the steps given below.
-
--  **Ubuntu/Linux**
-
-1. Download the `citus_setup.sh` file:
-
-   ```
-   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
-   service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/linux/citus_setup.sh
-   ```
-2. Make the setup file executable by running the following command:
-
-   ```
-   chmod +x citus_setup.sh
-   ```
-3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
-
-   ```
-   ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
-   ```
+      1. Download user `distributionColumns.sql` file.
+   
+         ```
+         curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/user/distributionColumns.sql
+         ```
+      2. Set up the `citus_setup` file by following the steps given below.
+   
+         -  **Ubuntu/Linux**
+   
+            1. Download the `citus_setup.sh` file:
+   
+               ```
+               curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/citus_setup.sh
+               ```
+            2. Make the setup file executable by running the following command:
+   
+               ```
+               chmod +x citus_setup.sh
+               ```
+            3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
+   
+               ```
+               ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
+               ```
 8.  **Insert Initial Data**
 
-Use Survey in-build seeders to insert the initial data.
+     - **Ubuntu/Linux/Mac/Windows**
 
--  **Ubuntu/Linux/MacOS**
+        1. Download `insert_sample_solutions.js` Script File:
+
+            ```
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/insert_sample_solutions.js && \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/common.js && \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/entity_sampleData.js&& \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/observation_sampleData && \
+            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/survey_sampleData.js
+            ```
+
+        2. Make the setup file executable by running the following command.
+
+            ```
+            node insert_sample_solutions.js
+            ```
+
+        3. Use Survey in-build seeders to insert the initial data.
+            ```
+            cd samiksha-service && npm run db:populate-data && cd ../ && \
+            cd user/src && npm run db:seed:all && cd ../..
+            ```  
+
+9.  **Insert Forms Data into Database**
+
+    -   **Ubuntu/Linux/MacOS/Windows**
+
+        1.  Download `import_forms.js` Script File And Make the setup file executable by running the following command:
+
+            ```
+            curl -s https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/import_forms.js | node
+            ```
+
+10.  **Start The Services**
+
+   Following the steps given below, 2 instances of each MentorEd backend service will be deployed and be managed by PM2 process manager.
+
+   -  **Ubuntu/Linux**
 
    ```
-   cd samiksha-service && npm run db:populate-data && cd ../ && \
-   cd user/src && npm run db:seed:all && cd ../..
-   ```  
-9.  **Start The Services**
-
-Following the steps given below, 2 instances of each MentorEd backend service will be deployed and be managed by PM2 process manager.
-
--  **Ubuntu/Linux**
-
-   ```
-   cd samiksha-service && pm2 start app.js -i 2 --name survey-service && cd ../ && \
-   cd user/src && pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-   cd notification/src && pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-   cd interface-service/src && pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-   cd scheduler/src && pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+   cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && 
+   cd entity-management/src && pm2 start app.js --name survey-entity-management && cd ../.. && 
+   cd user/src && pm2 start app.js --name survey-user && cd ../.. && 
+   cd notification/src && pm2 start app.js --name survey-notification && cd ../.. && 
+   cd interface-service/src && pm2 start app.js --name survey-interface && cd ../.. && 
+   cd scheduler/src && pm2 start app.js --name survey-scheduler && cd ../..
    ```
 
--  **MacOS**
+
+
+   -  **MacOS**
 
    ```
    cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
@@ -650,116 +649,116 @@ Following the steps given below, 2 instances of each MentorEd backend service wi
    ```
 
 
-10.  **Run Service Scripts**
+11.  **Run Service Scripts**
 
--  **Ubuntu/Linux/MacOS**
+   -  **Ubuntu/Linux/MacOS**
 
-   ```
-   cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
-   node -r module-alias/register uploadSampleCSV.js && cd ../../..
-   ```
+      ```
+      cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
+      node -r module-alias/register uploadSampleCSV.js && cd ../../..
+      ```
 
-11.  **Start The Portal**
+12.  **Start The Portal**
 
-Survey portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
+   Survey portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
   
--  **Ubuntu/Linux**
+   -  **Ubuntu/Linux**
 
-1. Install Ionic CLI globally:
+      1. Install Ionic CLI globally:
 
-   ```
-   sudo npm install -g @ionic/cli
-   ```
+         ```
+         sudo npm install -g @ionic/cli
+         ```
 
-2. Install Angular CLI globally:
+      2. Install Angular CLI globally:
 
-   ```
-   sudo npm install -g @angular/cli
-   ```
+         ```
+         sudo npm install -g @angular/cli
+         ```
 
-3. Navigate to `observation-survey-projects-pwa` directory:
+      3. Navigate to `observation-survey-projects-pwa` directory:
 
-   ```
-   cd observation-survey-projects-pwa
-   ```
+         ```
+         cd observation-survey-projects-pwa
+         ```
 
-4. Build the portal
+      4. Build the portal
 
-   ```
-   ionic build
-   ```
+         ```
+         ionic build
+         ```
 
-5. Start the portal:
+      5. Start the portal:
 
-   ```
-   ionic serve
-   ```
+         ```
+         ionic serve
+         ```
 
--  **MacOS**
+   -  **MacOS**
 
-1. Install Ionic CLI globally:
+      1. Install Ionic CLI globally:
 
-   ```
-   sudo npm install -g @ionic/cli
-   ```
+         ```
+         sudo npm install -g @ionic/cli
+         ```
 
-2. Install Angular CLI globally:
+      2. Install Angular CLI globally:
 
-   ```
-   sudo npm install -g @angular/cli
-   ```
+         ```
+         sudo npm install -g @angular/cli
+         ```
 
-3. Navigate to `observation-survey-projects-pwa` directory:
+      3. Navigate to `observation-survey-projects-pwa` directory:
 
-   ```
-   cd observation-survey-projects-pwa
-   ```
+         ```
+         cd observation-survey-projects-pwa
+         ```
 
-4. Build the portal:
+      4. Build the portal:
 
-   ```
-   npx ionic build
-   ```
+         ```
+         npx ionic build
+         ```
 
-5. Start the portal:
+      5. Start the portal:
 
-   ```
-   npx ionix serve
-   ```
+         ```
+         npx ionix serve
+         ```
 
--  **Windows**
+   -  **Windows**
 
-1. Install Ionic CLI globally:
+      1. Install Ionic CLI globally:
 
-   ```
-   npm install -g @ionic/cli
-   ```
+         ```
+         npm install -g @ionic/cli
+         ```
 
-2. Install Angular CLI globally:
+      2. Install Angular CLI globally:
 
-   ```
-   npm install -g @angular/cli
-   ```
+         ```
+         npm install -g @angular/cli
+         ```
 
-3. Navigate to `observation-survey-projects-pwa` directory:
+      3. Navigate to `observation-survey-projects-pwa` directory:
 
-   ```
-   cd observation-survey-projects-pwa
-   ```
+         ```
+         cd observation-survey-projects-pwa
+         ```
 
-4. Build the portal
+      4. Build the portal
 
-  ```
-  ionic build
-  ```
+        ```
+        ionic build
+        ```
 
-5. Start the portal:
+      5. Start the portal:
 
-  ```
-  ionic serve
-  ```
+        ```
+        ionic serve
+        ```
 
-Navigate to http://localhost:8100 to access the Survey Portal.
+   Navigate to http://localhost:8100 to access the Survey Portal.
 
 ## Sample User Accounts Generation
 
@@ -785,33 +784,14 @@ In such cases, you can generate sample user accounts using the steps below. This
     ./insert_sample_data.sh
     ```
 
-After successfully running the script mentioned above, the following user accounts will be created and available for login:
+    After successfully running the script mentioned above, the following user accounts will be created and available for login:
+   
+| Email ID                 | Password   | Role                      |
+| ------------------------ | ---------- | ------------------------- |
+| aaravpatel@example.com   | Password1@ | state_educational_officer |
+| arunimareddy@example.com | Password1@ | state_educational_officer |
+| devikasingh@example.com  | Password1@ | state_educational_officer |
 
-  
-
-  
-
-| Email ID | Password | Role |
-
-  
-
-| ------------------------ | ---------- | ------------------ |
-
-  
-
-| aaravpatel@example.com | Password1@ | Mentee |
-
-  
-
-| arunimareddy@example.com | Password1@ | Mentor |
-
-  
-
-| devikasingh@example.com | Password1@ | Organization Admin |
-
-  
-
-  
 
 </details>
 
