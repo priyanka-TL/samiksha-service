@@ -925,7 +925,8 @@ module.exports = class Observations extends Abstract {
         assessment.description = solutionDocument.description;
         assessment.externalId = solutionDocument.externalId;
         assessment.pageHeading = solutionDocument.pageHeading;
-
+        assessment.endDate = solutionDocument.endDate;
+    
         let criteriaId = new Array();
         let criteriaObject = {};
         let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
@@ -1035,7 +1036,7 @@ module.exports = class Observations extends Abstract {
           }
         }
 
-        const parsedAssessment = await assessmentsHelper.parseQuestions(
+        const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
           Object.values(evidenceMethodArray),
           entityDocumentQuestionGroup,
           submissionDoc.result.evidences,
