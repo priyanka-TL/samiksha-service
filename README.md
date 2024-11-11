@@ -592,11 +592,12 @@ Before setting up the following Survey application, dependencies given below sho
         1. Download `insert_sample_solutions.js` Script File:
 
             ```
-            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/insert_sample_solutions.js && \
-            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/common.js && \
-            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/entity_sampleData.js&& \
-            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/observation_sampleData && \
-            curl -OJL https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/survey_sampleData.js
+            curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/insert_sample_solutions.js && \
+            curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/common.js && \
+            curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/entity_sampleData.js&& \
+            curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/observation_sampleData.js && \
+            curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/survey_sampleData.js
+
             ```
 
         2. Make the setup file executable by running the following command.
@@ -607,7 +608,6 @@ Before setting up the following Survey application, dependencies given below sho
 
         3. Use Survey in-build seeders to insert the initial data.
             ```
-            cd samiksha-service && npm run db:populate-data && cd ../ && \
             cd user/src && npm run db:seed:all && cd ../..
             ```  
 
@@ -618,7 +618,7 @@ Before setting up the following Survey application, dependencies given below sho
         1.  Download `import_forms.js` Script File And Make the setup file executable by running the following command:
 
             ```
-            curl -s https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/scripts/linux/import_forms.js | node
+            curl -s https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/import_forms.js | node
             ```
 
 10.  **Start The Services**
