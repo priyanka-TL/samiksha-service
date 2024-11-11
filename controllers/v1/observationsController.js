@@ -925,7 +925,8 @@ module.exports = class Observations extends Abstract {
         assessment.description = solutionDocument.description;
         assessment.externalId = solutionDocument.externalId;
         assessment.pageHeading = solutionDocument.pageHeading;
-
+        assessment.endDate = solutionDocument.endDate;
+    
         let criteriaId = new Array();
         let criteriaObject = {};
         let criteriaIdArray = gen.utils.getCriteriaIdsAndWeightage(solutionDocument.themes);
@@ -1035,7 +1036,7 @@ module.exports = class Observations extends Abstract {
           }
         }
 
-        const parsedAssessment = await assessmentsHelper.parseQuestions(
+        const parsedAssessment = await assessmentsHelper.parseQuestionsV2(
           Object.values(evidenceMethodArray),
           entityDocumentQuestionGroup,
           submissionDoc.result.evidences,
@@ -2078,6 +2079,7 @@ module.exports = class Observations extends Abstract {
 
         return resolve(observations);
       } catch (error) {
+        console.log(error)
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,
           message: error.message || httpStatusCode.internal_server_error.message,

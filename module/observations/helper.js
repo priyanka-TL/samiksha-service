@@ -1890,6 +1890,8 @@ module.exports = class ObservationsHelper {
                   filterData
                 );
 
+                console.log(entitiesDocument,'entitiesDocument')
+
                 if(!entitiesDocument.success){
                   throw new Error({
                     message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
@@ -2007,10 +2009,18 @@ module.exports = class ObservationsHelper {
           for (let pointerToEntities = 0; pointerToEntities < entitiesData.length; pointerToEntities++) {
             let currentEntities = entitiesData[pointerToEntities];
 
+            console.log({
+              observationId: observationId,
+              entityId: currentEntities._id,
+            })
+            console.log('queryings..............')
+
             let observationSubmissions = await observationSubmissionsHelper.observationSubmissionsDocument({
               observationId: observationId,
               entityId: currentEntities._id,
             });
+
+            console.log(observationSubmissions,'observationSubmissions')
 
             let entity = {
               _id: currentEntities._id,
