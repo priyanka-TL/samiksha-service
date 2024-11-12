@@ -169,7 +169,7 @@ module.exports = class ReportsHelper {
       entityName: submissionDocument.entityInformation.name,
       solutionName:solutionDocument[0].name,
       observationId: observationId,
-      programName: programDocument.data.name,
+      programName: programDocument.data?.name,
       totalSubmissions: submissionDocumentArr.length,
     };
     let result;
@@ -223,7 +223,7 @@ module.exports = class ReportsHelper {
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
 
     let submissionDocument = submissionDocumentArr[0];
-
+    console.log(submissionDocument,'submissionDocument')
     let solutionDocument = await solutionsQueries.solutionDocuments(
       {
         _id: submissionDocument.solutionId,
