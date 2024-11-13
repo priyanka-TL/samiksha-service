@@ -2050,6 +2050,30 @@ let criteriaQuestionsData = [
         "weightage" : null
     }]
 
+let configurations = [
+    {
+        "_id" : new ObjectId("672b091a95d8ba297ffe6911"),
+        "code" : "keysAllowedForTargeting",
+        "meta" : {
+            "profileKeys" : [ 
+                "state", 
+                "district", 
+                "school", 
+                "block", 
+                "cluster", 
+                "board", 
+                "class", 
+                "roles", 
+                "entities", 
+                "entityTypeId", 
+                "entityType", 
+                "subject", 
+                "medium"
+            ]
+        }
+    }
+]
+
 let questionsData = [
 {
     "_id" :new ObjectId("66f3ddf9953231bda1510879"),
@@ -3154,5 +3178,6 @@ module.exports = {
     surveysData,
     criteriaData,
     questionsData,
-    criteriaQuestionsData
+    criteriaQuestionsData,
+    configurations
 }
