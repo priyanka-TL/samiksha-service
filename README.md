@@ -311,16 +311,10 @@ This step will guide us in implementing a sample survey and observation solution
    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/add_profile_configuation.sh && chmod +x add_profile_configuation.sh && ./add_profile_configuation.sh
    ```
  - **Windows**:
-   1.  **Download The `import_forms_mongo.bat` Files:**
+   1.  **Download The `import_forms_mongo.bat` Files & Run The `import_forms_mongo.bat` Script File:**
 
       ```
-      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/import_forms_mongo.bat
-      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/modifyform.js
-      ```
-
-   2.  **Run The `import_forms_mongo.bat` Script File:**
-      ```
-      import_forms_mongo.bat mongodb://localhost:27017/elevate-samiksha
+      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/import_forms_mongo.bat && curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/modifyform.js && import_forms_mongo.bat mongodb://localhost:27017/elevate-samiksha
       ```
 
 ## Explore the Portal
