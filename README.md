@@ -115,8 +115,7 @@ done
 
     -  **Windows**
         ```
-        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-              
-        service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/replace_volume_path.bat
+        curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/replace_volume_path.bat
         ```
 5.  **Run `replace_volume_path` Script File**
    
@@ -130,8 +129,7 @@ done
 
     -    **Windows**	
 			```
-		    curl -OJL https://github.com/ELEVATE-Project/samiksha-      
-			service/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
+		    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/features_dockerSetup/documentation/1.0.0/dockerized/scripts/windows/docker-compose-up.bat
 			```
 		    ```
 		    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/docker-compose-down.bat
@@ -175,8 +173,7 @@ To enable the Citus extension for mentoring and user services, follow these step
 1. Create a sub-directory named `user` and download `distributionColumns.sql` into it. (Skip for linux/mac setup)
 
     ```
-    mkdir user && \
-    curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
+    mkdir user && curl -o ./user/distributionColumns.sql -JL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/distribution-columns/user/distributionColumns.sql
     ```
 2. Set up the citus_setup file by following the steps given below.
 
@@ -271,16 +268,14 @@ In such cases, you can generate sample user accounts using the steps below. This
    1.  **Download The `sampleData.sql` Files:**
 
       ```
-      mkdir sample-data\user 2>nul & ^
-      curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/windows/user/sampleData.sql     -o sample-data/user/sampleData.sql
+      mkdir sample-data\user 2>nul & ^curl -L https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/main/documentation/1.0.0/sample-data/windows/user/sampleData.sql     -o sample-data/user/sampleData.sql
       ```
 
    2.  **Download The `insert_sample_data` Script File:**
    - **Windows**
 
       ```
-      curl -L -o insert_sample_data.bat https://github.com/ELEVATE-Project/samiksha-    
-      service/raw/main/documentation/1.0.0/dockerized/scripts/windows/insert_sample_data.bat
+      curl -L -o insert_sample_data.bat https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/windows/insert_sample_data.bat
       ```
 
    3.  **Run The `insert_sample_data` Script File:**
@@ -314,8 +309,19 @@ This step will guide us in implementing a sample survey and observation solution
    ```
    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/import_forms_mongo.sh && chmod +x import_forms_mongo.sh && ./import_forms_mongo.sh mongodb://mongo:27017/elevate-samiksha && \
    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/add_profile_configuation.sh && chmod +x add_profile_configuation.sh && ./add_profile_configuation.sh
-
    ```
+ - **Windows**:
+   1.  **Download The `import_forms_mongo.bat` Files:**
+
+      ```
+      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/import_forms_mongo.bat
+      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/dockerized/scripts/windows/modifyform.js
+      ```
+
+   2.  **Run The `import_forms_mongo.bat` Script File:**
+      ```
+      import_forms_mongo.bat mongodb://localhost:27017/elevate-samiksha
+      ```
 
 ## Explore the Portal
 Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:7007](http://localhost:7007/)** to access the survey app.
