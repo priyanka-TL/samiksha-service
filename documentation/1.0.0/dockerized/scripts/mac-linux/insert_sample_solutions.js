@@ -3,7 +3,7 @@ console.log(process.env.MONGODB_URL ,"this is mongoURL")
 
 const url = process.env.MONGODB_URL // MongoDB URL
 const dbName = 'elevate-samiksha';
-const dbName2 = 'elevate-entity';
+const dbName2 = 'elevate-entity1';
 const surveyData = require('./survey_sampleData.js');
 const entityData = require('./entity_sampleData.js')
 const observationData = require('./observation_sampleData.js');
@@ -50,8 +50,6 @@ async function main({dataToBeInserted}) {
     await insertData('frameworks',dataToBeInserted.frameworkData);
     await insertData('observationSubmissions',dataToBeInserted.observationSubmissionData);
     await insertData('observations',dataToBeInserted.observationData);
-    await insertData('configurations', dataToBeInserted.configurations);
-
 
 }
 

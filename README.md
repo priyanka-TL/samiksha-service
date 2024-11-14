@@ -122,7 +122,7 @@ done
     -  **Windows**
        Run the script file using the following command.
        ```
-       replace_volume_path.sh
+       replace_volume_path.bat
        ```
 
 5. **Download `docker-compose-up` & `docker-compose-down` Script Files**
