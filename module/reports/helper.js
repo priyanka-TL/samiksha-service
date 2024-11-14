@@ -169,7 +169,7 @@ module.exports = class ReportsHelper {
       entityName: submissionDocument.entityInformation.name,
       solutionName:solutionDocument[0].name,
       observationId: observationId,
-      programName: programDocument.data.name,
+      programName: programDocument.data?.name,
       totalSubmissions: submissionDocumentArr.length,
     };
     let result;

@@ -1,5 +1,6 @@
-let fs = require('fs'),
-  path = require('path');
+require('module-alias/register');
+let fs = require('fs');
+let path = require('path');
 const requireAll = require('require-all');
 mkdirp(path.join(__dirname + '/../logs/' + process.env.NODE_ENV));
 mkdirp(path.join(__dirname + '/../' + 'uploads'));
@@ -20,15 +21,15 @@ module.exports = function () {
   // let readStream = fs.createReadStream(__dirname +'/../logs/'+process.env.NODE_ENV + '/logs.log');
   global.async = require('async');
   global.ROOT_PATH = path.join(__dirname, '..');
-  global.GENERIC_HELPERS_PATH = ROOT_PATH + '/generics/helpers';
-  global.MODULES_BASE_PATH = ROOT_PATH + '/module';
-  global.DB_QUERY_BASE_PATH = ROOT_PATH + "/databaseQueries";
+  global.GENERIC_HELPERS_PATH = '@helpers';
+  global.MODULES_BASE_PATH = '@module';
+  global.DB_QUERY_BASE_PATH = '@dbQueries';
   global.log = new Log(global.config.log);
   global._ = require('lodash');
-  gen.utils = require(ROOT_PATH + '/generics/helpers/utils');
+  gen.utils = require('@helpers/utils');
   global.config = require('.');
 
-  global.httpStatusCode = require(ROOT_PATH + '/generics/httpStatusCodes');
+  global.httpStatusCode = require('@generics/httpStatusCodes');
 
   // global.ENABLE_DEBUG_LOGGING = process.env.ENABLE_DEBUG_LOGGING || 'ON';
   // global.ENABLE_BUNYAN_LOGGING = process.env.ENABLE_BUNYAN_LOGGING || 'ON';
@@ -37,29 +38,28 @@ module.exports = function () {
 
   // boostrap all models
   global.models = requireAll({
-    dirname: ROOT_PATH + '/models',
+    dirname: path.resolve('models'),
     filter: /(.+)\.js$/,
-    resolve: function (Model) {
-      return Model;
-    },
+    resolve : (Model) => Model
   });
 
   //load base v1 controllers
-  fs.readdirSync(ROOT_PATH + '/controllers/v1/').forEach(function (file) {
-    checkWhetherFolderExistsOrNor(ROOT_PATH + '/controllers/v1/', file);
+  const pathToV1Controllers = path.resolve('controllers/v1/')
+  const pathToV2Controllers = path.resolve('controllers/v2/')
+  fs.readdirSync(pathToV1Controllers).forEach( (file) => {
+    checkWhetherFolderExistsOrNor(path.join(pathToV1Controllers + '/') ,  file);
   });
-
+  
   //load base v2 controllers
-  fs.readdirSync(ROOT_PATH + '/controllers/v2/').forEach(function (file) {
-    checkWhetherFolderExistsOrNor(ROOT_PATH + '/controllers/v2/', file);
+  fs.readdirSync(pathToV2Controllers).forEach( (file) => {
+    checkWhetherFolderExistsOrNor(path.join(pathToV1Controllers + '/'), file);
   });
-
+  
   function checkWhetherFolderExistsOrNor(pathToFolder, file) {
     let folderExists = fs.lstatSync(pathToFolder + file).isDirectory();
-
     if (folderExists) {
-      fs.readdirSync(pathToFolder + file).forEach(function (folderOrFile) {
-        checkWhetherFolderExistsOrNor(pathToFolder + file + '/', folderOrFile);
+      fs.readdirSync(path.join(pathToFolder , file)).forEach(function (folderOrFile) {
+        checkWhetherFolderExistsOrNor(path.join(pathToFolder ,file ,'/'), folderOrFile);
       });
     } else {
       if (file.match(/\.js$/) !== null) {
@@ -67,18 +67,18 @@ module.exports = function () {
       }
     }
   }
-
+  
   //load schema files
-  fs.readdirSync(ROOT_PATH + '/models/').forEach(function (file) {
+  fs.readdirSync(path.resolve('models')).forEach( (file) => {
     if (file.match(/\.js$/) !== null) {
       var name = file.replace('.js', '');
-      global[name + 'Schema'] = require(ROOT_PATH + '/models/' + file);
+      global[name + 'Schema'] = require(path.resolve('models' , file));
     }
   });
 
   // boostrap all controllers
   global.controllers = requireAll({
-    dirname: ROOT_PATH + '/controllers',
+    dirname: path.resolve('controllers'),
     filter: /(.+Controller)\.js$/,
     resolve: function (Controller) {
       if (Controller.name) return new Controller(models[Controller.name]);
@@ -89,24 +89,24 @@ module.exports = function () {
   // Load all message constants
   global.messageConstants = {};
 
-  fs.readdirSync(ROOT_PATH + '/generics/messageConstants').forEach(function (file) {
+  fs.readdirSync(path.resolve('generics/messageConstants')).forEach(function (file) {
     if (file.match(/\.js$/) !== null) {
       let name = file.replace('.js', '');
-      global.messageConstants[name] = require(ROOT_PATH + '/generics/messageConstants/' + file);
+      global.messageConstants[name] = require(path.resolve('generics/messageConstants' , file));
     }
   });
 
   // Load all kafka consumer files
-  fs.readdirSync(ROOT_PATH + '/generics/kafkaConsumers/').forEach(function (file) {
+  fs.readdirSync(path.resolve('generics/kafkaConsumers/')).forEach(function (file) {
     if (file.match(/\.js$/) !== null) {
       var name = file.replace('Consumer.js', '');
-      global[name + 'Consumer'] = require(ROOT_PATH + '/generics/kafkaConsumers/' + file);
+      global[name + 'Consumer'] = require(path.resolve('generics/kafkaConsumers/' , file));
     }
   });
 
   global.sessions = {};
 
-  const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper');
+  // const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper');
 
   // (async () => {
   //   await libraryCategoriesHelper.setLibraryCategories();
