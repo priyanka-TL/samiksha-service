@@ -1,24 +1,24 @@
+require('module-alias/register');
 require('dotenv').config();
 
 //express
 const express = require('express');
 let app = express();
-
+const { elevateLog } = require("elevate-logger");
+const logger = elevateLog.init();
 // Health check
-require('./healthCheck')(app);
+require('@healthCheck')(app);
 
 //config and routes
-global.config = require('./config');
+global.config = require('@config');
 require('./config/globalVariable')();
-
 let environmentData = require('./envVariables')();
-
 if (!environmentData.success) {
-  log.warning('Server could not start . Not all environment variable is provided');
+  logger.error('Server could not start . Not all environment variable is provided');
   process.exit();
 }
 
-let router = require('./routes');
+let router = require('@routes');
 
 //required modules
 const fileUpload = require('express-fileupload');
@@ -135,7 +135,6 @@ app.get(process.env.API_DOC_URL, function (req, res) {
 
 //add routing
 router(app);
-
 //listen to given port
 app.listen(config.port, () => {
   log.info('Environment: ' + (process.env.NODE_ENV ? process.env.NODE_ENV : 'development'));
