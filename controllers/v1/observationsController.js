@@ -712,19 +712,23 @@ module.exports = class Observations extends Abstract {
   async assessment(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.query.isMultipleUserAllowed = gen.utils.convertStringToBoolean(req.query.isMultipleUserAllowed)
+
         let response = {
           message: messageConstants.apiResponses.ASSESSMENT_FETCHED,
           result: {},
         };
-
-        let observationDocument = await database.models.observations
-          .findOne({
-            _id: req.params._id,
-            createdBy: req.userDetails.userId,
-            status: { $ne: 'inactive' },
-            entities: req.query.entityId,
-          })
-          .lean();
+         
+        const findQuery = {
+          _id: req.params._id,
+          status: { $ne: 'inactive' },
+          entities: req.query.entityId,
+        };
+        
+        if (!req.query.isMultipleUserAllowed) {
+          findQuery.createdBy = req.userDetails.userId;
+        }
+        let observationDocument = await database.models.observations.findOne(findQuery).lean();
 
         if (!observationDocument) {
           return resolve({
@@ -2067,12 +2071,14 @@ module.exports = class Observations extends Abstract {
   async entities(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.query.isMultipleUserAllowed = gen.utils.convertStringToBoolean(req.query.isMultipleUserAllowed)
         let observations = await observationsHelper.entities(
           req.userDetails.userId,
           req.rspObj.userToken,
           req.params._id ? req.params._id : '',
           req.query.solutionId,
-          req.body
+          req.body,
+          req.query.isMultipleUserAllowed?req.query.isMultipleUserAllowed:false
         );
 
         observations['result'] = observations.data;

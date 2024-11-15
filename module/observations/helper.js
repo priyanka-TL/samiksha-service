@@ -1844,7 +1844,7 @@ module.exports = class ObservationsHelper {
    * @returns {Object} list of entities in observation
    */
 
-  static entities(userId, token, observationId, solutionId, bodyData) {
+  static entities(userId, token, observationId, solutionId, bodyData,isMultipleUserAllowed) {
     return new Promise(async (resolve, reject) => {
       try {
         if (observationId === '') {
@@ -1856,8 +1856,7 @@ module.exports = class ObservationsHelper {
             ['_id'],
           );
 
-          
-
+         
           if (observationData.length > 0) {
             observationId = observationData[0]._id;
           } else {
@@ -1904,9 +1903,24 @@ module.exports = class ObservationsHelper {
             }
 
             delete solutionData.data._id;
+            let findEntityObservation
+            if(isMultipleUserAllowed){
+              findEntityObservation = await this.observationDocuments(
+                {
+                  solutionId: solutionId,
+                  entities: bodyData[solutionData.data.entityType],
+                },
+                ['_id'],
+              );
+            }
+            if(findEntityObservation && findEntityObservation.length > 0) {
+              observationId =findEntityObservation[0]._id
+            }else{
+              let observation = await this.create(solutionId, solutionData.data, userId, token);
+              observationId = observation._id;
+            }
 
-            let observation = await this.create(solutionId, solutionData.data, userId, token);
-            observationId = observation._id;
+            
           }
         }    
         let entitiesList = await this.listEntities(observationId);      
