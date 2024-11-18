@@ -162,6 +162,65 @@ module.exports = class ReportsHelper {
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
 
+    /*
+
+    Adding filter code
+    */
+    let submissionArr = submissionDocumentArr.map((record)=>{
+      return {_id:record._id,
+            name:record.title
+      }
+    })
+    let filters = [
+      {
+         "order":"",
+         "filter":{
+            "type":"dropdown",
+            "title":"",
+            "keyToSend":"submissionId",
+            "data":submissionArr
+         }
+      },
+      {
+         "order":"",
+         "filter":{
+            "type":"segment",
+            "title":"",
+            "keyToSend":"criteriaWise",
+            "data":[
+               "questionWise",
+               "criteriaWise"
+            ]
+         }
+      },
+      {
+         "order":"",
+         "filter":{
+            "type":"modal",
+            "title":"",
+            "keyToSend":"questionId",
+            "data":[
+               {
+                  "name":"Enter the date of observation",
+                  "_id":"Q1_1711631784235-1711631788117"
+               },
+               {
+                  "name":"How many courses have you taken?",
+                  "_id":"Q3_1711631784235-1711631788119"
+               },
+               {
+                  "name":"What type of device is available at home?",
+                  "_id":"Q2_1711631784235-1711631788118"
+               },
+               {
+                  "name":"Which courses did you go through?",
+                  "_id":"Q4_1711631784235-1711631788119"
+               }
+            ]
+         }
+      }
+   ]
+
     let responseObject = {
       result: true,
       entityType: submissionDocument.entityType,
@@ -171,7 +230,9 @@ module.exports = class ReportsHelper {
       observationId: observationId,
       programName: programDocument.data?.name,
       totalSubmissions: submissionDocumentArr.length,
+      filters
     };
+
     let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
