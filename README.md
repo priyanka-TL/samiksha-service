@@ -432,6 +432,83 @@ Before setting up the following Survey application, dependencies given below sho
    ```
    ./check-dependencies.sh
    ```
+
+
+-   **Windows**
+
+    1. Install Node.js 20:
+
+        Download and install Node.js v20 for Windows platform (x64) from official [Node.js download page](https://nodejs.org/en/download).
+
+    2. Install Kafka 3.5.0:
+
+        1. Adapt the instructions given in the following ["Apache Kafka on Windows"](https://www.conduktor.io/kafka/how-to-install-apache-kafka-on-windows/) documentation to install Kafka version 3.5.0.
+
+            > Note: As per the instructions, Kafka server and Zookeeper has to be kept active on different WSL terminals for the entire lifetime of MentorEd services.
+
+            > Note: Multiple WSL terminals can be opened by launching `Ubuntu` from start menu.
+
+        2. Open a new WSL terminal and execute the following command to get the IP of the WSL instance.
+
+            ```
+            ip addr show eth0
+            ```
+
+            Sample Output:
+
+            ```
+            2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1492 qdisc mq state UP group default qlen 1000
+            link/ether 11:56:54:f0:as:vf brd ff:ff:ff:ff:ff:ff
+            inet 172.12.46.150/20 brd 172.24.79.255 scope global eth0
+                valid_lft forever preferred_lft forever
+            inet6 fe80::215:5dff:fee7:dc52/64 scope link
+                valid_lft forever preferred_lft forever
+            ```
+
+            Keep note of the IP address shown alongside `inet`. In the above case, `172.12.46.150` is IP address of the WSL instance.
+
+        3. In the same WSL terminal, navigate to `config` directory of Kafka from step 1 and make the following changes to `server.properties` file.
+
+            - Uncomment `listeners=PLAINTEXT://:9092` line and change it to `listeners=PLAINTEXT://0.0.0.0:9092` to allow connections from any IP.
+
+            - Uncomment `advertised.listeners` line and set it to `advertised.listeners=PLAINTEXT://172.12.46.150:9092`. Replace `172.12.46.150` with the actual IP address of your WSL instance.
+
+        4. Restart the Zookeeper and Kafka Server from their own WSL terminals from step 1.
+
+    3. Install Redis:
+
+        1. Follow the instructions given in the official [Redis Documentation](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-windows/) to install Redis using WSL.
+
+        2. Using the WSL terminal, open the Redis configuration file in a text editor, such as nano:
+
+            ```
+            sudo nano /etc/redis/redis.conf
+            ```
+
+        3. Find the line containing `bind 127.0.0.1 ::1` and change it to `bind 0.0.0.0 ::.`. This change allows Redis to accept connections from any IP address. Then save and exit the file.
+
+        4. Restart Redis to apply the changes:
+
+            ```
+            sudo service redis-server restart
+            ```
+
+    4. Install PM2:
+
+        ```
+        npm install pm2@latest -g
+        ```
+    5. Install MongoDB:
+
+        1. Adapt the instructions given in the following ["MongoDB Download Center."](https://www.mongodb.com/try/download/community) Choose the latest version or the version you need.
+
+    5. Install PostgreSQL 16:
+
+        1. Download and install PostgreSQL 16 from [EnterpriseDB PostgreSQL](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) download page.
+
+            > Note: Set username and password for the default database to be 'postgres' during installation.
+
+        2. Once installed, Add `C:\Program Files\PostgreSQL\16\bin` to windows environment variables. Refer [here](https://www.computerhope.com/issues/ch000549.htm) or [here](https://stackoverflow.com/a/68851621) for more information regarding how to set it.
 ## Installation
 
 1.  **Create Elevate-survey Directory:** Create a directory named **elevate-survey**.
@@ -451,6 +528,19 @@ Before setting up the following Survey application, dependencies given below sho
       git clone -b master https://github.com/ELEVATE-Project/scheduler.git && \
       git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa.git
       ``` 
+   -  **Windows**
+
+      ```
+      git clone -b main https://github.com/ELEVATE-Project/samiksha-service.git & ^
+      git clone -b main https://github.com/ELEVATE-Project/entity-management.git & ^
+      git clone -b master https://github.com/ELEVATE-Project/user.git & ^
+      git clone -b master https://github.com/ELEVATE-Project/notification.git & ^
+      git clone -b main https://github.com/ELEVATE-Project/interface-service.git & ^
+      git clone -b master https://github.com/ELEVATE-Project/scheduler.git & ^
+      git clone -b main https://github.com/ELEVATE-Project/observation-survey-projects-pwa
+      ``` 
+
+
 
 3.  **Install NPM Packages**
 
@@ -465,6 +555,18 @@ Before setting up the following Survey application, dependencies given below sho
       cd scheduler/src && npm install && cd ../.. && \
       cd observation-survey-projects-pwa && npm install --force && cd ..
       ```  
+   -  **Windows**
+
+      ```
+      cd samiksha-service & npm install & cd ..\ & ^
+      cd entity-management\src & npm install & cd ..\.. & ^
+      cd user\src & npm install & cd ..\.. & ^
+      cd notification\src & npm install & cd ..\.. & ^
+      cd interface-service\src & npm install & cd ..\.. & ^
+      cd scheduler\src & npm install & cd ..\.. & ^
+      cd observation-survey-projects-pwa & npm install --force & cd ..
+      ```  
+
 
 4.  **Download Environment Files**
 
@@ -489,6 +591,18 @@ Before setting up the following Survey application, dependencies given below sho
       curl -L -o interface-service/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/interface_env && \
       curl -L -o scheduler/src/.env https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/scheduler_env && \
       curl -L -o observation-survey-projects-pwa/src/environments/environment.ts https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/envs/environment.ts
+      ```
+
+   -  **Windows**
+
+      ```
+      curl -L -o samiksha-service\.env https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/envs/survey_service_env & ^
+      curl -L -o entity-management\src\.env https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/envs/entity_management_env & ^
+      curl -L -o user\src\.env https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/envs/user_env & ^
+      curl -L -o notification\src\.env https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/envs/notification_env & ^
+      curl -L -o interface-service\src\.env https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/envs/interface_env & ^
+      curl -L -o scheduler\src\.env https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/envs/scheduler_env & ^
+      curl -L -o observation-survey-projects-pwa\src\environments\environment.ts https://github.com/ELEVATE-Project/samiksha-service/blob/main/documentation/1.0.0/native/envs/enviroment.ts
       ```
 
    >  **Note:** Modify the environment files as necessary for your deployment using any text editor, ensuring that the values are appropriate for your environment. The default values provided in the current files are functional and serve as a good starting point. Refer to the sample env files provided at the [Survey](https://github.com/ELEVATE-Project/samiksha/blob/master/src/.env.sample), [User](https://github.com/ELEVATE-Project/user/blob/master/src/.env.sample), [Notification](https://github.com/ELEVATE-Project/notification/blob/master/src/.env.sample), [Scheduler](https://github.com/ELEVATE-Project/scheduler/blob/master/src/.env.sample), and [Interface](https://github.com/ELEVATE-Project/interface-service/blob/main/src/.env.sample) repositories for reference.
@@ -536,6 +650,22 @@ Before setting up the following Survey application, dependencies given below sho
          ```
          ./create-databases.sh
          ```
+           
+   -  **Windows**
+
+      1. Download `create-databases.bat` Script File:
+
+         ```
+         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha- 
+         service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/native/scripts/windows/create-databases.bat
+         ```
+      2. Run the script file:
+
+         ```
+         create-databases.bat
+         ```
+
+
 
 6.  **Run Migrations To Create Tables**
 
@@ -552,6 +682,14 @@ Before setting up the following Survey application, dependencies given below sho
          cd user/src && npx sequelize-cli db:migrate && cd ../.. && \
          cd notification/src && npx sequelize-cli db:migrate && cd ../..
          ```
+   -  **Windows**
+
+      1. Run Migrations:
+
+         ```
+         cd user\src && npx sequelize-cli db:migrate && cd ..\.. &&
+         cd notification\src && npx sequelize-cli db:migrate && cd ..\..
+         ```
 
 7.  **Enabling Citus And Setting Distribution Columns (Optional)**
 
@@ -559,32 +697,57 @@ Before setting up the following Survey application, dependencies given below sho
 
       > NOTE: Currently only available for Linux based operation systems.
 
-  
 
-      1. Download user `distributionColumns.sql` file.
-   
-         ```
-         curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/user/distributionColumns.sql
-         ```
-      2. Set up the `citus_setup` file by following the steps given below.
-   
-         -  **Ubuntu/Linux**
-   
+   1. Download user `distributionColumns.sql` file.
+
+         -  **Linux/Ubuntu/MacOS**
+
+            ```
+            curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/user/distributionColumns.sql
+            ```
+        
+         -  **Windows**
+
+            ```
+            curl -o .\user\distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/user/distributionColumns.sql
+            ```
+
+   2. Set up the `citus_setup` file by following the steps given below.
+
+        - **Ubuntu/Linux**
+
             1. Download the `citus_setup.sh` file:
-   
-               ```
-               curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/citus_setup.sh
-               ```
+
+                ```
+                curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/citus_setup.sh
+                ```
+
             2. Make the setup file executable by running the following command:
-   
-               ```
-               chmod +x citus_setup.sh
-               ```
+
+                ```
+                chmod +x citus_setup.sh
+                ```
+
             3. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
-   
-               ```
-               ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
-               ```
+
+                ```
+                ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
+                ```
+        
+        - **Windows**
+
+            1. Download the `citus_setup.bat` file:
+
+                ```
+                curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/windows/citus_setup.sh
+                ```
+            
+            2. Enable Citus and set distribution columns for `user` database by running the `citus_setup.bat`with the following arguments.
+
+                ```
+                citus_setup.bat user postgres://postgres:postgres@localhost:9700/users
+                ```
+
 8.  **Insert Initial Data**
 
      - **Ubuntu/Linux/Mac/Windows**
@@ -646,6 +809,16 @@ Before setting up the following Survey application, dependencies given below sho
    cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
    cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
    cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+   ```
+   -  **Windows**
+
+   ```
+   cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && ^
+   cd entity-management/src && pm2 start app.js --name survey-entity-management && cd ../.. && ^
+   cd user/src && pm2 start app.js --name survey-user && cd ../.. && ^
+   cd notification/src && pm2 start app.js --name survey-notification && cd ../.. && ^
+   cd interface-service/src && pm2 start app.js --name survey-interface && cd ../.. && ^
+   cd scheduler/src && pm2 start app.js --name survey-scheduler && cd ../..
    ```
 
 
@@ -782,6 +955,12 @@ In such cases, you can generate sample user accounts using the steps below. This
     curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/insert_sample_data.sh && \
     chmod +x insert_sample_data.sh && \
     ./insert_sample_data.sh
+    ```
+-   **Windows**
+
+    ```
+    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/windows/insert_sample_data.bat && insert_sample_data.bat
+
     ```
 
     After successfully running the script mentioned above, the following user accounts will be created and available for login:
