@@ -154,6 +154,10 @@ module.exports = class ReportsHelper {
 
     let submissionDocument = submissionDocumentArr[0];
 
+    if(!submissionDocument){
+      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
+    }
+
     let solutionDocument = await solutionsQueries.solutionDocuments(
       {
         _id: submissionDocument.solutionId,
@@ -223,6 +227,10 @@ module.exports = class ReportsHelper {
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
 
     let submissionDocument = submissionDocumentArr[0];
+
+    if(!submissionDocument){
+      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
+    }
 
     let solutionDocument = await solutionsQueries.solutionDocuments(
       {
