@@ -342,40 +342,40 @@ Before setting up the following Survey application, dependencies given below sho
 
 -  **Ubuntu/Linux**
 
-1. Download dependency management scripts:
+   1. Download dependency management scripts:
 
-    ```
-    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
-   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
-   curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
-   chmod +x check-dependencies.sh && \
-   chmod +x install-dependencies.sh && \
-   chmod +x uninstall-dependencies.sh
-   ```
-2. Verify installed dependencies by running `check-dependencies.sh`:
+      ```
+      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/check-dependencies.sh && \
+      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/install-dependencies.sh && \
+      curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/scripts/linux/uninstall-dependencies.sh && \
+      chmod +x check-dependencies.sh && \
+      chmod +x install-dependencies.sh && \
+      chmod +x uninstall-dependencies.sh
+      ```
+   2. Verify installed dependencies by running `check-dependencies.sh`:
 
-   ```
-   ./check-dependencies.sh
-   ```
+      ```
+      ./check-dependencies.sh
+      ```
 
-> Note: Keep note of any missing dependencies.
+   > Note: Keep note of any missing dependencies.
 
-3. Install dependencies by running `install-dependencies.sh`:
+   3. Install dependencies by running `install-dependencies.sh`:
 
-   ```
-   ./install-dependencies.sh
-   ```
-> Note: Install all missing dependencies and use check-dependencies script to ensure everything is installed and running.
+      ```
+      ./install-dependencies.sh
+      ```
+   > Note: Install all missing dependencies and use check-dependencies script to ensure everything is installed and running.
 
-4. Uninstall dependencies by running `uninstall-dependencies.sh`:
+   4. Uninstall dependencies by running `uninstall-dependencies.sh`:
 
-   ```
-   ./uninstall-dependencies.sh
-   ```
+      ```
+      ./uninstall-dependencies.sh
+      ```
 
-> Warning: Due to the destructive nature of the script (without further warnings), it should only be used during the initial setup of the dependencies. For example, Uninstalling PostgreSQL/Citus using script will lead to data loss. USE EXTREME CAUTION.
+      > Warning: Due to the destructive nature of the script (without further warnings), it should only be used during the initial setup of the dependencies. For example, Uninstalling PostgreSQL/Citus using script will lead to data loss. USE EXTREME CAUTION.
 
-> Warning: This script should only be used to uninstall dependencies that were installed via installation script in step 3. If same dependencies were installed using other methods, refrain from using this script. This script is provided in-order to reverse installation in-case issues arise from a bad install.
+      > Warning: This script should only be used to uninstall dependencies that were installed via installation script in step 3. If same dependencies were installed using other methods, refrain from using this script. This script is provided in-order to reverse installation in-case issues arise from a bad install.
 
   
 -  **MacOS**
@@ -777,38 +777,37 @@ Before setting up the following Survey application, dependencies given below sho
             curl -s https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/import_forms.js | node
             ```
 
-10.  **Start The Services**
+10. **Start The Services**
 
       Following the steps given below, 2 instances of each MentorEd backend service will be deployed and be managed by PM2 process manager. 
+    -  **Ubuntu/Linux** 
+         ```
+         cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && 
+         cd entity-management/src && pm2 start app.js --name survey-entity-management && cd ../.. && 
+         cd user/src && pm2 start app.js --name survey-user && cd ../.. && 
+         cd notification/src && pm2 start app.js --name survey-notification && cd ../.. && 
+         cd interface-service/src && pm2 start app.js --name survey-interface && cd ../.. && 
+         cd scheduler/src && pm2 start app.js --name survey-scheduler && cd ../..
+         ``` 
 
-      -  **Ubuntu/Linux** 
-      ```
-      cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && 
-      cd entity-management/src && pm2 start app.js --name survey-entity-management && cd ../.. && 
-      cd user/src && pm2 start app.js --name survey-user && cd ../.. && 
-      cd notification/src && pm2 start app.js --name survey-notification && cd ../.. && 
-      cd interface-service/src && pm2 start app.js --name survey-interface && cd ../.. && 
-      cd scheduler/src && pm2 start app.js --name survey-scheduler && cd ../..
-      ``` 
+    -  **MacOS** 
+         ```
+         cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
+         cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
+         cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
+         cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
+         cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
+         ```
 
-      -  **MacOS** 
-      ```
-      cd samiksha-service && npx pm2 start app.js -i 2 --name survey-service && cd ../ && \
-      cd user/src && npx pm2 start app.js -i 2 --name survey-user && cd ../.. && \
-      cd notification/src && npx pm2 start app.js -i 2 --name survey-notification && cd ../.. && \
-      cd interface-service/src && npx pm2 start app.js -i 2 --name survey-interface && cd ../.. && \
-      cd scheduler/src && npx pm2 start app.js -i 2 --name survey-scheduler && cd ../..
-      ```
-
-      -  **Windows** 
-      ```
-      cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && ^
-      cd entity-management/src && pm2 start app.js --name survey-entity-management && cd ../.. && ^
-      cd user/src && pm2 start app.js --name survey-user && cd ../.. && ^
-      cd notification/src && pm2 start app.js --name survey-notification && cd ../.. && ^
-      cd interface-service/src && pm2 start app.js --name survey-interface && cd ../.. && ^
-      cd scheduler/src && pm2 start app.js --name survey-scheduler && cd ../..
-      ```
+    -  **Windows** 
+         ```
+         cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && ^
+         cd entity-management/src && pm2 start app.js --name survey-entity-management && cd ../.. && ^
+         cd user/src && pm2 start app.js --name survey-user && cd ../.. && ^
+         cd notification/src && pm2 start app.js --name survey-notification && cd ../.. && ^
+         cd interface-service/src && pm2 start app.js --name survey-interface && cd ../.. && ^
+         cd scheduler/src && pm2 start app.js --name survey-scheduler && cd ../..
+         ```
 
 
 11.  **Run Service Scripts**
@@ -816,8 +815,13 @@ Before setting up the following Survey application, dependencies given below sho
    -  **Ubuntu/Linux/MacOS**
 
       ```
-      cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && \
-      node -r module-alias/register uploadSampleCSV.js && cd ../../..
+      cd user/src/scripts && node insertDefaultOrg.js && node viewsScript.js && cd ../../..
+      ```
+
+   -  **Windows**
+
+      ```
+      cd user\src\scripts && node insertDefaultOrg.js && node viewsScript.js && cd ..\..\..
       ```
 
 12.  **Start The Portal**
@@ -941,6 +945,11 @@ Before setting up the following Survey application, dependencies given below sho
     curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/insert_sample_data.sh && \
     chmod +x insert_sample_data.sh && \
     ./insert_sample_data.sh
+    ```
+-   **Windows**
+
+    ```
+    curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/windows/insert_sample_data.bat && insert_sample_data.bat
     ```
 
     After successfully running the script mentioned above, the following user accounts will be created and available for login:
