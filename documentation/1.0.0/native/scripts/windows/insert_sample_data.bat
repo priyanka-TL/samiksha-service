@@ -13,4 +13,4 @@ psql -p 5432 -U postgres -d users -c "SELECT nextval('users_id_seq'::regclass) F
 psql -p 5432 -U postgres -d users -c "SELECT nextval('users_credentials_id_seq'::regclass) FROM public.users_credentials;"
 psql -p 5432 -U postgres -d users -c "UPDATE role_permission_mapping SET role_title = 'state_education_officer' WHERE role_title = 'mentor';"
 psql -p 5432 -U postgres -d users -c "SELECT NULL;"
-set PGPASSWORD=
+set PGPASSWORD=postgres

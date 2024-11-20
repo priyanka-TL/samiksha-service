@@ -820,45 +820,7 @@ Before setting up the following Survey application, dependencies given below sho
       node -r module-alias/register uploadSampleCSV.js && cd ../../..
       ```
 
-
-12.  **Sample User Accounts Generation**
-
-      During the initial setup of Survey services with the default configuration, you may encounter issues creating new accounts through the regular SignUp flow on the Survey portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
-      In such cases, you can generate sample user accounts using the steps below. This allows you to explore the Survey services and portal immediately after setup.
-      >  **Warning:** Use this generator only immediately after the initial system setup and before any normal user accounts are created through the portal. It should not be used under any circumstances thereafter.
-
-      -  **Ubuntu/Linux**
-
-         ```
-         curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/insert_sample_data.sh && \
-         chmod +x insert_sample_data.sh && \
-         ./insert_sample_data.sh
-         ```
-
-      -  **MacOS**
-
-         ```
-         curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/insert_sample_data.sh && \
-         chmod +x insert_sample_data.sh && \
-         ./insert_sample_data.sh
-         ```
-      -  **Windows**
-
-         ```
-         curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/windows/insert_sample_data.bat && insert_sample_data.bat
-
-         ```
-
-         After successfully running the script mentioned above, the following user accounts will be created and available for login:
-                  
-         | Email ID                 | Password   | Role                      |
-         | ------------------------ | ---------- | ------------------------- |
-         | aaravpatel@example.com   | Password1@ | state_educational_officer |
-         | arunimareddy@example.com | Password1@ | state_educational_officer |
-         | devikasingh@example.com  | Password1@ | state_educational_officer |
-
-
-13.  **Start The Portal**
+12.  **Start The Portal**
 
       Survey portal utilizes Ionic and Angular CLI for building the browser bundle, follow the steps given below to install them and start the portal.
    
@@ -958,7 +920,43 @@ Before setting up the following Survey application, dependencies given below sho
             ionic serve
             ```
 
-      Navigate to http://localhost:8100 to access the Survey Portal.
+
+
+## Sample User Accounts Generation
+
+   During the initial setup of Survey services with the default configuration, you may encounter issues creating new accounts through the regular SignUp flow on the Survey portal. This typically occurs because the default SignUp process includes OTP verification to prevent abuse. Until the notification service is configured correctly to send actual emails, you will not be able to create new accounts.
+   In such cases, you can generate sample user accounts using the steps below. This allows you to explore the Survey services and portal immediately after setup.
+   >  **Warning:** Use this generator only immediately after the initial system setup and before any normal user accounts are created through the portal. It should not be used under any circumstances thereafter.
+-  **Ubuntu/Linux**
+
+    ```
+    curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/linux/insert_sample_data.sh && \
+    chmod +x insert_sample_data.sh && \
+    ./insert_sample_data.sh
+    ```
+
+-   **MacOS**
+
+    ```
+    curl -o insert_sample_data.sh https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/macos/insert_sample_data.sh && \
+    chmod +x insert_sample_data.sh && \
+    ./insert_sample_data.sh
+    ```
+
+    After successfully running the script mentioned above, the following user accounts will be created and available for login:
+   
+      | Email ID                 | Password   | Role                      |
+      | ------------------------ | ---------- | ------------------------- |
+      | aaravpatel@example.com   | Password1@ | state_educational_officer |
+      | arunimareddy@example.com | Password1@ | state_educational_officer |
+      | devikasingh@example.com  | Password1@ | state_educational_officer |
+
+
+## Explore the Portal
+Once the services are up and the front-end app bundle is built successfully, navigate to **[localhost:8100](http://localhost:8100)** to access the survey app.
+
+> **Note:** In this setup, features such as **Sign-Up,file uploads** will not be available because cloud storage credentials have been masked in the environment files for security reasons.
+
 
 </details>
 
