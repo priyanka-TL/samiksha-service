@@ -299,6 +299,10 @@ module.exports = class ReportsHelper {
     //Assigning the filteredResults to the  responseObject
     responseObject.reportSections = result; 
     filters[2].filter.data =filteredResults;
+    // Removing submissions Array if its for only one submissionReport
+    if(!req.body.observationId){
+      filters.shift()
+    }
 
     if (req.body.pdf && criteriaWise) {
       let pdfGenerationStatus = await pdfHelper.instanceCriteriaReportPdfGeneration({
