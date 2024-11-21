@@ -773,6 +773,12 @@ Before setting up the following Survey application, dependencies given below sho
             ```
             cd user/src && npm run db:seed:all && cd ../..
             ```  
+     - **Windows**
+
+        1. Use Survey in-build seeders to insert the initial data:
+            ```
+            cd user\src && npm run db:seed:all && cd ..\..
+            ```  
 
 9.  **Insert Forms Data into Database**
 
@@ -959,7 +965,7 @@ Before setting up the following Survey application, dependencies given below sho
     curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/feature/sample_data_scripts/documentation/1.0.0/scripts/windows/insert_sample_data.bat && insert_sample_data.bat
     ```
 
-    After successfully running the script mentioned above, the following user accounts will be created and available for login:
+   After successfully running the script mentioned above, the following user accounts will be created and available for login:
    
    | Email ID                 | Password   | Role                      |
    | ------------------------ | ---------- | ------------------------- |
