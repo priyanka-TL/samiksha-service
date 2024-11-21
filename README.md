@@ -769,7 +769,9 @@ Before setting up the following Survey application, dependencies given below sho
             node insert_sample_solutions.js
             ```
 
-        3. Use Survey in-build seeders to insert the initial data.
+     - **Ubuntu/Linux/Mac**
+
+        1. Use Survey in-build seeders to insert the initial data.
             ```
             cd user/src && npm run db:seed:all && cd ../..
             ```  
