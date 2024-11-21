@@ -705,6 +705,8 @@ Before setting up the following Survey application, dependencies given below sho
 
       To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
 
+    > NOTE: Currently only available for Linux based operation systems.
+
       1. Download user `distributionColumns.sql` file.
 
          -  **Linux/Ubuntu/MacOS**
@@ -736,18 +738,6 @@ Before setting up the following Survey application, dependencies given below sho
                ./citus_setup.sh user postgres://postgres:postgres@localhost:9700/users
                ```
          
-         - **Windows**
-
-            1. Download the `citus_setup.bat` file:
-               ```
-               curl -OJL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/native/scripts/windows/citus_setup.sh
-               ```
-            
-            2. Enable Citus and set distribution columns for `user` database by running the `citus_setup.bat`with the following arguments.
-               ```
-               citus_setup.bat user postgres://postgres:postgres@localhost:9700/users
-               ```
-
 8.  **Insert Initial Data**
 
      - **Ubuntu/Linux/Mac/Windows**
