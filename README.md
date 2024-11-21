@@ -444,7 +444,7 @@ Before setting up the following Survey application, dependencies given below sho
 
         1. Adapt the instructions given in the following ["Apache Kafka on Windows"](https://www.conduktor.io/kafka/how-to-install-apache-kafka-on-windows/) documentation to install Kafka version 3.5.0.
 
-            > Note: As per the instructions, Kafka server and Zookeeper has to be kept active on different WSL terminals for the entire lifetime of MentorEd services.
+            > Note: As per the instructions, Kafka server and Zookeeper has to be kept active on different WSL terminals for the entire lifetime of Survey services.
 
             > Note: Multiple WSL terminals can be opened by launching `Ubuntu` from start menu.
 
@@ -559,13 +559,23 @@ Before setting up the following Survey application, dependencies given below sho
 
          ```
          cd samiksha-service & npm install & cd ..\ & ^
-         cd entity-management\src & npm install & cd ..\.. & ^
          cd user\src & npm install & cd ..\.. & ^
          cd notification\src & npm install & cd ..\.. & ^
          cd interface-service\src & npm install & cd ..\.. & ^
          cd scheduler\src & npm install & cd ..\.. & ^
          cd observation-survey-projects-pwa & npm install --force & cd ..
          ```  
+         > Note: Entity-management service runs only on node-16 for Windows native setup.
+
+         ```
+         nvm use 16
+         ```
+
+         ```
+         cd entity-management\src && npm install && cd ..\..
+         ```
+
+         > Note: Change the node version as it was before.
 
 
 4.  **Download Environment Files**
@@ -695,9 +705,6 @@ Before setting up the following Survey application, dependencies given below sho
 
       To boost performance and scalability, users can opt to enable the Citus extension. This transforms PostgreSQL into a distributed database, spreading data across multiple nodes to handle large datasets more efficiently as demand grows.
 
-      > NOTE: Currently only available for Linux based operation systems.
-
-
       1. Download user `distributionColumns.sql` file.
 
          -  **Linux/Ubuntu/MacOS**
@@ -779,7 +786,7 @@ Before setting up the following Survey application, dependencies given below sho
 
 10. **Start The Services**
 
-      Following the steps given below, 2 instances of each MentorEd backend service will be deployed and be managed by PM2 process manager. 
+      Following the steps given below, 2 instances of each Survey backend service will be deployed and be managed by PM2 process manager. 
     -  **Ubuntu/Linux** 
          ```
          cd samiksha-service && pm2 start app.js --name survey-service && cd ../ && 
@@ -954,11 +961,11 @@ Before setting up the following Survey application, dependencies given below sho
 
     After successfully running the script mentioned above, the following user accounts will be created and available for login:
    
-      | Email ID                 | Password   | Role                      |
-      | ------------------------ | ---------- | ------------------------- |
-      | aaravpatel@example.com   | Password1@ | state_educational_officer |
-      | arunimareddy@example.com | Password1@ | state_educational_officer |
-      | devikasingh@example.com  | Password1@ | state_educational_officer |
+   | Email ID                 | Password   | Role                      |
+   | ------------------------ | ---------- | ------------------------- |
+   | aaravpatel@example.com   | Password1@ | state_educational_officer |
+   | arunimareddy@example.com | Password1@ | state_educational_officer |
+   | devikasingh@example.com  | Password1@ | state_educational_officer |
 
 
 ## Explore the Portal
