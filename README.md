@@ -714,11 +714,6 @@ Before setting up the following Survey application, dependencies given below sho
             curl -o ./user/distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/user/distributionColumns.sql
             ```
       
-         -  **Windows**
-            ```
-            curl -o .\user\distributionColumns.sql -JL https://raw.githubusercontent.com/ELEVATE-Project/samiksha-service/refs/heads/main/documentation/1.0.0/user/distributionColumns.sql
-            ```
-
       2. Set up the `citus_setup` file by following the steps given below.
 
          - **Ubuntu/Linux**
