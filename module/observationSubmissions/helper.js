@@ -95,7 +95,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         if (typeof observationSubmissionId == 'string') {
-          observationSubmissionId = ObjectId(observationSubmissionId);
+          observationSubmissionId = new ObjectId(observationSubmissionId);
         }
 
         let observationSubmissionsDocument = await database.models.observationSubmissions
@@ -108,7 +108,7 @@ module.exports = class ObservationSubmissionsHelper {
         if (!observationSubmissionsDocument) {
           throw (
             messageConstants.apiResponses.SUBMISSION_NOT_FOUND +
-            'or' +
+            ' or ' +
             messageConstants.apiResponses.SUBMISSION_STATUS_NOT_COMPLETE
           );
         }
@@ -259,7 +259,7 @@ module.exports = class ObservationSubmissionsHelper {
 
         let submissionDocument = await database.models.observationSubmissions
           .findOne(
-            { _id: ObjectId(submissionId) },
+            { _id: new ObjectId(submissionId) },
             {
               answers: 1,
               criteria: 1,
@@ -378,7 +378,7 @@ module.exports = class ObservationSubmissionsHelper {
         if (resultingArray.result.runUpdateQuery) {
           await database.models.observationSubmissions.updateOne(
             {
-              _id: ObjectId(submissionId),
+              _id: new ObjectId(submissionId),
             },
             {
               status: 'completed',
@@ -908,9 +908,9 @@ module.exports = class ObservationSubmissionsHelper {
           createdBy: userId,
           deleted: false,
           status: messageConstants.common.SUBMISSION_STATUS_COMPLETED,
-          "userRoleInformation.role" : {
-            $in : userRoleFilterArray
-        }
+        //   "userRoleInformation.role" : {
+        //     $exists : userRoleFilterArray
+        // }
         };
 
         if (pageNo == 1) {
