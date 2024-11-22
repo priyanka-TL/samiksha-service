@@ -132,7 +132,7 @@ app.get(process.env.API_DOC_URL, function (req, res) {
 
 //   next();
 // });
-
+console.log(global,'global')
 //add routing
 router(app);
 //listen to given port
