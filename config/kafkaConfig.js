@@ -15,7 +15,7 @@ var connect = function (config) {
   producer = new Producer(client);
 
   producer.on('ready', function () {
-    log.debug('Connected to Kafka');
+    console.log('Connected to Kafka');
   });
 
   producer.on('error', function (err) {
