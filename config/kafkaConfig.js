@@ -36,6 +36,8 @@ var connect = function (config) {
     );
 
     consumer.on('message', async function (message) {
+      console.log(message,'*************************')
+      console.log(submissionRatingQueueConsumer,'**********************2')
       submissionRatingQueueConsumer.messageReceived(message);
     });
 

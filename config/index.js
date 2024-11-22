@@ -54,7 +54,10 @@ let elasticsearch_connect = function (elasticSearchConfigurations) {
  */
 
 let kafka_connect = function (configData) {
-  global.kafkaClient = require('./kafkaConfig')(configData.Kafka_Config);
+  console.log(configData,'configData')
+  let d  = require('./kafkaConfig')(configData.Kafka_Config);
+  console.log(d,'**&&**')
+  global.kafkaClient = d;
 };
 
 const configuration = {

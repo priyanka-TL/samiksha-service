@@ -75,6 +75,7 @@ var removedHeaders = [
 // } 
 
 module.exports = async function (req, res, next) {
+  return next();
   if (req.path.includes('/sharedLinks/verify')) return next();
 
   if (req.headers && req.headers.linkid) {

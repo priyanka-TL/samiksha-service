@@ -217,7 +217,7 @@ module.exports = class ObservationSubmissionsHelper {
           submissionModel: 'observationSubmissions',
           submissionId: observationSubmissionId,
         });
-
+        
         if (kafkaMessage.status != 'success') {
           let errorObject = {
             formData: {

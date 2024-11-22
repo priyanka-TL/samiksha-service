@@ -100,6 +100,9 @@ module.exports = function () {
   fs.readdirSync(path.resolve('generics/kafkaConsumers/')).forEach(function (file) {
     if (file.match(/\.js$/) !== null) {
       var name = file.replace('Consumer.js', '');
+      console.log(name,'###')
+      console.log(name + 'Consumer','<--###')
+      console.log(file,'file###')
       global[name + 'Consumer'] = require(path.resolve('generics/kafkaConsumers/' , file));
     }
   });
