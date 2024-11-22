@@ -100,7 +100,10 @@ module.exports = function () {
   fs.readdirSync(path.resolve('generics/kafkaConsumers/')).forEach(function (file) {
     if (file.match(/\.js$/) !== null) {
       var name = file.replace('Consumer.js', '');
-      global[name + 'Consumer'] = require(path.resolve('generics/kafkaConsumers/' , file));
+      let data  = require(path.resolve('generics/kafkaConsumers/' , file));
+      console.log(name,'**1')
+      console.log(data,'**2')
+      global[name + 'Consumer'] = data;
     }
   });
 
