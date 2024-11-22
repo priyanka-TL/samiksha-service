@@ -36,6 +36,7 @@
     "csvtojson": "^2.0.10",
     "dotenv": "^6.2.0",
     "ejs": "^3.1.10",
+    "elevate-logger": "^3.1.0",
     "express": "^4.18.2",
     "express-cassandra": "^2.9.0",
     "express-fileupload": "^0.4.0",
@@ -54,6 +55,7 @@
     "log": "^1.4.0",
     "mathjs": "^5.10.3",
     "mkdir": "^0.0.2",
+    "module-alias": "^2.2.3",
     "moment-timezone": "^0.5.43",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.1",
@@ -74,5 +76,22 @@
     "grunt-apidoc": "^0.11.0",
     "gulp": "^4.0.0",
     "gulp-apidoc": "^0.2.8"
+  },
+  "_moduleAliases": {
+    "@root": ".",
+    "@module": "module",
+    "@dbQueries": "databaseQueries",
+    "@generics": "generics",
+    "@helpers": "generics/helpers",
+    "@models": "models",
+    "@controllers": "controllers",
+    "@messageConstants": "generics/messageConstants",
+    "@kafkaConsumers": "generics/kafkaConsumers",
+    "@utils": "utils",
+    "@config": "config",
+    "@routes": "routes",
+    "@healthCheck": "healthCheck",
+    "@apiDoc": "api-doc",
+    "@public": "public"
   }
 }

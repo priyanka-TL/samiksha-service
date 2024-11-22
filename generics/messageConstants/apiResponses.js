@@ -419,5 +419,6 @@ module.exports = {
   PROGRAM_SOLUTIONS_FETCHED: 'Program solutions fetched successfully',
   ENTITY_SERVICE_DOWN:'Entity Management Service down.',
   SOLUTION_TARGETED_ENTITY:'Targeted Entity Types Fetched',
-  ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role'
+  ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role',
+  EVIDENCE_ALREADY_MARKED_AS_NOT_APPLICABLE:'is already marked as not applicable'
 };

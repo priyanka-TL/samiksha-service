@@ -1039,6 +1039,7 @@ module.exports = class ObservationsHelper {
         referenceFrom: 1,
         pageHeading: 1,
         criteriaLevelReport: 1,
+        endDate: 1
       });
     });
   }
@@ -1065,6 +1066,7 @@ module.exports = class ObservationsHelper {
         'pageHeading',
         'criteriaLevelReport',
         // 'isAPrivateProgram',
+        'endDate'
       ]);
     });
   }
@@ -1888,6 +1890,7 @@ module.exports = class ObservationsHelper {
                   filterData
                 );
 
+
                 if(!entitiesDocument.success){
                   throw new Error({
                     message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
@@ -2019,6 +2022,7 @@ module.exports = class ObservationsHelper {
 
             if (observationSubmissions.length == 1) {
               entity['submissionId'] = observationSubmissions[0]._id;
+              entity['status'] =  observationSubmissions[0].status;
             }
 
             entities.push(entity);
