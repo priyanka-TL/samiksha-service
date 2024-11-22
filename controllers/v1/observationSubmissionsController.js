@@ -1104,8 +1104,6 @@ module.exports = class ObservationSubmissions extends Abstract {
 
   async update(req) {
     return new Promise(async (resolve, reject) => {
-      await observationSubmissionsHelper.pushObservationSubmissionToQueueForRating(req.params._id);
-      return resolve({success:1});
       try {
         let response = {};
         if (req.method === 'POST') {
