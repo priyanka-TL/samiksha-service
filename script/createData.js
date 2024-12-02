@@ -6,6 +6,8 @@ const url = process.env.MONGODB_URL_TO_CREATE;
 
 const entityDB = process.env.ENTITY_DB;
 const surveyDB = process.env.SURVEY_DB;
+
+console.log(surveyDB,'surveyDB')
 const projectDB = process.env.PROJECT_DB;
 
 let districtId = new ObjectId();
@@ -6505,13 +6507,13 @@ async function insertData(collectionName, dataFile, curretDB = surveyDB) {
 }
 
 async function main({ dataToBeInserted }) {
-  await insertData("entities", dataToBeInserted.entities, entityDB);
-  await insertData("entityTypes", dataToBeInserted.entityType, entityDB);
-  await insertData(
-    "userRoleExtension",
-    dataToBeInserted.userRoleExtension,
-    entityDB
-  );
+  // await insertData("entities", dataToBeInserted.entities, entityDB);
+  // await insertData("entityTypes", dataToBeInserted.entityType, entityDB);
+  // await insertData(
+  //   "userRoleExtension",
+  //   dataToBeInserted.userRoleExtension,
+  //   entityDB
+  // );
   await insertData("programs", dataToBeInserted.programData, surveyDB);
   await insertData("solutions", dataToBeInserted.solutionData, surveyDB);
   await insertData("surveys", dataToBeInserted.surveysData, surveyDB);
@@ -6531,16 +6533,21 @@ async function main({ dataToBeInserted }) {
   await insertData("frameworks", dataToBeInserted.frameworkData, surveyDB);
   await insertData(
     "observationSubmissions",
+    dataToBeInserted.observationData,
+    surveyDB
+  );
+  await insertData(
+    "observation",  
     dataToBeInserted.observationSubmissionData,
     surveyDB
   );
-  await insertData('programs', dataToBeInserted.programDataProjects,projectDB);
-  await insertData('solutions',dataToBeInserted.solutionDataProjects,projectDB);
-  await insertData('projectTemplates', dataToBeInserted.projectTemplatesData,projectDB);
-  await insertData('projectCategories',dataToBeInserted.projectCategoriesData,projectDB);
-  await insertData('forms',dataToBeInserted.forms,projectDB);
-  await insertData('configurations',dataToBeInserted.configurationsDataProjects,projectDB);
-  await insertData('projectTemplateTasks',dataToBeInserted.projectTemplateTask,projectDB);
+  // await insertData('programs', dataToBeInserted.programDataProjects,projectDB);
+  // await insertData('solutions',dataToBeInserted.solutionDataProjects,projectDB);
+  // await insertData('projectTemplates', dataToBeInserted.projectTemplatesData,projectDB);
+  // await insertData('projectCategories',dataToBeInserted.projectCategoriesData,projectDB);
+  // await insertData('forms',dataToBeInserted.forms,projectDB);
+  // await insertData('configurations',dataToBeInserted.configurationsDataProjects,projectDB);
+  // await insertData('projectTemplateTasks',dataToBeInserted.projectTemplateTask,projectDB);
 
 }
 
