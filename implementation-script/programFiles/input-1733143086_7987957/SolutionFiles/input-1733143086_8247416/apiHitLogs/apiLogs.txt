@@ -1,0 +1,136 @@
+===============================================================================
+ENVIRONMENT : qa
+===============================================================================
+
+URL : user/v1/account/login
+Body : '{"email": "epobs02@yopmail.com","password": "Gagan@12345"}'
+Status Code : <Response [200]>
+Acccess Token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjozOTEsIm5hbWUiOiJvYnMgdHdvIiwic2Vzc2lvbl9pZCI6MTkwNzYsIm9yZ2FuaXphdGlvbl9pZCI6MSwicm9sZXMiOlt7ImlkIjoyOCwidGl0bGUiOiJibG9ja19lZHVjYXRpb25fb2ZmaWNlciIsImxhYmVsIjoiQmxvY2sgRWR1Y2F0aW9uIE9mZmljZXIiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsIm9yZ2FuaXphdGlvbl9pZCI6MSwidmlzaWJpbGl0eSI6IlBVQkxJQyJ9LHsiaWQiOjMwLCJ0aXRsZSI6ImRpc3RyaWN0X2VkdWNhdGlvbl9vZmZpY2VyIiwibGFiZWwiOiJEaXN0cmljdCBFZHVjYXRpb24gT2ZmaWNlciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoxLCJ2aXNpYmlsaXR5IjoiUFVCTElDIn1dfSwiaWF0IjoxNzMzMTQzMDg3LCJleHAiOjE3MzMxNDQ4ODd9.uK3KzL5LEDlmFI_2NFywjNxyz_yKAo2kKsVSzhBJTN4
+
+Criteria Upload Sheet Prepared.
+File path : programFiles/input-1733143086_7987957/SolutionFiles/input-1733143086_8247416/criteriaUpload/uploadSheet.csv
+Upload status code : 200
+
+Framwork json file created.
+File loc : programFiles/input-1733143086_7987957/SolutionFiles/input-1733143086_8247416/framework/uploadFile.json
+Framework upload API called,
+Status code : 200
+
+Themes upload sheet prepared.
+File path : programFiles/input-1733143086_7987957/SolutionFiles/input-1733143086_8247416/themeUpload/uploadSheet.csv
+Theme upload to framework API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/frameworks/uploadThemes/486fa196-b0aa-11ef-96a3-3005054f5420
+Status code : 200
+
+Solution Created from Framework.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/observations/importFromFramework?frameworkId=486fa196-b0aa-11ef-96a3-3005054f5420&entityType=cluster
+Status Code : 200
+Response : {"message":"Observation Solution generated.","status":200,"result":{"templateId":"674daa30988336e1e9fe134e"}}
+
+Parent Solution Generated : 674daa30988336e1e9fe134e
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'evidenceMethods': {'D1_1733143086824': {'externalId': 'D1_1733143086824', 'tip': None, 'name': 'Domain 1', 'description': None, 'modeOfCollection': 'onfield', 'canBeNotApplicable': False, 'notApplicable': False, 'canBeNotAllowed': False, 'remarks': None, 'sequenceNo': 1}, 'D2_1733143086824': {'externalId': 'D2_1733143086824', 'tip': None, 'name': 'Domain 2', 'description': None, 'modeOfCollection': 'onfield', 'canBeNotApplicable': False, 'notApplicable': False, 'canBeNotAllowed': False, 'remarks': None, 'sequenceNo': 2}, 'D3_1733143086824': {'externalId': 'D3_1733143086824', 'tip': None, 'name': 'Domain 3', 'description': None, 'modeOfCollection': 'onfield', 'canBeNotApplicable': False, 'notApplicable': False, 'canBeNotAllowed': False, 'remarks': None, 'sequenceNo': 3}, 'D4_1733143086824': {'externalId': 'D4_1733143086824', 'tip': None, 'name': 'Domain 4', 'description': None, 'modeOfCollection': 'onfield', 'canBeNotApplicable': False, 'notApplicable': False, 'canBeNotAllowed': False, 'remarks': None, 'sequenceNo': 4}}}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'sections': {'SEC1': 'Planning & Execution', 'SEC2': 'Data based Governance', 'SEC3': 'Communication', 'SEC4': 'Influence'}}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'status': 'active', 'isDeleted': False, 'criteriaLevelReport': True}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'questionSequenceByEcm': {'D1_1733143086824': {'SEC1': ['Q1_1733143086824', 'Q2_1733143086824', 'Q3_1733143086824', 'Q4_1733143086824']}, 'D2_1733143086824': {'SEC2': ['Q5_1733143086824', 'Q6_1733143086824', 'Q7_1733143086824', 'Q8_1733143086824', 'Q9_1733143086824', 'Q10_1733143086824', 'Q11_1733143086824']}, 'D3_1733143086824': {'SEC3': ['Q12_1733143086824', 'Q13_1733143086824']}, 'D4_1733143086824': {'SEC4': ['Q14_1733143086824', 'Q15_1733143086824', 'Q16_1733143086824']}}}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Question Upload sheet prepared.
+File loc : programFiles/input-1733143086_7987957/SolutionFiles/input-1733143086_8247416/questionUpload/uploadSheet.csv
+Question upload API called.
+Status code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'isRubricDriven': True}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Criteria solution fetch API called.
+Status Code  : 200
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutionDetails/criteria/486fa196-b0aa-11ef-96a3-3005054f5420-OBSERVATION-TEMPLATE
+
+Criteria Rubric upload sheet prepared.
+File Loc : programFiles/input-1733143086_7987957/SolutionFiles/input-1733143086_8247416/criteriaRubrics/uploadSheet.csv
+Status Code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'allowMultipleAssessemts': False, 'creator': 'Survey Support'}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Fetch Link.
+solution name : Observation with rubrics – dec 2 17:47
+solution ExternalId : 486fa196-b0aa-11ef-96a3-3005054f5420-OBSERVATION-TEMPLATE
+Upload status code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'startDate': '2023-07-10 00:00:00'}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa30988336e1e9fe134e
+Body : {'endDate': '2026-07-13 23:59:59'}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Create child API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/importFromSolution?solutionId=486fa196-b0aa-11ef-96a3-3005054f5420-OBSERVATION-TEMPLATE&entityType=cluster
+Status code : 200
+Response : {"message":"Duplicate Solution generated.","status":200,"result":{"_id":"674daa33988336e1e9fe13b3"}}
+body : {'externalId': '486fa196-b0aa-11ef-96a3-3005054f5420-OBSERVATION-TEMPLATE_CHILD', 'name': 'Observation with rubrics – dec 2 17:47', 'description': 'This is a school assessment to improve the process of raising budget requirements for secondary schools in Punjab', 'programExternalId': None}
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa33988336e1e9fe13b3
+Body : {'endDate': '2026-07-13 23:59:59'}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa33988336e1e9fe13b3
+Body : {'startDate': '2023-07-10 00:00:00'}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Update API called.
+URL : https://qa.elevate-apis.shikshalokam.org/survey/v1/solutions/update/674daa33988336e1e9fe13b3
+Body : {'endDate': '2026-07-13 23:59:59'}
+Response : {"message":"Solution updated successfully","status":200}
+Status Code : 200
+
+Solution Fetch Link.
+solution name : Observation with rubrics – dec 2 17:47
+solution ExternalId : 486fa196-b0aa-11ef-96a3-3005054f5420-OBSERVATION-TEMPLATE_CHILD
+Upload status code : 200
+
+Solution Fetch Link.
+solution id : 674daa33988336e1e9fe13b3
+solution ExternalId : 486fa196-b0aa-11ef-96a3-3005054f5420-OBSERVATION-TEMPLATE_CHILD
+Upload status code : 200
+
+Solution Fetch Link.
+solution id : 674daa33988336e1e9fe13b3
+solution ExternalId : 486fa196-b0aa-11ef-96a3-3005054f5420-OBSERVATION-TEMPLATE_CHILD
+Upload status code : 200
+Response : {"status":200,"result":"https://dev.elevate.org/samiksha/create-observation/db4059f6de2b85008590cd9960349a22"}

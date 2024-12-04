@@ -1,0 +1,8 @@
+===============================================================================
+ENVIRONMENT : dev
+===============================================================================
+
+URL : user/v1/account/login
+Body : '{"email": "v5@yopmail.com","password": "Password123@"}'
+Status Code : <Response [200]>
+Acccess Token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoyNzYsIm5hbWUiOiJWaW5vZEZpdmVhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwic2Vzc2lvbl9pZCI6MTA5MjEsIm9yZ2FuaXphdGlvbl9pZCI6MSwicm9sZXMiOlt7ImlkIjoxNiwidGl0bGUiOiJoZWFkX21hc3RlciIsImxhYmVsIjoiSGVhZCBNYXN0ZXIiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsIm9yZ2FuaXphdGlvbl9pZCI6MjQsInZpc2liaWxpdHkiOiJQVUJMSUMifSx7ImlkIjoxOCwidGl0bGUiOiJibG9ja19lZHVjYXRpb25fb2ZmaWNlciIsImxhYmVsIjoiQmxvY2sgRWR1Y2F0aW9uIE9mZmljZXIiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsIm9yZ2FuaXphdGlvbl9pZCI6MjQsInZpc2liaWxpdHkiOiJQVUJMSUMifSx7ImlkIjoyMCwidGl0bGUiOiJkaXN0cmljdF9lZHVjYXRpb25fb2ZmaWNlciIsImxhYmVsIjoiRGlzdHJpY3QgRWR1Y2F0aW9uIE9mZmljZXIiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsIm9yZ2FuaXphdGlvbl9pZCI6MjQsInZpc2liaWxpdHkiOiJQVUJMSUMifSx7ImlkIjoyMSwidGl0bGUiOiJkaXN0cmljdF9yZXNvdXJjZV9wZXJzb24iLCJsYWJlbCI6IkRpc3RyaWN0IFJlc291cmNlIFBlcnNvbiIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoyNCwidmlzaWJpbGl0eSI6IlBVQkxJQyJ9XX0sImlhdCI6MTczMzE0MjE0MywiZXhwIjoxNzMzMTQ1NzQzfQ.QJm57K36n1s3LDdEefu4IkTWU567laOOrEY-a9LXdT0

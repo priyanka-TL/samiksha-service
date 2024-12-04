@@ -1,0 +1,6 @@
+externalId,name,criteriaId,weightage,expressionVariables,L1,L2,L3
+D1C1_1733143333276,Planning & Execution,674dab26cea3274f5256f2ea,1.0,SCORE=674dab26cea3274f5256f2ea.scoreOfAllQuestionInCriteria(),20<=SCORE<=40,40<SCORE<=80,80<SCORE<=100
+D2C1_1733143333276,Data based Governance,674dab26cea3274f5256f2eb,1.0,SCORE=674dab26cea3274f5256f2eb.scoreOfAllQuestionInCriteria(),20<=SCORE<=60,60<SCORE<=100,100<SCORE<=150
+D2C2_1733143333276,Communication,674dab26cea3274f5256f2ec,1.0,SCORE=674dab26cea3274f5256f2ec.scoreOfAllQuestionInCriteria(),20<=SCORE<=60,60<SCORE<=120,120<SCORE<=200
+D3C1_1733143333276,Influence,674dab26cea3274f5256f2ed,1.0,SCORE=674dab26cea3274f5256f2ed.scoreOfAllQuestionInCriteria(),20<=SCORE<=40,40<SCORE<=80,80<SCORE<=100
+D4C1_1733143333276,Collaboration,674dab26cea3274f5256f2ee,1.0,SCORE=674dab26cea3274f5256f2ee.scoreOfAllQuestionInCriteria(),25<=SCORE<=50,50<SCORE<=75,75<SCORE<=100
