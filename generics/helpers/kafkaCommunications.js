@@ -238,6 +238,15 @@ const pushMessageToKafka = function (payload) {
     });
 };
 
+const pushEmailToKafka = async (message) => {
+	try {
+		const payload = { topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
+		return await this.pushMessageToKafka(payload)
+	} catch (error) {
+		return error
+	}
+}
+
 module.exports = {
   pushCompletedSubmissionToKafka: pushCompletedSubmissionToKafka,
   pushCompletedObservationSubmissionToKafka: pushCompletedObservationSubmissionToKafka,
@@ -249,4 +258,5 @@ module.exports = {
   pushCompletedSurveySubmissionToKafka: pushCompletedSurveySubmissionToKafka,
   pushInCompleteSurveySubmissionToKafka: pushInCompleteSurveySubmissionToKafka,
   // pushSubmissionToImprovementService: pushSubmissionToImprovementService,
+  pushEmailToKafka:pushEmailToKafka
 };
