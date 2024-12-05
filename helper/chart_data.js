@@ -332,7 +332,10 @@ async function processFileEvidences(fileNames, submissionId) {
   const evidences = [];
   for (const file of fileNames) {
     const sourcePath = await filesCloudHelper.getDownloadableUrl([file.sourcePath]);
-    evidences.push({ ...file, fileUrl: sourcePath.result[0], submissionId });
+    let extension = path.extname(file.sourcePath).split('.').join('');
+    sourcePath.result[0].extension = extension;
+    sourcePath.result[0].url = sourcePath.result[0].previewUrl;
+    evidences.push({ ...file, fileUrl: sourcePath.result[0], submissionId,extension:extension });
   }
   return evidences;
 }
