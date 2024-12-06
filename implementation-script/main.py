@@ -1526,7 +1526,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
         # Point based value set as null by default for observation without rubrics
         pointBasedValue = "null"
         criteria_id_arr = []
-        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'Diksha_loginId','language', 'keywords', 'entity_type', "scope_entity","start_date","end_date"]
+        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'Elevate_loginId','language', 'keywords', 'entity_type', "scope_entity","start_date","end_date"]
         criteriaColNames = ['criteria_id', 'criteria_name']
         questionsColNames = ["criteria_id","question_sequence","question_id","instance_parent_question_id","parent_question_id","show_when_parent_question_value_is","parent_question_value","page","question_number","question_primary_language","question_secondory_language","question_tip","question_hint","instance_identifier","question_response_type","date_auto_capture","response_required","min_number_value","max_number_value","file_upload","show_remarks","response(R1)","response(R1)_hint","response(R2)","response(R2)_hint","response(R3)","response(R3)_hint","response(R4)","response(R4)_hint","response(R5)","response(R5)_hint","response(R6)","response(R6)_hint","response(R7)","response(R7)_hint","response(R8)","response(R8)_hint","response(R9)","response(R9)_hint","response(R10)","response(R10)_hint","response(R11)","response(R11)_hint","response(R12)","response(R12)_hint","response(R13)","response(R13)_hint","response(R14)","response(R14)_hint","response(R15)","response(R15)_hint","response(R16)","response(R16)_hint","response(R17)","response(R17)_hint","response(R18)","response(R18)_hint","response(R19)","response(R19)_hint","response(R20)","response(R20)_hint","question_weightage","section_header"]
         for sheetColCheck in sheetNames1:
@@ -1563,7 +1563,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             col_index_env in range(detailsEnvSheet.ncols)}
                         solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                         solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_description'] else terminatingMessage("\"observation_solution_description\" must not be Empty in \"details\" sheet")
-                        dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
+                        dikshaLoginId = dictDetailsEnv['Elevate_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Elevate_loginId'] else terminatingMessage("\"Elevate_loginId\" must not be Empty in \"details\" sheet")
                         creator = dictDetailsEnv['Name_of_the_creator'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
                         ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
                         
@@ -1692,7 +1692,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                     #     "\"response_required\" must not be Empty in \"details\" sheet")
     elif typeofSolutin == 4:
         criteria_id_arr = list()
-        projectDetailsCols = ["title", "projectId", "is a SSO user?", "Diksha_loginId", "categories",
+        projectDetailsCols = ["title", "projectId", "is a SSO user?", "Elevate_loginId", "categories",
                               "objective","duration","recommendedFor","keywords"]
         detailsColCheck = wbObservation1.sheet_by_name('Project upload')
         keysColCheckDetai = [detailsColCheck.cell(0, col_index_check).value for col_index_check in
@@ -1753,7 +1753,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                     projectSSOuser = dictDetailsEnv["is a SSO user?"] if dictDetailsEnv[
                         "is a SSO user?"] else terminatingMessage(
                         "\"is a SSO user?\" must not be Empty in \"Project Upload\" sheet")
-                    projectDikshaloginid = dictDetailsEnv["Diksha_loginId"].encode('utf-8').decode('utf-8') if dictDetailsEnv["Diksha_loginId"] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"Project Upload\" sheet")
+                    projectDikshaloginid = dictDetailsEnv["Elevate_loginId"].encode('utf-8').decode('utf-8') if dictDetailsEnv["Elevate_loginId"] else terminatingMessage("\"Elevate_loginId\" must not be Empty in \"Project Upload\" sheet")
                     projectDuration = dictDetailsEnv["duration"].encode('utf-8').decode('utf-8') if dictDetailsEnv[
                         "duration"] else terminatingMessage(
                         "\"duration\" must not be Empty in \"Project Upload\" sheet")
@@ -4119,7 +4119,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
                     (get_close_matches(cat.strip().lower().replace(" ", ""), categories_list)[0]))
         global projectCreator, projectAuthor
 
-        projectAuthor = str(dictProjectDetails["Diksha_loginId"]).encode('utf-8').decode('utf-8').strip()
+        projectAuthor = str(dictProjectDetails["Elevate_loginId"]).encode('utf-8').decode('utf-8').strip()
         recommendedFor = str(dictProjectDetails["recommendedFor"]).encode('utf-8').decode('utf-8').strip()
         objective = str(dictProjectDetails["objective"]).encode('utf-8').decode('utf-8').strip()
         entityType = None
@@ -5660,10 +5660,11 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                 ECM_NAME = dictECMs['ECM Name/Domain Name'].encode('utf-8').decode('utf-8').strip()
                 section.update({dictECMs['section_id']: dictECMs['section_name']})
                 ecm_sections[EMC_ID] = dictECMs['section_id']
-                if dictECMs['Is ECM Mandatory?']:
-                    if dictECMs['Is ECM Mandatory?'] == "TRUE" or dictECMs['Is ECM Mandatory?'] == 1:
+                if 'Is ECM Mandatory?' in dictECMs:  # Ensure the key exists
+                    value = dictECMs['Is ECM Mandatory?']
+                    if value == "TRUE" or value == 1:
                         dictECMs['Is ECM Mandatory?'] = False
-                    elif dictECMs['Is ECM Mandatory?'] == "FALSE" or dictECMs['Is ECM Mandatory?'] == 0:
+                    elif value == "FALSE" or value == 0:
                         dictECMs['Is ECM Mandatory?'] = True
                 else:
                     dictECMs['Is ECM Mandatory?'] = False
