@@ -94,4 +94,5 @@ module.exports = {
   SOLUTION_MODEL_NAME: 'solutions',
   TARGETED_SOLUTION_TEXT:
 		'View and participate in educational programs active in your location and designed for the role you selected',
+   STATE_ENTITY_TYPE: "state"
 };

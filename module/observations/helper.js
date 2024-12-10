@@ -2449,12 +2449,11 @@ module.exports = class ObservationsHelper {
         message: constants.apiResponses.SOLUTION_NOT_FOUND,
       });
     }
-
+    
     let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
       code: requestedData.role,
     },
     ["entityTypes.entityType"])
-
     if (!rolesDocumentAPICall.success) {
       throw {
         status: httpStatusCode["bad_request"].status,
@@ -2476,15 +2475,14 @@ module.exports = class ObservationsHelper {
     if (solutionData[0].entityType === targetedEntityType) {
 
       let filterQuery = {
-        "registryDetails.code": requestedData[targetedEntityType]
+        "_id": requestedData[targetedEntityType]
       };
 
-      if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
-        filterQuery = {
-          "registryDetails.locationId": requestedData[targetedEntityType]
-        };
-      }
-
+      // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+      //   filterQuery = {
+      //     "registryDetails.locationId": requestedData[targetedEntityType]
+      //   };
+      // }
       let entitiesAPICall = await entityManagementService.entityDocuments(filterQuery, [
         "groups",
       ]);
@@ -2508,16 +2506,15 @@ module.exports = class ObservationsHelper {
         targetedEntityType = messageConstants.common.STATE_ENTITY_TYPE;
       }
     }
-
     let filterData = {
-      "registryDetails.code": requestedData[targetedEntityType]
+      "_id": requestedData[targetedEntityType]
     };
 
-    if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
-      filterData = {
-        "registryDetails.locationId": requestedData[targetedEntityType]
-      };
-    }
+    // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+    //   filterData = {
+    //     "registryDetails.locationId": requestedData[targetedEntityType]
+    //   };
+    // }
 
     
     let entitiesAPICall = await entityManagementService.entityDocuments(filterData, [
