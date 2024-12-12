@@ -4,9 +4,10 @@
 var messageUtil = require('./lib/messageUtil');
 var responseCode = require('../httpStatusCodes');
 const jwt = require('jsonwebtoken');
-const instance = require("./Instance.json")
-const path = require('path')
+const instance = require('./Instance.json');
+const path = require('path');
 const fs = require('fs');
+const isBearerRequired = process.env.IS_AUTH_TOKEN_BEARER === 'true';
 // var shikshalokam = require("../helpers/shikshalokam");
 
 var reqMsg = messageUtil.REQUEST;
@@ -72,7 +73,7 @@ var removedHeaders = [
 //     }
 //   })
 //   return result
-// } 
+// }
 
 module.exports = async function (req, res, next) {
   if (req.path.includes('/sharedLinks/verify')) return next();
@@ -136,11 +137,25 @@ module.exports = async function (req, res, next) {
     'observationSubmissions/disable/',
   ];
 
-  var token = req.headers['x-auth-token'];
-
   if (!req.rspObj) req.rspObj = {};
   var rspObj = req.rspObj;
- 
+
+  // Check if a Bearer token is required for authentication
+  let authHeader = req.headers['x-auth-token'];
+  let token;
+  if (isBearerRequired) {
+    const [authType, extractedToken] = authHeader.split(' ');
+    if (authType.toLowerCase() !== 'bearer') {
+      rspObj.errCode = reqMsg.TOKEN.INVALID_CODE;
+      rspObj.errMsg = reqMsg.TOKEN.INVALID_MESSAGE;
+      rspObj.responseCode = responseCode.unauthorized.status;
+      return res.status(401).send(respUtil(rspObj));
+    }
+    token = extractedToken?.trim();
+  } else {
+    token = authHeader.trim();
+  }
+
   let internalAccessApiPaths = [
     'createGesture',
     'createEmoji',
@@ -158,7 +173,7 @@ module.exports = async function (req, res, next) {
       if (req.path.includes(path)) {
         performInternalAccessTokenCheck = true;
       }
-    }),
+    })
   );
 
   if (performInternalAccessTokenCheck) {
@@ -178,7 +193,7 @@ module.exports = async function (req, res, next) {
       if (req.path.includes(path)) {
         performInternalAccessTokenAndTokenCheck = true;
       }
-    }),
+    })
   );
 
   if (performInternalAccessTokenAndTokenCheck) {
@@ -198,7 +213,7 @@ module.exports = async function (req, res, next) {
       if (req.path.includes(path)) {
         performInternalAccessTokenOrTokenCheck = true;
       }
-    }),
+    })
   );
 
   if (performInternalAccessTokenOrTokenCheck && !token) {
@@ -283,62 +298,62 @@ module.exports = async function (req, res, next) {
   }
 
   // Path to config.json
-	const configFilePath = path.resolve(__dirname, '../../', 'config.json')
-  	// Initialize variables
-	let configData = {}
-	let defaultTokenExtraction = false
+  const configFilePath = path.resolve(__dirname, '../../', 'config.json');
+  // Initialize variables
+  let configData = {};
+  let defaultTokenExtraction = false;
 
   if (fs.existsSync(configFilePath)) {
-		// Read and parse the config.json file
-		const rawData = fs.readFileSync(configFilePath)
-		try {
-			configData = JSON.parse(rawData)
-			if (!configData.authTokenUserInformation) {
-				defaultTokenExtraction = true
-			}
-			configData = configData.authTokenUserInformation
-		} catch (error) {
-			console.error('Error parsing config.json:', error)
-		}
-	} else {
-		// If file doesn't exist, set defaultTokenExtraction to true
-		defaultTokenExtraction = true
-	}
-
-  let userInformation = {}
-	// Create user details to request
-	req.userDetails = {
-		userToken: token,
-	}
-  	// performing default token data extraction
-	if (defaultTokenExtraction) {
-		userInformation = {
-    userToken: token,
-    userId: JSON.stringify(decodedToken.data.id),
-    userName: decodedToken.data.name,
-    firstName: decodedToken.data.name,
-    organizationId: decodedToken.data.organization_id,
+    // Read and parse the config.json file
+    const rawData = fs.readFileSync(configFilePath);
+    try {
+      configData = JSON.parse(rawData);
+      if (!configData.authTokenUserInformation) {
+        defaultTokenExtraction = true;
+      }
+      configData = configData.authTokenUserInformation;
+    } catch (error) {
+      console.error('Error parsing config.json:', error);
+    }
+  } else {
+    // If file doesn't exist, set defaultTokenExtraction to true
+    defaultTokenExtraction = true;
   }
-	} else {
-		// Iterate through each key in the config object
-		for (let key in configData) {
-			if (configData.hasOwnProperty(key)) {
-				let keyValue = getNestedValue(decodedToken, configData[key])
-				if (key === 'userId') {
-					keyValue = keyValue.toString()
-				}
-				// For each key in config, assign the corresponding value from decodedToken
-				userInformation[key] = keyValue
-			}
-		}
-	}
-  	// Update user details object
-	req.userDetails = userInformation
 
-	// Helper function to access nested properties
-	function getNestedValue(obj, path) {
-		return path.split('.').reduce((acc, part) => acc && acc[part], obj)
-	}
+  let userInformation = {};
+  // Create user details to request
+  req.userDetails = {
+    userToken: token,
+  };
+  // performing default token data extraction
+  if (defaultTokenExtraction) {
+    userInformation = {
+      userToken: token,
+      userId: JSON.stringify(decodedToken.data.id),
+      userName: decodedToken.data.name,
+      firstName: decodedToken.data.name,
+      organizationId: decodedToken.data.organization_id,
+    };
+  } else {
+    // Iterate through each key in the config object
+    for (let key in configData) {
+      if (configData.hasOwnProperty(key)) {
+        let keyValue = getNestedValue(decodedToken, configData[key]);
+        if (key === 'userId') {
+          keyValue = keyValue.toString();
+        }
+        // For each key in config, assign the corresponding value from decodedToken
+        userInformation[key] = keyValue;
+      }
+    }
+  }
+  // Update user details object
+  req.userDetails = userInformation;
+
+  // Helper function to access nested properties
+  function getNestedValue(obj, path) {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  }
 
   // let userDetails = await getUserDetails(decodedToken)
   /*

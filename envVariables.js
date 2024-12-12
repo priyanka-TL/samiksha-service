@@ -265,18 +265,18 @@ let enviromentVariables = {
     optional: true,
     default: '+05:30',
   },
-  GOTENBERG_URL : {
-    "message" : "Gotenberg url is Required",
-    "optional" : false
+  GOTENBERG_URL: {
+    message: 'Gotenberg url is Required',
+    optional: false,
   },
   API_DOC_URL: {
-		message: 'Required api doc url',
-		optional: false,
-	},
-  DEFAULT_ORGANISATION_CODE:{
+    message: 'Required api doc url',
+    optional: false,
+  },
+  DEFAULT_ORGANISATION_CODE: {
     message: 'Required default organisation code.',
-		optional: false,
-  }
+    optional: false,
+  },
   // KAFKA_ERROR_MESSAGES_TO_SLACK: {
   //   message: 'ON/OFF',
   //   optional: false,
@@ -306,6 +306,11 @@ let enviromentVariables = {
   //   optional: true,
   //   default: 'OFF',
   // },
+  IS_AUTH_TOKEN_BEARER: {
+    message: 'Required specification: If auth token is bearer or not',
+    optional: true,
+    default: false,
+  },
 };
 
 let success = true;
@@ -372,11 +377,12 @@ module.exports = function () {
     }
 
     if (
-      (!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') &&
-      enviromentVariables[eachEnvironmentVariable].default &&
-      enviromentVariables[eachEnvironmentVariable].default != ''
+      (!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable].trim() === '') &&
+      enviromentVariables[eachEnvironmentVariable]?.optional === true &&
+      enviromentVariables[eachEnvironmentVariable]?.default !== undefined
     ) {
       process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default;
+      keyCheckPass = true;
     }
 
     if (!keyCheckPass) {
