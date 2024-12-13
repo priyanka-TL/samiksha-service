@@ -140,21 +140,7 @@ module.exports = async function (req, res, next) {
   if (!req.rspObj) req.rspObj = {};
   var rspObj = req.rspObj;
 
-  // Check if a Bearer token is required for authentication
-  let authHeader = req.headers['x-auth-token'];
-  let token;
-  if (isBearerRequired) {
-    const [authType, extractedToken] = authHeader.split(' ');
-    if (authType.toLowerCase() !== 'bearer') {
-      rspObj.errCode = reqMsg.TOKEN.INVALID_CODE;
-      rspObj.errMsg = reqMsg.TOKEN.INVALID_MESSAGE;
-      rspObj.responseCode = responseCode.unauthorized.status;
-      return res.status(401).send(respUtil(rspObj));
-    }
-    token = extractedToken?.trim();
-  } else {
-    token = authHeader.trim();
-  }
+  let token = req.headers['x-auth-token'];
 
   let internalAccessApiPaths = [
     'createGesture',
@@ -183,6 +169,20 @@ module.exports = async function (req, res, next) {
       rspObj.responseCode = responseCode.unauthorized.status;
       return res.status(401).send(respUtil(rspObj));
     }
+  }
+
+  // Check if a Bearer token is required for authentication
+  if (isBearerRequired) {
+    const [authType, extractedToken] = token.split(' ');
+    if (authType.toLowerCase() !== 'bearer') {
+      rspObj.errCode = reqMsg.TOKEN.INVALID_CODE;
+      rspObj.errMsg = reqMsg.TOKEN.INVALID_MESSAGE;
+      rspObj.responseCode = responseCode.unauthorized.status;
+      return res.status(401).send(respUtil(rspObj));
+    }
+    token = extractedToken?.trim();
+  } else {
+    token = token?.trim();
   }
 
   //api need both internal access token and x-authenticated-user-token
