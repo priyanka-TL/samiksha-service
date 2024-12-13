@@ -297,10 +297,15 @@ After successfully running the script mentioned above, the following user accoun
 ## Sample Data Creation For Survey and Obseration
 
 This step will guide us in implementing a sample survey and observation solutions following the initial setup of the survey service.
-   -  **Ubuntu/Linux** && **Windows**
+   -  **Ubuntu/Linux**
 
       ```
       sudo docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
+      ```
+   -  **Windows**
+
+      ```
+      docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
       ```
       
 ## Insert Forms & Profile Configs Data into Database
