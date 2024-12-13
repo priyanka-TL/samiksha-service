@@ -63,7 +63,7 @@ done
 
 1.  **Download and execute main setup script:** Execute the following command in your terminal from the survey directory.
     ```
-    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/setup_survey.sh && chmod +x setup_survey.sh && ./setup_survey.sh
+    curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/setup_survey.sh && chmod +x setup_survey.sh && sudo ./setup_survey.sh
     ```
 
     > Note : The script will download all the essential files and launch the services in Docker. Once all services are successfully up and running, you can proceed to the next steps.
@@ -74,11 +74,11 @@ done
 
     2. All docker containers can be stopped and removed by using below command.
         ```
-        ./docker-compose-down.sh
+        sudo ./docker-compose-down.sh
         ```
     3. All services and dependencies can be started using below command.
         ```
-        ./docker-compose-up.sh
+        sudo ./docker-compose-up.sh
         ```
 **Keep the current terminal session active, and kindly open a new terminal window within the survey directory.**
 
@@ -182,7 +182,7 @@ To enable the Citus extension for mentoring and user services, follow these step
    1. Enable Citus and set distribution columns for `user` database by running the `citus_setup.sh`with the following arguments.
 
       ```
-      ./citus_setup.sh user postgres://postgres:postgres@citus_master:5432/user
+      sudo ./citus_setup.sh user postgres://postgres:postgres@citus_master:5432/user
       ```
 
  - **Windows**
@@ -261,7 +261,7 @@ In such cases, you can generate sample user accounts using the steps below. This
 
     
     ```
-    ./insert_sample_data.sh user postgres://postgres:postgres@citus_master:5432/user
+    sudo ./insert_sample_data.sh user postgres://postgres:postgres@citus_master:5432/user
     ```
 
  - **Windows**
@@ -300,15 +300,15 @@ This step will guide us in implementing a sample survey and observation solution
    -  **Ubuntu/Linux** && **Windows**
 
       ```
-      docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
+      sudo docker exec -it samiksha sh -c "node documentation/1.0.0/dockerized/scripts/mac-linux/insert_sample_solutions.js"
       ```
       
 ## Insert Forms & Profile Configs Data into Database
 
 - **Ubuntu/Linux/Mac**:
    ```
-   curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/import_forms_mongo.sh && chmod +x import_forms_mongo.sh && ./import_forms_mongo.sh mongodb://mongo:27017/elevate-samiksha && \
-   curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/add_profile_configuation.sh && chmod +x add_profile_configuation.sh && ./add_profile_configuation.sh
+   curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/import_forms_mongo.sh && chmod +x import_forms_mongo.sh && sudo ./import_forms_mongo.sh mongodb://mongo:27017/elevate-samiksha && \
+   curl -OJL https://github.com/ELEVATE-Project/samiksha-service/raw/main/documentation/1.0.0/dockerized/scripts/mac-linux/add_profile_configuation.sh && chmod +x add_profile_configuation.sh && sudo ./add_profile_configuation.sh
    ```
  - **Windows**:
    1.  **Download The `import_forms_mongo.bat` Files & Run The `import_forms_mongo.bat` Script File:**
