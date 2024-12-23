@@ -2503,7 +2503,7 @@ module.exports = class ObservationsHelper {
         entities[0].groups &&
         Object.keys(entities[0].groups).length > 0
       ) {
-        targetedEntityType = messageConstants.common.STATE_ENTITY_TYPE;
+      //  targetedEntityType = messageConstants.common.STATE_ENTITY_TYPE;
       }
     }
     let filterData = {
