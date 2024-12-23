@@ -311,6 +311,16 @@ let enviromentVariables = {
     optional: true,
     default: false,
   },
+  AUTH_METHOD: {
+		message: 'Required authentication method',
+		optional: true,
+		default: messageConstants.common.AUTH_METHOD.NATIVE,
+	},
+	KEYCLOAK_PUBLIC_KEY_PATH: {
+		message: 'Required Keycloak Public Key Path',
+		optional: true,
+		default: '../keycloakPublicKeys',
+	},
 };
 
 let success = true;
