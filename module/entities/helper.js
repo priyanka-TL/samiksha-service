@@ -1540,6 +1540,7 @@ module.exports = class EntitiesHelper {
             response.result = [];
             let filterData = {
               "entityType":result.entityType,
+              "_id":result.entities
 
             }
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
