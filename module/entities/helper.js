@@ -1532,6 +1532,16 @@ module.exports = class EntitiesHelper {
                 }
     
                 entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,entityProjections);
+                
+                if ( !entitiesDetails.success ) {
+                  return resolve({
+                      "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                      "result" : [{
+                          "count":0,
+                          "data" : []
+                      }]
+                  })
+              }
                 let entityDocuments = entitiesDetails.data;
                 
                 entityDocuments = entityDocuments.map(item => ({
