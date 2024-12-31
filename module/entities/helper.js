@@ -1469,7 +1469,7 @@ module.exports = class EntitiesHelper {
               let solutionDocument = await solutionsHelper.solutionDocuments(findQuery, projection);
               result = _.merge(solutionDocument[0]);
           }
-         
+
           let userAllowedEntities = new Array;
           
           // try {
@@ -1477,9 +1477,10 @@ module.exports = class EntitiesHelper {
           // } catch (error) {
           //     userAllowedEntities = [];
           // }
-          let entityProjections = ['entityType','metaInformation.externalId', 'metaInformation.name']
+          let entityProjections = ['entityType','metaInformation.externalId', 'metaInformation.name','groups']
 
           if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
+
               let filterData = {
                   "_id" : req.query.parentEntityId
               };
@@ -1503,9 +1504,9 @@ module.exports = class EntitiesHelper {
                 name: item.metaInformation?.name || null,
                 entityType:item.entityType
               }));
-
+              response.result = [];
               if( entitiesData && entitiesData[0].entityType === result.entityType ) {
-                  response.result = [];
+
                   
                   let data = 
                   await this.observationSearchEntitiesResponse(
@@ -1522,14 +1523,52 @@ module.exports = class EntitiesHelper {
                   return resolve(response);
 
               } else {
-                response.result = [];
-                response["message"] = 
-                messageConstants.apiResponses.ENTITY_NOT_FOUND;
+                let groups = entitiesDetails.data[0].groups;
+
+                let targetedGroup = groups[result.entityType];
+    
+                let filterDataGroups = {
+                  "_id":targetedGroup
+                }
+    
+                entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,entityProjections);
                 
-                response.result.push({
-                    "count":0,
-                    "data" : []
-                });
+                if ( !entitiesDetails.success ) {
+                  return resolve({
+                      "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                      "result" : [{
+                          "count":0,
+                          "data" : []
+                      }]
+                  })
+              }
+                let entityDocuments = entitiesDetails.data;
+                
+                entityDocuments = entityDocuments.map(item => ({
+                  _id: item._id,
+                  externalId: item.metaInformation?.externalId || null,
+                  name: item.metaInformation?.name || null,
+                  entityType:item.entityType
+                }));
+    
+                  let data = 
+                  await this.observationSearchEntitiesResponse(
+                    entityDocuments,
+                      result.entities
+                  )
+    
+                  response.result.push({
+                    "data" : data,
+                    "count" : data.length
+                  });
+                  
+                  response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
+    
+                  response.result.push({
+                      "data" : data,
+                      "count" : data.length
+                  });
+    
 
                 return resolve(response);
                       
@@ -1540,6 +1579,7 @@ module.exports = class EntitiesHelper {
             response.result = [];
             let filterData = {
               "entityType":result.entityType,
+              "_id":result.entities
 
             }
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
