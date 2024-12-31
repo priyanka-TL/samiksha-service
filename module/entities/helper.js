@@ -1458,6 +1458,8 @@ module.exports = class EntitiesHelper {
 
           }
 
+          console.log(result,'result')
+
           if ( req.query.solutionId ) {
               let findQuery = {
                   _id: ObjectId(req.query.solutionId)
@@ -1486,6 +1488,7 @@ module.exports = class EntitiesHelper {
               };
                   
               let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
+              console.log(entitiesDetails,"entitiesDetails")
               if ( !entitiesDetails.success ) {
                   return resolve({
                       "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
