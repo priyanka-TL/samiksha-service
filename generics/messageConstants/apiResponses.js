@@ -421,5 +421,6 @@ module.exports = {
   SOLUTION_TARGETED_ENTITY:'Targeted Entity Types Fetched',
   ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role',
   EVIDENCE_ALREADY_MARKED_AS_NOT_APPLICABLE:'is already marked as not applicable',
-  OBSERVATION_SOLUTION_ID_REQUIRED:'Observation or solution id is required'
+  OBSERVATION_SOLUTION_ID_REQUIRED:'Observation or solution id is required',
+  OBSERVATION_NOT_RELEVENT_FOR_USER:'Dear User, this Observation is not relevant for your sub-role and location'
 };

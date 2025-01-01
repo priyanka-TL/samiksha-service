@@ -321,6 +321,15 @@ let enviromentVariables = {
 		optional: true,
 		default: '../keycloakPublicKeys',
 	},
+  VALIDATE_ROLE: {
+		message: 'Required VALIDATE_ROLE to validate role heirarchy',
+		optional: true,
+		default: 'OFF',
+	},
+  ROLES_HIERARCHY: {
+		message: 'Required ROLES_HIERARCHY to validate role hierarchy, it must be a JSON stringified array',
+		optional: true
+	},
 };
 
 let success = true;
