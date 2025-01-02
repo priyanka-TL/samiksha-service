@@ -2749,15 +2749,20 @@ module.exports = class ObservationsHelper {
           let roles = bodyData.role.split(",");
 
           let roleArray = [];
-          for(let i=0;i<roles.length;i++){
+          for(let roleIndex=0;roleIndex<roles.length;roleIndex++){
 
           let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
-            code: roles[i],
+            code: roles[roleIndex],
           },
           ["entityTypes.entityType"])
 
           if(rolesDocumentAPICall.success){
             roleArray.push(rolesDocumentAPICall.data[0].entityTypes[0].entityType)
+          }else{
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+            };
           }
 
         }
