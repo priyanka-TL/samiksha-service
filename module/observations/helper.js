@@ -2749,7 +2749,7 @@ module.exports = class ObservationsHelper {
 
           let roles = bodyData.role.split(",");
 
-          let roleArray = [];
+          let entityTypeArr = [];
           for(let roleIndex=0;roleIndex<roles.length;roleIndex++){
 
           let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
@@ -2758,7 +2758,7 @@ module.exports = class ObservationsHelper {
           ["entityTypes.entityType"])
 
           if(rolesDocumentAPICall.success){
-            roleArray.push(rolesDocumentAPICall.data[0].entityTypes[0].entityType)
+            entityTypeArr.push(rolesDocumentAPICall.data[0].entityTypes[0].entityType)
           }else{
             throw {
               status: httpStatusCode.bad_request.status,
@@ -2768,7 +2768,7 @@ module.exports = class ObservationsHelper {
 
         }
 
-          const uniqueroleArray = _.uniq(roleArray);
+          const uniqueEntityTypeArr = _.uniq(entityTypeArr);
           let filterData = {
             _id:topLevelEntityId,
             entityType: topLevelEntityType,
@@ -2790,7 +2790,7 @@ module.exports = class ObservationsHelper {
           let childHierarchyPath = entitiesDocument.data[0].childHierarchyPath;
           childHierarchyPath.unshift(topLevelEntityType)
 
-          const highestEntityType = this.findHighestHierarchy(uniqueroleArray,childHierarchyPath);
+          const highestEntityType = this.findHighestHierarchy(uniqueEntityTypeArr,childHierarchyPath);
           const highestIndex = childHierarchyPath.indexOf(highestEntityType);
           const solutionIndex = childHierarchyPath.indexOf(solutionEntityType);
         
