@@ -2765,12 +2765,21 @@ module.exports = class ObservationsHelper {
           const uniqueroleArray = _.uniq(roleArray);
           let filterData = {
             _id:topLevelEntityId,
+            entityType: topLevelEntityType,
+            deleted:false
            };
          
           //Retrieving the entity from the Entity Management Service
            let entitiesDocument = await entityManagementService.entityDocuments(
              filterData
            );
+
+           if (!entitiesDocument.success) {
+             throw {
+               status: httpStatusCode.bad_request.status,
+               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+             };
+           }
 
           let childHierarchyPath = entitiesDocument.data[0].childHierarchyPath;
           childHierarchyPath.unshift(topLevelEntityType)
@@ -2798,8 +2807,7 @@ module.exports = class ObservationsHelper {
           success: true
         })
 
-        } catch (error) {
-          console.log(error,'error');
+        } catch (error) { 
           return resolve({
             status: error.status || httpStatusCode.internal_server_error.status,
             message:
@@ -2818,7 +2826,7 @@ module.exports = class ObservationsHelper {
    * @returns {String} returns highest role in the heirarchy.
    */
     static findHighestHierarchy(roles,rolesHierarchy) {
-      console.log(roles,rolesHierarchy,'roles,rolesHierarchy'); 
+      
         let highestHierarchyValue = null;
         let highestIndex = Infinity;
       
