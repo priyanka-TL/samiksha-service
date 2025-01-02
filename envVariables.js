@@ -321,6 +321,16 @@ let enviromentVariables = {
 		optional: true,
 		default: '../keycloakPublicKeys',
 	},
+  VALIDATE_ROLE: {
+		message: 'Required VALIDATE_ROLE to validate role heirarchy',
+		optional: true,
+		default: 'ON',
+	},
+  TOP_LEVEL_ENTITY_TYPE: {
+		message: 'Required TOP_LEVEL_ENTITY_TYPE to indentify top level entity type',
+		optional: true,
+    default: 'state'
+	},
 };
 
 let success = true;
