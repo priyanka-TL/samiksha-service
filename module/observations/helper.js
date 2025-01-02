@@ -1867,7 +1867,7 @@ module.exports = class ObservationsHelper {
             ['_id'],
           );
           
-          if (false) {
+          if (observationData.length > 0) {
             observationId = observationData[0]._id;
           } else {
             let solutionData = await solutionsQueries.solutionDocuments({
@@ -2739,7 +2739,7 @@ module.exports = class ObservationsHelper {
 
           let solutionEntityType = solutionDocument[0].entityType;
           let topLevelEntityId = bodyData[topLevelEntityType];
-          
+
           if(solutionEntityType === topLevelEntityType){
             resolve({
               success: true
@@ -2814,6 +2814,7 @@ module.exports = class ObservationsHelper {
    * @method
    * @name findHighestHierarchy
    * @param {String} roles - Roles of the user.
+   * @param {Array} rolesHierarchy - Roles hierarchy in descending order.
    * @returns {String} returns highest role in the heirarchy.
    */
     static findHighestHierarchy(roles,rolesHierarchy) {
