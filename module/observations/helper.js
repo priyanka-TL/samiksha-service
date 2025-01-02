@@ -152,7 +152,7 @@ module.exports = class ObservationsHelper {
           if (!validateUserRole.success) {
             throw {
               status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+              message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
             };
           }
         }
@@ -1922,9 +1922,10 @@ module.exports = class ObservationsHelper {
               if (!validateUserRole.success) {
                 throw {
                   status: httpStatusCode.bad_request.status,
-                  message:
+                  message: validateUserRole.message ||
                     messageConstants.apiResponses
                       .OBSERVATION_NOT_RELEVENT_FOR_USER,
+                  
                 };
               }
            }
@@ -2831,7 +2832,6 @@ module.exports = class ObservationsHelper {
    * @returns {String} returns highest role in the heirarchy.
    */
     static findHighestHierarchy(roles,rolesHierarchy) {
-      
         let highestHierarchyValue = null;
         let highestIndex = Infinity;
       
