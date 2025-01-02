@@ -324,11 +324,12 @@ let enviromentVariables = {
   VALIDATE_ROLE: {
 		message: 'Required VALIDATE_ROLE to validate role heirarchy',
 		optional: true,
-		default: 'OFF',
+		default: 'ON',
 	},
-  ROLES_HIERARCHY: {
-		message: 'Required ROLES_HIERARCHY to validate role hierarchy, it must be a JSON stringified array',
-		optional: true
+  TOP_LEVEL_ENTITY_TYPE: {
+		message: 'Required TOP_LEVEL_ENTITY_TYPE to indentify top level entity type',
+		optional: true,
+    default: 'state'
 	},
 };
 

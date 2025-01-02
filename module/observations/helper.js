@@ -28,10 +28,8 @@ const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const validateEntity = process.env.VALIDATE_ENTITIES;
-
-const rolesHierarchyString = process.env.ROLES_HIERARCHY || '["state","district","block","cluster","school"]';
-const rolesHierarchy = JSON.parse(rolesHierarchyString);
-const validateRole = process.env.VALIDATE_ROLE || "OFF";
+const validateRole = process.env.VALIDATE_ROLE;
+const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
 /**
  * ObservationsHelper
  * @class
@@ -148,7 +146,7 @@ module.exports = class ObservationsHelper {
           solutionData = solutionData[0];
         }
 
-        if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON") {
+        if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
           //validate the user access to create observation
           let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
           if (!validateUserRole.success) {
@@ -1869,7 +1867,7 @@ module.exports = class ObservationsHelper {
             ['_id'],
           );
           
-          if (observationData.length > 0) {
+          if (false) {
             observationId = observationData[0]._id;
           } else {
             let solutionData = await solutionsQueries.solutionDocuments({
@@ -1914,7 +1912,7 @@ module.exports = class ObservationsHelper {
             }
 
             delete solutionData.data._id;
-            if(validateRole == 'ON'){ 
+            if(validateRole == 'ON' && topLevelEntityType){ 
               //validate the user access to create observation
               let validateUserRole = await this.validateUserRole(
                 bodyData,
@@ -2740,6 +2738,13 @@ module.exports = class ObservationsHelper {
           }
 
           let solutionEntityType = solutionDocument[0].entityType;
+          let topLevelEntityId = bodyData[topLevelEntityType];
+          
+          if(solutionEntityType === topLevelEntityType){
+            resolve({
+              success: true
+            })
+          }
 
           let roles = bodyData.role.split(",");
 
@@ -2758,9 +2763,21 @@ module.exports = class ObservationsHelper {
         }
 
           const uniqueroleArray = _.uniq(roleArray);
-          const highestEntityType = this.findHighestHierarchy(uniqueroleArray);
-          const highestIndex = rolesHierarchy.indexOf(highestEntityType);
-          const solutionIndex = rolesHierarchy.indexOf(solutionEntityType);
+          let filterData = {
+            _id:topLevelEntityId,
+           };
+         
+          //Retrieving the entity from the Entity Management Service
+           let entitiesDocument = await entityManagementService.entityDocuments(
+             filterData
+           );
+
+          let childHierarchyPath = entitiesDocument.data[0].childHierarchyPath;
+          childHierarchyPath.unshift(topLevelEntityType)
+
+          const highestEntityType = this.findHighestHierarchy(uniqueroleArray,childHierarchyPath);
+          const highestIndex = childHierarchyPath.indexOf(highestEntityType);
+          const solutionIndex = childHierarchyPath.indexOf(solutionEntityType);
         
           if (highestIndex === -1 || solutionIndex === -1) {
             throw {
@@ -2782,6 +2799,7 @@ module.exports = class ObservationsHelper {
         })
 
         } catch (error) {
+          console.log(error,'error');
           return resolve({
             status: error.status || httpStatusCode.internal_server_error.status,
             message:
@@ -2798,7 +2816,8 @@ module.exports = class ObservationsHelper {
    * @param {String} roles - Roles of the user.
    * @returns {String} returns highest role in the heirarchy.
    */
-    static findHighestHierarchy(roles) {
+    static findHighestHierarchy(roles,rolesHierarchy) {
+      console.log(roles,rolesHierarchy,'roles,rolesHierarchy'); 
         let highestHierarchyValue = null;
         let highestIndex = Infinity;
       
