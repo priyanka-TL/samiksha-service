@@ -2741,11 +2741,6 @@ module.exports = class ObservationsHelper {
           let solutionEntityType = solutionDocument[0].entityType;
           let topLevelEntityId = bodyData[topLevelEntityType];
 
-          if(solutionEntityType === topLevelEntityType){
-            resolve({
-              success: true
-            })
-          }
 
           let roles = bodyData.role.split(",");
 
@@ -2791,6 +2786,11 @@ module.exports = class ObservationsHelper {
           childHierarchyPath.unshift(topLevelEntityType)
 
           const highestEntityType = this.findHighestHierarchy(uniqueEntityTypeArr,childHierarchyPath);
+          if(solutionEntityType === topLevelEntityType && solutionEntityType === highestEntityType) {
+            resolve({
+              success: true
+            })
+          }
           const highestIndex = childHierarchyPath.indexOf(highestEntityType);
           const solutionIndex = childHierarchyPath.indexOf(solutionEntityType);
         
