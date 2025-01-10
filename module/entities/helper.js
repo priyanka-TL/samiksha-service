@@ -2057,9 +2057,9 @@ module.exports = class EntitiesHelper {
           eachMetaData.name += ', ' + eachMetaData.districtName;
         }
 
-        if (eachMetaData.externalId && eachMetaData.externalId !== '') {
-          eachMetaData.name += ', ' + eachMetaData.externalId;
-        }
+        // if (eachMetaData.externalId && eachMetaData.externalId !== '') {
+        //   eachMetaData.name += ', ' + eachMetaData.externalId;
+        // }
       });
     }
 

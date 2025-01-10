@@ -1122,7 +1122,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
   
         FormData.push(...formDataAssessment);
         let params = {
-          assessmentName: "Institutional Assessment Report",
+          assessmentName: assessmentRes.solutionName,
         };
         ejs
           .renderFile(path.resolve(__dirname + "/../views/assessment_header.ejs"), {
