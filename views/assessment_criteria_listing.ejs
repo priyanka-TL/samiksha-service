@@ -17,12 +17,22 @@
         <tbody>
           <% for(let k=0; k < assessmentRes.chart.domains[i].criterias.length; k++) { %>
           <tr>
-            <td style="vertical-align: middle;"><%= assessmentRes.chart.domains[i].criterias[k].name%></td>
+            <td style="vertical-align: middle;"><%= assessmentRes.chart.domains[i].criterias[k].name%></td>          
             <% for(let level=0; level < assessmentRes.chart.domains[i].criterias[k].levels.length; level++) { %>
               <td>
-                <div> <%= assessmentRes.chart.domains[i].criterias[k].levels[level]%>  </div>
+                <div> 
+                  <% if (assessmentRes.chart.domains[i].criterias[k].levels[level]) { %>
+                    <%= assessmentRes.chart.domains[i].criterias[k].levels[level] %>  
+                  <% } else { %>
+                    NA
+                  <% } %>
+                </div>
                <% if (assessmentRes.chart.domains[i].criterias[k].levelsWithScores && assessmentRes.chart.domains[i].criterias[k].levelsWithScores[level]) {%>
-                 <div  style="padding-top: 10px;">   <%= assessmentRes.chart.domains[i].criterias[k].levelsWithScores[level].score%> </div>
+                 <div  style="padding-top: 10px;">  
+                  <%= (assessmentRes.chart.domains[i].criterias[k].levelsWithScores[level].score % 1 === 0) 
+                  ? Math.floor(assessmentRes.chart.domains[i].criterias[k].levelsWithScores[level].score) 
+                  : assessmentRes.chart.domains[i].criterias[k].levelsWithScores[level].score.toFixed(2) %>  
+                </div>
               <% } %>
             </td>
             <% } %>

@@ -687,13 +687,15 @@ exports.generateObservationReportForRubricWithoutDruid = async function (data) {
  * @param {Array} submissionData  - observationSubmissionData.
  * @returns {Object}              - contain  domainLevel data
  */
+
 async function generateDomainLevelObject(submissionData) {
   const domainLevelObject = {};
+
   submissionData.forEach((data) => {
-    data.themes.map((eachDomain) => {
-      let level = eachDomain.pointsBasedLevel;
+    data.themes.forEach((eachDomain) => {
       let completedDate = data.completedDate;
       let domainName = eachDomain.name;
+
       // Ensure the domainName exists in the object
       if (!domainLevelObject[domainName]) {
         domainLevelObject[domainName] = {};
@@ -704,7 +706,59 @@ async function generateDomainLevelObject(submissionData) {
         domainLevelObject[domainName][completedDate] = {};
       }
 
-      // Ensure the level exists under the completedDate and set it to 1
+      // Extract criteria scores and count for average calculation
+      let totalScore = 0;
+      let criteriaCount = 0;
+
+      eachDomain.criteria.forEach((themeCriteria) => {
+        let matchingCriteria = data.criteria.find(
+          (criteria) => criteria.parentCriteriaId.toString() === themeCriteria.criteriaId.toString()
+        );
+
+        if (matchingCriteria) {
+          totalScore += matchingCriteria.pointsBasedScoreOfAllChildren || 0;
+          criteriaCount++;
+        }
+      });
+
+      // Calculate average score
+      let averageScore = criteriaCount > 0 ? totalScore / criteriaCount : totalScore;
+
+      // Determine the level based on the theme rubric using the average score
+      let level = "No Level Matched";
+      const rubricLevels = eachDomain.rubric.levels;
+      let matchingLevels = [];
+
+      for (let key in rubricLevels) {
+        let expression = rubricLevels[key].expression;
+        
+        // Improved regex to handle parentheses and different comparison operators
+        let rangeMatch = expression.match(/(?:\(|\s*)(\d+)\s*([<]=?)\s*SCORE\s*([<]=?)\s*(\d+)(?:\)|\s*)/);
+
+        if (rangeMatch) {
+          let lowerBound = parseFloat(rangeMatch[1]);  // First number
+          let lowerOperator = rangeMatch[2];           // <= or <
+          let upperOperator = rangeMatch[3];           // <= or <
+          let upperBound = parseFloat(rangeMatch[4]);  // Second number
+
+          // Evaluate the condition correctly considering both inclusive and exclusive ranges
+          let lowerCondition = lowerOperator === "<=" ? lowerBound <= averageScore : lowerBound < averageScore;
+          let upperCondition = upperOperator === "<=" ? averageScore <= upperBound : averageScore < upperBound;
+
+          if (lowerCondition && upperCondition) {
+            matchingLevels.push(key);
+          }
+        } else {
+          console.log("Invalid expression format:", expression);
+        }
+      }
+
+      // Select the highest matching level if there are multiple matches
+      if (matchingLevels.length > 0) {
+        level = matchingLevels.sort().pop(); // Get the highest level based on sorting
+      }
+
+      // Ensure the level exists under the completedDate and set it to 1 or increment
       if (!domainLevelObject[domainName][completedDate][level]) {
         domainLevelObject[domainName][completedDate][level] = 1;
       } else {
@@ -712,6 +766,7 @@ async function generateDomainLevelObject(submissionData) {
       }
     });
   });
+
   return domainLevelObject;
 }
 
@@ -722,9 +777,9 @@ async function generateDomainLevelObject(submissionData) {
  * @param {Array} chartObjectsArray     - observationSubmissionData.
  * @returns {Object}                     -  contain horizontal chartOptions
  */
-async function generateChartObjectForRubric(chartObjectsArray) {
-  // Create the initial structure of the horizontal chartData object
 
+async function generateChartObjectForRubric(chartObjectsArray) {
+  
   const chartOptions = {
     type: 'horizontalBar',
     title: '',
@@ -759,10 +814,12 @@ async function generateChartObjectForRubric(chartObjectsArray) {
       },
     },
   };
+
   let themeArray = [];
+  let criteriaArray = [];
   let dataSetsMap = {};
 
-  // Points mapping based on level (L1 -> 1, L2 -> 2.)
+  // Points mapping based on level (L1 -> 1, L2 -> 2, etc.)
   const pointsMapping = {
     L1: 1,
     L2: 2,
@@ -770,44 +827,81 @@ async function generateChartObjectForRubric(chartObjectsArray) {
     L4: 4,
   };
 
-  // Loop through each chartObject in the array
-  chartObjectsArray.forEach((chartObject) => {
+  // Helper function to evaluate rubric levels based on score
+  function getLevelFromRubric(rubric, score) {
+    for (let key in rubric.levels) {
+      let expression = rubric.levels[key].expression;
+      let rangeMatch = expression.match(/(?:\(|\s*)(\d+)\s*([<]=?)\s*SCORE\s*([<]=?)\s*(\d+)(?:\)|\s*)/);
+
+      if (rangeMatch) {
+        let lowerBound = parseFloat(rangeMatch[1]);
+        let lowerOperator = rangeMatch[2];
+        let upperOperator = rangeMatch[3];
+        let upperBound = parseFloat(rangeMatch[4]);
+
+        let lowerCondition = lowerOperator === "<=" ? lowerBound <= score : lowerBound < score;
+        let upperCondition = upperOperator === "<=" ? score <= upperBound : score < upperBound;
+
+        if (lowerCondition && upperCondition) {
+          return key;
+        }
+      }
+    }
+    return "No Level Matched";
+  }
+
+  // Processing themes and criteria
+  chartObjectsArray.forEach((chartObject,index) => {
     chartObject.themes.forEach((eachDomain) => {
       const themeName = eachDomain.name;
-
-      // If themeName is not already in themeArray, add it
+      let totalThemeScore = 0;
+      let criteriaCount = 0; // Counter for criteria to calculate average
+    
+      eachDomain.criteria.forEach((themeCriteria) => {
+        let criteriaObj = chartObject.criteria.find(
+          (c) => c.parentCriteriaId.toString() === themeCriteria.criteriaId.toString()
+        );
+    
+        if (criteriaObj) {
+          totalThemeScore += criteriaObj.pointsBasedScoreOfAllChildren || 0;
+          criteriaCount++; // Increment counter for each valid criteria
+        }
+      });
+    
+      // Calculate the average theme score if criteria exist
+      let averageThemeScore = criteriaCount > 0 ? totalThemeScore / criteriaCount : totalScore;
+    
+      // Get theme level using rubric evaluation based on average score
+      let themeLevel = getLevelFromRubric(eachDomain.rubric, averageThemeScore);
+      let themePointsValue = pointsMapping[themeLevel] || "No Level Matched";
+      // Add theme if not already in the array
       if (!themeArray.includes(themeName)) {
         themeArray.push(themeName);
-
+    
         for (let key in dataSetsMap) {
           dataSetsMap[key].data.push(0);
         }
       }
-
-      // Find the points value for the current domain's level
-      let pointsValue = pointsMapping[eachDomain.pointsBasedLevel] || 1;
-
-      // If there's no dataset for this points level, create it
-      if (!dataSetsMap[eachDomain.pointsBasedLevel]) {
-        dataSetsMap[eachDomain.pointsBasedLevel] = {
-          label: eachDomain.pointsBasedLevel,
+    
+      // Initialize theme dataset if it doesn't exist
+      if (!dataSetsMap[themeLevel]) {
+        dataSetsMap[themeLevel] = {
+          label: themeLevel,
           data: new Array(themeArray.length).fill(0),
-          backgroundColor: getColorForLevel(eachDomain.pointsBasedLevel),
+          backgroundColor: getColorForLevel(themeLevel),
         };
       }
-
-      // Find the index of the current themeName
+    
+      // Set the score for the theme
       const themeIndex = themeArray.indexOf(themeName);
-
-      // Update the corresponding data in the dataset for this points level
-      dataSetsMap[eachDomain.pointsBasedLevel].data[themeIndex] = pointsValue;
+      dataSetsMap[themeLevel].data[themeIndex] = themePointsValue;
     });
+    
   });
 
   let dataSetsArray = Object.values(dataSetsMap);
-
   chartOptions['data'] = {
-    labels: themeArray,
+    labels: [...themeArray],
     datasets: dataSetsArray,
   };
   return chartOptions;
@@ -886,7 +980,7 @@ async function generateExpansionChartObject(chartObjectsArray) {
             existingCriteria.levels.push(levelExpandKey[matchedCriteria.score]);
             existingCriteria.levelsWithScores.push({
               level: levelExpandKey[matchedCriteria.score],
-              score: matchedCriteria.scoreAchieved,
+              score: matchedCriteria.pointsBasedScoreOfAllChildren,
             });
           } else {
             // If it's the first occurrence of this criteria, create a new entry
@@ -896,7 +990,7 @@ async function generateExpansionChartObject(chartObjectsArray) {
               levelsWithScores: [
                 {
                   level: levelExpandKey[matchedCriteria.score],
-                  score: matchedCriteria.scoreAchieved,
+                  score: matchedCriteria.pointsBasedScoreOfAllChildren,
                 },
               ],
             });
