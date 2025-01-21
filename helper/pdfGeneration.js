@@ -991,7 +991,7 @@ formData
                 })
 
             }))
-
+            
             return resolve(formData)
         }
         catch (err) {
@@ -1372,20 +1372,16 @@ const getAssessmentChartData = async function (assessmentData,submissionId="") {
       "rgb(179, 139, 11)",
     ];
     let incrementor = 0;
-  
     // Create datasets for chart
     for (let level in levelCountObject) {
       datasets.push({
         label: level,
         data: levelCountObject[level],
-        backgroundColor: backgroundColors[incrementor],
+        backgroundColor: gen.utils.getColorForLevel(level),
       });
       incrementor++;
     }
-  
+
     return datasets; // Return the datasets for the chart
   };
-  
-
-
   

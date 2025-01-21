@@ -471,6 +471,23 @@ function getGotenbergConnection() {
 function convertArrayObjectIdtoStringOfObjectId(ids) {
   return ids.map((obj) => obj._id.toString());
 }
+
+/**
+ * Generate getting chart color code.
+ * @method
+ * @name getColorForLevel
+ * @param {String} level     - Domain Levels.
+ * @returns {String}         -Color code for a chart
+ */
+function getColorForLevel(level) {
+  let colors = {
+    L1: 'rgb(255, 99, 132)',
+    L2: 'rgb(54, 162, 235)',
+    L3: 'rgb(255, 206, 86)',
+    L4: 'rgb(75, 192, 192)',
+  };
+  return colors[level] || 'rgb(201, 203, 207)';
+}
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
   lowerCase: lowerCase,
@@ -503,5 +520,6 @@ module.exports = {
   checkIfValidUUID:checkIfValidUUID,
   getGotenbergConnection:getGotenbergConnection,
   arrayOfObjectToArrayOfObjectId:arrayOfObjectToArrayOfObjectId,
-  convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId
+  convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId,
+  getColorForLevel:getColorForLevel
 };
