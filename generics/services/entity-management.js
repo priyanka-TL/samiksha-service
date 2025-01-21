@@ -56,8 +56,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
           success: true,
         };
 
-        console.log(err,data,'<-err,data->')
-
         if (err) {
           result.success = false;
         } else {
@@ -145,7 +143,8 @@ const validateEntities = async function (entityIds, entityTypeId) {
       try {
         let ids = [];
 
-      if(validateEntity == 'ON'){
+      if(validateEntity == 'ON' && entityIds.length >0){
+
         let bodyData = {
           _id : { $in: gen.utils.arrayIdsTobjectIdsNew(entityIds) },
           entityTypeId: entityTypeId,
