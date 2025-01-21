@@ -1898,7 +1898,6 @@ module.exports = class ObservationsHelper {
                 let entitiesDocument = await entityManagementService.entityDocuments(
                   filterData
                 );
-
                 if(!entitiesDocument.success){
                   throw new Error(
                     messageConstants.apiResponses.ENTITIES_NOT_FOUND
@@ -1929,11 +1928,12 @@ module.exports = class ObservationsHelper {
                 };
               }
            }
+            
             let observation = await this.create(solutionId, solutionData.data, userId, token,bodyData);
             observationId = observation._id;
           }
         }    
-        let entitiesList = await this.listEntities(observationId);      
+        let entitiesList = await this.listEntities(observationId); 
         let observationData = await this.observationDocuments(
           {
             _id: observationId,
@@ -1988,7 +1988,6 @@ module.exports = class ObservationsHelper {
           },
           ['entities', 'entityType'],
         );
-
         if (!observationDocument[0]) {
           throw {
             message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND,
@@ -1998,7 +1997,7 @@ module.exports = class ObservationsHelper {
         let entities = [];
 
         if (observationDocument[0].entities && observationDocument[0].entities.length > 0) {
-          let entitiesData;
+          let entitiesData=[];
           /*
           If validateEntity is set to ON, a call will be made to the Entity Management
           service to fetch information about the entities.
@@ -2022,11 +2021,11 @@ module.exports = class ObservationsHelper {
               return {"_id":data}
             });
           }
-
           if (!entitiesData.length > 0) {
             throw {
               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
             };
+
           }
 
           for (let pointerToEntities = 0; pointerToEntities < entitiesData.length; pointerToEntities++) {

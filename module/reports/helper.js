@@ -316,7 +316,6 @@ module.exports = class ReportsHelper {
       let pdfGenerationStatus
       if(req.body.scores){
          pdfGenerationStatus = await pdfHelper.assessmentPdfGeneration(responseObject,submissionId)
-
       }else{
        pdfGenerationStatus = await pdfHelper.instanceObservationPdfGeneration(responseObject);
       }
