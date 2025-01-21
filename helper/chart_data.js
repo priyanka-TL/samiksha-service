@@ -202,10 +202,24 @@ function extractIds(answerArr) {
   const questionRecordsIdArr = new Set();
   const cachedCriteriaIdArr = new Set();
 
-  answerArr.forEach(submissionInstance => {
-    Object.values(submissionInstance).forEach(questionInstance => {
-      questionRecordsIdArr.add(questionInstance.qid);
-      cachedCriteriaIdArr.add(questionInstance.criteriaId);
+  answerArr.forEach((submissionInstance) => {
+    Object.values(submissionInstance).forEach((questionInstance) => {
+      if (questionInstance.responseType == 'matrix') {
+        let valueArr = questionInstance.value;
+
+        for (let eachAnsweredMatrixInstance of valueArr) {
+          Object.values(eachAnsweredMatrixInstance).forEach((eachSubMatrixInstance) => {
+            questionRecordsIdArr.add(eachSubMatrixInstance.qid);
+            cachedCriteriaIdArr.add(eachSubMatrixInstance.criteriaId);
+          });
+        }
+
+        questionRecordsIdArr.add(questionInstance.qid);
+        cachedCriteriaIdArr.add(questionInstance.criteriaId);
+      } else {
+        questionRecordsIdArr.add(questionInstance.qid);
+        cachedCriteriaIdArr.add(questionInstance.criteriaId);
+      }
     });
   });
 
@@ -245,8 +259,6 @@ async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr,chart
 
   for (const submissionInstance of answerArr) {
     for (const [questionId, questionInstance] of Object.entries(submissionInstance)) {
-      if (questionInstance.responseType === 'matrix') continue;
-
       const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(questionInstance.qid));
       const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(questionInstance.criteriaId));
 
@@ -301,7 +313,7 @@ async function createNewFormattedAnswer(questionInstance, questionRecordSingleEl
 
   //this change done to address multiselect response appearing in array in instance chart which is not required
   let answer = [questionInstance.value];
-  if(chartType == 'instance' && questionInstance.responseType == 'multiselect'){
+  if(chartType == 'instance' && questionInstance.responseType == 'multiselect' || questionInstance.responseType == 'matrix'){
      answer  = Array.isArray(questionInstance.value) ? questionInstance.value : [questionInstance.value];  
   }
 
@@ -424,8 +436,25 @@ function groupDataByEntityId(array, name) {
           answerInstance.answers,
           answerInstance.options
         );
+      } else if (answerInstance.responseType == 'matrix') {
+        let answer = answerInstance.answers;
+
+        for (let matrixInstance of answer) {
+          Object.values(matrixInstance).forEach((individualAnswerInstance) => {
+            if (
+              individualAnswerInstance.responseType == 'multiselect' ||
+              individualAnswerInstance.responseType == 'radio'
+            ) {
+              individualAnswerInstance.chart = createChartForObservationWithoutRubric(
+                individualAnswerInstance.responseType,
+                individualAnswerInstance.answers,
+                individualAnswerInstance.options
+              );
+            }
+          });
+        }
       }
-    }
+    }  
 
     return reportData;
   }
