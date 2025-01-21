@@ -1377,30 +1377,11 @@ const getAssessmentChartData = async function (assessmentData,submissionId="") {
       datasets.push({
         label: level,
         data: levelCountObject[level],
-        backgroundColor: getColorForLevel(level),
+        backgroundColor: gen.utils.getColorForLevel(level),
       });
       incrementor++;
     }
 
     return datasets; // Return the datasets for the chart
   };
-  
-
-
-  /**
- * Generate getting chart color code.
- * @method
- * @name getColorForLevel
- * @param {String} level     - Domain Levels.
- * @returns {String}         -Color code for a chart
- */
-function getColorForLevel(level) {
-    let colors = {
-      L1: 'rgb(255, 99, 132)',
-      L2: 'rgb(54, 162, 235)',
-      L3: 'rgb(255, 206, 86)',
-      L4: 'rgb(75, 192, 192)',
-    };
-    return colors[level] || 'rgb(201, 203, 207)';
-  }
   

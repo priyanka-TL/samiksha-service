@@ -729,29 +729,7 @@ async function generateDomainLevelObject(submissionData) {
       const rubricLevels = eachDomain.rubric.levels;
       let matchingLevels = [];
 
-      for (let key in rubricLevels) {
-        let expression = rubricLevels[key].expression;
-        
-        // Improved regex to handle parentheses and different comparison operators
-        let rangeMatch = expression.match(/(?:\(|\s*)(\d+)\s*([<]=?)\s*SCORE\s*([<]=?)\s*(\d+)(?:\)|\s*)/);
-
-        if (rangeMatch) {
-          let lowerBound = parseFloat(rangeMatch[1]);  // First number
-          let lowerOperator = rangeMatch[2];           // <= or <
-          let upperOperator = rangeMatch[3];           // <= or <
-          let upperBound = parseFloat(rangeMatch[4]);  // Second number
-
-          // Evaluate the condition correctly considering both inclusive and exclusive ranges
-          let lowerCondition = lowerOperator === "<=" ? lowerBound <= averageScore : lowerBound < averageScore;
-          let upperCondition = upperOperator === "<=" ? averageScore <= upperBound : averageScore < upperBound;
-
-          if (lowerCondition && upperCondition) {
-            matchingLevels.push(key);
-          }
-        } else {
-          console.log("Invalid expression format:", expression);
-        }
-      }
+      matchingLevels = getLevelFromRubric(eachDomain.rubric, averageScore,true);
 
       // Select the highest matching level if there are multiple matches
       if (matchingLevels.length > 0) {
@@ -816,7 +794,6 @@ async function generateChartObjectForRubric(chartObjectsArray) {
   };
 
   let themeArray = [];
-  let criteriaArray = [];
   let dataSetsMap = {};
 
   // Points mapping based on level (L1 -> 1, L2 -> 2, etc.)
@@ -826,29 +803,6 @@ async function generateChartObjectForRubric(chartObjectsArray) {
     L3: 3,
     L4: 4,
   };
-
-  // Helper function to evaluate rubric levels based on score
-  function getLevelFromRubric(rubric, score) {
-    for (let key in rubric.levels) {
-      let expression = rubric.levels[key].expression;
-      let rangeMatch = expression.match(/(?:\(|\s*)(\d+)\s*([<]=?)\s*SCORE\s*([<]=?)\s*(\d+)(?:\)|\s*)/);
-
-      if (rangeMatch) {
-        let lowerBound = parseFloat(rangeMatch[1]);
-        let lowerOperator = rangeMatch[2];
-        let upperOperator = rangeMatch[3];
-        let upperBound = parseFloat(rangeMatch[4]);
-
-        let lowerCondition = lowerOperator === "<=" ? lowerBound <= score : lowerBound < score;
-        let upperCondition = upperOperator === "<=" ? score <= upperBound : score < upperBound;
-
-        if (lowerCondition && upperCondition) {
-          return key;
-        }
-      }
-    }
-    return "No Level Matched";
-  }
 
   // Processing themes and criteria
   chartObjectsArray.forEach((chartObject,index) => {
@@ -888,7 +842,7 @@ async function generateChartObjectForRubric(chartObjectsArray) {
         dataSetsMap[themeLevel] = {
           label: themeLevel,
           data: new Array(themeArray.length).fill(0),
-          backgroundColor: getColorForLevel(themeLevel),
+          backgroundColor: gen.utils.getColorForLevel(themeLevel),
         };
       }
     
@@ -908,20 +862,41 @@ async function generateChartObjectForRubric(chartObjectsArray) {
 }
 
 /**
- * Generate getting chart color code.
+ * Helper function to evaluate rubric levels based on score
  * @method
- * @name getColorForLevel
- * @param {String} level     - Domain Levels.
- * @returns {String}         -Color code for a chart
+ * @name getLevelFromRubric
+ * @param {Object} rubric     - Domain Levels.
+ * @param {String} score      - AvergaeScore of domain level
+ * @param {Boolean} returnMultiple 
+ * @returns {String}         -Domain Level
  */
-function getColorForLevel(level) {
-  let colors = {
-    L1: 'rgb(255, 99, 132)',
-    L2: 'rgb(54, 162, 235)',
-    L3: 'rgb(255, 206, 86)',
-    L4: 'rgb(75, 192, 192)',
-  };
-  return colors[level] || 'rgb(201, 203, 207)';
+function getLevelFromRubric(rubric, score, returnMultiple = false) {
+  let matchingLevels = [];
+
+  for (let key in rubric.levels || rubric.rubricLevels) {
+    let expression = rubric.levels ? rubric.levels[key].expression : rubric.rubricLevels[key].expression;
+    let rangeMatch = expression.match(/(?:\(|\s*)(\d+)\s*([<]=?)\s*SCORE\s*([<]=?)\s*(\d+)(?:\)|\s*)/);
+
+    if (rangeMatch) {
+      let lowerBound = parseFloat(rangeMatch[1]);
+      let lowerOperator = rangeMatch[2];
+      let upperOperator = rangeMatch[3];
+      let upperBound = parseFloat(rangeMatch[4]);
+
+      let lowerCondition = lowerOperator === "<=" ? lowerBound <= score : lowerBound < score;
+      let upperCondition = upperOperator === "<=" ? score <= upperBound : score < upperBound;
+
+      if (lowerCondition && upperCondition) {
+        if (returnMultiple) {
+          matchingLevels.push(key); 
+        } else {
+          return key;  
+        }
+      }
+    } 
+  }
+
+  return returnMultiple ? matchingLevels : "No Level Matched";
 }
 
 /**
@@ -1005,3 +980,5 @@ async function generateExpansionChartObject(chartObjectsArray) {
 
   return chartData;
 }
+
+
