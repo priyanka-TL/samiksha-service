@@ -56,8 +56,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
           success: true,
         };
 
-        // console.log(err,data,'<-err,data->')
-
         if (err) {
           result.success = false;
         } else {
