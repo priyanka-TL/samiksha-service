@@ -719,12 +719,11 @@ exports.generateObservationReportForRubricWithoutDruid = async function (data) {
 
 async function generateDomainLevelObject(submissionData) {
   const domainLevelObject = {};
-
   submissionData.forEach((data) => {
-    data.themes.forEach((eachDomain) => {
+    data.themes.map((eachDomain) => {
+      let level = eachDomain.pointsBasedLevel;
       let completedDate = data.completedDate;
       let domainName = eachDomain.name;
-
       // Ensure the domainName exists in the object
       if (!domainLevelObject[domainName]) {
         domainLevelObject[domainName] = {};
@@ -735,37 +734,7 @@ async function generateDomainLevelObject(submissionData) {
         domainLevelObject[domainName][completedDate] = {};
       }
 
-      // Extract criteria scores and count for average calculation
-      let totalScore = 0;
-      let criteriaCount = 0;
-
-      eachDomain.criteria.forEach((themeCriteria) => {
-        let matchingCriteria = data.criteria.find(
-          (criteria) => criteria.parentCriteriaId.toString() === themeCriteria.criteriaId.toString()
-        );
-
-        if (matchingCriteria) {
-          totalScore += matchingCriteria.pointsBasedScoreOfAllChildren || 0;
-          criteriaCount++;
-        }
-      });
-
-      // Calculate average score
-      let averageScore = criteriaCount > 0 ? totalScore / criteriaCount : totalScore;
-
-      // Determine the level based on the theme rubric using the average score
-      let level = "No Level Matched";
-      const rubricLevels = eachDomain.rubric.levels;
-      let matchingLevels = [];
-
-      matchingLevels = getLevelFromRubric(eachDomain.rubric, averageScore,true);
-
-      // Select the highest matching level if there are multiple matches
-      if (matchingLevels.length > 0) {
-        level = matchingLevels.sort().pop(); // Get the highest level based on sorting
-      }
-
-      // Ensure the level exists under the completedDate and set it to 1 or increment
+      // Ensure the level exists under the completedDate and set it to 1
       if (!domainLevelObject[domainName][completedDate][level]) {
         domainLevelObject[domainName][completedDate][level] = 1;
       } else {
@@ -773,7 +742,6 @@ async function generateDomainLevelObject(submissionData) {
       }
     });
   });
-
   return domainLevelObject;
 }
 
@@ -786,7 +754,8 @@ async function generateDomainLevelObject(submissionData) {
  */
 
 async function generateChartObjectForRubric(chartObjectsArray) {
-  
+  // Create the initial structure of the horizontal chartData object
+
   const chartOptions = {
     type: 'horizontalBar',
     title: '',
@@ -821,11 +790,10 @@ async function generateChartObjectForRubric(chartObjectsArray) {
       },
     },
   };
-
   let themeArray = [];
   let dataSetsMap = {};
 
-  // Points mapping based on level (L1 -> 1, L2 -> 2, etc.)
+  // Points mapping based on level (L1 -> 1, L2 -> 2.)
   const pointsMapping = {
     L1: 1,
     L2: 2,
@@ -833,63 +801,48 @@ async function generateChartObjectForRubric(chartObjectsArray) {
     L4: 4,
   };
 
-  // Processing themes and criteria
-  chartObjectsArray.forEach((chartObject,index) => {
+  // Loop through each chartObject in the array
+  chartObjectsArray.forEach((chartObject) => {
     chartObject.themes.forEach((eachDomain) => {
       const themeName = eachDomain.name;
-      let totalThemeScore = 0;
-      let criteriaCount = 0; // Counter for criteria to calculate average
-    
-      eachDomain.criteria.forEach((themeCriteria) => {
-        let criteriaObj = chartObject.criteria.find(
-          (c) => c.parentCriteriaId.toString() === themeCriteria.criteriaId.toString()
-        );
-    
-        if (criteriaObj) {
-          totalThemeScore += criteriaObj.pointsBasedScoreOfAllChildren || 0;
-          criteriaCount++; // Increment counter for each valid criteria
-        }
-      });
-    
-      // Calculate the average theme score if criteria exist
-      let averageThemeScore = criteriaCount > 0 ? totalThemeScore / criteriaCount : totalScore;
-    
-      // Get theme level using rubric evaluation based on average score
-      let themeLevel = getLevelFromRubric(eachDomain.rubric, averageThemeScore);
-      let themePointsValue = pointsMapping[themeLevel] || "No Level Matched";
-      // Add theme if not already in the array
+
+      // If themeName is not already in themeArray, add it
       if (!themeArray.includes(themeName)) {
         themeArray.push(themeName);
-    
+
         for (let key in dataSetsMap) {
           dataSetsMap[key].data.push(0);
         }
       }
-    
-      // Initialize theme dataset if it doesn't exist
-      if (!dataSetsMap[themeLevel]) {
-        dataSetsMap[themeLevel] = {
-          label: themeLevel,
+
+      // Find the points value for the current domain's level
+      let pointsValue = pointsMapping[eachDomain.pointsBasedLevel] || 1;
+
+      // If there's no dataset for this points level, create it
+      if (!dataSetsMap[eachDomain.pointsBasedLevel]) {
+        dataSetsMap[eachDomain.pointsBasedLevel] = {
+          label: eachDomain.pointsBasedLevel,
           data: new Array(themeArray.length).fill(0),
-          backgroundColor: gen.utils.getColorForLevel(themeLevel),
+          backgroundColor: gen.utils.getColorForLevel(eachDomain.pointsBasedLevel),
         };
       }
-    
-      // Set the score for the theme
+
+      // Find the index of the current themeName
       const themeIndex = themeArray.indexOf(themeName);
-      dataSetsMap[themeLevel].data[themeIndex] = themePointsValue;
+
+      // Update the corresponding data in the dataset for this points level
+      dataSetsMap[eachDomain.pointsBasedLevel].data[themeIndex] = pointsValue;
     });
-    
   });
 
   let dataSetsArray = Object.values(dataSetsMap);
+
   chartOptions['data'] = {
-    labels: [...themeArray],
+    labels: themeArray,
     datasets: dataSetsArray,
   };
   return chartOptions;
 }
-
 /**
  * Helper function to evaluate rubric levels based on score
  * @method
