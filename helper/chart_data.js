@@ -736,7 +736,13 @@ function groupDataByEntityId(array, name) {
 
     return dataArray;
   }
-
+/**
+ * Replaces values in the item object with corresponding labels from options.
+ * @method
+ * @name replaceWithLabelsOptimizedForObject
+ * @param {Object} item - The item object containing responseType, options, answers, and chart data.
+ * @returns {Object} - The modified item object with values replaced by labels.
+ */
   function replaceWithLabelsOptimizedForObject(item) {
 
       if (item.responseType == 'multiselect' || item.responseType == 'radio') {
