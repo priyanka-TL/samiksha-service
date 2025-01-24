@@ -168,11 +168,27 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
 
   formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
 
+  for (let k = 0; k < formattedCombinedAnswerArr.length; k++) {
+    if (formattedCombinedAnswerArr[k].responseType == 'matrix') {
+      let answers = formattedCombinedAnswerArr[k].answers;
+      for (let i = 0; i < answers.length; i++) {
+        let answerObject = answers[i];
+        for (let key in answerObject) {
+          if (answerObject[key].responseType == 'multiselect' || answerObject[key].responseType == 'radio') {
+            answerObject[key] = replaceWithLabelsOptimizedForObject(answerObject[key]);
+          }
+        }
+        answers[i] = answerObject;
+      }
+      formattedCombinedAnswerArr[k].answers = answers;
+    }
+  }
+
   if (criteriaWise) {
     formattedCombinedAnswerArr = await createCriteriaWiseReport(formattedCombinedAnswerArr);
   }
 
-  return formattedCombinedAnswerArr;
+ return formattedCombinedAnswerArr;
 }
 
 /**
@@ -263,6 +279,47 @@ async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr,chart
       const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(questionInstance.criteriaId));
 
       await updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo,chartType);
+
+      if(questionInstance.responseType == 'matrix'){
+
+        let value = questionInstance.value;
+
+        for(let matrixAnswerObj of value){
+
+          for(let qid in matrixAnswerObj){
+            let currentAnswerInstance = matrixAnswerObj[qid]
+            const evidence = await processFileEvidences(currentAnswerInstance.fileName, currentAnswerInstance.submissionId);
+            const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(currentAnswerInstance.qid));
+            const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(currentAnswerInstance.criteriaId));
+
+              //this change done to address multiselect response appearing in array in instance chart which is not required
+               let answer = [currentAnswerInstance.value];
+              if(chartType == 'instance' && currentAnswerInstance.responseType == 'multiselect'){
+                answer  = Array.isArray(currentAnswerInstance.value) ? currentAnswerInstance.value : [currentAnswerInstance.value];  
+              } 
+
+              matrixAnswerObj[qid] = {
+                qid: currentAnswerInstance.qid,
+                order: questionRecordSingleElement.externalId,
+                question: currentAnswerInstance.payload.question[0],
+                responseType: currentAnswerInstance.responseType,
+                answers: answer,
+                chart: {},
+                instanceQuestions: [],
+                options: questionRecordSingleElement.options,
+                criteriaName: criteriaInfo.name,
+                criteriaId: currentAnswerInstance.criteriaId,
+                evidences: evidence
+              };
+
+
+          }
+
+        }
+
+      }
+
+
     }
   }
 
@@ -680,6 +737,38 @@ function groupDataByEntityId(array, name) {
     return dataArray;
   }
 
+  function replaceWithLabelsOptimizedForObject(item) {
+
+      if (item.responseType == 'multiselect' || item.responseType == 'radio') {
+        const options = item.options;
+
+        // Create a lookup dictionary for quick access
+        const lookup = options.reduce((acc, option) => {
+          acc[option.value] = option.label;
+          return acc;
+        }, {});
+
+        // Replace values in answers array
+        item.answers = item.answers.map((answer) => {
+          if (Array.isArray(answer)) {
+            return answer.map((value) => lookup[value] || value);
+          } else {
+            return lookup[answer] || answer;
+          }
+        });
+
+        // Replace values in data.labels array
+
+        if(item.chart.data){
+          item.chart.data.labels = item.chart.data.labels.map((label) => lookup[label] || label);
+        }
+
+
+      }
+
+      return item;
+
+  }
   /**
  * Get observation with rubric reports.
  * @method
