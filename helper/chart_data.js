@@ -25,10 +25,13 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
 
   let newReport = [];
 
+  //To store the unAnswered child questions
+  let notAnsweredArray=[]
+
   for (let key in answers) {
     let answerInstanceObj = answers[key];
     let evidences = [];
-
+    
     let fileName = answerInstanceObj.fileName;
 
     if (fileName && fileName.length > 0) {
@@ -93,9 +96,23 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         questionNumber:answerInstanceObj.questionNumber,
       };
     } else {
+        // get the child questions id if its exists
+        let questionDocuments = await database.models.questions.find({_id:new ObjectId(key)}, ["children"]).lean();
+        //if child questions present
+        if(questionDocuments[0].children && questionDocuments[0].children.length>0){
+           let childQuestions = questionDocuments[0].children
+           // Check in answers array for child questions has values or answers
+           let notAnsweredChildQuestions= childQuestions.filter(child=> !(answers[child.toString()].value))
+           //if not push it to unansweredQuestionns
+           notAnsweredArray.push(...notAnsweredChildQuestions)
+        }
+        // check if child questions not answered then ignore that answer for report
+        let filterAnswer=notAnsweredArray.some(id => id.toString() === key.toString())
+        if (filterAnswer) {
+          continue;
+      }
+     
       let valueKey = Array.isArray(answerInstanceObj.value) ? answerInstanceObj.value : [answerInstanceObj.value];
-
-      
       newObj = {
         order: answerInstanceObj.externalId,
         question: answerInstanceObj.question[0],
