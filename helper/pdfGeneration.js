@@ -1431,7 +1431,7 @@ const getAssessmentChartData = async function (assessmentData,submissionId="") {
       datasets.push({
         label: level,
         data: levelCountObject[level],
-        backgroundColor: backgroundColors[incrementor],
+        backgroundColor: gen.utils.getColorForLevel(level),
       });
       incrementor++;
     }
