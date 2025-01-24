@@ -97,7 +97,9 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
       };
     } else {
         // get the child questions id if its exists
-        let questionDocuments = await database.models.questions.find({_id:new ObjectId(key)}, ["children"]).lean();
+        let questionDocuments = await await questionsHelper.questionDocument({
+          _id: new ObjectId(key),
+        },["children"]);
         //if child questions present
         if(questionDocuments[0].children && questionDocuments[0].children.length>0){
            let childQuestions = questionDocuments[0].children
