@@ -167,20 +167,20 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
   }
 
   formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
-
-  for (let k = 0; k < formattedCombinedAnswerArr.length; k++) {
-    if (formattedCombinedAnswerArr[k].responseType == 'matrix') {
-      let answers = formattedCombinedAnswerArr[k].answers;
-      for (let i = 0; i < answers.length; i++) {
-        let answerObject = answers[i];
-        for (let key in answerObject) {
-          if (answerObject[key].responseType == 'multiselect' || answerObject[key].responseType == 'radio') {
-            answerObject[key] = replaceWithLabelsOptimizedForObject(answerObject[key]);
+  // replacing label for matrix type answers which are inside the array
+  for (let answerIndex = 0; answerIndex < formattedCombinedAnswerArr.length; answerIndex++) {
+    if (formattedCombinedAnswerArr[answerIndex].responseType == 'matrix') {
+      let answers = formattedCombinedAnswerArr[answerIndex].answers;
+      for (let answerInstance = 0; answerInstance < answers.length; answerInstance++) {
+        let answerObject = answers[answerInstance];
+        for (let questionId in answerObject) {
+          if (answerObject[questionId].responseType == 'multiselect' || answerObject[questionId].responseType == 'radio') {
+            answerObject[questionId] = replaceWithLabelsOptimizedForObject(answerObject[questionId]);
           }
         }
-        answers[i] = answerObject;
+        answers[answerInstance] = answerObject;
       }
-      formattedCombinedAnswerArr[k].answers = answers;
+      formattedCombinedAnswerArr[answerIndex].answers = answers;
     }
   }
 

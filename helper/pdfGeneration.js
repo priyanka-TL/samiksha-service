@@ -340,6 +340,9 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
             
             instaRes.response = instaRes.response ? instaRes.response : instaRes.reportSections;
 
+            //loop the response and store multiselect and radio questions of matrix type
+            //this was not handled previously 
+            //they are pushed in the array to create chart object
             await Promise.all(instaRes.response.map(async ele => {
                 if (ele.responseType == "matrix") {
                     await Promise.all(ele.instanceQuestions.map(element => {
