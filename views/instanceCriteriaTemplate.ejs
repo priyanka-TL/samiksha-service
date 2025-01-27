@@ -5,32 +5,100 @@
 </head>
 
 <body>
-  <% var response= data.response; %>
-  <% for (var i=0;i < response.length; i++){ %>
-  <h2 style="margin-left:32px"><%= response[i].criteriaName %></h2>
-  <% for (var j=0;j < response[i].questionArray.length; j++){  %>
-  <% if(response[i].questionArray[j].responseType == 'text' || response[i].questionArray[j].responseType == 'date' || response[i].questionArray[j].responseType == 'number' || response[i].questionArray[j].responseType == 'slider' || response[i].questionArray[j].responseType == 'radio' || response[i].questionArray[j].responseType == 'multiselect'){ %>
+  <% var response = data.response; %>
+
+  <% for (var i = 0; i < response.length; i++) { %>
+    <h2 style="margin-left:32px"><%= response[i].criteriaName %></h2>
+    
+    <% for (var j = 0; j < response[i].questionArray.length; j++) { %>
+      <% var questionData = response[i].questionArray[j]; %>
+      <% var responseType = questionData.responseType; %>
   
-  <div class="container" style="padding:20px;margin:20px">
-    <div style="border: solid 1px rgb(182, 175, 175)">
-      <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%= response[i].questionArray[j].question %>
-      </h3>
-      <% for(var k=0; k < response[i].questionArray[j].answers.length; k++) { %>
-      <div class="row" style="padding: 10px;padding-left:10px">
-        <div class="col-sm-12" style="font-size: 18px;">
-          <%= response[i].questionArray[j].answers[k] %>
+      <% if (
+        responseType === "text" ||
+        responseType === "date" ||
+        responseType === "number" ||
+        responseType === "slider" ||
+        responseType === "radio" ||
+        responseType === "multiselect"
+      ) { %>
+  
+        <div class="container" style="padding:20px;margin:20px">
+          <div style="border: solid 1px rgb(182, 175, 175)">
+            <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px">
+              <%= questionData.question %>
+            </h3>
+            <% for (var k = 0; k < questionData.answers.length; k++) { %>
+              <div class="row" style="padding: 10px;padding-left:10px">
+                <div class="col-sm-12" style="font-size: 18px;">
+                  <%= questionData.answers[k] %>
+                </div>
+              </div>
+            <% } %>
+          </div>
         </div>
-      </div>
+  
+      <% } else if (responseType === "matrix") { %>
+        <% var matrixResponse = questionData.answers; %>
+        <div class="container" style="padding:20px;margin:10px">
+          <div style="border: solid 1px rgb(182, 175, 175)">
+            <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px">
+              <%= questionData.question %>
+            </h3>
+  
+            <% var instanceCounter = 1; %>
+            <% for (var k = 0; k < matrixResponse.length; k++) { %>
+              <% var matrixData = matrixResponse[k]; %>
+              <h4 style="padding-left: 10px;">Instance Number: <%= instanceCounter++ %></h4>
+  
+              <% for (let answer in matrixData) { %>
+                <% if (
+                  matrixData[answer].responseType === "text" ||
+                  matrixData[answer].responseType === "date" ||
+                  matrixData[answer].responseType === "number" ||
+                  matrixData[answer].responseType === "slider"
+                ) { %>
+                  <div class="container" style="padding:20px;margin:20px">
+                    <div style="border: solid 1px rgb(182, 175, 175);max-width:800px;">
+                      <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px">
+                        <%= matrixData[answer].question %>
+                      </h3>
+                      <% for (var m = 0; m < matrixData[answer].answers.length; m++) { %>
+                        <div class="row" style="padding: 10px;padding-left:10px">
+                          <div class="col-sm-12" style="font-size: 18px;">
+                            <%= matrixData[answer].answers[m] %>
+                          </div>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                <% } else if (
+                  matrixData[answer].responseType === "radio" ||
+                  matrixData[answer].responseType === "multiselect"
+                ) { %>
+                  <div class="container" style="padding:20px;margin:20px;">
+                    <div style="border: solid 1px rgb(182, 175, 175);max-width:800px;">
+                      <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px">
+                        <%= matrixData[answer].question %>
+                      </h3>
+                      <% for (var n = 0; n < matrixData[answer].answers.length; n++) { %>
+                        <div class="row" style="padding: 10px;padding-left:10px">
+                          <div class="col-sm-12" style="font-size: 18px;">
+                            <p><%= matrixData[answer].answers[n] %></p>
+                          </div>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                <% } %>
+              <% } %>
+            <% } %>
+          </div>
+        </div>
       <% } %>
-    </div>
-  </div>
-
+    <% } %>
   <% } %>
-
-  <% } %>
-
-  <% } %>
-
+  
 
 </body>
 

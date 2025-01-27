@@ -186,12 +186,28 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
   }
 
   formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
+  // replacing label for matrix type answers which are inside the array
+  for (let answerIndex = 0; answerIndex < formattedCombinedAnswerArr.length; answerIndex++) {
+    if (formattedCombinedAnswerArr[answerIndex].responseType == 'matrix') {
+      let answers = formattedCombinedAnswerArr[answerIndex].answers;
+      for (let answerInstance = 0; answerInstance < answers.length; answerInstance++) {
+        let answerObject = answers[answerInstance];
+        for (let questionId in answerObject) {
+          if (answerObject[questionId].responseType == 'multiselect' || answerObject[questionId].responseType == 'radio') {
+            answerObject[questionId] = replaceWithLabelsOptimizedForObject(answerObject[questionId]);
+          }
+        }
+        answers[answerInstance] = answerObject;
+      }
+      formattedCombinedAnswerArr[answerIndex].answers = answers;
+    }
+  }
 
   if (criteriaWise) {
     formattedCombinedAnswerArr = await createCriteriaWiseReport(formattedCombinedAnswerArr);
   }
 
-  return formattedCombinedAnswerArr;
+ return formattedCombinedAnswerArr;
 }
 
 /**
@@ -282,6 +298,47 @@ async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr,chart
       const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(questionInstance.criteriaId));
 
       await updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo,chartType);
+
+      if(questionInstance.responseType == 'matrix'){
+
+        let value = questionInstance.value;
+
+        for(let matrixAnswerObj of value){
+
+          for(let qid in matrixAnswerObj){
+            let currentAnswerInstance = matrixAnswerObj[qid]
+            const evidence = await processFileEvidences(currentAnswerInstance.fileName, currentAnswerInstance.submissionId);
+            const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(currentAnswerInstance.qid));
+            const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(currentAnswerInstance.criteriaId));
+
+              //this change done to address multiselect response appearing in array in instance chart which is not required
+               let answer = [currentAnswerInstance.value];
+              if(chartType == 'instance' && currentAnswerInstance.responseType == 'multiselect'){
+                answer  = Array.isArray(currentAnswerInstance.value) ? currentAnswerInstance.value : [currentAnswerInstance.value];  
+              } 
+
+              matrixAnswerObj[qid] = {
+                qid: currentAnswerInstance.qid,
+                order: questionRecordSingleElement.externalId,
+                question: currentAnswerInstance.payload.question[0],
+                responseType: currentAnswerInstance.responseType,
+                answers: answer,
+                chart: {},
+                instanceQuestions: [],
+                options: questionRecordSingleElement.options,
+                criteriaName: criteriaInfo.name,
+                criteriaId: currentAnswerInstance.criteriaId,
+                evidences: evidence
+              };
+
+
+          }
+
+        }
+
+      }
+
+
     }
   }
 
@@ -698,7 +755,45 @@ function groupDataByEntityId(array, name) {
 
     return dataArray;
   }
+/**
+ * Replaces values in the item object with corresponding labels from options.
+ * @method
+ * @name replaceWithLabelsOptimizedForObject
+ * @param {Object} item - The item object containing responseType, options, answers, and chart data.
+ * @returns {Object} - The modified item object with values replaced by labels.
+ */
+  function replaceWithLabelsOptimizedForObject(item) {
 
+      if (item.responseType == 'multiselect' || item.responseType == 'radio') {
+        const options = item.options;
+
+        // Create a lookup dictionary for quick access
+        const lookup = options.reduce((acc, option) => {
+          acc[option.value] = option.label;
+          return acc;
+        }, {});
+
+        // Replace values in answers array
+        item.answers = item.answers.map((answer) => {
+          if (Array.isArray(answer)) {
+            return answer.map((value) => lookup[value] || value);
+          } else {
+            return lookup[answer] || answer;
+          }
+        });
+
+        // Replace values in data.labels array
+
+        if(item.chart.data){
+          item.chart.data.labels = item.chart.data.labels.map((label) => lookup[label] || label);
+        }
+
+
+      }
+
+      return item;
+
+  }
   /**
  * Get observation with rubric reports.
  * @method
