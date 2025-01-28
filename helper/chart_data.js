@@ -188,8 +188,24 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
   formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
   // replacing label for matrix type answers which are inside the array
   for (let answerIndex = 0; answerIndex < formattedCombinedAnswerArr.length; answerIndex++) {
+
     if (formattedCombinedAnswerArr[answerIndex].responseType == 'matrix') {
+
+      let qid = formattedCombinedAnswerArr[answerIndex].qid;
+  
+      let questionRecordArr = await questionsHelper.questionDocument({
+        _id: qid,
+      });
+  
+      let questionRecord = questionRecordArr[0];
+  
+      let instanceIdentifier = questionRecord.instanceIdentifier;
+
+      formattedCombinedAnswerArr[answerIndex].instanceIdentifier = instanceIdentifier;
+      
       let answers = formattedCombinedAnswerArr[answerIndex].answers;
+
+      let indentifierCount = 1;
       for (let answerInstance = 0; answerInstance < answers.length; answerInstance++) {
         let answerObject = answers[answerInstance];
         for (let questionId in answerObject) {
@@ -198,6 +214,9 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
           }
         }
         answers[answerInstance] = answerObject;
+        answers[answerInstance]['instanceIdentifier'] = instanceIdentifier + ' ' + indentifierCount;
+
+        indentifierCount++;
       }
       formattedCombinedAnswerArr[answerIndex].answers = answers;
     }
