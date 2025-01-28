@@ -25,10 +25,13 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
 
   let newReport = [];
 
+  //To store the unAnswered child questions
+  let notAnsweredArray=[]
+
   for (let key in answers) {
     let answerInstanceObj = answers[key];
     let evidences = [];
-
+    
     let fileName = answerInstanceObj.fileName;
 
     if (fileName && fileName.length > 0) {
@@ -93,9 +96,25 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         questionNumber:answerInstanceObj.questionNumber,
       };
     } else {
+        // get the child questions id if its exists
+        let questionDocuments = await await questionsHelper.questionDocument({
+          _id: new ObjectId(key),
+        },["children"]);
+        //if child questions present
+        if(questionDocuments[0].children && questionDocuments[0].children.length>0){
+           let childQuestions = questionDocuments[0].children
+           // Check in answers array for child questions has values or answers
+           let notAnsweredChildQuestions= childQuestions.filter(child=> !(answers[child.toString()].value))
+           //if not push it to unansweredQuestionns
+           notAnsweredArray.push(...notAnsweredChildQuestions)
+        }
+        // check if child questions not answered then ignore that answer for report
+        let filterAnswer=notAnsweredArray.some(id => id.toString() === key.toString())
+        if (filterAnswer) {
+          continue;
+      }
+     
       let valueKey = Array.isArray(answerInstanceObj.value) ? answerInstanceObj.value : [answerInstanceObj.value];
-
-      
       newObj = {
         order: answerInstanceObj.externalId,
         question: answerInstanceObj.question[0],
@@ -167,12 +186,28 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
   }
 
   formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
+  // replacing label for matrix type answers which are inside the array
+  for (let answerIndex = 0; answerIndex < formattedCombinedAnswerArr.length; answerIndex++) {
+    if (formattedCombinedAnswerArr[answerIndex].responseType == 'matrix') {
+      let answers = formattedCombinedAnswerArr[answerIndex].answers;
+      for (let answerInstance = 0; answerInstance < answers.length; answerInstance++) {
+        let answerObject = answers[answerInstance];
+        for (let questionId in answerObject) {
+          if (answerObject[questionId].responseType == 'multiselect' || answerObject[questionId].responseType == 'radio') {
+            answerObject[questionId] = replaceWithLabelsOptimizedForObject(answerObject[questionId]);
+          }
+        }
+        answers[answerInstance] = answerObject;
+      }
+      formattedCombinedAnswerArr[answerIndex].answers = answers;
+    }
+  }
 
   if (criteriaWise) {
     formattedCombinedAnswerArr = await createCriteriaWiseReport(formattedCombinedAnswerArr);
   }
 
-  return formattedCombinedAnswerArr;
+ return formattedCombinedAnswerArr;
 }
 
 /**
@@ -263,6 +298,47 @@ async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr,chart
       const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(questionInstance.criteriaId));
 
       await updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo,chartType);
+
+      if(questionInstance.responseType == 'matrix'){
+
+        let value = questionInstance.value;
+
+        for(let matrixAnswerObj of value){
+
+          for(let qid in matrixAnswerObj){
+            let currentAnswerInstance = matrixAnswerObj[qid]
+            const evidence = await processFileEvidences(currentAnswerInstance.fileName, currentAnswerInstance.submissionId);
+            const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(currentAnswerInstance.qid));
+            const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(currentAnswerInstance.criteriaId));
+
+              //this change done to address multiselect response appearing in array in instance chart which is not required
+               let answer = [currentAnswerInstance.value];
+              if(chartType == 'instance' && currentAnswerInstance.responseType == 'multiselect'){
+                answer  = Array.isArray(currentAnswerInstance.value) ? currentAnswerInstance.value : [currentAnswerInstance.value];  
+              } 
+
+              matrixAnswerObj[qid] = {
+                qid: currentAnswerInstance.qid,
+                order: questionRecordSingleElement.externalId,
+                question: currentAnswerInstance.payload.question[0],
+                responseType: currentAnswerInstance.responseType,
+                answers: answer,
+                chart: {},
+                instanceQuestions: [],
+                options: questionRecordSingleElement.options,
+                criteriaName: criteriaInfo.name,
+                criteriaId: currentAnswerInstance.criteriaId,
+                evidences: evidence
+              };
+
+
+          }
+
+        }
+
+      }
+
+
     }
   }
 
@@ -679,7 +755,45 @@ function groupDataByEntityId(array, name) {
 
     return dataArray;
   }
+/**
+ * Replaces values in the item object with corresponding labels from options.
+ * @method
+ * @name replaceWithLabelsOptimizedForObject
+ * @param {Object} item - The item object containing responseType, options, answers, and chart data.
+ * @returns {Object} - The modified item object with values replaced by labels.
+ */
+  function replaceWithLabelsOptimizedForObject(item) {
 
+      if (item.responseType == 'multiselect' || item.responseType == 'radio') {
+        const options = item.options;
+
+        // Create a lookup dictionary for quick access
+        const lookup = options.reduce((acc, option) => {
+          acc[option.value] = option.label;
+          return acc;
+        }, {});
+
+        // Replace values in answers array
+        item.answers = item.answers.map((answer) => {
+          if (Array.isArray(answer)) {
+            return answer.map((value) => lookup[value] || value);
+          } else {
+            return lookup[answer] || answer;
+          }
+        });
+
+        // Replace values in data.labels array
+
+        if(item.chart.data){
+          item.chart.data.labels = item.chart.data.labels.map((label) => lookup[label] || label);
+        }
+
+
+      }
+
+      return item;
+
+  }
   /**
  * Get observation with rubric reports.
  * @method
@@ -719,12 +833,11 @@ exports.generateObservationReportForRubricWithoutDruid = async function (data) {
 
 async function generateDomainLevelObject(submissionData) {
   const domainLevelObject = {};
-
   submissionData.forEach((data) => {
-    data.themes.forEach((eachDomain) => {
+    data.themes.map((eachDomain) => {
+      let level = eachDomain.pointsBasedLevel;
       let completedDate = data.completedDate;
       let domainName = eachDomain.name;
-
       // Ensure the domainName exists in the object
       if (!domainLevelObject[domainName]) {
         domainLevelObject[domainName] = {};
@@ -735,37 +848,7 @@ async function generateDomainLevelObject(submissionData) {
         domainLevelObject[domainName][completedDate] = {};
       }
 
-      // Extract criteria scores and count for average calculation
-      let totalScore = 0;
-      let criteriaCount = 0;
-
-      eachDomain.criteria.forEach((themeCriteria) => {
-        let matchingCriteria = data.criteria.find(
-          (criteria) => criteria.parentCriteriaId.toString() === themeCriteria.criteriaId.toString()
-        );
-
-        if (matchingCriteria) {
-          totalScore += matchingCriteria.pointsBasedScoreOfAllChildren || 0;
-          criteriaCount++;
-        }
-      });
-
-      // Calculate average score
-      let averageScore = criteriaCount > 0 ? totalScore / criteriaCount : totalScore;
-
-      // Determine the level based on the theme rubric using the average score
-      let level = "No Level Matched";
-      const rubricLevels = eachDomain.rubric.levels;
-      let matchingLevels = [];
-
-      matchingLevels = getLevelFromRubric(eachDomain.rubric, averageScore,true);
-
-      // Select the highest matching level if there are multiple matches
-      if (matchingLevels.length > 0) {
-        level = matchingLevels.sort().pop(); // Get the highest level based on sorting
-      }
-
-      // Ensure the level exists under the completedDate and set it to 1 or increment
+      // Ensure the level exists under the completedDate and set it to 1
       if (!domainLevelObject[domainName][completedDate][level]) {
         domainLevelObject[domainName][completedDate][level] = 1;
       } else {
@@ -773,7 +856,6 @@ async function generateDomainLevelObject(submissionData) {
       }
     });
   });
-
   return domainLevelObject;
 }
 
@@ -786,7 +868,8 @@ async function generateDomainLevelObject(submissionData) {
  */
 
 async function generateChartObjectForRubric(chartObjectsArray) {
-  
+  // Create the initial structure of the horizontal chartData object
+
   const chartOptions = {
     type: 'horizontalBar',
     title: '',
@@ -821,11 +904,10 @@ async function generateChartObjectForRubric(chartObjectsArray) {
       },
     },
   };
-
   let themeArray = [];
   let dataSetsMap = {};
 
-  // Points mapping based on level (L1 -> 1, L2 -> 2, etc.)
+  // Points mapping based on level (L1 -> 1, L2 -> 2.)
   const pointsMapping = {
     L1: 1,
     L2: 2,
@@ -833,63 +915,48 @@ async function generateChartObjectForRubric(chartObjectsArray) {
     L4: 4,
   };
 
-  // Processing themes and criteria
-  chartObjectsArray.forEach((chartObject,index) => {
+  // Loop through each chartObject in the array
+  chartObjectsArray.forEach((chartObject) => {
     chartObject.themes.forEach((eachDomain) => {
       const themeName = eachDomain.name;
-      let totalThemeScore = 0;
-      let criteriaCount = 0; // Counter for criteria to calculate average
-    
-      eachDomain.criteria.forEach((themeCriteria) => {
-        let criteriaObj = chartObject.criteria.find(
-          (c) => c.parentCriteriaId.toString() === themeCriteria.criteriaId.toString()
-        );
-    
-        if (criteriaObj) {
-          totalThemeScore += criteriaObj.pointsBasedScoreOfAllChildren || 0;
-          criteriaCount++; // Increment counter for each valid criteria
-        }
-      });
-    
-      // Calculate the average theme score if criteria exist
-      let averageThemeScore = criteriaCount > 0 ? totalThemeScore / criteriaCount : totalScore;
-    
-      // Get theme level using rubric evaluation based on average score
-      let themeLevel = getLevelFromRubric(eachDomain.rubric, averageThemeScore);
-      let themePointsValue = pointsMapping[themeLevel] || "No Level Matched";
-      // Add theme if not already in the array
+
+      // If themeName is not already in themeArray, add it
       if (!themeArray.includes(themeName)) {
         themeArray.push(themeName);
-    
+
         for (let key in dataSetsMap) {
           dataSetsMap[key].data.push(0);
         }
       }
-    
-      // Initialize theme dataset if it doesn't exist
-      if (!dataSetsMap[themeLevel]) {
-        dataSetsMap[themeLevel] = {
-          label: themeLevel,
+
+      // Find the points value for the current domain's level
+      let pointsValue = pointsMapping[eachDomain.pointsBasedLevel] || 1;
+
+      // If there's no dataset for this points level, create it
+      if (!dataSetsMap[eachDomain.pointsBasedLevel]) {
+        dataSetsMap[eachDomain.pointsBasedLevel] = {
+          label: eachDomain.pointsBasedLevel,
           data: new Array(themeArray.length).fill(0),
-          backgroundColor: gen.utils.getColorForLevel(themeLevel),
+          backgroundColor: gen.utils.getColorForLevel(eachDomain.pointsBasedLevel),
         };
       }
-    
-      // Set the score for the theme
+
+      // Find the index of the current themeName
       const themeIndex = themeArray.indexOf(themeName);
-      dataSetsMap[themeLevel].data[themeIndex] = themePointsValue;
+
+      // Update the corresponding data in the dataset for this points level
+      dataSetsMap[eachDomain.pointsBasedLevel].data[themeIndex] = pointsValue;
     });
-    
   });
 
   let dataSetsArray = Object.values(dataSetsMap);
+
   chartOptions['data'] = {
-    labels: [...themeArray],
+    labels: themeArray,
     datasets: dataSetsArray,
   };
   return chartOptions;
 }
-
 /**
  * Helper function to evaluate rubric levels based on score
  * @method
