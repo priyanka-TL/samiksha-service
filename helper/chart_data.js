@@ -25,10 +25,13 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
 
   let newReport = [];
 
+  //To store the unAnswered child questions
+  let notAnsweredArray=[]
+
   for (let key in answers) {
     let answerInstanceObj = answers[key];
     let evidences = [];
-
+    
     let fileName = answerInstanceObj.fileName;
 
     if (fileName && fileName.length > 0) {
@@ -93,9 +96,25 @@ exports.generateSubmissionReportWithoutDruid = async function (data) {
         questionNumber:answerInstanceObj.questionNumber,
       };
     } else {
+        // get the child questions id if its exists
+        let questionDocuments = await await questionsHelper.questionDocument({
+          _id: new ObjectId(key),
+        },["children"]);
+        //if child questions present
+        if(questionDocuments[0].children && questionDocuments[0].children.length>0){
+           let childQuestions = questionDocuments[0].children
+           // Check in answers array for child questions has values or answers
+           let notAnsweredChildQuestions= childQuestions.filter(child=> !(answers[child.toString()].value))
+           //if not push it to unansweredQuestionns
+           notAnsweredArray.push(...notAnsweredChildQuestions)
+        }
+        // check if child questions not answered then ignore that answer for report
+        let filterAnswer=notAnsweredArray.some(id => id.toString() === key.toString())
+        if (filterAnswer) {
+          continue;
+      }
+     
       let valueKey = Array.isArray(answerInstanceObj.value) ? answerInstanceObj.value : [answerInstanceObj.value];
-
-      
       newObj = {
         order: answerInstanceObj.externalId,
         question: answerInstanceObj.question[0],
@@ -167,12 +186,47 @@ exports.generateObservationReportForNonRubricWithoutDruid = async function (data
   }
 
   formattedCombinedAnswerArr = replaceWithLabelsOptimized(formattedCombinedAnswerArr);
+  // replacing label for matrix type answers which are inside the array
+  for (let answerIndex = 0; answerIndex < formattedCombinedAnswerArr.length; answerIndex++) {
+
+    if (formattedCombinedAnswerArr[answerIndex].responseType == 'matrix') {
+
+      let qid = formattedCombinedAnswerArr[answerIndex].qid;
+  
+      let questionRecordArr = await questionsHelper.questionDocument({
+        _id: qid,
+      });
+  
+      let questionRecord = questionRecordArr[0];
+  
+      let instanceIdentifier = questionRecord.instanceIdentifier;
+
+      formattedCombinedAnswerArr[answerIndex].instanceIdentifier = instanceIdentifier;
+      
+      let answers = formattedCombinedAnswerArr[answerIndex].answers;
+
+      let indentifierCount = 1;
+      for (let answerInstance = 0; answerInstance < answers.length; answerInstance++) {
+        let answerObject = answers[answerInstance];
+        for (let questionId in answerObject) {
+          if (answerObject[questionId].responseType == 'multiselect' || answerObject[questionId].responseType == 'radio') {
+            answerObject[questionId] = replaceWithLabelsOptimizedForObject(answerObject[questionId]);
+          }
+        }
+        answers[answerInstance] = answerObject;
+        answers[answerInstance]['instanceIdentifier'] = instanceIdentifier + ' ' + indentifierCount;
+
+        indentifierCount++;
+      }
+      formattedCombinedAnswerArr[answerIndex].answers = answers;
+    }
+  }
 
   if (criteriaWise) {
     formattedCombinedAnswerArr = await createCriteriaWiseReport(formattedCombinedAnswerArr);
   }
 
-  return formattedCombinedAnswerArr;
+ return formattedCombinedAnswerArr;
 }
 
 /**
@@ -202,10 +256,24 @@ function extractIds(answerArr) {
   const questionRecordsIdArr = new Set();
   const cachedCriteriaIdArr = new Set();
 
-  answerArr.forEach(submissionInstance => {
-    Object.values(submissionInstance).forEach(questionInstance => {
-      questionRecordsIdArr.add(questionInstance.qid);
-      cachedCriteriaIdArr.add(questionInstance.criteriaId);
+  answerArr.forEach((submissionInstance) => {
+    Object.values(submissionInstance).forEach((questionInstance) => {
+      if (questionInstance.responseType == 'matrix') {
+        let valueArr = questionInstance.value;
+
+        for (let eachAnsweredMatrixInstance of valueArr) {
+          Object.values(eachAnsweredMatrixInstance).forEach((eachSubMatrixInstance) => {
+            questionRecordsIdArr.add(eachSubMatrixInstance.qid);
+            cachedCriteriaIdArr.add(eachSubMatrixInstance.criteriaId);
+          });
+        }
+
+        questionRecordsIdArr.add(questionInstance.qid);
+        cachedCriteriaIdArr.add(questionInstance.criteriaId);
+      } else {
+        questionRecordsIdArr.add(questionInstance.qid);
+        cachedCriteriaIdArr.add(questionInstance.criteriaId);
+      }
     });
   });
 
@@ -245,12 +313,51 @@ async function formatAnswers(answerArr, criteriaInfoArr, questionRecordArr,chart
 
   for (const submissionInstance of answerArr) {
     for (const [questionId, questionInstance] of Object.entries(submissionInstance)) {
-      if (questionInstance.responseType === 'matrix') continue;
-
       const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(questionInstance.qid));
       const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(questionInstance.criteriaId));
 
       await updateOrCreateFormattedAnswer(formattedCombinedAnswerArr, questionInstance, questionRecordSingleElement, criteriaInfo,chartType);
+
+      if(questionInstance.responseType == 'matrix'){
+
+        let value = questionInstance.value;
+
+        for(let matrixAnswerObj of value){
+
+          for(let qid in matrixAnswerObj){
+            let currentAnswerInstance = matrixAnswerObj[qid]
+            const evidence = await processFileEvidences(currentAnswerInstance.fileName, currentAnswerInstance.submissionId);
+            const questionRecordSingleElement = questionRecordArr.find(record => record._id.equals(currentAnswerInstance.qid));
+            const criteriaInfo = criteriaInfoArr.find(record => record._id.equals(currentAnswerInstance.criteriaId));
+
+              //this change done to address multiselect response appearing in array in instance chart which is not required
+               let answer = [currentAnswerInstance.value];
+              if(chartType == 'instance' && currentAnswerInstance.responseType == 'multiselect'){
+                answer  = Array.isArray(currentAnswerInstance.value) ? currentAnswerInstance.value : [currentAnswerInstance.value];  
+              } 
+
+              matrixAnswerObj[qid] = {
+                qid: currentAnswerInstance.qid,
+                order: questionRecordSingleElement.externalId,
+                question: currentAnswerInstance.payload.question[0],
+                responseType: currentAnswerInstance.responseType,
+                answers: answer,
+                chart: {},
+                instanceQuestions: [],
+                options: questionRecordSingleElement.options,
+                criteriaName: criteriaInfo.name,
+                criteriaId: currentAnswerInstance.criteriaId,
+                evidences: evidence
+              };
+
+
+          }
+
+        }
+
+      }
+
+
     }
   }
 
@@ -301,7 +408,7 @@ async function createNewFormattedAnswer(questionInstance, questionRecordSingleEl
 
   //this change done to address multiselect response appearing in array in instance chart which is not required
   let answer = [questionInstance.value];
-  if(chartType == 'instance' && questionInstance.responseType == 'multiselect'){
+  if(chartType == 'instance' && questionInstance.responseType == 'multiselect' || questionInstance.responseType == 'matrix'){
      answer  = Array.isArray(questionInstance.value) ? questionInstance.value : [questionInstance.value];  
   }
 
@@ -332,7 +439,10 @@ async function processFileEvidences(fileNames, submissionId) {
   const evidences = [];
   for (const file of fileNames) {
     const sourcePath = await filesCloudHelper.getDownloadableUrl([file.sourcePath]);
-    evidences.push({ ...file, fileUrl: sourcePath.result[0], submissionId });
+    let extension = path.extname(file.sourcePath).split('.').join('');
+    sourcePath.result[0].extension = extension;
+    sourcePath.result[0].url = sourcePath.result[0].previewUrl;
+    evidences.push({ ...file, fileUrl: sourcePath.result[0], submissionId,extension:extension });
   }
   return evidences;
 }
@@ -421,8 +531,25 @@ function groupDataByEntityId(array, name) {
           answerInstance.answers,
           answerInstance.options
         );
+      } else if (answerInstance.responseType == 'matrix') {
+        let answer = answerInstance.answers;
+
+        for (let matrixInstance of answer) {
+          Object.values(matrixInstance).forEach((individualAnswerInstance) => {
+            if (
+              individualAnswerInstance.responseType == 'multiselect' ||
+              individualAnswerInstance.responseType == 'radio'
+            ) {
+              individualAnswerInstance.chart = createChartForObservationWithoutRubric(
+                individualAnswerInstance.responseType,
+                individualAnswerInstance.answers,
+                individualAnswerInstance.options
+              );
+            }
+          });
+        }
       }
-    }
+    }  
 
     return reportData;
   }
@@ -647,7 +774,45 @@ function groupDataByEntityId(array, name) {
 
     return dataArray;
   }
+/**
+ * Replaces values in the item object with corresponding labels from options.
+ * @method
+ * @name replaceWithLabelsOptimizedForObject
+ * @param {Object} item - The item object containing responseType, options, answers, and chart data.
+ * @returns {Object} - The modified item object with values replaced by labels.
+ */
+  function replaceWithLabelsOptimizedForObject(item) {
 
+      if (item.responseType == 'multiselect' || item.responseType == 'radio') {
+        const options = item.options;
+
+        // Create a lookup dictionary for quick access
+        const lookup = options.reduce((acc, option) => {
+          acc[option.value] = option.label;
+          return acc;
+        }, {});
+
+        // Replace values in answers array
+        item.answers = item.answers.map((answer) => {
+          if (Array.isArray(answer)) {
+            return answer.map((value) => lookup[value] || value);
+          } else {
+            return lookup[answer] || answer;
+          }
+        });
+
+        // Replace values in data.labels array
+
+        if(item.chart.data){
+          item.chart.data.labels = item.chart.data.labels.map((label) => lookup[label] || label);
+        }
+
+
+      }
+
+      return item;
+
+  }
   /**
  * Get observation with rubric reports.
  * @method
@@ -684,6 +849,7 @@ exports.generateObservationReportForRubricWithoutDruid = async function (data) {
  * @param {Array} submissionData  - observationSubmissionData.
  * @returns {Object}              - contain  domainLevel data
  */
+
 async function generateDomainLevelObject(submissionData) {
   const domainLevelObject = {};
   submissionData.forEach((data) => {
@@ -719,6 +885,7 @@ async function generateDomainLevelObject(submissionData) {
  * @param {Array} chartObjectsArray     - observationSubmissionData.
  * @returns {Object}                     -  contain horizontal chartOptions
  */
+
 async function generateChartObjectForRubric(chartObjectsArray) {
   // Create the initial structure of the horizontal chartData object
 
@@ -789,7 +956,7 @@ async function generateChartObjectForRubric(chartObjectsArray) {
         dataSetsMap[eachDomain.pointsBasedLevel] = {
           label: eachDomain.pointsBasedLevel,
           data: new Array(themeArray.length).fill(0),
-          backgroundColor: getColorForLevel(eachDomain.pointsBasedLevel),
+          backgroundColor: gen.utils.getColorForLevel(eachDomain.pointsBasedLevel),
         };
       }
 
@@ -809,22 +976,42 @@ async function generateChartObjectForRubric(chartObjectsArray) {
   };
   return chartOptions;
 }
-
 /**
- * Generate getting chart color code.
+ * Helper function to evaluate rubric levels based on score
  * @method
- * @name getColorForLevel
- * @param {String} level     - Domain Levels.
- * @returns {String}         -Color code for a chart
+ * @name getLevelFromRubric
+ * @param {Object} rubric     - Domain Levels.
+ * @param {String} score      - AvergaeScore of domain level
+ * @param {Boolean} returnMultiple 
+ * @returns {String}         -Domain Level
  */
-function getColorForLevel(level) {
-  let colors = {
-    L1: 'rgb(255, 99, 132)',
-    L2: 'rgb(54, 162, 235)',
-    L3: 'rgb(255, 206, 86)',
-    L4: 'rgb(75, 192, 192)',
-  };
-  return colors[level] || 'rgb(201, 203, 207)';
+function getLevelFromRubric(rubric, score, returnMultiple = false) {
+  let matchingLevels = [];
+
+  for (let key in rubric.levels || rubric.rubricLevels) {
+    let expression = rubric.levels ? rubric.levels[key].expression : rubric.rubricLevels[key].expression;
+    let rangeMatch = expression.match(/(?:\(|\s*)(\d+)\s*([<]=?)\s*SCORE\s*([<]=?)\s*(\d+)(?:\)|\s*)/);
+
+    if (rangeMatch) {
+      let lowerBound = parseFloat(rangeMatch[1]);
+      let lowerOperator = rangeMatch[2];
+      let upperOperator = rangeMatch[3];
+      let upperBound = parseFloat(rangeMatch[4]);
+
+      let lowerCondition = lowerOperator === "<=" ? lowerBound <= score : lowerBound < score;
+      let upperCondition = upperOperator === "<=" ? score <= upperBound : score < upperBound;
+
+      if (lowerCondition && upperCondition) {
+        if (returnMultiple) {
+          matchingLevels.push(key); 
+        } else {
+          return key;  
+        }
+      }
+    } 
+  }
+
+  return returnMultiple ? matchingLevels : "No Level Matched";
 }
 
 /**
@@ -883,7 +1070,7 @@ async function generateExpansionChartObject(chartObjectsArray) {
             existingCriteria.levels.push(levelExpandKey[matchedCriteria.score]);
             existingCriteria.levelsWithScores.push({
               level: levelExpandKey[matchedCriteria.score],
-              score: matchedCriteria.scoreAchieved,
+              score: matchedCriteria.pointsBasedScoreOfAllChildren,
             });
           } else {
             // If it's the first occurrence of this criteria, create a new entry
@@ -893,7 +1080,7 @@ async function generateExpansionChartObject(chartObjectsArray) {
               levelsWithScores: [
                 {
                   level: levelExpandKey[matchedCriteria.score],
-                  score: matchedCriteria.scoreAchieved,
+                  score: matchedCriteria.pointsBasedScoreOfAllChildren,
                 },
               ],
             });
@@ -908,3 +1095,5 @@ async function generateExpansionChartObject(chartObjectsArray) {
 
   return chartData;
 }
+
+

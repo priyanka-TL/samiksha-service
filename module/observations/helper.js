@@ -28,7 +28,8 @@ const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const validateEntity = process.env.VALIDATE_ENTITIES;
-
+const validateRole = process.env.VALIDATE_ROLE;
+const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
 /**
  * ObservationsHelper
  * @class
@@ -86,7 +87,7 @@ module.exports = class ObservationsHelper {
     data,
     userId,
     requestingUserAuthToken = '',
-    // programId = ""
+    userRoleAndProfileInformation
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -145,6 +146,16 @@ module.exports = class ObservationsHelper {
           solutionData = solutionData[0];
         }
 
+        if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
+          //validate the user access to create observation
+          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
+          if (!validateUserRole.success) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+            };
+          }
+        }
         let observationData = await this.createObservation(data, userId, solutionData);
 
         return resolve(_.pick(observationData, ['_id', 'name', 'description']));
@@ -1855,9 +1866,7 @@ module.exports = class ObservationsHelper {
             },
             ['_id'],
           );
-
           
-
           if (observationData.length > 0) {
             observationId = observationData[0]._id;
           } else {
@@ -1889,12 +1898,10 @@ module.exports = class ObservationsHelper {
                 let entitiesDocument = await entityManagementService.entityDocuments(
                   filterData
                 );
-
-
                 if(!entitiesDocument.success){
-                  throw new Error({
-                    message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
-                  });
+                  throw new Error(
+                    messageConstants.apiResponses.ENTITIES_NOT_FOUND
+                  );
                  }
                  let entityInfo = entitiesDocument.data[0];
                 solutionData.data['entities'] = [entityInfo._id];
@@ -1904,12 +1911,29 @@ module.exports = class ObservationsHelper {
             }
 
             delete solutionData.data._id;
+            if(validateRole == 'ON' && topLevelEntityType){ 
+              //validate the user access to create observation
+              let validateUserRole = await this.validateUserRole(
+                bodyData,
+                solutionId
+              );
 
-            let observation = await this.create(solutionId, solutionData.data, userId, token);
+              if (!validateUserRole.success) {
+                throw {
+                  status: httpStatusCode.bad_request.status,
+                  message: validateUserRole.message ||
+                    messageConstants.apiResponses
+                      .OBSERVATION_NOT_RELEVENT_FOR_USER,
+                  
+                };
+              }
+           }
+            
+            let observation = await this.create(solutionId, solutionData.data, userId, token,bodyData);
             observationId = observation._id;
           }
         }    
-        let entitiesList = await this.listEntities(observationId);      
+        let entitiesList = await this.listEntities(observationId); 
         let observationData = await this.observationDocuments(
           {
             _id: observationId,
@@ -1964,7 +1988,6 @@ module.exports = class ObservationsHelper {
           },
           ['entities', 'entityType'],
         );
-
         if (!observationDocument[0]) {
           throw {
             message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND,
@@ -1974,7 +1997,7 @@ module.exports = class ObservationsHelper {
         let entities = [];
 
         if (observationDocument[0].entities && observationDocument[0].entities.length > 0) {
-          let entitiesData;
+          let entitiesData=[];
           /*
           If validateEntity is set to ON, a call will be made to the Entity Management
           service to fetch information about the entities.
@@ -1998,11 +2021,11 @@ module.exports = class ObservationsHelper {
               return {"_id":data}
             });
           }
-
           if (!entitiesData.length > 0) {
             throw {
               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
             };
+
           }
 
           for (let pointerToEntities = 0; pointerToEntities < entitiesData.length; pointerToEntities++) {
@@ -2454,12 +2477,11 @@ module.exports = class ObservationsHelper {
         message: constants.apiResponses.SOLUTION_NOT_FOUND,
       });
     }
-
+    
     let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
       code: requestedData.role,
     },
     ["entityTypes.entityType"])
-
     if (!rolesDocumentAPICall.success) {
       throw {
         status: httpStatusCode["bad_request"].status,
@@ -2481,15 +2503,14 @@ module.exports = class ObservationsHelper {
     if (solutionData[0].entityType === targetedEntityType) {
 
       let filterQuery = {
-        "registryDetails.code": requestedData[targetedEntityType]
+        "_id": requestedData[targetedEntityType]
       };
 
-      if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
-        filterQuery = {
-          "registryDetails.locationId": requestedData[targetedEntityType]
-        };
-      }
-
+      // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+      //   filterQuery = {
+      //     "registryDetails.locationId": requestedData[targetedEntityType]
+      //   };
+      // }
       let entitiesAPICall = await entityManagementService.entityDocuments(filterQuery, [
         "groups",
       ]);
@@ -2510,19 +2531,18 @@ module.exports = class ObservationsHelper {
         entities[0].groups &&
         Object.keys(entities[0].groups).length > 0
       ) {
-        targetedEntityType = messageConstants.common.STATE_ENTITY_TYPE;
+      //  targetedEntityType = messageConstants.common.STATE_ENTITY_TYPE;
       }
     }
-
     let filterData = {
-      "registryDetails.code": requestedData[targetedEntityType]
+      "_id": requestedData[targetedEntityType]
     };
 
-    if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
-      filterData = {
-        "registryDetails.locationId": requestedData[targetedEntityType]
-      };
-    }
+    // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
+    //   filterData = {
+    //     "registryDetails.locationId": requestedData[targetedEntityType]
+    //   };
+    // }
 
     
     let entitiesAPICall = await entityManagementService.entityDocuments(filterData, [
@@ -2696,4 +2716,138 @@ module.exports = class ObservationsHelper {
     })
 
   }
+    /**
+   * Check user eligibity to create observation
+   * @method
+   * @name validateUserRole
+   * @param {Object} bodyData - user location request data
+   * @param {String} solutionId - Solution id.
+   * @returns {Object} return the eligibity of user
+   */
+
+    static validateUserRole(bodyData, solutionId) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          //validate solution
+          let solutionDocument = await solutionsQueries.solutionDocuments(
+            {
+              _id: solutionId,
+            },
+            ["entityType"]
+          );
+  
+          if (!solutionDocument[0]) {
+            throw {
+              message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+            };
+          }
+
+          let solutionEntityType = solutionDocument[0].entityType;
+          let topLevelEntityId = bodyData[topLevelEntityType];
+
+
+          let roles = bodyData.role.split(",");
+
+          let entityTypeArr = [];
+          for(let roleIndex=0;roleIndex<roles.length;roleIndex++){
+
+          let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
+            code: roles[roleIndex],
+          },
+          ["entityTypes.entityType"])
+
+          if(rolesDocumentAPICall.success){
+            entityTypeArr.push(rolesDocumentAPICall.data[0].entityTypes[0].entityType)
+          }else{
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+            };
+          }
+
+        }
+
+          const uniqueEntityTypeArr = _.uniq(entityTypeArr);
+          let filterData = {
+            _id:topLevelEntityId,
+            entityType: topLevelEntityType,
+            deleted:false
+           };
+         
+          //Retrieving the entity from the Entity Management Service
+           let entitiesDocument = await entityManagementService.entityDocuments(
+             filterData
+           );
+
+           if (!entitiesDocument.success) {
+             throw {
+               status: httpStatusCode.bad_request.status,
+               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+             };
+           }
+
+          let childHierarchyPath = entitiesDocument.data[0].childHierarchyPath;
+          childHierarchyPath.unshift(topLevelEntityType)
+
+          const highestEntityType = this.findHighestHierarchy(uniqueEntityTypeArr,childHierarchyPath);
+          if(solutionEntityType === topLevelEntityType && solutionEntityType === highestEntityType) {
+            resolve({
+              success: true
+            })
+          }
+          const highestIndex = childHierarchyPath.indexOf(highestEntityType);
+          const solutionIndex = childHierarchyPath.indexOf(solutionEntityType);
+        
+          if (highestIndex === -1 || solutionIndex === -1) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.INVALID_ENTITY_TYPE
+          };   
+          }
+        
+          if (highestIndex > solutionIndex) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER
+          };
+        
+        }
+
+        resolve({
+          success: true
+        })
+
+        } catch (error) { 
+          return resolve({
+            status: error.status || httpStatusCode.internal_server_error.status,
+            message:
+              error.message || httpStatusCode.internal_server_error.message,
+            data: false,
+          });
+        }
+      });
+    }
+      /**
+   * Get the highest role in the heirarchy.
+   * @method
+   * @name findHighestHierarchy
+   * @param {String} roles - Roles of the user.
+   * @param {Array} rolesHierarchy - Roles hierarchy in descending order.
+   * @returns {String} returns highest role in the heirarchy.
+   */
+    static findHighestHierarchy(roles,rolesHierarchy) {
+        let highestHierarchyValue = null;
+        let highestIndex = Infinity;
+      
+        // Loop through each role in the given array
+        roles.forEach(role => {
+          const index = rolesHierarchy.indexOf(role);
+          if (index !== -1 && index < highestIndex) {
+            highestIndex = index;
+            highestHierarchyValue = role;
+          }
+        });
+      
+        return highestHierarchyValue;
+    }
 };

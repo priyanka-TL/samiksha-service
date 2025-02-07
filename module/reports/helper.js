@@ -1,7 +1,8 @@
 /**
  * name : reportsController.js
- * author : Aman
+ * author : Saish & Praveen
  * created-date : 22-Dec-2018
+ * updated-date : 20-Nov-2024
  * Description : Reports related information.
  */
 
@@ -151,7 +152,6 @@ module.exports = class ReportsHelper {
     };
 
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
-
     let submissionDocument = submissionDocumentArr[0];
 
     if(!submissionDocument){
@@ -166,6 +166,17 @@ module.exports = class ReportsHelper {
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
 
+    /*
+
+    Adding filter code
+    */
+    let submissionArr = submissionDocumentArr.map((record)=>{
+      return {_id:record._id,
+            name:record.title
+      }
+    })
+    let filters = await createFilterData()
+    filters[0].filter.data = submissionArr
     let responseObject = {
       result: true,
       entityType: submissionDocument.entityType,
@@ -175,7 +186,9 @@ module.exports = class ReportsHelper {
       observationId: observationId,
       programName: programDocument.data?.name,
       totalSubmissions: submissionDocumentArr.length,
+      filters
     };
+
     let result;
     if (req.body.scores === true) {
       result = await helperFunc.generateObservationReportForRubricWithoutDruid(submissionDocumentArr);
@@ -187,7 +200,13 @@ module.exports = class ReportsHelper {
         'entity'
       );
     }
+    let filteredResults;
+    let filtereingFunction = await this.filterCriteriaAndQuestion(req,result,filters)
+    filteredResults =filtereingFunction.filteredResults
+    result = filtereingFunction.results
     responseObject.reportSections = result;
+   
+    filters[2].filter.data =filteredResults
 
     if (req.body.pdf && criteriaWise) {
       let pdfGenerationStatus = await pdfHelper.entityCriteriaPdfReportGeneration(responseObject);
@@ -240,6 +259,20 @@ module.exports = class ReportsHelper {
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
 
+    /*
+
+    Adding filter code
+    */
+    let submissionArr = submissionDocumentArr.map((record)=>{
+      return {_id:record._id,
+            name:record.title
+      }
+    })
+    // Getting filtersArray
+    let filters = await createFilterData()
+    //Adding submissionArr to filters
+    filters[0].filter.data = submissionArr
+
     let responseObject = {
       result: true,
       entityType: submissionDocument.entityType,
@@ -249,6 +282,7 @@ module.exports = class ReportsHelper {
       observationId: submissionDocument.observationId,
       programName: programDocument.data?.name,
       totalSubmissions: submissionDocumentArr.length,
+      filters,
     };
     let result;
     if (req.body.scores === true) {
@@ -256,7 +290,19 @@ module.exports = class ReportsHelper {
     } else {
       result = await helperFunc.generateObservationReportForNonRubricWithoutDruid(submissionDocumentArr,true,criteriaWise,'instance');
     }
-    responseObject.reportSections = result;
+
+    let filteredResults;
+    //Getting the results based on the filters
+    let filtereingFunction = await this.filterCriteriaAndQuestion(req,result,filters)
+    filteredResults =filtereingFunction.filteredResults
+    result = filtereingFunction.results
+    //Assigning the filteredResults to the  responseObject
+    responseObject.reportSections = result; 
+    filters[2].filter.data =filteredResults;
+    // Removing submissions Array if its for only one submissionReport
+    if(!req.body.observationId){
+      filters.shift()
+    }
 
     if (req.body.pdf && criteriaWise) {
       let pdfGenerationStatus = await pdfHelper.instanceCriteriaReportPdfGeneration({
@@ -270,7 +316,6 @@ module.exports = class ReportsHelper {
       let pdfGenerationStatus
       if(req.body.scores){
          pdfGenerationStatus = await pdfHelper.assessmentPdfGeneration(responseObject,submissionId)
-
       }else{
        pdfGenerationStatus = await pdfHelper.instanceObservationPdfGeneration(responseObject);
       }
@@ -278,4 +323,115 @@ module.exports = class ReportsHelper {
     }
     return responseObject;
   }
+  /**
+   * Generate an entity observation report
+   * @name filterCriteriaAndQuestion
+   * @param {Object} req - The request object
+   * @param {Object} reportData -  Report data without filtered
+   * @param {Array} filters  - FilterArray which will be contain details about the filter
+   * @returns {Promise<Object>} - Object of filtered results and filter Array
+   */
+  static async filterCriteriaAndQuestion(req,reportData,filters){
+    try{
+      let filteredResults;
+      let result = reportData
+      // if filter has questionWise filter
+      if (req.body.filter &&  req.body.filter.questionId && req.body.filter.questionId.length > 0) {
+        result = result.filter((eachResult) =>
+          req.body.filter.questionId.includes(eachResult.order)
+        );
+        filteredResults = result.map((eachResult)=>{
+          let data={
+            "name":eachResult.question,
+            "_id":eachResult.order,
+         } 
+         return data
+        })
+        filters[1].filter.keyToSend ="questionWise"
+      // if filter has criteriaWise filter
+      }else if(req.body.filter && req.body.filter.criteria&&req.body.filter.criteria.length > 0){
+        result = result.filter((eachResult) =>
+          req.body.filter.criteria.includes(eachResult.criteriaId)
+        );
+        filteredResults = result.map((eachResult)=>{
+          let data={
+            "name":eachResult.criteriaName,
+            "_id":eachResult.criteriaId,
+         } 
+         return data
+        })
+        filters[2].filter.keyToSend ="criteria"
+        filters[1].filter.keyToSend ="criteriaWise"
+       // If filter is empty or not specified
+      }else{
+        // If its a questionwise data filtering for responseFilterObject
+        if(!(req.body.criteriaWise)){
+         filteredResults = result.map((eachResult)=>{
+          let data={
+            "name":eachResult.question,
+            "_id":eachResult.order,
+         } 
+         return data
+        })
+      }else{
+      // If its a criteriawise data filtering for responseFilterObject
+        filters[2].filter.keyToSend ="criteria"
+        filters[1].filter.keyToSend ="criteriaWise"
+        filteredResults = result.map((eachResult)=>{
+          let data={
+            "name":eachResult.criteriaName,
+            "_id":eachResult.criteriaId,
+         } 
+         return data
+        })
+      }
+  
+      }
+      return({
+        "filteredResults": filteredResults,
+        'results': result
+      })
+    }catch(e){
+      console.log(e)
+    }
+
+  }
 };
+
+// Filter Array
+async function createFilterData(){
+    let filter =[
+      {
+         "order":"",
+         "filter":{
+            "type":"dropdown",
+            "title":"",
+            "keyToSend":"submissionId",
+            "data":[]
+         }
+      },
+      {
+         "order":"",
+         "filter":{
+            "type":"segment",
+            "title":"",
+            "keyToSend":"questionWise",
+            "data":[
+               "questionWise",
+               "criteriaWise"
+            ]
+         }
+      },
+      {
+         "order":"",
+         "filter":{
+            "type":"modal",
+            "title":"",
+            "keyToSend":"questionId",
+            "data":[
+            ]
+         }
+      }
+   ]
+   return filter
+}

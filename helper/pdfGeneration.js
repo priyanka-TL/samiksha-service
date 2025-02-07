@@ -125,6 +125,12 @@ exports.pdfGeneration = async function pdfGeneration(instaRes) {
                             let arrOfData = [];
                             let matrixData = [];
 
+                            if(instaRes.response && instaRes.response.length > 0){
+                                instaRes.response = instaRes.response.filter((obj)=>{
+                                    return obj.responseType !== 'matrix'
+                                })
+                            }
+
                             await Promise.all(instaRes.response.map(async ele => {
 
                                 if (ele.responseType === "text" || ele.responseType === "date" || ele.responseType === "number" || ele.responseType === "slider") {
@@ -334,6 +340,9 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
             
             instaRes.response = instaRes.response ? instaRes.response : instaRes.reportSections;
 
+            //loop the response and store multiselect and radio questions of matrix type
+            //this was not handled previously 
+            //they are pushed in the array to create chart object
             await Promise.all(instaRes.response.map(async ele => {
                 if (ele.responseType == "matrix") {
                     await Promise.all(ele.instanceQuestions.map(element => {
@@ -344,8 +353,37 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
                             radioArray.push(element);
                         }
                     }))
-                }
 
+                    await Promise.all(ele.answers.map(element => {
+                        if (element.responseType == "multiselect") {
+                            multiSelectArray.push(element);
+                        }
+                        else if (element.responseType == "radio") {
+                            radioArray.push(element);
+                        }
+                    }))
+
+
+                    let matrixAnswerArray = ele.answers;
+
+                    for(let answerInstance of matrixAnswerArray){
+
+                        for(let questionKey in answerInstance){
+
+                            let anwerObject = answerInstance[questionKey];
+
+                            if (anwerObject.responseType == "multiselect") {
+                                multiSelectArray.push(anwerObject);
+                            }
+                            else if (anwerObject.responseType == "radio") {
+                                radioArray.push(anwerObject);
+                            }
+
+                        }
+                        
+                    }
+
+                }
             }))
 
             //select all the multiselect response objects and create a chart object
@@ -428,6 +466,24 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
                                         }
                                     }))
 
+                                    let matrixAnswerArray = ele.answers;
+                                    let instanceNumber = 1
+                                    for(let answerInstance of matrixAnswerArray){
+                
+                                        for(let questionKey in answerInstance){
+                
+                                            let anwerObject = answerInstance[questionKey];
+                                            anwerObject.instanceNumber = instanceNumber;
+                                            //push the instance questions to the array
+                                             if (anwerObject.responseType == "text" || anwerObject.responseType == "date" || anwerObject.responseType == "number" || anwerObject.responseType == "slider") {
+                                                obj.data.push(anwerObject);
+                                            }else{
+                                                //need to add more code to handle chart data for multiselect/radio
+                                                obj.data.push(anwerObject);
+                                            }
+                                        }
+                                        ++instanceNumber;
+                                    }
                                     matrixData.push(obj);
                                 }
                             }));
@@ -1122,7 +1178,7 @@ exports.assessmentPdfGeneration = async function assessmentPdfGeneration(
   
         FormData.push(...formDataAssessment);
         let params = {
-          assessmentName: "Institutional Assessment Report",
+          assessmentName: assessmentRes.solutionName,
         };
         ejs
           .renderFile(path.resolve(__dirname + "/../views/assessment_header.ejs"), {
@@ -1378,14 +1434,11 @@ const getAssessmentChartData = async function (assessmentData,submissionId="") {
       datasets.push({
         label: level,
         data: levelCountObject[level],
-        backgroundColor: backgroundColors[incrementor],
+        backgroundColor: gen.utils.getColorForLevel(level),
       });
       incrementor++;
     }
   
     return datasets; // Return the datasets for the chart
   };
-  
-
-
   

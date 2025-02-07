@@ -94,4 +94,9 @@ module.exports = {
   SOLUTION_MODEL_NAME: 'solutions',
   TARGETED_SOLUTION_TEXT:
 		'View and participate in educational programs active in your location and designed for the role you selected',
+   STATE_ENTITY_TYPE: "state",
+   AUTH_METHOD: {
+		NATIVE: 'native',
+		KEYCLOAK_PUBLIC_KEY: 'keycloak_public_key',
+	}
 };

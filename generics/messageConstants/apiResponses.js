@@ -420,5 +420,7 @@ module.exports = {
   ENTITY_SERVICE_DOWN:'Entity Management Service down.',
   SOLUTION_TARGETED_ENTITY:'Targeted Entity Types Fetched',
   ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role',
-  EVIDENCE_ALREADY_MARKED_AS_NOT_APPLICABLE:'is already marked as not applicable'
+  EVIDENCE_ALREADY_MARKED_AS_NOT_APPLICABLE:'is already marked as not applicable',
+  OBSERVATION_SOLUTION_ID_REQUIRED:'Observation or solution id is required',
+  OBSERVATION_NOT_RELEVENT_FOR_USER:'Dear User, this Observation is not relevant for your role and location'
 };
