@@ -491,7 +491,8 @@ exports.instanceObservationPdfGeneration = async function instanceObservationPdf
 
                             var obj = {
                                 orderData: arrOfData,
-                                matrixRes: matrixData
+                                matrixRes: matrixData,
+                                matrixFormatedData:groupAnswersByQuestion(arrOfData.filter(obj => obj.responseType === "matrix"))
                             };
                             ejs.renderFile(__dirname + '/../views/instanceObservationTemplate.ejs', {
                                 data: obj
@@ -1348,6 +1349,54 @@ const getAssessmentChartData = async function (assessmentData,submissionId="") {
     return assessmentData;
   };
 
+  /**
+ * Groups answers by question and organizes them by instance identifier.
+ * @method
+ * @name groupAnswersByQuestion
+ * @param {Array} data - Array of objects containing questions and answers.
+ * @returns {Array} - Array of grouped answers, each containing question details and categorized answers.
+ */
+  function groupAnswersByQuestion(data) {
+
+    let groupedAnswers = [];
+  
+    for(let i=0;i<data.length;i++){
+        let answerInstance  = {};
+
+        answerInstance = {
+            question: data[i].question,
+            responseType: data[i].responseType,
+            qid: data[i].qid,
+            order: data[i].order,
+            answers: {}
+        }
+
+        data[i].answers.forEach(item => {
+            const instanceIdentifier = item.instanceIdentifier;
+        
+            for (const key in item) {
+              if (key !== "instanceIdentifier") {
+                const questionData = item[key];
+                const qid = questionData.qid;
+        
+                if (!answerInstance['answers'][qid]) {
+                  answerInstance['answers'][qid] = {
+                    question: questionData.question, // Add the question text
+                    responseType: questionData.responseType, // and response Type
+                    answers: {} // Initialize the answers object
+                  };
+                }
+        
+                answerInstance['answers'][qid].answers[instanceIdentifier] = questionData.answers;
+              }
+            }
+          });
+
+          groupedAnswers.push(answerInstance);
+    }
+
+    return groupedAnswers;
+  }
    /**
  * Covert datasets Value to percentage for observationwith Rubrics horizontal chart.
  * @method
