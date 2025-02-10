@@ -121,7 +121,7 @@ services:
     env_file:
       - ${scheduler_env}
   samiksha:
-    image: shikshalokamqa/elevate-samiksha-service:1.0.2
+    image: shikshalokamqa/elevate-samiksha-service:1.0.3
     container_name: samiksha
     ports:
       - '4301:4301'
