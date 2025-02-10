@@ -47,8 +47,6 @@ async function main({dataToBeInserted}) {
     await insertData('questions',dataToBeInserted.questionsData);
     await insertData('configurations',dataToBeInserted.configurationsData);
     await insertData('frameworks',dataToBeInserted.frameworkData);
-    await insertData('observationSubmissions',dataToBeInserted.observationSubmissionData);
-    await insertData('observations',dataToBeInserted.observationData);
 
 }
 
