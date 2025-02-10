@@ -46,7 +46,7 @@ ENTITY_MANAGEMENT_SERVICE_URL=http://interface:3569/entity-management
 
 IMPROVEMENT_PROJECT_BASE_URL = "http://localhost:5000"
 TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC=+05:30
-VALIDATE_ENTITIES = OFF
+VALIDATE_ENTITIES = ON
 CLOUD_STORAGE_PROVIDER=gcloud
 CLOUD_STORAGE_ACCOUNTNAME=sl-mentoring-dev-storage@sl-dev-project.iam.gserviceaccount.com
 CLOUD_STORAGE_SECRET="-----BEGIN PRIVATE KEY-----\\/+\==\n-----END PRIVATE KEY-----\n"
@@ -55,3 +55,5 @@ CLOUD_STORAGE_BUCKETNAME=mentoring-dev-storage-private
 CLOUD_STORAGE_BUCKET_TYPE=private
 GOTENBERG_URL = http://localhost:3000
 API_DOC_URL = "/survey/api-doc"
+TOP_LEVEL_ENTITY_TYPE= "state"
+VALIDATE_ROLE= "ON"

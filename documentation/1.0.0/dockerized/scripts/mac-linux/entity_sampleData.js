@@ -76,7 +76,8 @@ let userRoleExtension = [
         ],
         "updatedAt": "2024-09-09T09:31:47.135Z",
         "createdAt":"2024-09-09T09:31:47.135Z",
-        "__v": 0
+        "__v": 0,
+        "code":"state_education_officer"
       }
 
 ]
