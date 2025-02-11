@@ -6,6 +6,7 @@
 
 <body>
   <% var orderData= data.orderData; %>
+  <% var matrixFormatedData= data.matrixFormatedData; %>
   <% for (var r=0;r < orderData.length; r++){  %>
   <% if(orderData[r].responseType == 'text' || orderData[r].responseType == 'date' || orderData[r].responseType == 'number' || orderData[r].responseType == 'slider' || orderData[r].responseType == 'radio' || orderData[r].responseType == 'multiselect'){ %>
 
@@ -16,7 +17,8 @@
       <% for(var j=0; j < orderData[r].answers.length; j++) { %>
       <div class="row" style="padding: 10px;padding-left:10px">
         <div class="col-sm-12" style="font-size: 18px;">
-          <%= orderData[r].answers[j] %>
+          <% let currentAnswer = orderData[r].answers[j] || 'No response is available'; %>
+          <%= currentAnswer %>          
         </div>
       </div>
       <% } %>
@@ -25,73 +27,57 @@
 
   <%  } else if(orderData[r].responseType == 'matrix'){ %>
 
-  <% for(var i=0; i< data.matrixRes.length; i++){ %>
+  <% for(var i=0; i< matrixFormatedData.length; i++){ %>
       
-      <% if(data.matrixRes[i].order == orderData[r].order){ %>
-
-        <div class="container" style="padding:20px;margin:10px">
-            <div style="border: solid 1px rgb(182, 175, 175)">
-              <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%=  orderData[r].question %>
-  </h3>
-
-
-  <% var matrixResponse = data.matrixRes[i].data %>
-
-  <% var instanceCounter = 0 %>
-  <% for(var k=0; k < matrixResponse.length; k++) { %>
-    <% if (instanceCounter !== matrixResponse[k].instanceNumber) { %>
-      <h3 style="padding-left: 10px;">Instance Number: <%= matrixResponse[k].instanceNumber %></h3>
-      <% instanceCounter = matrixResponse[k].instanceNumber; %>
-    <% } %>
-    
-    <!-- <h2>Attempt #<%=  k+1 %></h2> -->
-  <% if(matrixResponse[k].responseType == 'text' || matrixResponse[k].responseType == 'date' || matrixResponse[k].responseType == 'number' || matrixResponse[k].responseType == 'slider'){ %>
-      
-  <div class="container" style="padding:20px;margin:20px">
-    <div style="border: solid 1px rgb(182, 175, 175);max-width:800px;">
+    <% if (matrixFormatedData[i].order == orderData[r].order) { %>
+      <div class="container" style="padding:20px;margin:10px">
+        <div style="border: solid 1px rgb(182, 175, 175)">
       <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px">
-        <%=  matrixResponse[k].question %></h3>
-      <% for(var m=0; m< matrixResponse[k].answers.length; m++) { %>
-      <div class="row" style="padding: 10px;padding-left:10px">
-        <div class="col-sm-12" style="font-size: 18px;">
-          <%= matrixResponse[k].answers[m] %>
-        </div>
-      </div>
+          <%= orderData[r].question %>
+      </h3>
+  
+      <% var matrixResponse = matrixFormatedData[i].answers; %>
+  
+      <% var instanceCounter = 0; %>
+  
+      <% for (var key in matrixResponse) { %>
+          
+          <% var question = matrixResponse[key].question; %>
+          <% var responseType = matrixResponse[key].responseType; %>
+          <% var answers = matrixResponse[key].answers; %>
+  
+          <h3 style="padding-left: 20px;font-size: 21px""><%= question %></h3>
+  
+          <% for (var answerKey in answers) { %>
+              <div class="row" style="padding: 10px;padding-left:30px">
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px 15px;gap: 10px; width: 90%; margin:20px auto; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;margin-left: 15px;">
+                  <div style="font-weight: bold;width: 100%; padding: 5px; border-bottom: 1px solid #ddd;color:#832215"><%= answerKey %> </div>
+                  <div style="display: flex; align-items: center; gap: 5px;padding-top: 5px;">
+                      <% 
+                      let answer = '<i style="margin-right:5px">➝</i>'+ answers[answerKey][0]
+                      if(answers[answerKey].length > 1 ){
+                          let answerArr = []
+                          answers[answerKey] = answers[answerKey].filter((item) => item !== '')
+                          for(let i=0; i<answers[answerKey].length; i++){
+                            answerArr.push(`<p><i style="margin-right:5px" >➝</i>${answers[answerKey][i]}</p>`)
+                          }
+                          let finalAnswer = answerArr.join('');
+                          answer = finalAnswer
+                      }
+                      
+                      %>
+                      <span style="font-weight: 500;padding:5px"><%- answer %></span>
+                  </div>
+              </div>
+                
+              </div>
+          <% } %>
+  
       <% } %>
-    </div>
-  </div>
-
-  <% } else if(matrixResponse[k].responseType == 'radio' || matrixResponse[k].responseType == 'multiselect' ){ %>
-
-
-  <div class="container" style="padding:20px;margin:20px;">
-    <div style="border: solid 1px rgb(182, 175, 175);max-width:800px;">
-       <h3 style="background-color: #eee;padding:10px; padding-left: 10px;font-size: 21px"><%=  matrixResponse[k].question %></h3> 
-
-       
-      <!-- <div>
-      </div> -->
-
-      <!-- <h5 style="padding-left:10px">Responses</h5> -->
-      <% for(var j=0; j < matrixResponse[k].answers.length; j++) { %>
-      <div class="row" style="padding: 10px;padding-left:10px">
-        <div class="col-sm-12" style="font-size: 18px;">
-          <p><%= matrixResponse[k].answers[j] %></p>
+  
+  <% } %>
         </div>
-      </div>
-      <% } %>
-
-    </div>
-  </div>
-
-
-  <%  } %>
-
-  <% } %>
-</div>
-</div>
-
-  <% } %>
+        </div>
 
   <% } %>
 

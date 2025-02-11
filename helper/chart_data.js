@@ -411,6 +411,8 @@ async function createNewFormattedAnswer(questionInstance, questionRecordSingleEl
   if(chartType == 'instance' && questionInstance.responseType == 'multiselect' || questionInstance.responseType == 'matrix'){
      answer  = Array.isArray(questionInstance.value) ? questionInstance.value : [questionInstance.value];  
   }
+  
+  answer = answer.filter((ans) => ans != '');
 
   return {
     qid: questionInstance.qid,
