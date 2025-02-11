@@ -46,28 +46,27 @@
           <% var responseType = matrixResponse[key].responseType; %>
           <% var answers = matrixResponse[key].answers; %>
   
-          <h3 style="padding-left: 10px;"><%= question %></h3>
+          <h3 style="padding-left: 20px;font-size: 21px""><%= question %></h3>
   
           <% for (var answerKey in answers) { %>
-              <div class="row" style="padding: 10px;padding-left:10px">
-                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px 15px;gap: 10px; max-width: 400px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;margin-left: 15px;">
-                  <div style="font-weight: bold;width: 100%; padding-bottom: 5px; border-bottom: 1px solid #ddd;"><%= answerKey %> </div>
+              <div class="row" style="padding: 10px;padding-left:30px">
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px 15px;gap: 10px; width: 90%; margin:20px auto; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;margin-left: 15px;">
+                  <div style="font-weight: bold;width: 100%; padding: 5px; border-bottom: 1px solid #ddd;color:#832215"><%= answerKey %> </div>
                   <div style="display: flex; align-items: center; gap: 5px;padding-top: 5px;">
-                      <i>➝</i>
                       <% 
-                      let answer = answers[answerKey][0]
+                      let answer = '<i style="margin-right:5px">➝</i>'+ answers[answerKey][0]
                       if(answers[answerKey].length > 1 ){
                           let answerArr = []
                           answers[answerKey] = answers[answerKey].filter((item) => item !== '')
                           for(let i=0; i<answers[answerKey].length; i++){
-                            answerArr.push(`<p>${answers[answerKey][i]}</p>`)
+                            answerArr.push(`<p><i style="margin-right:5px" >➝</i>${answers[answerKey][i]}</p>`)
                           }
                           let finalAnswer = answerArr.join('');
                           answer = finalAnswer
                       }
                       
                       %>
-                      <span style="font-weight: 500;"><%- answer %></span>
+                      <span style="font-weight: 500;padding:5px"><%- answer %></span>
                   </div>
               </div>
                 
