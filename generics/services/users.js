@@ -95,7 +95,7 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 			}
 			const options = {
 				headers: {
-					'X-auth-token': 'bearer ' + userToken,
+					// 'X-auth-token': 'bearer ' + userToken,
 					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 				},
 			}
