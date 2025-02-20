@@ -8,7 +8,7 @@
 //dependencies
 const request = require('request');
 
-const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL;
+const interfaceServiceUrl = process.env.INTERFACE_SERVICE_ENV;
 const validateEntity = process.env.VALIDATE_ENTITIES;
 /**
  * List of entity data.
@@ -26,7 +26,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
-      const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_DOCUMENTS;
+      const url = interfaceServiceUrl +process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS;
       let requestJSON = {
         query: filterData,
         projection: projection,
@@ -90,7 +90,7 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the entity management service
-      const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_TYPE_DOCUMENTS;
+      const url = interfaceServiceUrl +process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL + messageConstants.endpoints.FIND_ENTITY_TYPE_DOCUMENTS;
       // Set the options for the HTTP POST request
       const options = {
         headers: {
@@ -185,7 +185,7 @@ const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo)
     return new Promise(async (resolve, reject) => {
       try {
         // Function to find entity documents based on the given filter and projection
-        const url = entityManagementServiceUrl + messageConstants.endpoints.LIST_BY_ENTITY_TYPE+'/'+entityTypeId + `?page=${pageNo}&limit=${pageSize}`;
+        const url = interfaceServiceUrl +process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL + messageConstants.endpoints.LIST_BY_ENTITY_TYPE+'/'+entityTypeId + `?page=${pageNo}&limit=${pageSize}`;
         // Set the options for the HTTP POST request
         const options = {
           headers: {
@@ -243,7 +243,7 @@ const userRoleExtension = function (filterData = 'all', projection = 'all') {
   return new Promise(async (resolve, reject) => {
     try {
       // Define the URL for the user role extension API
-      const url = entityManagementServiceUrl+messageConstants.endpoints.USER_ROLE_EXTENSION;
+      const url = interfaceServiceUrl+process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL+messageConstants.endpoints.USER_ROLE_EXTENSION;
 
       // Set the options for the HTTP POST request
       const options = {
