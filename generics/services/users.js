@@ -1,6 +1,7 @@
 //dependencies
 const request = require('request');
 const userServiceUrl = process.env.USER_SERVICE_URL;
+const interfaceServiceUrl = process.env.INTERFACE_SERVICE_URL
 
 
 /**
@@ -13,7 +14,7 @@ const userServiceUrl = process.env.USER_SERVICE_URL;
 const profile = function ( userId = "" ) {
     return new Promise(async (resolve, reject) => {
         try {
-            let url = userServiceUrl + messageConstants.endpoints.USER_READ;
+            let url = interfaceServiceUrl + process.env.USER_SERVICE_BASE_URL + messageConstants.endpoints.USER_READ;
 
             if( userId !== "" ) {
                 url = url + "/" + userId
@@ -82,13 +83,13 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 			let url
 			if (!isNaN(organisationIdentifier)) {
 				url =
-                    userServiceUrl +
+                    interfaceServiceUrl + process.env.USER_SERVICE_BASE_URL +
 					messageConstants.endpoints.ORGANIZATION_READ +
 					'?organisation_id=' +
 					organisationIdentifier
 			} else {
 				url =
-                    userServiceUrl +
+                    interfaceServiceUrl + process.env.USER_SERVICE_BASE_URL +
 					messageConstants.endpoints.ORGANIZATION_READ +
 					'?organisation_code=' +
 					organisationIdentifier
