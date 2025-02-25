@@ -11,7 +11,7 @@ const interfaceServiceUrl = process.env.INTERFACE_SERVICE_URL
  * @param {String}   userId -userId 
  * @returns {Promise} returns a promise.
  */
-const profile = function ( userId = "" ) {
+const profile = function ( userId = "",userToken="" ) {
     return new Promise(async (resolve, reject) => {
         try {
             let url = interfaceServiceUrl + process.env.USER_SERVICE_BASE_URL + messageConstants.endpoints.USER_READ;
@@ -27,7 +27,9 @@ const profile = function ( userId = "" ) {
 
                 }
             };
-
+            if (userToken !== '') {
+				options.headers['x-auth-token'] = userToken
+			}
             request.get(url,options,kendraCallback);
 
             function kendraCallback(err, data) {

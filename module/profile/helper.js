@@ -11,11 +11,11 @@ module.exports = class ProfileHelper {
 	 * @returns {Promise<Object>} - A promise that resolves with the processed user profile data or an error object.
 	 * @throws {Error} - Throws an error if the user details cannot be fetched or processed.
 	 **/
-	static read(userId) {
+	static read(userId,userToken) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				// Fetch user profile details using userService.profile function
-				const userResponse = await userService.profile(userId)
+				const userResponse = await userService.profile(userId,userToken)
 
 				// Check if the user profile fetch was successful
 				if (!userResponse.success) {
