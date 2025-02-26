@@ -614,7 +614,7 @@ module.exports = class ProgramsHelper {
    * @returns {Object} - Details of the program join.
    */
 
-  static join(programId, data, userId, userToken,appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false,userToken) {
+  static join(programId, data, userId, userToken,appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false) {
     return new Promise(async (resolve, reject) => {
       try {
         let pushProgramUsersDetailsToKafka = false;
