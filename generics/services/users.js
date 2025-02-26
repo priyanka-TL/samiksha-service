@@ -8,9 +8,10 @@ const userServiceUrl = process.env.USER_SERVICE_URL;
  * @function
  * @name profile
  * @param {String}   userId -userId 
+ * @param {String}   userToken-userToken
  * @returns {Promise} returns a promise.
  */
-const profile = function ( userId = "" ) {
+const profile = function ( userId = "",userToken="" ) {
     return new Promise(async (resolve, reject) => {
         try {
             let url = userServiceUrl + messageConstants.endpoints.USER_READ;
@@ -26,7 +27,9 @@ const profile = function ( userId = "" ) {
 
                 }
             };
-
+            if (userToken !== '') {
+				options.headers['x-auth-token'] = userToken
+			}
             request.get(url,options,kendraCallback);
 
             function kendraCallback(err, data) {
@@ -95,7 +98,7 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 			}
 			const options = {
 				headers: {
-					'X-auth-token': 'bearer ' + userToken,
+					// 'X-auth-token': 'bearer ' + userToken,
 					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 				},
 			}
