@@ -163,7 +163,7 @@ module.exports = class FormsHelper {
 						})
 					}
 					filter = _id
-						? { _id: ObjectId(_id), organizationId: defaultOrgId }
+						? { _id: new ObjectId(_id), organizationId: defaultOrgId }
 						: { ...bodyData, organizationId: defaultOrgId }
 					defaultOrgForm = await formQueries.findOneForm(filter)
 				}
