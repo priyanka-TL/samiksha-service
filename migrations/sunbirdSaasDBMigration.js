@@ -15,6 +15,27 @@ async function fetchCollectionNamesFromSourceDB() {
 	})
 }
 
+async function modifyExistingDocsInSource(documents, collectionName) {
+	try{
+		const sourceDB = sourceClient.db()		
+		const sourceCollection = sourceDB.collection(collectionName)
+		const docIds = documents.map(doc => {
+			return doc._id
+		})
+		await sourceCollection.updateMany(
+			{
+				_id : {'$in' : docIds}
+			},
+			{
+				'$set' : {migrated : true}
+			}
+		)
+	}
+	catch(err){
+		console.error(`Error updating data in ${collectionName} in sourceDB : ${err.message}`)
+	}
+}
+
 async function migrateCollection(collectionName, transformFunc) {
 	const sourceDB = sourceClient.db()
 	const destDB = destClient.db()
@@ -30,10 +51,16 @@ async function migrateCollection(collectionName, transformFunc) {
 		if (batch.length === 0) break
 
 		const transformedBatch = await Promise.all(batch.map(transformFunc))
-
+		let validTransformedBatch = []
+		for(let i=0; i<transformedBatch.length; i++){
+			if(transformedBatch[i] !== undefined){
+				validTransformedBatch.push(transformedBatch[i])
+			}
+		}
 		try {
-			await destCollection.insertMany(transformedBatch, { ordered: false })
-			console.log(`Migrated ${batch.length} documents from ${collectionName}`)
+			await destCollection.insertMany(validTransformedBatch, { ordered: false })
+			console.log(`Migrated ${validTransformedBatch.length} documents from ${collectionName}`)
+			await modifyExistingDocsInSource(validTransformedBatch, collectionName)
 		} catch (error) {
 			console.error(`Error inserting batch in ${collectionName}: ${error.message}`)
 		}
@@ -127,15 +154,21 @@ const transformForms = async (doc) => {
 	return doc
 }
 
-const transformNotNeeded = (doc) => {
+const transformProjects = async (doc) => {
+	if(doc.tasks && doc.tasks.length > 0){
+		for(let task = 0; task < doc.tasks.length ; task++){
+			if(!['simple', 'content'].includes(doc.tasks[task].type)) {
+				return undefined
+			}
+		}
+		return doc
+	}
 	return doc
 }
 
-
-// Not yet completed, once the testing is done, we can conclude on this
-// const transformProjects = (doc) => {
-
-// }
+const transformNotNeeded = (doc) => {
+	return doc
+}
 
 async function runMigration() {
 	await sourceClient.connect()
@@ -145,16 +178,21 @@ async function runMigration() {
 		if (collection === 'solutions') {
 			await migrateCollection(collection, transformSolutions)
 		}
-		// if (collection === 'projectAttributes') {
-		// 	await migrateCollection(collection, transformProjectAttributes)
-		// }
-		if (collection === 'programs') {
+		else if (collection === 'projectAttributes') {
+			await migrateCollection(collection, transformProjectAttributes)
+		}
+		else if (collection === 'programs') {
 			await migrateCollection(collection, transformPrograms)
 		}
-		if (collection === 'forms') {
+		else if (collection === 'forms') {
 			await migrateCollection(collection, transformForms)
 		}
-		await migrateCollection(collection, transformNotNeeded)
+		else if(collection === 'projects'){
+			await migrateCollection(collection, transformProjects)
+		}
+		else{
+			await migrateCollection(collection, transformNotNeeded)
+		}
 	}
 	await sourceClient.close()
 	await destClient.close()
