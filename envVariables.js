@@ -330,6 +330,15 @@ let enviromentVariables = {
 		message: 'Required TOP_LEVEL_ENTITY_TYPE to indentify top level entity type',
 		optional: true,
     default: 'state'
+	},  
+	ELEVATE_PROJECT_SERVICE_URL: {
+		message: 'Elevate project service url required',
+		optional: false,
+	},
+	SERVICE_NAME: {
+		message: 'Project service name required',
+		optional: false,
+		default: 'project',
 	},
 };
 

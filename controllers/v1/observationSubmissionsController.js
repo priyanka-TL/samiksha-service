@@ -1163,7 +1163,7 @@ module.exports = class ObservationSubmissions extends Abstract {
             response = await submissionsHelper.createEvidencesInSubmission(req, 'observationSubmissions', false);
 
             if (response.result.status && response.result.status === 'completed') {
-            //  await observationSubmissionsHelper.pushCompletedObservationSubmissionForReporting(req.params._id);
+              await observationSubmissionsHelper.pushCompletedObservationSubmissionForReporting(req.params._id);
             } else if (response.result.status && response.result.status === 'ratingPending') {
               await observationSubmissionsHelper.pushObservationSubmissionToQueueForRating(req.params._id);
             }
