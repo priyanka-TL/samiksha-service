@@ -746,6 +746,7 @@ module.exports = class SurveysHelper {
    * @param {String} userId - userId
    * @param {String} submissionId - submission id
    * @param {Object} roleInformation 
+   * @param {String} userToken - userToken.
    * @returns {JSON} - returns survey solution, program and questions.
    */
 

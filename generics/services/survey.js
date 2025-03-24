@@ -1,5 +1,5 @@
 /**
- * name : projects.js
+ * name : survey.js
  * author : Saish
  * Date : March 24 2025
  * Description : All projects related api call.
@@ -7,6 +7,14 @@
 
 const request = require('request')
 const surveyServiceUrl = process.env.ELEVATE_SURVEY_SERVICE_URL
+
+/**
+  * Profile Read
+  * @function
+  * @name profileRead
+  * @param {String} userToken - logged in user token.
+  * @returns {JSON} - returns profile infromation
+*/
 
 // Function to read the user profile based on the given userId
 const profileRead = function (userToken) {
