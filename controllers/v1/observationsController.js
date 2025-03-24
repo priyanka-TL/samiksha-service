@@ -802,23 +802,42 @@ module.exports = class Observations extends Abstract {
           }
         }
 
-        // let programQueryObject = {
-        //   _id: observationDocument.programId,
-        //   status: "active",
-        //   components: { $in: [ObjectId(observationDocument.solutionId)] },
-        // };
+        let programId = null;
+        let programExternalId = null;
+        let programInformation = null;
 
-        // let programDocument = await programsHelper.list(programQueryObject, [
-        //   "externalId",
-        //   "name",
-        //   "description",
-        //   "imageCompression",
-        //   "isAPrivateProgram",
-        // ]);
+        if(observationDocument.programId){
 
-        // if (!programDocument[0]._id) {
-        //   throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
-        // }
+        let programQueryObject = {
+          _id: observationDocument.programId,
+          status: "active"
+        };
+
+        let programDocument = await programsHelper.list(programQueryObject, [
+           "externalId",
+           "name",
+           "description",
+           "imageCompression",
+           "isAPrivateProgram",
+         ]);
+
+         programDocument = programDocument.data.data
+         
+         if (!programDocument[0]._id) {
+           throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+         }
+
+         programInformation =  {
+             ..._.omit(programDocument[0], [
+               "_id",
+               "components",
+               "isAPrivateProgram",
+             ]),
+           },
+         programId =  programDocument[0]._id
+         programExternalId =  programDocument[0].externalId
+
+        }
 
         /*
                 <- Currently not required for bodh-2:10 as roles is not given in user 
@@ -885,16 +904,10 @@ module.exports = class Observations extends Abstract {
           entityInformation: entityDocument.metaInformation,
           solutionId: solutionDocument._id,
           solutionExternalId: solutionDocument.externalId,
-          // programId: programDocument[0]._id,
-          // programExternalId: programDocument[0].externalId,
+          programId: programId,
+          programExternalId: programExternalId,
           isAPrivateProgram: solutionDocument.isAPrivateProgram,
-          // programInformation: {
-          //   ..._.omit(programDocument[0], [
-          //     "_id",
-          //     "components",
-          //     "isAPrivateProgram",
-          //   ]),
-          // },
+          programInformation: programInformation,
           frameworkId: solutionDocument.frameworkId,
           frameworkExternalId: solutionDocument.frameworkExternalId,
           entityTypeId: solutionDocument.entityTypeId,
@@ -909,6 +922,7 @@ module.exports = class Observations extends Abstract {
           evidenceSubmissions: [],
           entityProfile: {},
           status: 'started',
+          userProfile: observationDocument?.userProfile ?? {}
         };
 
         if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
@@ -2069,7 +2083,7 @@ module.exports = class Observations extends Abstract {
       try {
         let observations = await observationsHelper.entities(
           req.userDetails.userId,
-          req.rspObj.userToken,
+          req.userDetails.userToken,
           req.params._id ? req.params._id : '',
           req.query.solutionId,
           req.body

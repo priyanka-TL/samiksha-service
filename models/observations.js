@@ -51,5 +51,6 @@ module.exports = {
     },
     project: Object,
     referenceFrom: String,
+    userProfile : Object
   },
 };

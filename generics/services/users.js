@@ -33,7 +33,6 @@ const profile = function ( userId = "",userToken="" ) {
             request.get(url,options,kendraCallback);
 
             function kendraCallback(err, data) {
-
                 let result = {
                     success : true
                 };

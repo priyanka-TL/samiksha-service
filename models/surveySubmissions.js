@@ -45,5 +45,6 @@ module.exports = {
     surveyInformation: Object,
     appInformation: Object,
     userRoleInformation: Object,
+    userProfile : Object
   },
 };

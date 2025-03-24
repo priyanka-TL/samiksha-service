@@ -69,7 +69,7 @@ module.exports = class SurveySubmissionsHelper {
         }
 
         if (typeof surveySubmissionId == 'string') {
-          surveySubmissionId = ObjectId(surveySubmissionId);
+          surveySubmissionId = new ObjectId(surveySubmissionId);
         }
 
         let surveySubmissionsDocument = await this.surveySubmissionDocuments({
