@@ -331,14 +331,14 @@ let enviromentVariables = {
 		optional: true,
     default: 'state'
 	},  
-	ELEVATE_PROJECT_SERVICE_URL: {
-		message: 'Elevate project service url required',
+	ELEVATE_SURVEY_SERVICE_URL: {
+		message: 'Elevate survey service url required',
 		optional: false,
 	},
 	SERVICE_NAME: {
-		message: 'Project service name required',
+		message: 'survey service name required',
 		optional: false,
-		default: 'project',
+		default: 'survey',
 	},
 };
 

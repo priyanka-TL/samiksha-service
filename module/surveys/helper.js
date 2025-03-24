@@ -25,7 +25,7 @@ const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const surveyQueries = require(DB_QUERY_BASE_PATH + '/surveys');
-const projectService = require(ROOT_PATH + "/generics/services/projects");
+const surveyService = require(ROOT_PATH + "/generics/services/survey");
 /**
  * SurveysHelper
  * @class
@@ -949,8 +949,8 @@ module.exports = class SurveysHelper {
           };
           submissionDocument.surveyInformation.startDate = new Date();
 
-          let userProfileData = await projectService.profileRead(userToken)
-        
+          let userProfileData = await surveyService.profileRead(userToken)
+
           if (userProfileData.success && userProfileData.data) {
             userProfileData = userProfileData.data;
           }else{

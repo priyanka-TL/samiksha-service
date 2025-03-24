@@ -30,7 +30,7 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const validateEntity = process.env.VALIDATE_ENTITIES;
 const validateRole = process.env.VALIDATE_ROLE;
 const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
-const projectService = require(ROOT_PATH + "/generics/services/projects");
+const surveyService = require(ROOT_PATH + "/generics/services/survey");
 /**
  * ObservationsHelper
  * @class
@@ -158,8 +158,7 @@ module.exports = class ObservationsHelper {
           }
         }
 
-        let userProfileData = await projectService.profileRead(requestingUserAuthToken)
-
+        let userProfileData = await surveyService.profileRead(requestingUserAuthToken)
         if (userProfileData.success && userProfileData.data) {
           userProfileData = userProfileData.data;
         }else{

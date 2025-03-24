@@ -1,12 +1,12 @@
 /**
  * name : projects.js
- * author : prajwal
- * Date : 09-September-2024
+ * author : Saish
+ * Date : March 24 2025
  * Description : All projects related api call.
  */
 
 const request = require('request')
-const projectServiceUrl = process.env.ELEVATE_PROJECT_SERVICE_URL
+const surveyServiceUrl = process.env.ELEVATE_SURVEY_SERVICE_URL
 
 // Function to read the user profile based on the given userId
 const profileRead = function (userToken) {
@@ -14,7 +14,7 @@ const profileRead = function (userToken) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			// Construct the URL for the user service
-			let url = `${projectServiceUrl}/${process.env.SERVICE_NAME}${messageConstants.endpoints.PROFILE_READ}`
+			let url = `${surveyServiceUrl}/${process.env.SERVICE_NAME}${messageConstants.endpoints.PROFILE_READ}`
 
 			// Set the options for the HTTP GET request
 			const options = {
