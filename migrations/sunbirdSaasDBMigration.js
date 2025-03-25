@@ -1,3 +1,6 @@
+// This migration script will help us to migrate data from sourceDB to targetDB by making the necessary changes. 
+// Here, the migration script is developed specifically for sunbird team to address changes in sunbird-db fields.
+
 require('dotenv').config({ path: '../.env' })
 const { MongoClient } = require('mongodb')
 const sourceClient = new MongoClient(process.env.SOURCE_MONGODB_URL, { useUnifiedTopology: true })
