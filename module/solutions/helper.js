@@ -2006,7 +2006,7 @@ module.exports = class SolutionsHelper {
           "description",
           "isAPrivateProgram",
         ]);
-
+        programDocument = programDocument.data.data
         if (programDocument && programDocument.length>0 &&programDocument[0]) {
           newSolutionDocument.programId = programDocument[0]._id;
           newSolutionDocument.programExternalId = programDocument[0].externalId;
