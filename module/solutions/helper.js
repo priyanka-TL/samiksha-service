@@ -1990,14 +1990,14 @@ module.exports = class SolutionsHelper {
         }
         let newSolutionDocument = _.cloneDeep(solutionDocument[0]);
         let programQuery = {};
+       if (programId !== ""){
+         let validateProgramId = gen.utils.isValidMongoId(programId);
 
-        let validateProgramId = gen.utils.isValidMongoId(programId);
-
-        if (validateProgramId) {
+         if (validateProgramId) {
           programQuery["_id"] = programId;
-        } else {
+         } else {
           programQuery["externalId"] = programId;
-        }
+         }
 
         let programDocument = await programsHelper.list(programQuery, [
           "externalId",
@@ -2013,7 +2013,7 @@ module.exports = class SolutionsHelper {
           newSolutionDocument.programDescription = programDocument[0].description;
         }
 
-        
+      }
 
         let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes);
 
