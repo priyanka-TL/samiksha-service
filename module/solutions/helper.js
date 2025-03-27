@@ -1963,7 +1963,7 @@ module.exports = class SolutionsHelper {
 
   static importFromSolution(
     solutionId,
-    // programId,
+    programId,
     userId,
     data,
     createdFor = ''
