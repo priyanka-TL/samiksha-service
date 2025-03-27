@@ -1982,7 +1982,7 @@ module.exports = class SolutionsHelper {
         }
 
         let solutionDocument = await solutionsQueries.solutionDocuments(solutionQuery);
-
+        
         if (!solutionDocument[0]) {
           throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
@@ -1990,6 +1990,7 @@ module.exports = class SolutionsHelper {
         }
         let newSolutionDocument = _.cloneDeep(solutionDocument[0]);
         let programQuery = {};
+        let programDocument;
        if (programId !== ""){
          let validateProgramId = gen.utils.isValidMongoId(programId);
 
@@ -1999,7 +2000,7 @@ module.exports = class SolutionsHelper {
           programQuery["externalId"] = programId;
          }
 
-        let programDocument = await programsHelper.list(programQuery, [
+         programDocument = await programsHelper.list(programQuery, [
           "externalId",
           "name",
           "description",
@@ -2146,11 +2147,12 @@ module.exports = class SolutionsHelper {
               { $set: { link: link } }
             );
           }
-
+         if(programDocument && programDocument.length > 0 && programDocument[0]){
           await database.models.programs.updateOne(
             { _id: programDocument[0]._id },
             { $addToSet: { components: duplicateSolutionDocument._id } }
           );
+        }
 
           return resolve(duplicateSolutionDocument);
         } else {
