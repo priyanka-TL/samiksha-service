@@ -1991,30 +1991,25 @@ module.exports = class SolutionsHelper {
         let newSolutionDocument = _.cloneDeep(solutionDocument[0]);
         let programQuery = {};
         let programDocument;
-       if (programId !== ""){
-         let validateProgramId = gen.utils.isValidMongoId(programId);
+      if (programId) {
+          programQuery[gen.utils.isValidMongoId(programId) ? "_id" : "externalId"] = programId;    
+          programDocument = await programsHelper.list(programQuery, [
+            "externalId",
+            "name",
+            "description",
+            "isAPrivateProgram",
+          ]);
+          programDocument = programDocument?.data?.data?.[0];
+          if (programDocument) {
+             Object.assign(newSolutionDocument, {
+               programId: programDocument._id,
+               programExternalId: programDocument.externalId,
+               programName: programDocument.name,
+               programDescription: programDocument.description
+              });
+          }
 
-         if (validateProgramId) {
-          programQuery["_id"] = programId;
-         } else {
-          programQuery["externalId"] = programId;
-         }
-
-         programDocument = await programsHelper.list(programQuery, [
-          "externalId",
-          "name",
-          "description",
-          "isAPrivateProgram",
-        ]);
-        programDocument = programDocument.data.data
-        if (programDocument && programDocument.length>0 &&programDocument[0]) {
-          newSolutionDocument.programId = programDocument[0]._id;
-          newSolutionDocument.programExternalId = programDocument[0].externalId;
-          newSolutionDocument.programName = programDocument[0].name;
-          newSolutionDocument.programDescription = programDocument[0].description;
         }
-
-      }
 
         let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes);
 
@@ -2147,11 +2142,16 @@ module.exports = class SolutionsHelper {
               { $set: { link: link } }
             );
           }
-         if(programDocument && programDocument.length > 0 && programDocument[0]){
-          await database.models.programs.updateOne(
-            { _id: programDocument[0]._id },
+         if(programDocument){
+          let programUpdate= await database.models.programs.updateOne(
+            { _id: programDocument._id },
             { $addToSet: { components: duplicateSolutionDocument._id } }
           );
+          if (programUpdate.modifiedCount === 0) {
+            throw {
+              message: messageConstants.apiResponses.PROGRAM_UPDATED_FAILED,
+            };
+        }
         }
 
           return resolve(duplicateSolutionDocument);
