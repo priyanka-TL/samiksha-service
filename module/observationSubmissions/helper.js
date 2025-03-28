@@ -118,6 +118,7 @@ module.exports = class ObservationSubmissionsHelper {
               solutionDocument = solutionDocument[0];
               observationSubmissionsDocument['solutionInfo'] = solutionDocument;
 
+              if(observationSubmissionsDocument.programId){
               let programDocument = 
               await programsHelper.list(
                   {
@@ -126,10 +127,23 @@ module.exports = class ObservationSubmissionsHelper {
                   ["name","description"],
               );
 
+              programDocument = programDocument.data.data;
+
               if( programDocument[0] ) {
                 observationSubmissionsDocument['programInfo'] = programDocument[0];
 
               }
+
+            }
+
+                
+            let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments(
+              {"name":observationSubmissionsDocument.entityType}
+            );
+            
+            if(entityTypeDocumentsAPICall.success){
+              observationSubmissionsDocument['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id
+            }
 
               return resolve(observationSubmissionsDocument);
 
