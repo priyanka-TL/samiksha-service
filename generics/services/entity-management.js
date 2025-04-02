@@ -146,13 +146,12 @@ const validateEntities = async function (entityIds, entityTypeId) {
       if(validateEntity == 'ON' && entityIds.length >0){
 
         let bodyData = {
-          _id : { $in: gen.utils.arrayIdsTobjectIdsNew(entityIds) },
+          _id : { $in: entityIds },
           entityTypeId: entityTypeId,
           };
     
           let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
           let entitiesDocuments = entitiesDocumentsAPIData.data;
-    
             if (entitiesDocuments.length > 0) {
               ids = entitiesDocuments.map((entityId) => entityId._id);
             }
