@@ -1963,7 +1963,7 @@ module.exports = class SolutionsHelper {
 
   static importFromSolution(
     solutionId,
-    // programId,
+    programId,
     userId,
     data,
     createdFor = ''
@@ -1982,37 +1982,34 @@ module.exports = class SolutionsHelper {
         }
 
         let solutionDocument = await solutionsQueries.solutionDocuments(solutionQuery);
-
+        
         if (!solutionDocument[0]) {
           throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           };
         }
-
-        // let programQuery = {};
-
-        // let validateProgramId = gen.utils.isValidMongoId(programId);
-
-        // if (validateProgramId) {
-        //   programQuery["_id"] = programId;
-        // } else {
-        //   programQuery["externalId"] = programId;
-        // }
-
-        // let programDocument = await programsHelper.list(programQuery, [
-        //   "externalId",
-        //   "name",
-        //   "description",
-        //   "isAPrivateProgram",
-        // ]);
-
-        // if (!programDocument[0]) {
-        //   throw {
-        //     message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
-        //   };
-        // }
-
         let newSolutionDocument = _.cloneDeep(solutionDocument[0]);
+        let programQuery = {};
+        let programDocument;
+      if (programId) {
+          programQuery[gen.utils.isValidMongoId(programId) ? "_id" : "externalId"] = programId;    
+          programDocument = await programsHelper.list(programQuery, [
+            "externalId",
+            "name",
+            "description",
+            "isAPrivateProgram",
+          ]);
+          programDocument = programDocument?.data?.data?.[0];
+          if (programDocument) {
+             Object.assign(newSolutionDocument, {
+               programId: programDocument._id,
+               programExternalId: programDocument.externalId,
+               programName: programDocument.name,
+               programDescription: programDocument.description
+              });
+          }
+
+        }
 
         let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes);
 
@@ -2101,10 +2098,6 @@ module.exports = class SolutionsHelper {
 
         newSolutionDocument.name = data.name;
         newSolutionDocument.description = data.description;
-        // newSolutionDocument.programId = programDocument[0]._id;
-        // newSolutionDocument.programExternalId = programDocument[0].externalId;
-        // newSolutionDocument.programName = programDocument[0].name;
-        // newSolutionDocument.programDescription = programDocument[0].description;
         newSolutionDocument.author = userId;
         newSolutionDocument.createdBy = userId;
         newSolutionDocument.entities = data.entities;
@@ -2149,11 +2142,17 @@ module.exports = class SolutionsHelper {
               { $set: { link: link } }
             );
           }
-
-          // await database.models.programs.updateOne(
-          //   { _id: programDocument[0]._id },
-          //   { $addToSet: { components: duplicateSolutionDocument._id } }
-          // );
+         if(programDocument){
+          let programUpdate= await database.models.programs.updateOne(
+            { _id: programDocument._id },
+            { $addToSet: { components: duplicateSolutionDocument._id } }
+          );
+          if (programUpdate.modifiedCount === 0) {
+            throw {
+              message: messageConstants.apiResponses.PROGRAM_UPDATED_FAILED,
+            };
+        }
+        }
 
           return resolve(duplicateSolutionDocument);
         } else {

@@ -19,6 +19,7 @@ const entityManagementService = require(ROOT_PATH + '/generics/services/entity-m
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 const criteriaQuestionHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper')
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 /**
  * ObservationSubmissionsHelper
  * @class
@@ -79,6 +80,78 @@ module.exports = class ObservationSubmissionsHelper {
     });
   }
 
+
+     /**
+   * Get observation submission details
+   * @method
+   * @name details
+   * @param {String} observationSubmissionId - observation submission id.
+   * @returns {JSON} - observation submission details
+   */
+
+     static details(observationSubmissionId) {
+      return new Promise(async (resolve, reject) => {
+          try {
+
+              let observationSubmissionsDocument = await database.models.observationSubmissions.findOne({
+                  _id: observationSubmissionId,
+                  status: 'completed',
+              }).lean();
+
+              if (!observationSubmissionsDocument) {
+                  throw messageConstants.apiResponses.SUBMISSION_NOT_FOUND;
+              }
+
+              //adding question options, externalId to answers array 
+              if ( observationSubmissionsDocument.answers && Object.keys(observationSubmissionsDocument.answers).length > 0 ) {
+                  observationSubmissionsDocument = await questionsHelper.addOptionsToSubmission(observationSubmissionsDocument);
+              }
+
+              let solutionDocument = await solutionsQueries.solutionDocuments({
+                  _id: observationSubmissionsDocument.solutionId
+              }, [ "name","scoringSystem","description","questionSequenceByEcm"]);
+  
+              if(!solutionDocument.length){
+                  throw messageConstants.apiResponses.SOLUTION_NOT_FOUND;
+              }
+              
+              solutionDocument = solutionDocument[0];
+              observationSubmissionsDocument['solutionInfo'] = solutionDocument;
+
+              if (observationSubmissionsDocument.programId) {
+                let programDocument = await programsHelper.list(
+                  {
+                    _id: observationSubmissionsDocument.programId,
+                  },
+                  ['name', 'description']
+                );
+
+                programDocument = programDocument?.data?.data;
+
+                if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
+                  observationSubmissionsDocument['programInfo'] = programDocument[0];
+                }
+              }
+
+              let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
+                name: observationSubmissionsDocument.entityType,
+              });
+
+              if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
+                observationSubmissionsDocument['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
+              }
+
+              return resolve(observationSubmissionsDocument);
+
+          } catch (error) {
+              return reject({
+                  success: false,
+                  message: error,
+                  data: {}
+              });
+          }
+      })
+  }
   /**
    * Push completed observation submission in kafka for reporting.
    * @method
@@ -98,12 +171,7 @@ module.exports = class ObservationSubmissionsHelper {
           observationSubmissionId = new ObjectId(observationSubmissionId);
         }
 
-        let observationSubmissionsDocument = await database.models.observationSubmissions
-          .findOne({
-            _id: observationSubmissionId,
-            status: 'completed',
-          })
-          .lean();
+        const observationSubmissionsDocument = await this.details(observationSubmissionId);
 
         if (!observationSubmissionsDocument) {
           throw (

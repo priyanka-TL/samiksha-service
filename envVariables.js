@@ -330,6 +330,15 @@ let enviromentVariables = {
 		message: 'Required TOP_LEVEL_ENTITY_TYPE to indentify top level entity type',
 		optional: true,
     default: 'state'
+	},  
+	ELEVATE_SURVEY_SERVICE_URL: {
+		message: 'Elevate survey service url required',
+		optional: false,
+	},
+	SERVICE_NAME: {
+		message: 'survey service name required',
+		optional: false,
+		default: 'survey',
 	},
 };
 

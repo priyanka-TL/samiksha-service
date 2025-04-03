@@ -25,7 +25,7 @@ const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const surveyQueries = require(DB_QUERY_BASE_PATH + '/surveys');
-
+const surveyService = require(ROOT_PATH + "/generics/services/survey");
 /**
  * SurveysHelper
  * @class
@@ -746,10 +746,11 @@ module.exports = class SurveysHelper {
    * @param {String} userId - userId
    * @param {String} submissionId - submission id
    * @param {Object} roleInformation 
+   * @param {String} userToken - userToken.
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static details(surveyId = '', userId = '', submissionId = '', roleInformation = {}) {
+  static details(surveyId = '', userId = '', submissionId = '', roleInformation = {}, userToken ="") {
     return new Promise(async (resolve, reject) => {
       try {
         // Condition to check for surveyId and userId
@@ -815,6 +816,7 @@ module.exports = class SurveysHelper {
              'imageCompression',
              'isAPrivateProgram',
            ]);
+           programDocument = programDocument.data.data
          }
 
         let solutionDocumentFieldList = await this.solutionDocumentFieldListInResponse();
@@ -947,6 +949,16 @@ module.exports = class SurveysHelper {
             isAPrivateProgram: surveyDocument.isAPrivateProgram,
           };
           submissionDocument.surveyInformation.startDate = new Date();
+
+          let userProfileData = await surveyService.profileRead(userToken)
+
+          if (userProfileData.success && userProfileData.data) {
+            userProfileData = userProfileData.data;
+          }else{
+            userProfileData = {}
+          }
+          
+          submissionDocument.userProfile = userProfileData;
 
           if (Object.keys(roleInformation).length > 0 && roleInformation.role) {
             let roleDocument = await userRolesHelper.list({ code: roleInformation.role }, ['_id']);
@@ -1528,7 +1540,7 @@ module.exports = class SurveysHelper {
           return resolve(validateSurvey);
         }
         //Getting details of the survey
-        let surveyDetails = await this.details(surveyData.data, userId, validateSurvey.data.submissionId, bodyData);
+        let surveyDetails = await this.details(surveyData.data, userId, validateSurvey.data.submissionId, bodyData,token);
 
         if (!surveyDetails.success) {
           return resolve(surveyDetails);

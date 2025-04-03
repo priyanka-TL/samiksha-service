@@ -11,7 +11,8 @@ const slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications')
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const surveySubmissionQueries = require(DB_QUERY_BASE_PATH + '/surveySubmissions');
 const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
-
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 /**
  * SurveySubmissionsHelper
  * @class
@@ -69,7 +70,7 @@ module.exports = class SurveySubmissionsHelper {
         }
 
         if (typeof surveySubmissionId == 'string') {
-          surveySubmissionId = ObjectId(surveySubmissionId);
+          surveySubmissionId = new ObjectId(surveySubmissionId);
         }
 
         let surveySubmissionsDocument = await this.surveySubmissionDocuments({
@@ -85,6 +86,29 @@ module.exports = class SurveySubmissionsHelper {
           );
         }
 
+        if (surveySubmissionsDocument[0].programId) {
+          let programDocument = await programsHelper.list(
+            {
+              _id: surveySubmissionsDocument[0].programId,
+            },
+            ['name', 'description']
+          );
+
+          programDocument = programDocument?.data?.data;
+
+          if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
+            surveySubmissionsDocument[0]['programInfo'] = programDocument[0];
+          }
+        }
+
+        let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
+          name: surveySubmissionsDocument[0].entityType,
+        });
+
+        if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
+          surveySubmissionsDocument[0]['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
+        }
+        
         const kafkaMessage = await kafkaClient.pushCompletedSurveySubmissionToKafka(surveySubmissionsDocument[0]);
 
         if (kafkaMessage.status != 'success') {

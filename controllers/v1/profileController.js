@@ -191,7 +191,7 @@ module.exports = class profile {
 			try {
 				// Call the read function from profileHelper with the user's details
 				const userId = req.userDetails.userId
-				const profileData = await profileHelper.read(userId)
+				const profileData = await profileHelper.read(userId,req.userDetails.userToken)
 
 				// If successful, resolve the Promise with a success message and the fetched data
 				return resolve({
