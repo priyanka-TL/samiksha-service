@@ -2327,6 +2327,39 @@ module.exports = class ObservationsHelper {
   
       lastSubmissionNumber = lastSubmissionForObservationEntity.result + 1;
   
+      let programInformation = null;
+
+      if(solutionDocument.programId){
+
+      let programQueryObject = {
+        _id: solutionDocument.programId,
+        status: messageConstants.common.ACTIVE_STATUS
+      };
+
+      let programDocument = await programsHelper.list(programQueryObject, [
+         "externalId",
+         "name",
+         "description",
+         "imageCompression",
+         "isAPrivateProgram",
+       ]);
+
+       programDocument = programDocument.data.data
+       
+       if (!programDocument[0]._id) {
+         throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+       }
+
+       programInformation =  {
+           ..._.omit(programDocument[0], [
+             "_id",
+             "components",
+             "isAPrivateProgram",
+           ]),
+         }
+
+      }
+
       let submissionDocument = {
         entityId: entityDocument._id,
         entityExternalId: entityDocument.metaInformation.externalId ? entityDocument.metaInformation.externalId : '',
@@ -2351,7 +2384,8 @@ module.exports = class ObservationsHelper {
         scoringSystem: solutionDocument.scoringSystem,
         isRubricDriven: solutionDocument.isRubricDriven,
         userProfile: observationDocument?.userProfile ?? {},
-        themes: solutionDocument.themes
+        themes: solutionDocument.themes,
+        programInformation:programInformation
       };
   
       if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
