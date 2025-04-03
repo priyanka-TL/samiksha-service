@@ -530,7 +530,7 @@ module.exports = class ObservationsHelper {
         }
 
         if (typeof entityId == 'string') {
-          entityId = new ObjectId(entityId);
+          entityId = gen.utils.isValidMongoId(entityId) ? new ObjectId(entityId) : entityId;
         }
 
         let submissionDocument = await database.models.observationSubmissions
@@ -2285,34 +2285,34 @@ module.exports = class ObservationsHelper {
       }
   
       solutionDocument = solutionDocument[0];
+     //need to check usage of entityProfileForm, why it is fetched. if needed create new logic
+      // if (validateEntities == 'ON') {
   
-      if (validateEntities == 'ON') {
+      //   let filterData = {
+      //     _id: solutionDocument.entityTypeId
+      //    };
   
-        let filterData = {
-          _id: solutionDocument.entityTypeId
-         };
+      //    let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments(
+      //      filterData,
+      //      {profileForm:1},
+      //      req.userDetails.userToken
+      //    );
   
-         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments(
-           filterData,
-           {profileForm:1},
-           req.userDetails.userToken
-         );
+      //    if(!entityTypeDocumentsAPICall.success){
+      //     throw new Error({
+      //       message:messageConstants.apiResponses.ENTITY_NOT_FOUND
+      //     });
+      //    }
   
-         if(!entityTypeDocumentsAPICall.success){
-          throw new Error({
-            message:messageConstants.apiResponses.ENTITY_NOT_FOUND
-          });
-         }
+      //   let entityProfileForm = entityTypeDocumentsAPICall.data[0];
   
-        let entityProfileForm = entityTypeDocumentsAPICall.data[0];
-  
-        if (!entityProfileForm) {
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND,
-          });
-        }
-      }
+      //   if (!entityProfileForm) {
+      //     return resolve({
+      //       status: httpStatusCode.bad_request.status,
+      //       message: messageConstants.apiResponses.ENTITY_PROFILE_FORM_NOT_FOUND,
+      //     });
+      //   }
+      // }
   
       let lastSubmissionNumber = 0;
   
