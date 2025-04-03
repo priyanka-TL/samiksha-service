@@ -142,14 +142,14 @@ const validateEntities = async function (entityIds, entityTypeId) {
     return new Promise(async (resolve, reject) => {
       try {
         let ids = [];
+        let isObjectIdArray = entityIds.every(gen.utils.isValidMongoId);
 
       if(validateEntity == 'ON' && entityIds.length >0){
-
         let bodyData = {
-          _id : { $in: entityIds },
+          _id : isObjectIdArray ? {$in: gen.utils.arrayIdsTobjectIdsNew(entityIds)} : { $in: entityIds },
           entityTypeId: entityTypeId,
           };
-    
+       
           let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
           let entitiesDocuments = entitiesDocumentsAPIData.data;
             if (entitiesDocuments.length > 0) {
