@@ -2350,7 +2350,8 @@ module.exports = class ObservationsHelper {
         status: 'started',
         scoringSystem: solutionDocument.scoringSystem,
         isRubricDriven: solutionDocument.isRubricDriven,
-        userProfile: observationDocument?.userProfile ?? {}
+        userProfile: observationDocument?.userProfile ?? {},
+        themes: solutionDocument.themes
       };
   
       if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
