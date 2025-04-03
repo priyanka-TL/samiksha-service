@@ -336,6 +336,7 @@ module.exports = {
   ENTITIES_REQUIRED_IN_SCOPE: 'Entities required in scope',
   ROLE_REQUIRED_IN_SCOPE: 'Required role in scope',
   PROGRAM_UPDATED_SUCCESSFULLY: 'Program updated successfully',
+  PROGRAM_UPDATED_FAILED: 'Program updated failed',
   TARGETED_PROGRAMS_FETCHED: 'Targeted programs fetched successfully',
   SCOPE_ENTITY_INVALID: 'Scope entity is invalid',
   SOLUTION_SCOPE_NOT_ADDED: 'Could not add solution scope',

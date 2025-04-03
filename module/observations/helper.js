@@ -30,6 +30,7 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const validateEntity = process.env.VALIDATE_ENTITIES;
 const validateRole = process.env.VALIDATE_ROLE;
 const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
+const surveyService = require(ROOT_PATH + "/generics/services/survey");
 /**
  * ObservationsHelper
  * @class
@@ -156,7 +157,15 @@ module.exports = class ObservationsHelper {
             };
           }
         }
-        let observationData = await this.createObservation(data, userId, solutionData);
+
+        let userProfileData = await surveyService.profileRead(requestingUserAuthToken)
+        if (userProfileData.success && userProfileData.data) {
+          userProfileData = userProfileData.data;
+        }else{
+          userProfileData = {}
+        }
+
+        let observationData = await this.createObservation(data, userId, solutionData,userProfileData);
 
         return resolve(_.pick(observationData, ['_id', 'name', 'description']));
       } catch (error) {
@@ -177,7 +186,7 @@ module.exports = class ObservationsHelper {
    * @returns {Object} observation creation data.
    */
 
-  static createObservation(data, userId, solution) {
+  static createObservation(data, userId, solution,userProfileInformation = {}) {
     return new Promise(async (resolve, reject) => {
       try {
         if (validateEntities == 'ON') {
@@ -205,6 +214,7 @@ module.exports = class ObservationsHelper {
           createdBy: userId,
           createdFor: userId,
           isAPrivateProgram: solution.isAPrivateProgram,
+          "userProfile" : userProfileInformation ? userProfileInformation : {}
         });
 
         let observationDataEntry = await database.models.observations.create(
@@ -2340,6 +2350,7 @@ module.exports = class ObservationsHelper {
         status: 'started',
         scoringSystem: solutionDocument.scoringSystem,
         isRubricDriven: solutionDocument.isRubricDriven,
+        userProfile: observationDocument?.userProfile ?? {}
       };
   
       if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {

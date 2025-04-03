@@ -11,8 +11,6 @@ const formSchema = new Schema({
 	type: {
 		type: String,
 		required: true,
-		unique: true,
-		index: true,
 	},
 	subType: {
 		type: String,
@@ -26,7 +24,7 @@ const formSchema = new Schema({
 		type: Schema.Types.Mixed,
 	},
 	organizationId: {
-		type: Number,
+		type: String,
 		required: true,
 	},
 })
@@ -48,4 +46,10 @@ formSchema.pre('updateOne', function (next) {
 module.exports = {
 	name: 'forms',
 	schema: formSchema,
+	compoundIndex: [
+		{
+			name: { type: 1, subType: 1, organizationId: 1 },
+			indexType: { unique: true },
+		},
+	],
 }

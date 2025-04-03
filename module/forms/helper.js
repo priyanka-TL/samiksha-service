@@ -157,12 +157,13 @@ module.exports = class FormsHelper {
 					const defaultOrgId = await this.getDefaultOrgId(userToken)
 					if (!defaultOrgId) {
 						return resolve({
+							status: httpStatusCode.bad_request.status,
 							success: false,
 							message: messageConstants.apiResponses.DEFAULT_ORG_ID_NOT_SET,
 						})
 					}
 					filter = _id
-						? { _id: ObjectId(_id), organizationId: defaultOrgId }
+						? { _id: new ObjectId(_id), organizationId: defaultOrgId }
 						: { ...bodyData, organizationId: defaultOrgId }
 					defaultOrgForm = await formQueries.findOneForm(filter)
 				}

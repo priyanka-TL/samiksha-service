@@ -89,5 +89,7 @@ module.exports = {
     appInformation: Object,
     userRoleInformation: Object,
     criteriaLevelReport: Boolean,
+    userProfile : Object,
+    programInformation: Object,
   },
 };

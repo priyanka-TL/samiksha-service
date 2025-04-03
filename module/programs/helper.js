@@ -607,13 +607,14 @@ module.exports = class ProgramsHelper {
    * @param {String} programId - Program Id.
    * @param {Object} data - body data (can include isResourse flag && userRoleInformation).
    * @param {String} userId - Logged in user id.
+   * @param {String} userToken - User token
    * @param {String} [appName = ""] - App Name.
    * @param {String} [appVersion = ""] - App Version.
    * @param {Boolean} callConsetAPIOnBehalfOfUser - required to call consent api or not
    * @returns {Object} - Details of the program join.
    */
 
-  static join(programId, data, userId, appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false) {
+  static join(programId, data, userId, userToken,appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false) {
     return new Promise(async (resolve, reject) => {
       try {
         let pushProgramUsersDetailsToKafka = false;
@@ -648,7 +649,7 @@ module.exports = class ProgramsHelper {
         if (!(programUsersDetails.length > 0)) {
           // Fetch user profile information by calling elevate-user  read api through interface service.
           // !Important check specific fields of userProfile.
-          let userProfile = await userService.profile(userId);
+          let userProfile = await userService.profile(userId,userToken);
           if (
             !userProfile.success ||
             !userProfile.data

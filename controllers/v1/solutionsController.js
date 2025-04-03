@@ -1273,6 +1273,7 @@ module.exports = class Solutions extends Abstract {
 
         let duplicateSolution = await solutionsHelper.importFromSolution(
           req.query.solutionId,
+          req.body.programExternalId ? req.body.programExternalId : "",
           req.userDetails.userId,
           req.body,
         );
