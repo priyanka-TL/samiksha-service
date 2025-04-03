@@ -1092,7 +1092,9 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
                     body:fileData
                   
                   };
-                
+                if(process.env.CLOUD_STORAGE_PROVIDER === "azure"){
+                    options.headers["x-ms-blob-type"] = "BlockBlob"
+                }
                 request(options, function (error, response) {
                     if (error) {
                         return resolve({
