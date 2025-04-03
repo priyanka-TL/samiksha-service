@@ -922,7 +922,8 @@ module.exports = class Observations extends Abstract {
           evidenceSubmissions: [],
           entityProfile: {},
           status: 'started',
-          userProfile: observationDocument?.userProfile ?? {}
+          userProfile: observationDocument?.userProfile ?? {},
+          themes: solutionDocument.themes
         };
 
         if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
