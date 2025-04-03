@@ -31,10 +31,11 @@ const profileRead = function (userToken) {
 					'x-auth-token': userToken,
 				},
 			}
-			request.get(url, options, userReadCallback)
 			let result = {
 				success: true,
 			}
+			request.get(url, options, userReadCallback)
+			
 			// Handle callback fucntion
 			function userReadCallback(err, data) {
 				if (err) {
