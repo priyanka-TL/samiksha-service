@@ -2328,7 +2328,7 @@ module.exports = class ObservationsHelper {
 
       let programQueryObject = {
         _id: solutionDocument.programId,
-        status: "active"
+        status: messageConstants.common.ACTIVE_STATUS
       };
 
       let programDocument = await programsHelper.list(programQueryObject, [
