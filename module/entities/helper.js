@@ -1565,10 +1565,10 @@ module.exports = class EntitiesHelper {
                   
                   response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
     
-                  response.result.push({
-                      "data" : data,
-                      "count" : data.length
-                  });
+                  // response.result.push({
+                  //     "data" : data,
+                  //     "count" : data.length
+                  // });
     
 
                 return resolve(response);
@@ -1616,10 +1616,10 @@ module.exports = class EntitiesHelper {
               
               response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
 
-              response.result.push({
-                  "data" : data,
-                  "count" : data.length
-              });
+              // response.result.push({
+              //     "data" : data,
+              //     "count" : data.length
+              // });
 
           }
           
