@@ -1530,8 +1530,9 @@ module.exports = class EntitiesHelper {
                 let filterDataGroups = {
                   "_id":targetedGroup
                 }
-    
-                entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,entityProjections);
+                let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
+
+                entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections);
                 
                 if ( !entitiesDetails.success ) {
                   return resolve({
