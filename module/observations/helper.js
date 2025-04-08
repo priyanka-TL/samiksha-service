@@ -2480,10 +2480,9 @@ module.exports = class ObservationsHelper {
       // }
   
       // Push new observation submission to kafka for reporting/tracking.
-      //commenting as no dependency on druid currently
-      // observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(
-      //   newObservationSubmissionDocument._id,
-      // );
+      observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(
+        newObservationSubmissionDocument._id,
+      );
   
       let observations = new Array();
   
