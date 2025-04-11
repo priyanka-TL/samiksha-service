@@ -1,6 +1,7 @@
 let improvementProjectService = require(ROOT_PATH + '/generics/services/improvement-project');
 let criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
+let projectService = require(ROOT_PATH + '/generics/services/project')
 
 module.exports = class criteriaHelper {
   static setCriteriaRubricExpressions(criteriaId, existingCriteria, criteriaRubricData, solutionLevelKeys) {
@@ -189,15 +190,15 @@ module.exports = class criteriaHelper {
         }
 
         if (improvementProjectIds.length > 0) {
-          let improvementProjects = await improvementProjectService.templateLists(improvementProjectIds, token);
+          let improvementProjects = await projectService.listById(token,improvementProjectIds);
 
-          if (improvementProjects.result && improvementProjects.result.length > 0) {
+          if (improvementProjects.data && improvementProjects.data.length > 0) {
             let improvements = {};
 
-            improvementProjects.result.forEach((improvement) => {
+            improvementProjects.data.forEach((improvement) => {
               if (!improvements[improvement.externalId]) {
                 improvements[improvement.externalId] = {
-                  _id: ObjectId(improvement._id),
+                  _id: new ObjectId(improvement._id),
                   title: improvement.title,
                   goal: improvement.goal,
                   externalId: improvement.externalId,
