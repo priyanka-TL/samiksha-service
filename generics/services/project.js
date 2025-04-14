@@ -8,6 +8,15 @@
 const request = require('request');
 const projectServiceUrl = process.env.INTERFACE_SERVICE_URL;
 
+
+/**
+ * Fetches the project template(s) based on the given externalId(s).
+ * 
+ * @param {string} userToken - The user's authentication token.
+ * @param {string[]|string} externalId - One or more external IDs of the project templates to fetch.
+ * @returns {Promise<Object>} A promise that resolves to an object indicating success and containing the fetched data if successful.
+ */
+
 // Function to fetch the project template based on the given externalId
 const listById = function (userToken, externalId) {
   return new Promise(async (resolve, reject) => {
@@ -26,12 +35,12 @@ const listById = function (userToken, externalId) {
         },
       };
       
-      request.post(url, options, userReadCallback);
+      request.post(url, options, projectListByIdCallback);
       let result = {
         success: true,
       };
       // Handle callback fucntion
-      function userReadCallback(err, data) {
+      function projectListByIdCallback(err, data) {
         if (err) {
           result.success = false;
         } else {
