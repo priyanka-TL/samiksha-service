@@ -46,7 +46,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
         json: requestJSON
       };
 
-      console.log(requestJSON,'requestJSON');
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
 
@@ -154,7 +153,6 @@ const validateEntities = async function (entityIds, entityTypeId,tenantData) {
           tenantId: tenantData.tenantId,
           orgId: tenantData.orgId
           };
-          console.log(bodyData,'bodyData');
           let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
           let entitiesDocuments = entitiesDocumentsAPIData.data;
             if (entitiesDocuments.length > 0) {
