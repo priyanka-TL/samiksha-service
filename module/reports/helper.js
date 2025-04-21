@@ -158,6 +158,7 @@ module.exports = class ReportsHelper {
     // Initialize an empty array to collect all improvement project suggestions
     let improvementProjectSuggestions = [];
   
+    if(submissionDocument.criteria){
     for (const criterias of submissionDocument.criteria) {
 
       // Build a query to find the criteria document by its unique _id
@@ -189,6 +190,7 @@ module.exports = class ReportsHelper {
 
       // Since we're only expecting one match, push the first document to the suggestions array
       improvementProjectSuggestions.push(allCriteriaDocument[0]);
+    }
     }
     if(!submissionDocument){
       throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
