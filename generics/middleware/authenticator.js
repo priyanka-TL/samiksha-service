@@ -407,7 +407,7 @@ module.exports = async function (req, res, next) {
       tenantId: decodedToken.tenantId && decodedToken.tenantId.toString() || '6',
       tenantData:{
         orgId:decodedToken.data.organization_id.toString(),
-        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString() || '1',
+        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString() || '6',
       }
     };
   } else {
