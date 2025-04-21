@@ -2240,8 +2240,8 @@ module.exports = class ObservationsHelper {
         let filterData = {
           _id: req.query.entityId,
           entityType: observationDocument.entityType,
-          tenantId: req.userDetails.tenantId,
-          orgId: req.userDetails.orgId
+          tenantId: req.userDetails.tenantData.tenantId,
+          orgId: req.userDetails.tenantData.orgId
          };
   
          let entitiesDocument = await entityManagementService.entityDocuments(

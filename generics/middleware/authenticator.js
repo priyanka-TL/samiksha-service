@@ -404,10 +404,10 @@ module.exports = async function (req, res, next) {
       firstName: decodedToken.data.name,
       organizationId: decodedToken.data.organization_id,
       orgId: decodedToken.data.organization_id.toString(),
-      tenantId: decodedToken.tenantId && decodedToken.tenantId.toString() || '6',
+      tenantId: decodedToken.tenantId && decodedToken.tenantId.toString() || '1',
       tenantData:{
         orgId:decodedToken.data.organization_id.toString(),
-        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString() || '6',
+        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString() || '1',
       }
     };
   } else {
@@ -448,8 +448,6 @@ module.exports = async function (req, res, next) {
 
   // Update user details object
   req.userDetails = userInformation;
-
-  console.log(req.userDetails,'<===req.userDetails')
 
   // Helper function to access nested properties
   function getNestedValue(obj, path) {
