@@ -91,5 +91,7 @@ module.exports = {
     criteriaLevelReport: Boolean,
     userProfile : Object,
     programInformation: Object,
+    orgId:String,
+    tenantId: String
   },
 };

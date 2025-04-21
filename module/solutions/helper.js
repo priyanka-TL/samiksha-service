@@ -37,7 +37,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} solution creation data.
    */
 
-  static createSolution(solutionData, checkDate = false) {
+  static createSolution(solutionData, checkDate = false,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         //Get the program details to update on the new solution document
@@ -74,6 +74,8 @@ module.exports = class SolutionsHelper {
           if (locationData.ids.length > 0) {
             let bodyData = {
               _id: { $in: locationData.codes },
+              orgId: tenantData.orgId,
+              tenantId: tenantData.tenantId
             };
             let entityData = await entityManagementService.entityDocuments(bodyData);
             if (entityData.success) {
@@ -196,7 +198,8 @@ module.exports = class SolutionsHelper {
     search,
     filter,
     surveyReportPage = '',
-    currentScopeOnly = false
+    currentScopeOnly = false,
+    tenantFilter
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -207,8 +210,11 @@ module.exports = class SolutionsHelper {
           userId,
           search,
           filter,
-          surveyReportPage
+          surveyReportPage,
+          tenantFilter
         );
+
+        console.log(assignedSolutions, 'assignedSolutions');
         let totalCount = 0;
         let mergedData = [];
         let solutionIds = [];
@@ -276,6 +282,9 @@ module.exports = class SolutionsHelper {
           }
         }
 
+        requestedData['tenantId'] = tenantFilter.tenantId;
+        requestedData['orgId'] = tenantFilter.orgId;
+
         let targetedSolutions = {
           success: false,
         };
@@ -287,10 +296,14 @@ module.exports = class SolutionsHelper {
         } else if (gen.utils.convertStringToBoolean(surveyReportPage) === true) {
           getTargetedSolution = false;
         }
+        console.log(getTargetedSolution, 'getTargetedSolution');
         // solutions based on role and location
         if (getTargetedSolution) {
+          console.log('getTargetedSolution....');
           targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search);
         }
+
+        console.log(targetedSolutions,'targetedSolutions  ***')
         
         if (targetedSolutions.success) {
 					// When targetedSolutions is empty and currentScopeOnly is set to true send empty response
@@ -399,7 +412,7 @@ module.exports = class SolutionsHelper {
    * @returns {Object} - Details of the solution.
    */
 
-  static assignedUserSolutions(solutionType, userId, search, filter, surveyReportPage = '') {
+  static assignedUserSolutions(solutionType, userId, search, filter, surveyReportPage = '',tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         let userAssignedSolutions = {};
@@ -410,7 +423,8 @@ module.exports = class SolutionsHelper {
             '', //Page No
             '', //Page Size
             search,
-            filter
+            filter,
+            tenantFilter
           );
         } else if (solutionType === messageConstants.common.SURVEY) {
           userAssignedSolutions = await surveyHelper.userAssigned(
@@ -419,7 +433,8 @@ module.exports = class SolutionsHelper {
             '', //Page Size
             search,
             filter,
-            surveyReportPage
+            surveyReportPage,
+            tenantFilter
           );
         }
         // else {
@@ -449,6 +464,7 @@ module.exports = class SolutionsHelper {
    */
 
   static queryBasedOnRoleAndLocation(data, type = '') {
+    console.log(data,'<---data')
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
@@ -458,13 +474,14 @@ module.exports = class SolutionsHelper {
           isDeleted: false,
         };
 
-        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type'])).forEach((key) => {
+        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
+          console.log(key,'**key**')
           data[key] = data[key].split(',');
         });
         // If validate entity set to ON . strict scoping should be applied
         if (validateEntity !== messageConstants.common.OFF) {
           // Getting entities and entity types from request body
-          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((requestedDataKey) => {
+          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId'])).forEach((requestedDataKey) => {
              entities.push(...data[requestedDataKey]);
             // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
             entityTypes.push(requestedDataKey);
@@ -488,7 +505,7 @@ module.exports = class SolutionsHelper {
           };
           // filterQuery['scope.entities'] = { $in: entities };
           filterQuery.$or = [];
-          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((key) => {
+          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
             filterQuery.$or.push({
               [`scope.${key}`]: { $in: data[key] },
             });
@@ -504,7 +521,7 @@ module.exports = class SolutionsHelper {
           // });
 
           // Obtain userInfo
-          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type']);
+          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
           let userRoleKeys = Object.keys(userRoleInfo);
           let queryFilter = [];
 
@@ -531,6 +548,7 @@ module.exports = class SolutionsHelper {
             userRoleKeys.forEach((key) => {
               let scope = 'scope.' + key;
               let values = userRoleInfo[key];
+
               if (!Array.isArray(values)) {
                 queryFilter.push({ [scope]: { $in: values.split(',') } });
               } else {
@@ -560,6 +578,12 @@ module.exports = class SolutionsHelper {
         } else {
           filterQuery.status = messageConstants.common.ACTIVE_STATUS;
         }
+
+        filterQuery.tenantId = data.tenantId;
+        filterQuery.orgId = {
+          "$in": ["ALL", data.orgId]
+        };
+
         if (data.filter && Object.keys(data.filter).length > 0) {
           let solutionsSkipped = [];
 
@@ -577,11 +601,14 @@ module.exports = class SolutionsHelper {
 
           filterQuery = _.merge(filterQuery, data.filter);
         }
+
+        console.log(filterQuery,'filterQuery')
         return resolve({
           success: true,
           data: filterQuery,
         });
       } catch (error) {
+        console.log(error,'error')
         return resolve({
           success: false,
           status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
@@ -609,9 +636,10 @@ module.exports = class SolutionsHelper {
   static forUserRoleAndLocation(bodyData, type, subType = '', programId, pageSize, pageNo, searchText = '') {
     return new Promise(async (resolve, reject) => {
       try {
+        console.log('inside forUserRoleAndLocation');
         //Getting query based on roles and entity
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType, programId);
-        
+        console.log(queryData,'queryData')
         if (!queryData.success) {
           return resolve(queryData);
         }
@@ -673,6 +701,7 @@ module.exports = class SolutionsHelper {
           data: targetedSolutions.data,
         });
       } catch (error) {
+        console.log(error,'error')
         return resolve({
           success: false,
           message: error.message,
@@ -2232,10 +2261,11 @@ module.exports = class SolutionsHelper {
    * @param {String} userId - user Id.
    * @param {String} userToken - user token.
    * @param {Boolean} createProject - create project.
+   * @param {Object} tenantData - tenantData
    * @returns {Object} - Details of the solution.
    */
 
-  static verifyLink(link = '', bodyData = {}, userId = '', userToken = '', createProject = true) {
+  static verifyLink(link = '', bodyData = {}, userId = '', userToken = '', createProject = true,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         // check solution document is exists and  end date validation
@@ -3753,10 +3783,11 @@ module.exports = class SolutionsHelper {
    * @name addEntitiesInScope
    * @param {String} solutionId - solution Id.
    * @param {Array} entities - entities data.
+   * @param {Object} tenantData - tenantData data.
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(solutionId, entities, token) {
+  static addEntitiesInScope(solutionId, entities, token,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -3796,6 +3827,8 @@ module.exports = class SolutionsHelper {
               {
                 _id: programData[0].scope.entities,
                 [`groups.${solutionData[0].scope.entityType}`]: entities,
+                tenantId: tenantData.tenantId,
+                orgId: tenantData.orgId,
               },
               ['_id']
             );
@@ -3812,6 +3845,8 @@ module.exports = class SolutionsHelper {
           {
             _id: { $in: entities },
             entityType: solutionData[0].scope.entityType,
+            tenantId: tenantData.tenantId,
+            orgId: tenantData.orgId,
           },
           ['_id']
         );

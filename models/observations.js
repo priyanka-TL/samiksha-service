@@ -51,6 +51,8 @@ module.exports = {
     },
     project: Object,
     referenceFrom: String,
-    userProfile : Object
+    userProfile : Object,
+    orgId:String,
+    tenantId: String
   },
 };

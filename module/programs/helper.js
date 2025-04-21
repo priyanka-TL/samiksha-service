@@ -146,6 +146,8 @@ module.exports = class ProgramsHelper {
           },
           components: [],
           isAPrivateProgram: data.isAPrivateProgram ? data.isAPrivateProgram : false,
+          tenantId:data.tenantData.tenantId,
+          orgId:data.tenantData.orgId
         };
 
         // Adding Start and End date in program document
@@ -362,10 +364,11 @@ module.exports = class ProgramsHelper {
    * @name addEntitiesInScope
    * @param {String} programId - Program Id.
    * @param {Array} entities - entities data.
+   * @param {Object} tenantData - tenantData
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(programId, entities) {
+  static addEntitiesInScope(programId, entities,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await programsQueries.programDocuments(
@@ -389,6 +392,8 @@ module.exports = class ProgramsHelper {
           {
             _id: { $in: entities },
             entityType: programData[0].scope.entityType,
+            tenantId: tenantData.tenantId,
+            orgId: tenantData.orgId
           },
           ['_id']
         );

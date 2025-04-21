@@ -149,6 +149,7 @@ module.exports = class Programs extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         req.body.userId = req.userDetails.userId;
+        req.body.tenantData = req.userDetails.tenantData;
         let programCreationData = await programsHelper.create(
           req.body,
           true, // checkDate
@@ -334,9 +335,12 @@ module.exports = class Programs extends Abstract {
   async addEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        let tenantData = req.userDetails.tenantData
         let programDetails = await programsHelper.addEntitiesInScope(
           req.params._id,
           req.body.entities,
+          tenantData
         );
 
         return resolve(programDetails);

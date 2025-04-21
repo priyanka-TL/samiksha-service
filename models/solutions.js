@@ -96,6 +96,8 @@ module.exports = {
     projectTemplateId : {
       type : "ObjectId",
       index: true
-    }
+    },
+    orgId:Array,
+    tenantId: String
   }
 };

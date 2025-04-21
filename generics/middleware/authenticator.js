@@ -403,6 +403,12 @@ module.exports = async function (req, res, next) {
       userName: decodedToken.data.name,
       firstName: decodedToken.data.name,
       organizationId: decodedToken.data.organization_id,
+      orgId: decodedToken.data.organization_id.toString(),
+      tenantId: decodedToken.tenantId && decodedToken.tenantId.toString() || '6',
+      tenantData:{
+        orgId:decodedToken.data.organization_id.toString(),
+        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString() || '1',
+      }
     };
   } else {
     // Iterate through each key in the config object
@@ -417,8 +423,34 @@ module.exports = async function (req, res, next) {
       }
     }
   }
+
+    const isAdmin = req.get('admin_access_token') === process.env.ADMIN_ACCESS_TOKEN;
+    console.log(isAdmin, 'isAdmin')
+    if (isAdmin) {
+
+    // Validate the presence of required headers
+    const adminOrgId = req.get('admin_org_id');
+    const adminTenantId = req.get('admin_tenant_id');
+
+    if (!adminOrgId || !adminTenantId) {
+      rspObj.errCode = 'ADMIN_FIELDS_MISSING';
+      rspObj.errMsg = "Required headers are missing: admin_org_id or admin_tenant_id";
+      rspObj.responseCode = responseCode.unauthorized.status;
+      return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+    }
+
+    // If the user is an admin, override tenantId and orgId with values from the headers
+    userInformation.orgId = req.get('admin_org_id').toString();
+    userInformation.tenantId = (req.get('admin_tenant_id') && req.get('admin_tenant_id').toString()) || '1';
+    userInformation.tenantData.orgId = req.get('admin_org_id').toString();
+    userInformation.tenantData.tenantId = (req.get('admin_tenant_id') && req.get('admin_tenant_id').toString()) || '1';
+    }
+
   // Update user details object
   req.userDetails = userInformation;
+
+  console.log(req.userDetails,'<===req.userDetails')
+
   // Helper function to access nested properties
   function getNestedValue(obj, path) {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);

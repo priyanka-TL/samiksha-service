@@ -135,6 +135,8 @@ module.exports = class ObservationSubmissionsHelper {
 
               let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
                 name: observationSubmissionsDocument.entityType,
+                tenantId: observationSubmissionsDocument.tenantId,
+                orgId: observationSubmissionsDocument.orgId
               });
 
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
@@ -957,7 +959,7 @@ module.exports = class ObservationSubmissionsHelper {
    * @returns {Json} - returns solutions, entityTypes.
    */
 
-  static solutionList(bodyData, userId = '', entityType = '', pageSize, pageNo) {
+  static solutionList(bodyData, userId = '', entityType = '', pageSize, pageNo,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -1092,6 +1094,8 @@ module.exports = class ObservationSubmissionsHelper {
         let entitiesDetails = await entityManagementService.entityDocuments(
           {
             _id: { $in: entityIds },
+            tenantId: tenantData.tenantId,
+            orgId: tenantData.orgId,
           },
           ['metaInformation.externalId', 'metaInformation.name'],
         );

@@ -9,10 +9,11 @@ module.exports = class ProfileHelper {
 	 * @description Fetches and processes user profile data, including location details.
 	 * @param {Object} userId - The userId ccontaining the userId.
 	 * @param {String} userToken - The userToken 
+	 * @param {Object} tenantData - The tenantData 
 	 * @returns {Promise<Object>} - A promise that resolves with the processed user profile data or an error object.
 	 * @throws {Error} - Throws an error if the user details cannot be fetched or processed.
 	 **/
-	static read(userId,userToken) {
+	static read(userId,userToken,tenantData) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				// Fetch user profile details using userService.profile function
@@ -43,6 +44,8 @@ module.exports = class ProfileHelper {
 						_id: {
 							$in: locationIds,
 						},
+						tenantId: tenantData.tenantId,
+						orgId: tenantData.orgId
 					}
 					// Define the fields to be projected in the entity documents
 					const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']

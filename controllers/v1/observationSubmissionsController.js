@@ -1267,6 +1267,7 @@ module.exports = class ObservationSubmissions extends Abstract {
           entityType,
           req.pageSize,
           req.pageNo,
+          req.userDetails.tenantData,
         );
 
         return resolve({

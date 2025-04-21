@@ -103,6 +103,8 @@ module.exports = class SurveySubmissionsHelper {
 
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
+          tenantId: surveySubmissionsDocument[0].tenantId,
+          orgId: surveySubmissionsDocument[0].orgId
         });
 
         if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
@@ -394,7 +396,7 @@ module.exports = class SurveySubmissionsHelper {
    * @returns {Json} - survey list.
    */
 
-  static surveyList(userId = '', pageNo, pageSize, search, filter, surveyReportPage = '') {
+  static surveyList(userId = '', pageNo, pageSize, search, filter, surveyReportPage = '',tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -406,7 +408,13 @@ module.exports = class SurveySubmissionsHelper {
           count: 0,
         };
         //Constructing the match query
-        let submissionMatchQuery = { $match: { createdBy: userId } };
+        let submissionMatchQuery = { $match: { createdBy: userId,
+          tenantId:tenantFilter.tenantId,
+          orgId:{
+            "$in": ["ALL", tenantFilter.orgId]
+          }
+
+         } };
 
         if (gen.utils.convertStringToBoolean(surveyReportPage)) {
           submissionMatchQuery['$match']['status'] = messageConstants.common.SUBMISSION_STATUS_COMPLETED;
@@ -524,7 +532,7 @@ module.exports = class SurveySubmissionsHelper {
    * @returns {Json} - survey list.
    */
 
-  static surveySolutions(userId, pageNo, pageSize, search, filter = '') {
+  static surveySolutions(userId, pageNo, pageSize, search, filter = '',tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -537,6 +545,10 @@ module.exports = class SurveySubmissionsHelper {
             type: messageConstants.common.SURVEY,
             isReusable: false,
             isDeleted: false,
+            tenantId:tenantFilter.tenantId,
+            orgId:{
+              "$in": ["ALL", tenantFilter.orgId]
+            }
           },
         };
 
@@ -557,6 +569,7 @@ module.exports = class SurveySubmissionsHelper {
           }
         }
         const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+        console.log(solutionMatchQuery,'solutionMatchQuery')
         // finding  list of created survey solutions by user
         let result = await solutionsHelper.solutionDocumentsByAggregateQuery([
           solutionMatchQuery,

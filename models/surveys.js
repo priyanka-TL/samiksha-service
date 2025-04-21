@@ -39,5 +39,7 @@ module.exports = {
       default: false,
       type: Boolean,
     },
+    orgId:String,
+    tenantId: String
   },
 };

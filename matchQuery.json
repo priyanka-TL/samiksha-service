@@ -1,0 +1,16 @@
+{
+  "$match": {
+    "createdBy": "276",
+    "deleted": false,
+    "referenceFrom": {
+      "$ne": "project"
+    },
+    "tenantId": "1",
+    "orgId": {
+      "$in": [
+        "ALL",
+        "1"
+      ]
+    }
+  }
+}

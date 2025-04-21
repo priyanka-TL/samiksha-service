@@ -1482,7 +1482,9 @@ module.exports = class EntitiesHelper {
           if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
 
               let filterData = {
-                  "_id" : req.query.parentEntityId
+                  "_id" : req.query.parentEntityId,
+                  "tenantId":req.userDetails.tenantId,
+                  "orgId":req.userDetails.orgId
               };
                   
               let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
@@ -1528,7 +1530,9 @@ module.exports = class EntitiesHelper {
                 let targetedGroup = groups[result.entityType];
     
                 let filterDataGroups = {
-                  "_id":targetedGroup
+                  "_id":targetedGroup,
+                  "tenantId":req.userDetails.tenantId,
+                  "orgId":req.userDetails.orgId
                 }
                 let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
 
@@ -1580,7 +1584,9 @@ module.exports = class EntitiesHelper {
             response.result = [];
             let filterData = {
               "entityType":result.entityType,
-              "_id":result.entities
+              "_id":result.entities,
+              "tenantId":req.userDetails.tenantId,
+              "orgId":req.userDetails.orgId
 
             }
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);

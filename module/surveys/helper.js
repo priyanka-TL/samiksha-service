@@ -144,6 +144,8 @@ module.exports = class SurveysHelper {
             isActive: true,
           },
         };
+        newSolutionDocument.tenantId = solutionData.tenantId;
+        newSolutionDocument.orgId = solutionData.orgId
 
         let themes = [
           {
@@ -192,6 +194,7 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.ERROR_CREATING_SURVEY_SOLUTION);
         }
       } catch (error) {
+        console.log(error,'<--error')
         return resolve({
           success: false,
           message: error.message,
@@ -1573,7 +1576,7 @@ module.exports = class SurveysHelper {
    * @returns {Object}
    */
 
-  static userAssigned(userId, pageSize, pageNo, search = '', filter, surveyReportPage = '') {
+  static userAssigned(userId, pageSize, pageNo, search = '', filter, surveyReportPage = '',tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         let surveySolutions = {
@@ -1582,7 +1585,7 @@ module.exports = class SurveysHelper {
 
         if (surveyReportPage === '' || gen.utils.convertStringToBoolean(surveyReportPage)) {
           // List of created survey solutions by user.
-          surveySolutions = await surveySubmissionsHelper.surveySolutions(userId, pageNo, pageSize, search, filter);
+          surveySolutions = await surveySubmissionsHelper.surveySolutions(userId, pageNo, pageSize, search, filter,tenantFilter);
         }
 
         let totalCount = 0;
@@ -1606,6 +1609,7 @@ module.exports = class SurveysHelper {
           search,
           filter,
           surveyReportPage,
+          tenantFilter
         );
 
         if (surveySubmissions.success && surveySubmissions.data.data.length > 0) {

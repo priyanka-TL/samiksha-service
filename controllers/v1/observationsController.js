@@ -390,7 +390,9 @@ module.exports = class Observations extends Abstract {
   async addEntityToObservation(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await observationsHelper.addEntityToObservation(req.params._id, req.body.data, req.userDetails.id);
+        console.log('here***********')
+        console.log(req.userDetails.tenantData,"<--*******")
+        let result = await observationsHelper.addEntityToObservation(req.params._id, req.body.data, req.userDetails.id,req.userDetails.tenantData);
 
         return resolve(result);
       } catch (error) {
@@ -475,7 +477,8 @@ module.exports = class Observations extends Abstract {
           response = await observationsHelper.addEntityToObservation(
             req.params._id,
             req.body.data,
-            req.userDetails.userId
+            req.userDetails.userId,
+            req.userDetails.tenantData
           );
         } else if (req.method === 'DELETE') {
           response = await observationsHelper.removeEntityFromObservation(
@@ -738,6 +741,8 @@ module.exports = class Observations extends Abstract {
           let entityQueryObject = {
             _id: req.query.entityId,
             entityType: observationDocument.entityType,
+            tenantId:req.userDetails.tenantData.tenantId,
+            orgId: req.userDetails.tenantData.orgId
           };
         let entitiesDetails = await entityManagementService.entityDocuments(
           entityQueryObject,
@@ -923,7 +928,9 @@ module.exports = class Observations extends Abstract {
           entityProfile: {},
           status: 'started',
           userProfile: observationDocument?.userProfile ?? {},
-          themes: solutionDocument.themes
+          themes: solutionDocument.themes,
+          tenantId: observationDocument.tenantId,
+          orgId: observationDocument.orgId
         };
 
         if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
@@ -1157,9 +1164,18 @@ module.exports = class Observations extends Abstract {
           !req.query.frameworkId ||
           req.query.frameworkId == '' ||
           !req.query.entityType ||
-          req.query.entityType == ''
+          req.query.entityType == '' ||
+          !req.query.tenantId ||
+          !req.query.orgId
         ) {
           throw messageConstants.apiResponses.INVALID_PARAMETER;
+        }
+
+        try {
+          // Parse the string into an array
+          req.query.orgId = JSON.parse(req.query.orgId);
+        } catch (err) {
+          throw messageConstants.apiResponses.INVALID_ORG_ID;
         }
 
         let frameworkDocument = await database.models.frameworks
@@ -1238,6 +1254,8 @@ module.exports = class Observations extends Abstract {
         // newSolutionDocument.entityTypeId = entityTypeDocument._id;
         // newSolutionDocument.entityType = entityTypeDocument.name;
         newSolutionDocument.isReusable = true;
+        newSolutionDocument.tenantId = req.query.tenantId;
+        newSolutionDocument.orgId = req.query.orgId;
 
         let newBaseSolution = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 
@@ -1788,7 +1806,8 @@ module.exports = class Observations extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let observationDetails = await observationsHelper.details(req.params._id);
+        let tenantData = req.userDetails.tenantData
+        let observationDetails = await observationsHelper.details(req.params._id,'','',tenantData);
 
         return resolve({
           message: messageConstants.apiResponses.OBSERVATION_FETCHED,
@@ -2087,7 +2106,8 @@ module.exports = class Observations extends Abstract {
           req.userDetails.userToken,
           req.params._id ? req.params._id : '',
           req.query.solutionId,
-          req.body
+          req.body,
+          req.userDetails.tenantData
         );
 
         observations['result'] = observations.data;

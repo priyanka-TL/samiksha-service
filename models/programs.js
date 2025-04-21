@@ -65,6 +65,8 @@ module.exports = {
       type : Array,
       require : true
     },
-    createdFor : Array
+    createdFor : Array,
+    orgId:Array,
+    tenantId: String
   }
 };
