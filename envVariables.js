@@ -340,6 +340,10 @@ let enviromentVariables = {
 		optional: false,
 		default: 'survey',
 	},
+  ADMIN_ACCESS_TOKEN:{
+    message: 'Required admin access token',
+    optional: false
+  }
 };
 
 let success = true;

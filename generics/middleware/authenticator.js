@@ -435,8 +435,8 @@ module.exports = async function (req, res, next) {
     const adminTenantId = req.get('admin_tenant_id');
 
     if (!adminOrgId || !adminTenantId) {
-      rspObj.errCode = 'ADMIN_FIELDS_MISSING';
-      rspObj.errMsg = "Required headers are missing: admin_org_id or admin_tenant_id";
+      rspObj.errCode = reqMsg.ADMIN_TOKEN.MISSING_CODE;
+      rspObj.errMsg = reqMsg.ADMIN_TOKEN.MISSING_MESSAGE;
       rspObj.responseCode = responseCode.unauthorized.status;
       return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
     }
