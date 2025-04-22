@@ -166,7 +166,6 @@ module.exports = class ObservationsHelper {
           userProfileData = {}
         }
 
-        console.log("********stoppppppp************")
         let observationData = await this.createObservation(data, userId, solutionData,userProfileData,tenantData);
 
         return resolve(_.pick(observationData, ['_id', 'name', 'description']));
@@ -1709,8 +1708,6 @@ module.exports = class ObservationsHelper {
         
        //Retrieve the matching documents from the observation collection
         let result = await database.models.observations.aggregate(aggregateData);
-      //  console.log(result,'<--result**')
-       // require('fs').writeFileSync('result.json', JSON.stringify(result));
         if (result[0].data.length > 0) {
           let solutionIds = [];
 

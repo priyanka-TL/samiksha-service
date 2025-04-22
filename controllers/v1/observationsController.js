@@ -390,8 +390,6 @@ module.exports = class Observations extends Abstract {
   async addEntityToObservation(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log('here***********')
-        console.log(req.userDetails.tenantData,"<--*******")
         let result = await observationsHelper.addEntityToObservation(req.params._id, req.body.data, req.userDetails.id,req.userDetails.tenantData);
 
         return resolve(result);
@@ -1160,22 +1158,14 @@ module.exports = class Observations extends Abstract {
   async importFromFramework(req) {
     return new Promise(async (resolve, reject) => {
       try {
+
         if (
           !req.query.frameworkId ||
           req.query.frameworkId == '' ||
           !req.query.entityType ||
-          req.query.entityType == '' ||
-          !req.query.tenantId ||
-          !req.query.orgId
+          req.query.entityType == '' 
         ) {
           throw messageConstants.apiResponses.INVALID_PARAMETER;
-        }
-
-        try {
-          // Parse the string into an array
-          req.query.orgId = JSON.parse(req.query.orgId);
-        } catch (err) {
-          throw messageConstants.apiResponses.INVALID_ORG_ID;
         }
 
         let frameworkDocument = await database.models.frameworks
@@ -1254,8 +1244,8 @@ module.exports = class Observations extends Abstract {
         // newSolutionDocument.entityTypeId = entityTypeDocument._id;
         // newSolutionDocument.entityType = entityTypeDocument.name;
         newSolutionDocument.isReusable = true;
-        newSolutionDocument.tenantId = req.query.tenantId;
-        newSolutionDocument.orgId = req.query.orgId;
+        newSolutionDocument.tenantId = req.userDetails.tenantData.tenantId;
+        newSolutionDocument.orgId = req.userDetails.tenantData.orgId;
 
         let newBaseSolution = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 

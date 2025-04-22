@@ -66,7 +66,7 @@ module.exports = class Surveys extends Abstract {
   async createSolutionTemplate(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let createSolutionTemplate = await surveysHelper.createSolutionTemplate(req.body, req.userDetails.userId);
+        let createSolutionTemplate = await surveysHelper.createSolutionTemplate(req.body, req.userDetails.userId,req.userDetails.tenantData);
 
         return resolve({
           message: createSolutionTemplate.message,

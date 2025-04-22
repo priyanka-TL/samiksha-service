@@ -151,6 +151,9 @@ module.exports = async function (req, res, next) {
     'frameworks/delete/',
     'questions/delete/',
     'observationSubmissions/disable/',
+    'programs/create',
+    'observations/importFromFramework',
+    'surveys/createSolutionTemplate'
   ];
 
   let performInternalAccessTokenCheck = false;
@@ -161,6 +164,7 @@ module.exports = async function (req, res, next) {
       }
     })
   );
+
 
   if (performInternalAccessTokenCheck) {
     if (req.headers['internal-access-token'] !== process.env.INTERNAL_ACCESS_TOKEN) {
@@ -403,11 +407,9 @@ module.exports = async function (req, res, next) {
       userName: decodedToken.data.name,
       firstName: decodedToken.data.name,
       organizationId: decodedToken.data.organization_id,
-      orgId: decodedToken.data.organization_id.toString(),
-      tenantId: decodedToken.tenantId && decodedToken.tenantId.toString() || '1',
       tenantData:{
         orgId:decodedToken.data.organization_id.toString(),
-        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString() || '1',
+        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString(),
       }
     };
   } else {
@@ -425,7 +427,7 @@ module.exports = async function (req, res, next) {
   }
 
     const isAdmin = req.get('admin_access_token') === process.env.ADMIN_ACCESS_TOKEN;
-    console.log(isAdmin, 'isAdmin')
+
     if (isAdmin) {
 
     // Validate the presence of required headers
@@ -440,10 +442,8 @@ module.exports = async function (req, res, next) {
     }
 
     // If the user is an admin, override tenantId and orgId with values from the headers
-    userInformation.orgId = req.get('admin_org_id').toString();
-    userInformation.tenantId = (req.get('admin_tenant_id') && req.get('admin_tenant_id').toString()) || '1';
-    userInformation.tenantData.orgId = req.get('admin_org_id').toString();
-    userInformation.tenantData.tenantId = (req.get('admin_tenant_id') && req.get('admin_tenant_id').toString()) || '1';
+    userInformation.tenantData.orgId = req.get('admin_org_id').toString().split(',');
+    userInformation.tenantData.tenantId = (req.get('admin_tenant_id') && req.get('admin_tenant_id').toString());
     }
 
   // Update user details object

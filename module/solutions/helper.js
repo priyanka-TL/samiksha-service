@@ -214,7 +214,6 @@ module.exports = class SolutionsHelper {
           tenantFilter
         );
 
-        console.log(assignedSolutions, 'assignedSolutions');
         let totalCount = 0;
         let mergedData = [];
         let solutionIds = [];
@@ -296,14 +295,11 @@ module.exports = class SolutionsHelper {
         } else if (gen.utils.convertStringToBoolean(surveyReportPage) === true) {
           getTargetedSolution = false;
         }
-        console.log(getTargetedSolution, 'getTargetedSolution');
         // solutions based on role and location
         if (getTargetedSolution) {
-          console.log('getTargetedSolution....');
           targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search);
         }
 
-        console.log(targetedSolutions,'targetedSolutions  ***')
         
         if (targetedSolutions.success) {
 					// When targetedSolutions is empty and currentScopeOnly is set to true send empty response
@@ -464,7 +460,6 @@ module.exports = class SolutionsHelper {
    */
 
   static queryBasedOnRoleAndLocation(data, type = '') {
-    console.log(data,'<---data')
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
@@ -475,7 +470,6 @@ module.exports = class SolutionsHelper {
         };
 
         Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
-          console.log(key,'**key**')
           data[key] = data[key].split(',');
         });
         // If validate entity set to ON . strict scoping should be applied
@@ -602,13 +596,11 @@ module.exports = class SolutionsHelper {
           filterQuery = _.merge(filterQuery, data.filter);
         }
 
-        console.log(filterQuery,'filterQuery')
         return resolve({
           success: true,
           data: filterQuery,
         });
       } catch (error) {
-        console.log(error,'error')
         return resolve({
           success: false,
           status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
@@ -636,10 +628,8 @@ module.exports = class SolutionsHelper {
   static forUserRoleAndLocation(bodyData, type, subType = '', programId, pageSize, pageNo, searchText = '') {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log('inside forUserRoleAndLocation');
         //Getting query based on roles and entity
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType, programId);
-        console.log(queryData,'queryData')
         if (!queryData.success) {
           return resolve(queryData);
         }
@@ -701,7 +691,6 @@ module.exports = class SolutionsHelper {
           data: targetedSolutions.data,
         });
       } catch (error) {
-        console.log(error,'error')
         return resolve({
           success: false,
           message: error.message,

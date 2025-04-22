@@ -569,7 +569,6 @@ module.exports = class SurveySubmissionsHelper {
           }
         }
         const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
-        console.log(solutionMatchQuery,'solutionMatchQuery')
         // finding  list of created survey solutions by user
         let result = await solutionsHelper.solutionDocumentsByAggregateQuery([
           solutionMatchQuery,

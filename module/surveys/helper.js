@@ -87,11 +87,12 @@ module.exports = class SurveysHelper {
    * @name createSolutionTemplate
    * @param {String} solutionData - survey solution details
    * @param {String} userId - logged in userId
+   * @param {Object} tenantData - tenantData
    * @param {String} appName - name of the app
    * @returns {JSON} - solutionId.
    */
 
-  static createSolutionTemplate(solutionData, userId = '') {
+  static createSolutionTemplate(solutionData, userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (!solutionData.name) {
@@ -144,8 +145,8 @@ module.exports = class SurveysHelper {
             isActive: true,
           },
         };
-        newSolutionDocument.tenantId = solutionData.tenantId;
-        newSolutionDocument.orgId = solutionData.orgId
+        newSolutionDocument.tenantId = tenantData.tenantId;
+        newSolutionDocument.orgId = tenantData.orgId
 
         let themes = [
           {
@@ -194,7 +195,6 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.ERROR_CREATING_SURVEY_SOLUTION);
         }
       } catch (error) {
-        console.log(error,'<--error')
         return resolve({
           success: false,
           message: error.message,

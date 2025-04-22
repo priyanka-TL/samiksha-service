@@ -140,7 +140,7 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
  * @throws {Error} If there's an error during validation.
  */
 const validateEntities = async function (entityIds, entityTypeId,tenantData) {
-  console.log(tenantData,'tenantData');
+
     return new Promise(async (resolve, reject) => {
       try {
         let ids = [];
