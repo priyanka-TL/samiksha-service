@@ -18,7 +18,7 @@ const projectServiceUrl = process.env.INTERFACE_SERVICE_URL;
  */
 
 // Function to fetch the project template based on the given externalId
-const listById = function (userToken, externalId) {
+const templateLists = function (userToken, externalId) {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the project service
@@ -35,12 +35,12 @@ const listById = function (userToken, externalId) {
         },
       };
       
-      request.post(url, options, projectListByIdCallback);
+      request.post(url, options, projectServiceCallback);
       let result = {
         success: true,
       };
       // Handle callback fucntion
-      function projectListByIdCallback(err, data) {
+      function projectServiceCallback(err, data) {
         if (err) {
           result.success = false;
         } else {
@@ -68,5 +68,5 @@ const listById = function (userToken, externalId) {
 };
 
 module.exports = {
-    listById: listById,
+  templateLists: templateLists,
 };

@@ -190,7 +190,7 @@ module.exports = class criteriaHelper {
         }
 
         if (improvementProjectIds.length > 0) {
-          let improvementProjects = await projectService.listById(token,improvementProjectIds);
+          let improvementProjects = await projectService.templateLists(token,improvementProjectIds);
 
           if (improvementProjects.data && improvementProjects.data.length > 0) {
             let improvements = {};
