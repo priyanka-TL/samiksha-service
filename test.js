@@ -1,1 +1,0 @@
-{"scope": {"state": ["668573cfa845ef3e891db3eb"], "roles": []}}
