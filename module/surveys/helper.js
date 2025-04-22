@@ -473,11 +473,12 @@ module.exports = class SurveysHelper {
    * @name createSurveyDocument
    * @param {String} userId =  - logged in user id.
    * @param {Object} solution - solution document .
+   * @param {Object} tenantData - tenantData data .
    * @param {Array} userOrganisations - User organisations
    * @returns {Object} status and survey id.
    */
 
-  static createSurveyDocument(userId = '', solution = {}, userOrganisations) {
+  static createSurveyDocument(userId = '', solution = {}, userOrganisations,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let status;
@@ -523,6 +524,10 @@ module.exports = class SurveysHelper {
           if (solution.programExternalId) {
             survey["programExternalId"] = solution.programExternalId;
           }
+
+          survey['tenantId'] = tenantData.tenantId;
+          survey['orgId'] = tenantData.orgId;
+
         // Create a survey with solution and program details
           surveyDocument = await this.create(survey);
 
@@ -978,6 +983,8 @@ module.exports = class SurveysHelper {
             submissionDocument.programExternalId = programDocument[0].externalId;
           }
 
+          submissionDocument.orgId = roleInformation.orgId;
+          submissionDocument.tenantId = roleInformation.tenantId;
           let submissionDoc = await database.models.surveySubmissions.create(submissionDocument);
 
           if (submissionDoc._id) {
@@ -1492,7 +1499,7 @@ module.exports = class SurveysHelper {
             //   );
             // }
 
-            let createSurveyDocument = await this.createSurveyDocument(userId, solutionData.data, userId);
+            let createSurveyDocument = await this.createSurveyDocument(userId, solutionData.data, userId,{tenantId:bodyData.tenantId,orgId:bodyData.orgId});
 
             if (!createSurveyDocument.success) {
               throw new Error(messageConstants.apiResponses.SURVEY_CREATION_FAILED);
@@ -1524,13 +1531,16 @@ module.exports = class SurveysHelper {
    * @param  {String} surveyId - surveyId.
    * @param {String} solutionId - solutionId
    * @param {String} userId - logged in userId
-   * @param {String} token - logged in user token
+   * @param {String} token - logged in user token'
+   * @param {Object} tenantData - tenantData of user
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '') {
+  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
+        bodyData.tenantId = tenantData.tenantId;
+        bodyData.orgId = tenantData.orgId;
         let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token);
 
         if (!surveyData.success) {
