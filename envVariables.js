@@ -340,6 +340,15 @@ let enviromentVariables = {
 		optional: false,
 		default: 'survey',
 	},
+  PROJECT_SERVICE_NAME: {
+		message: 'project service name required',
+		optional: false,
+		default: 'project',
+	},
+  INTERFACE_SERVICE_URL: {
+		message: 'interface service url required',
+		optional: false,
+	}
 };
 
 let success = true;
