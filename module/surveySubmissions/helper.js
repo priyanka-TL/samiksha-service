@@ -393,6 +393,9 @@ module.exports = class SurveySubmissionsHelper {
    * @param {String} pageNo - page number
    * @param {String} pageSize - page size.
    * @param {String} filter - filter text.
+   * @param {String} search - search key
+   * @param {String} surveyReportPage - survey report page
+   * @param {String} tenantFilter - tenant filter
    * @returns {Json} - survey list.
    */
 

@@ -1583,6 +1583,8 @@ module.exports = class SurveysHelper {
    * @param {String} pageNo - page number.
    * @param {String} search - search text.
    * @param {String} filter - filter text.
+   * @param {String} surveyReportPage - survey report page.
+   * @param {Object} tenantFilter - tenant filter.
    * @returns {Object}
    */
 

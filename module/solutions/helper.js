@@ -2251,7 +2251,7 @@ module.exports = class SolutionsHelper {
    * @param {String} userId - user Id.
    * @param {String} userToken - user token.
    * @param {Boolean} createProject - create project.
-   * @param {Object} tenantData - tenantData
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} - Details of the solution.
    */
 
