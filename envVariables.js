@@ -343,7 +343,16 @@ let enviromentVariables = {
   ADMIN_ACCESS_TOKEN:{
     message: 'Required admin access token',
     optional: false
-  }
+  },
+  PROJECT_SERVICE_NAME: {
+		message: 'project service name required',
+		optional: false,
+		default: 'project',
+	},
+  INTERFACE_SERVICE_URL: {
+		message: 'interface service url required',
+		optional: false,
+	}
 };
 
 let success = true;

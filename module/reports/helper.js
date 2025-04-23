@@ -16,6 +16,7 @@ const helperFunc = require('../../helper/chart_data');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const observationSubmissionsHelper = require(MODULES_BASE_PATH + '/observationSubmissions/helper');
 const pdfHelper = require('../../helper/pdfGeneration');
+const criteriaHelper = require(MODULES_BASE_PATH + '/criteria/helper');
 
 /**
  * ReportsHelper
@@ -154,15 +155,49 @@ module.exports = class ReportsHelper {
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
     let submissionDocument = submissionDocumentArr[0];
 
-    if(!submissionDocument){
-      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
+    // Initialize an empty array to collect all improvement project suggestions
+    let improvementProjectSuggestions = [];
+
+    if (submissionDocument.criteria) {
+      for (const criterias of submissionDocument.criteria) {
+        // Build a query to find the criteria document by its unique _id
+        let criteriaFindQuery = {
+          _id: criterias._id,
+        };
+
+        // Define which fields to return from the database
+        let criteriaProjectionArray = ['name', 'rubric'];
+
+        // Fetch the criteria document from the database using a helper function
+        let allCriteriaDocument = await criteriaHelper.criteriaDocument(criteriaFindQuery, criteriaProjectionArray);
+
+        // Process the returned document(s)
+        allCriteriaDocument.map((criteria) => {
+          criteria.criteriaId = criteria._id;
+          criteria.criteriaName = criteria.name;
+          criteria.level = criteria.rubric.levels[criterias.score].level;
+          criteria.label = criteria.rubric.levels[criterias.score].label;
+          if (criteria.rubric.levels[criterias.score]['improvement-projects']) {
+            criteria.improvementProjects = criteria.rubric.levels[criterias.score]['improvement-projects'];
+          }
+
+          // Clean up the object by removing unneeded properties
+          delete criteria.rubric;
+          delete criteria._id;
+          delete criteria.name;
+        });
+
+        // Since we're only expecting one match, push the first document to the suggestions array
+        improvementProjectSuggestions.push(allCriteriaDocument[0]);
+      }
+    }
+    if (!submissionDocument) {
+      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
     }
 
-    let solutionDocument = await solutionsQueries.solutionDocuments(
-      {
-        _id: submissionDocument.solutionId,
-      }
-    );
+    let solutionDocument = await solutionsQueries.solutionDocuments({
+      _id: submissionDocument.solutionId,
+    });
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
 
@@ -186,7 +221,8 @@ module.exports = class ReportsHelper {
       observationId: observationId,
       programName: programDocument.data?.name,
       totalSubmissions: submissionDocumentArr.length,
-      filters
+      filters,
+      improvementProjectSuggestions : improvementProjectSuggestions
     };
 
     let result;
