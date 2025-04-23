@@ -151,7 +151,7 @@ const validateEntities = async function (entityIds, entityTypeId,tenantData) {
           _id : isObjectIdArray ? {$in: gen.utils.arrayIdsTobjectIdsNew(entityIds)} : { $in: entityIds },
           entityTypeId: entityTypeId,
           tenantId: tenantData.tenantId,
-          orgId: tenantData.orgId
+          orgId: {$in:['ALL',tenantData.orgId]}
           };
           let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
           let entitiesDocuments = entitiesDocumentsAPIData.data;

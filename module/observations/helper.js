@@ -79,6 +79,7 @@ module.exports = class ObservationsHelper {
    * @param {Object} data - Observation creation data.
    * @param {Object} userId - User id.
    * @param {String} requestingUserAuthToken - Requesting user auth token.
+   * @param {Object} tenantData - tenantData information
    * @param {String} [programId = ""] - program id
    * @returns {Object} observation creation data.
    */
@@ -947,33 +948,6 @@ module.exports = class ObservationsHelper {
    * @param  {String} userId        -user id.
    * @returns {Object}              observation details.
    */
-
-  // static details(observationId) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let observationDocument = await this.observationDocuments({
-  //         _id: observationId,
-  //       });
-
-  //       if (!observationDocument[0]) {
-  //         throw new Error(messageConstants.apiResponses.OBSERVATION_NOT_FOUND);
-  //       }
-
-  //       if (observationDocument[0].entities.length > 0) {
-  //         let entitiesDocument = await entitiesHelper.entityDocuments({
-  //           _id: { $in: observationDocument[0].entities },
-  //         });
-
-  //         observationDocument[0]['count'] = entitiesDocument.length;
-  //         observationDocument[0].entities = entitiesDocument;
-  //       }
-
-  //       return resolve(observationDocument[0]);
-  //     } catch (error) {
-  //       return reject(error);
-  //     }
-  //   });
-  // }
   static details(observationId = "", solutionId = "", userId = "",tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -1007,7 +981,7 @@ module.exports = class ObservationsHelper {
           let filterData = {
            _id: {$in:observationDocument[0].entities},
            tenantId:tenantData.tenantId,
-           orgId:tenantData.orgId
+           orgId: {$in:['ALL',tenantData.orgId]}
           };
         
          //Retrieving the entity from the Entity Management Service
@@ -1637,6 +1611,7 @@ module.exports = class ObservationsHelper {
    * @param {Number} pageSize - Size of page.
    * @param {String} search - search text.
    * @param {String} [ filter = ""] - filter text.
+   * @param {Object} tenantFilter - tenant filter.
    * @returns {Object} List of user assigned observations.
    */
 
@@ -1870,7 +1845,11 @@ module.exports = class ObservationsHelper {
    * @method
    * @name entities
    * @param {String} userId - Logged in user id.
-   * @param {String} userToken - Logged in user token.
+   * @param {String} token - Logged in user token.
+   * @param {String} observationId - observation id.
+   * @param {String} solutionId - solution id.
+   * @param {Object} bodyData - request body data.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} list of entities in observation
    */
 
@@ -1891,6 +1870,8 @@ module.exports = class ObservationsHelper {
           } else {
             let solutionData = await solutionsQueries.solutionDocuments({
               _id: solutionId,
+              tenantId:tenantData.tenantId,
+              orgId:{$in:['ALL',tenantData.orgId]}
             });
 
             if (solutionData.length === 0) {
@@ -1913,10 +1894,9 @@ module.exports = class ObservationsHelper {
                   _id:bodyData[solutionData.data.entityType],
                   entityType: solutionData.data.entityType,
                   tenantId:tenantData.tenantId,
-                  orgId:tenantData.orgId
+                  orgId: {$in:['ALL',tenantData.orgId]}
                 };
                 
-                console.log(filterData,'filterData')
                 let entitiesDocument = await entityManagementService.entityDocuments(
                   filterData
                 );
@@ -2033,7 +2013,7 @@ module.exports = class ObservationsHelper {
               {
                 _id: { $in: observationDocument[0].entities },
                 tenantId:tenantData.tenantId,
-                orgId:tenantData.orgId
+                orgId: {$in:['ALL',tenantData.orgId]}
               },
               ['metaInformation.externalId', 'metaInformation.name'],
             );
@@ -2116,6 +2096,8 @@ module.exports = class ObservationsHelper {
             _id: observationId,
             createdBy: userId,
             status: { $ne: 'inactive' },
+            tenantId:tenantData.tenantId,
+            orgId: tenantData.orgId
           },
           ['entityTypeId', 'status'],
         );
@@ -2238,7 +2220,7 @@ module.exports = class ObservationsHelper {
           _id: req.query.entityId,
           entityType: observationDocument.entityType,
           tenantId: req.userDetails.tenantData.tenantId,
-          orgId: req.userDetails.tenantData.orgId
+          orgId: {$in:['ALL',req.userDetails.tenantData.orgId]}
          };
   
          let entitiesDocument = await entityManagementService.entityDocuments(
@@ -2565,7 +2547,7 @@ module.exports = class ObservationsHelper {
       let filterQuery = {
         "_id": requestedData[targetedEntityType],
         "tenantId": tenantData.tenantId,
-        "orgId": tenantData.orgId
+        "orgId": {$in:['ALL',tenantData.orgId]}
       };
 
       // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
@@ -2599,7 +2581,7 @@ module.exports = class ObservationsHelper {
     let filterData = {
       "_id": requestedData[targetedEntityType],
       "tenantId": tenantData.tenantId,
-      "orgId": tenantData.orgId
+      "orgId": {$in:['ALL',tenantData.orgId]}
     };
 
     // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
@@ -2669,7 +2651,7 @@ module.exports = class ObservationsHelper {
           let entitiesDocument = await entityManagementService.entityDocuments({
               _id: currentEntity._id,
               tenantId:tenantData.tenantId,
-              orgId:tenantData.orgId
+              orgId:{$in:['ALL',tenantData.orgId]}
           }, ["groups"]);
 
           if (!entitiesDocument.success || entitiesDocument.data.length == 0 ) {
@@ -2843,7 +2825,7 @@ module.exports = class ObservationsHelper {
             entityType: topLevelEntityType,
             deleted:false,
             tenantId:solutionDocument[0].tenantId,
-            orgId:solutionDocument[0].orgId
+            orgId:{$in:['ALL',solutionDocument[0].orgId]}
            };
          
           //Retrieving the entity from the Entity Management Service

@@ -406,11 +406,8 @@ module.exports = async function (req, res, next) {
       userId: typeof decodedToken.data.id == 'string' ? decodedToken.data.id : JSON.stringify(decodedToken.data.id),
       userName: decodedToken.data.name,
       firstName: decodedToken.data.name,
-      organizationId: decodedToken.data.organization_id,
-      tenantData:{
-        orgId:decodedToken.data.organization_id.toString(),
-        tenantId:decodedToken.data.tenant_id && decodedToken.data.tenant_id.toString(),
-      }
+      organizationId: decodedToken.data.organization_id.toString(),
+      tenantId:decodedToken.data.tenant_id && decodedToken.data.tenant_id.toString()
     };
   } else {
     // Iterate through each key in the config object
@@ -426,14 +423,14 @@ module.exports = async function (req, res, next) {
     }
   }
 
-    const isAdmin = req.get('admin_access_token') === process.env.ADMIN_ACCESS_TOKEN;
+    const isAdmin = req.get('admin-auth-token') === process.env.ADMIN_AUTH_TOKEN;
 
     if (isAdmin) {
 
     // Validate the presence of required headers
-    const adminOrgId = req.get('admin_org_id');
-    const adminTenantId = req.get('admin_tenant_id');
-
+    const adminOrgId = req.get('orgId');
+    const adminTenantId = req.get('tenantId');
+      console.log(adminOrgId,adminTenantId,"adminOrgId,adminTenantId")
     if (!adminOrgId || !adminTenantId) {
       rspObj.errCode = reqMsg.ADMIN_TOKEN.MISSING_CODE;
       rspObj.errMsg = reqMsg.ADMIN_TOKEN.MISSING_MESSAGE;
@@ -442,8 +439,9 @@ module.exports = async function (req, res, next) {
     }
 
     // If the user is an admin, override tenantId and orgId with values from the headers
-    userInformation.tenantData.orgId = req.get('admin_org_id').toString().split(',');
-    userInformation.tenantData.tenantId = (req.get('admin_tenant_id') && req.get('admin_tenant_id').toString());
+    userInformation.tenantAndOrgInfo = {};
+    userInformation.tenantAndOrgInfo.orgId = adminOrgId.toString().split(',');
+    userInformation.tenantAndOrgInfo.tenantId = (adminTenantId && adminTenantId.toString());
     }
 
   // Update user details object

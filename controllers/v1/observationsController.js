@@ -390,6 +390,8 @@ module.exports = class Observations extends Abstract {
   async addEntityToObservation(req) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let result = await observationsHelper.addEntityToObservation(req.params._id, req.body.data, req.userDetails.id,req.userDetails.tenantData);
 
         return resolve(result);
@@ -470,6 +472,7 @@ module.exports = class Observations extends Abstract {
   async updateEntities(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let response = {};
         if (req.method === 'POST') {
           response = await observationsHelper.addEntityToObservation(
@@ -713,6 +716,7 @@ module.exports = class Observations extends Abstract {
   async assessment(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let response = {
           message: messageConstants.apiResponses.ASSESSMENT_FETCHED,
           result: {},
@@ -740,7 +744,7 @@ module.exports = class Observations extends Abstract {
             _id: req.query.entityId,
             entityType: observationDocument.entityType,
             tenantId:req.userDetails.tenantData.tenantId,
-            orgId: req.userDetails.tenantData.orgId
+            "orgId": {$in:['ALL',req.userDetails.tenantData.orgId]}
           };
         let entitiesDetails = await entityManagementService.entityDocuments(
           entityQueryObject,
@@ -1243,9 +1247,9 @@ module.exports = class Observations extends Abstract {
 
         // newSolutionDocument.entityTypeId = entityTypeDocument._id;
         // newSolutionDocument.entityType = entityTypeDocument.name;
-        newSolutionDocument.isReusable = true;
-        newSolutionDocument.tenantId = req.userDetails.tenantData.tenantId;
-        newSolutionDocument.orgId = req.userDetails.tenantData.orgId;
+        newSolutionDocument.isReusable = true;  
+        newSolutionDocument.tenantId = req.userDetails.tenantAndOrgInfo.tenantId;
+        newSolutionDocument.orgId = req.userDetails.tenantAndOrgInfo.orgId;
 
         let newBaseSolution = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 
@@ -1796,7 +1800,9 @@ module.exports = class Observations extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = req.userDetails.tenantData
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        //below function params are passed in following way 
+        //details(observationId, solutionId, userId,tenantData) 
         let observationDetails = await observationsHelper.details(req.params._id,'','',tenantData);
 
         return resolve({
@@ -2091,6 +2097,7 @@ module.exports = class Observations extends Abstract {
   async entities(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let observations = await observationsHelper.entities(
           req.userDetails.userId,
           req.userDetails.userToken,

@@ -376,6 +376,8 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
+            tenantId: tenantData.tenantId,
+            orgId:{$in:['ALL',tenantData.orgId]}
           },
           ['_id', 'scope.entityType']
         );
@@ -393,7 +395,7 @@ module.exports = class ProgramsHelper {
             _id: { $in: entities },
             entityType: programData[0].scope.entityType,
             tenantId: tenantData.tenantId,
-            orgId: tenantData.orgId
+            orgId:{$in:['ALL',tenantData.orgId]}
           },
           ['_id']
         );

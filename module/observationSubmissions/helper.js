@@ -136,7 +136,7 @@ module.exports = class ObservationSubmissionsHelper {
               let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
                 name: observationSubmissionsDocument.entityType,
                 tenantId: observationSubmissionsDocument.tenantId,
-                orgId: observationSubmissionsDocument.orgId
+                orgId: {$in:['ALL',observationSubmissionsDocument.orgId]}
               });
 
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
@@ -956,6 +956,7 @@ module.exports = class ObservationSubmissionsHelper {
    * @param {String} pageSize - page size
    * @param {String} pageNo - page number
    * @param {String} search - search key
+   * @param {Object} tenantData - tenantData information
    * @returns {Json} - returns solutions, entityTypes.
    */
 
@@ -1095,7 +1096,7 @@ module.exports = class ObservationSubmissionsHelper {
           {
             _id: { $in: entityIds },
             tenantId: tenantData.tenantId,
-            orgId: tenantData.orgId,
+            orgId: {$in:['ALL',tenantData.orgId ]}
           },
           ['metaInformation.externalId', 'metaInformation.name'],
         );

@@ -488,6 +488,22 @@ function getColorForLevel(level) {
   };
   return colors[level] || 'rgb(201, 203, 207)';
 }
+
+/**
+ * Returns Tenant Data from the token
+ * @method
+ * @name returnTenantDataFromToken
+ * @param {Object} userDetails     - takes userDetails object.
+ * @returns {Object}  - returns formated tenant data.
+ */
+function returnTenantDataFromToken(userDetails) {
+  let tenantData = {};
+  tenantData.tenantId = userDetails.tenantId;
+  tenantData.orgId = userDetails.organizationId
+  return tenantData
+}
+
+
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
   lowerCase: lowerCase,
@@ -521,5 +537,6 @@ module.exports = {
   getGotenbergConnection:getGotenbergConnection,
   arrayOfObjectToArrayOfObjectId:arrayOfObjectToArrayOfObjectId,
   convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId,
-  getColorForLevel:getColorForLevel
+  getColorForLevel:getColorForLevel,
+  returnTenantDataFromToken:returnTenantDataFromToken
 };

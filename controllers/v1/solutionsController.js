@@ -75,7 +75,7 @@ module.exports = class Solutions extends Abstract {
   async targetedSolutions(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantFilter = req.userDetails.tenantData;
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let observations = await solutionsHelper.targetedSolutions(
           req.body,
           req.query.type,
@@ -1674,7 +1674,7 @@ module.exports = class Solutions extends Abstract {
           req.userDetails.userId,
           req.userDetails.userToken,
           true, // createProject condition,
-          req.userDetails.tenantData
+          gen.utils.returnTenantDataFromToken(req.userDetails)
         );
 
         return resolve(solutionData);
@@ -2002,6 +2002,7 @@ module.exports = class Solutions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         //passing {true} for checkDate params in helper
         let solutionData = await solutionsHelper.createSolution(req.body, true,req.userDetails.tenantData);
 
@@ -2229,7 +2230,7 @@ module.exports = class Solutions extends Abstract {
           req.params._id,
           req.body.entities,
           req.userDetails.userToken,
-          req.userDetails.tenantData
+          gen.utils.returnTenantDataFromToken(req.userDetails)
         );
 
         return resolve(solutionUpdated);

@@ -39,7 +39,13 @@ module.exports = {
       default: false,
       type: Boolean,
     },
-    orgId:String,
-    tenantId: String
+    orgId:{
+      type: String,
+      require: true
+    },
+    tenantId: {
+      type: String,
+      require: true
+    }
   },
 };

@@ -66,7 +66,7 @@ module.exports = class Surveys extends Abstract {
   async createSolutionTemplate(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let createSolutionTemplate = await surveysHelper.createSolutionTemplate(req.body, req.userDetails.userId,req.userDetails.tenantData);
+        let createSolutionTemplate = await surveysHelper.createSolutionTemplate(req.body, req.userDetails.userId,req.userDetails.tenantAndOrgInfo);
 
         return resolve({
           message: createSolutionTemplate.message,
@@ -773,6 +773,7 @@ module.exports = class Surveys extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         // Check valid mongodb id or not
         let validateSurveyId = gen.utils.isValidMongoId(req.params._id);
 

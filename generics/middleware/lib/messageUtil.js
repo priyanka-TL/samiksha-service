@@ -255,7 +255,7 @@ exports.REQUEST = {
   },
   ADMIN_TOKEN: {
     MISSING_CODE: 'ERR_ADMIN_FIELDS_MISSING',
-    MISSING_MESSAGE: 'Required headers are missing: admin_org_id or admin_tenant_id'
+    MISSING_MESSAGE: 'Required headers are missing: orgId or tenantId'
   },
 };
 

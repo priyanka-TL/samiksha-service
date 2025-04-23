@@ -46,7 +46,13 @@ module.exports = {
     appInformation: Object,
     userRoleInformation: Object,
     userProfile : Object,
-    orgId:String,
-    tenantId: String
+    orgId:{
+      type: String,
+      require: true
+    },
+    tenantId: {
+      type: String,
+      require: true
+    }
   },
 };

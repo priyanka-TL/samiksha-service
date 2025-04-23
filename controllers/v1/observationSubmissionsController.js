@@ -93,7 +93,7 @@ module.exports = class ObservationSubmissions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let createObservationStatus = await observationsHelper.createNewObservation(req)
         return resolve(createObservationStatus);
       } catch (error) {
@@ -1259,6 +1259,7 @@ module.exports = class ObservationSubmissions extends Abstract {
   async solutionList(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let entityType = req.query.entityType ? req.query.entityType : '';
 
         let solutions = await observationSubmissionsHelper.solutionList(

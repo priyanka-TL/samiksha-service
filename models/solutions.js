@@ -97,7 +97,13 @@ module.exports = {
       type : "ObjectId",
       index: true
     },
-    orgId:Array,
-    tenantId: String
+    orgId:{
+      type: Array,
+      require: true
+    },
+    tenantId: {
+      type: String,
+      require: true
+    }
   }
 };

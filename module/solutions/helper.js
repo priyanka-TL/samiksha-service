@@ -75,7 +75,7 @@ module.exports = class SolutionsHelper {
             let bodyData = {
               _id: { $in: locationData.codes },
               orgId: tenantData.orgId,
-              tenantId: tenantData.tenantId
+              tenantId:{$in:['ALL',tenantData.tenantId]}
             };
             let entityData = await entityManagementService.entityDocuments(bodyData);
             if (entityData.success) {
@@ -405,6 +405,7 @@ module.exports = class SolutionsHelper {
    * @param {Number} pageSize       - Size of page.
    * @param {String} search         - search text.
    * @param {String} [ filter = ""] - filter text.
+   * @param {Object} tenantFilter - tenantFilter contains tenant information
    * @returns {Object} - Details of the solution.
    */
 
@@ -3613,8 +3614,6 @@ module.exports = class SolutionsHelper {
       try {
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
 
-        
-
         if (!queryData.success) {
           return resolve(queryData);
         }
@@ -3785,6 +3784,8 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
+            tenantId: tenantData.tenantId,
+            orgId:{$in:['ALL',tenantData.orgId]}
           },
           ['_id', 'programId', 'scope.entityType']
         );
@@ -3817,7 +3818,7 @@ module.exports = class SolutionsHelper {
                 _id: programData[0].scope.entities,
                 [`groups.${solutionData[0].scope.entityType}`]: entities,
                 tenantId: tenantData.tenantId,
-                orgId: tenantData.orgId,
+                orgId: {$in:['ALL',tenantData.orgId ]}
               },
               ['_id']
             );
@@ -3835,7 +3836,7 @@ module.exports = class SolutionsHelper {
             _id: { $in: entities },
             entityType: solutionData[0].scope.entityType,
             tenantId: tenantData.tenantId,
-            orgId: tenantData.orgId,
+            orgId:{$in:['ALL',tenantData.orgId]}
           },
           ['_id']
         );

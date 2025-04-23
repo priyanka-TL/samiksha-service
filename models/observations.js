@@ -52,7 +52,13 @@ module.exports = {
     project: Object,
     referenceFrom: String,
     userProfile : Object,
-    orgId:String,
-    tenantId: String
+    orgId:{
+      type: String,
+      require: true
+    },
+    tenantId: {
+      type: String,
+      require: true
+    }
   },
 };

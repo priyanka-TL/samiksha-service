@@ -340,7 +340,7 @@ let enviromentVariables = {
 		optional: false,
 		default: 'survey',
 	},
-  ADMIN_ACCESS_TOKEN:{
+  ADMIN_AUTH_TOKEN:{
     message: 'Required admin access token',
     optional: false
   },
