@@ -3326,7 +3326,7 @@ module.exports = class SolutionsHelper {
    * @returns {String} -        -list of solutions
    */
 
-  static list(type, subType, filter = {}, pageNo, pageSize, searchText, projection) {
+  static list(type="", subType, filter = {}, pageNo, pageSize, searchText, projection) {
     return new Promise(async (resolve, reject) => {
       try {
         let matchQuery = {
@@ -3340,7 +3340,6 @@ module.exports = class SolutionsHelper {
         } else {
           matchQuery.status = messageConstants.common.ACTIVE_STATUS;
         }
-
         if (type !== '') {
           matchQuery['type'] = type;
         }
@@ -3348,7 +3347,6 @@ module.exports = class SolutionsHelper {
         if (subType !== '') {
           matchQuery['subType'] = subType;
         }
-
         if (Object.keys(filter).length > 0) {
           matchQuery = _.merge(matchQuery, filter);
         }
@@ -3386,6 +3384,9 @@ module.exports = class SolutionsHelper {
             description: 1,
             externalId: 1,
             name: 1,
+            entityType:1,
+            type:1,
+            subType:1,
           };
         }
 
