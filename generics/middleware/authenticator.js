@@ -409,7 +409,7 @@ module.exports = async function (req, res, next) {
       organizationId: decodedToken.data.organization_id,
       tenantData:{
         orgId:decodedToken.data.organization_id.toString(),
-        tenantId:decodedToken.tenantId && decodedToken.tenantId.toString(),
+        tenantId:decodedToken.data.tenant_id && decodedToken.data.tenant_id.toString(),
       }
     };
   } else {
