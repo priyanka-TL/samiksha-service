@@ -8,6 +8,9 @@ const instance = require('./Instance.json');
 const path = require('path');
 const fs = require('fs');
 const isBearerRequired = process.env.IS_AUTH_TOKEN_BEARER === 'true';
+const userService = require(ROOT_PATH + '/generics/services/users');
+
+
 // var shikshalokam = require("../helpers/shikshalokam");
 
 var reqMsg = messageUtil.REQUEST;
@@ -31,6 +34,90 @@ var respUtil = function (resp) {
   };
 };
 
+/**
+ *
+ * @function
+ * @name checkForRole
+ * @param {Array} roles - Array of role objects.
+ * @param {String} role - Role to check.
+ * @returns {Boolean} Returns true if role is found, otherwise false.
+ */
+var checkForRole = function (roles,role){
+  let result = false;
+  if (roles && roles.length > 0) {
+    roles.forEach((roleObj) => {
+      if (roleObj.title == role) {
+        result = true;
+      }
+    });
+  }
+  return result;
+}
+/**
+ *
+ * @function
+ * @name returnTenantError
+ * @param {Object} res - Express response object.
+ * @returns {Object} Returns an HTTP response with error.
+ */
+var returnTenantError = function(res){
+  let rspObj = {};
+  rspObj.errCode = reqMsg.TENANT.TENANT_MISMATCH;
+  rspObj.errMsg = reqMsg.TENANT.MISMATCH_MESSAGE;
+  rspObj.responseCode = responseCode.unauthorized.status;
+  return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+}
+/**
+ *
+ * @function
+ * @name validateOrgsPassedInHeader
+ * @param {Array} orgsFromHeader - Array of organization IDs passed in header.
+ * @param {String} tenantId - Tenant ID to validate against.
+ * @returns {Promise<Object>} Returns a promise that resolves to validation result object.
+ */
+var validateOrgsPassedInHeader = async function(orgsFromHeader,tenantId){
+  let tenantInfo = await userService.fetchDefaultOrgDetails(tenantId);
+  let related_orgs = tenantInfo.data.related_orgs;
+  let validOrgs = [];
+  let result = {
+    success: false,
+    data: [],
+  };
+
+  if(!related_orgs || related_orgs.length == 0){
+    return result;
+  }
+
+  for(let org of orgsFromHeader){
+
+    if(related_orgs.includes(org)){
+      validOrgs.push(org);
+    }
+
+  }
+
+  if(validOrgs.length > 0){
+    result.success = true;
+    result.data = validOrgs;
+  }
+
+  return result;
+}
+
+/**
+ *
+ * @function
+ * @name returnOrgError
+ * @param {Object} res - Express response object.
+ * @returns {Object} Returns an HTTP response with error.
+ */
+var returnOrgError = function(res){
+  let rspObj = {};
+  rspObj.errCode = reqMsg.ORGID.INVALID_ORGS;
+  rspObj.errMsg = reqMsg.ORGID.INVALID_ORGS_MESSAGE;
+  rspObj.responseCode = responseCode.unauthorized.status;
+  return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+}
 // var tokenAuthenticationFailureMessageToSlack = function (req, token, msg) {
 //   let jwtInfomration = jwtDecode(token);
 //   jwtInfomration["x-authenticated-user-token"] = token;
@@ -423,25 +510,61 @@ module.exports = async function (req, res, next) {
     }
   }
 
-    const isAdmin = req.get('admin-auth-token') === process.env.ADMIN_AUTH_TOKEN;
 
-    if (isAdmin) {
+    if (performInternalAccessTokenCheck) {
+      // Validate the presence of required headers
+      let adminOrgId = req.get('orgId');
+      let adminTenantId = req.get('tenantId');
+      let roles = decodedToken.data.roles;
+      let isAdmin = req.get('admin-auth-token') === process.env.ADMIN_AUTH_TOKEN;
+      let isTenantAdmin = checkForRole(roles, 'tenant_admin');
+      let isOrgAdmin = checkForRole(roles, 'org_admin');
 
-    // Validate the presence of required headers
-    const adminOrgId = req.get('orgId');
-    const adminTenantId = req.get('tenantId');
-      console.log(adminOrgId,adminTenantId,"adminOrgId,adminTenantId")
-    if (!adminOrgId || !adminTenantId) {
-      rspObj.errCode = reqMsg.ADMIN_TOKEN.MISSING_CODE;
-      rspObj.errMsg = reqMsg.ADMIN_TOKEN.MISSING_MESSAGE;
-      rspObj.responseCode = responseCode.unauthorized.status;
-      return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
-    }
+      if (isAdmin) {
+        if (!adminOrgId || !adminTenantId) {
+          rspObj.errCode = reqMsg.ADMIN_TOKEN.MISSING_CODE;
+          rspObj.errMsg = reqMsg.ADMIN_TOKEN.MISSING_MESSAGE;
+          rspObj.responseCode = responseCode.unauthorized.status;
+          return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+        }
 
-    // If the user is an admin, override tenantId and orgId with values from the headers
-    userInformation.tenantAndOrgInfo = {};
-    userInformation.tenantAndOrgInfo.orgId = adminOrgId.toString().split(',');
-    userInformation.tenantAndOrgInfo.tenantId = (adminTenantId && adminTenantId.toString());
+        // If the user is an admin, override tenantId and orgId with values from the headers
+        userInformation.tenantAndOrgInfo = {};
+        userInformation.tenantAndOrgInfo.orgId = adminOrgId.toString().split(',');
+        userInformation.tenantAndOrgInfo.tenantId = adminTenantId && adminTenantId.toString();
+      } else if (isTenantAdmin && adminOrgId && adminTenantId) {
+        //validation
+        let tenantId = decodedToken.data.tenant_id.toString();
+        let orgId = decodedToken.data.organization_id;
+
+        if (adminTenantId !== tenantId) {
+          return returnTenantError(res);
+        }
+
+        let orgsFromHeader = adminOrgId.toString().split(',');
+        let orgsFromHeaderAfterValidation = [];
+        let result = await validateOrgsPassedInHeader(orgsFromHeader, tenantId);
+
+        if(result.success){
+          orgsFromHeaderAfterValidation = result.data;
+        }else{
+          return returnOrgError(res);
+        }
+
+        // If the user is an tenantAdmin, override tenantId and orgId with values from the headers
+        userInformation.tenantAndOrgInfo = {};
+        userInformation.tenantAndOrgInfo.orgId = orgsFromHeaderAfterValidation;
+        userInformation.tenantAndOrgInfo.tenantId = tenantId && tenantId.toString();
+      } else if (isOrgAdmin) {
+        //validation
+        let tenantId = decodedToken.data.tenant_id;
+        let orgId = decodedToken.data.organization_id;
+
+        // If the user is an tenantAdmin, override tenantId and orgId with values from the headers
+        userInformation.tenantAndOrgInfo = {};
+        userInformation.tenantAndOrgInfo.orgId = [orgId.toString()];
+        userInformation.tenantAndOrgInfo.tenantId = tenantId.toString();
+      }
     }
 
   // Update user details object

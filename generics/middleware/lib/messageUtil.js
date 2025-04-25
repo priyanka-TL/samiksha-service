@@ -257,6 +257,14 @@ exports.REQUEST = {
     MISSING_CODE: 'ERR_ADMIN_FIELDS_MISSING',
     MISSING_MESSAGE: 'Required headers are missing: orgId or tenantId'
   },
+  TENANT: {
+    TENANT_MISMATCH: 'ERR_TENANT_MISMATCH',
+    MISMATCH_MESSAGE: 'tenantId is not matching with the request',
+  },
+  ORGID: {
+    INVALID_ORGS: 'ERR_INVALID_ORG',
+    INVALID_ORGS_MESSAGE: 'Invalid orgId provided',
+  },
 };
 
 exports.RESPONSE_CODE = {
