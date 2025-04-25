@@ -564,7 +564,12 @@ module.exports = async function (req, res, next) {
         userInformation.tenantAndOrgInfo = {};
         userInformation.tenantAndOrgInfo.orgId = [orgId.toString()];
         userInformation.tenantAndOrgInfo.tenantId = tenantId.toString();
-      } 
+      } else {
+        rspObj.errCode = reqMsg.INVALID_ROLE.INVALID_CODE;
+        rspObj.errMsg = reqMsg.INVALID_ROLE.INVALID_MESSAGE;
+        rspObj.responseCode = responseCode.unauthorized.status;
+        return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj))
+      }
     }
 
   // Update user details object

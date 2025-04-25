@@ -265,6 +265,10 @@ exports.REQUEST = {
     INVALID_ORGS: 'ERR_INVALID_ORG',
     INVALID_ORGS_MESSAGE: 'Invalid orgId provided',
   },
+  INVALID_ROLE:{
+    INVALID_CODE: 'ERR_INVALID_ROLE',
+    INVALID_MESSAGE: 'Invalid role provided for resource creation',
+  }
 };
 
 exports.RESPONSE_CODE = {
