@@ -268,6 +268,10 @@ exports.REQUEST = {
   INVALID_ROLE:{
     INVALID_CODE: 'ERR_INVALID_ROLE',
     INVALID_MESSAGE: 'Invalid role provided for resource creation',
+  },
+  TENANT_ORG_MISSING:{
+    MISSING_CODE: 'ERR_TENANT_ORG_MISSING',
+    MISSING_MESSAGE: 'Required field tenantId or orgId is missing in the token',
   }
 };
 

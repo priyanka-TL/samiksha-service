@@ -488,6 +488,14 @@ module.exports = async function (req, res, next) {
   };
   // performing default token data extraction
   if (defaultTokenExtraction) {
+
+    if(!decodedToken.data.organization_id || !decodedToken.data.tenant_id){
+      rspObj.errCode = reqMsg.TENANT_ORG_MISSING.MISSING_CODE;
+      rspObj.errMsg = reqMsg.TENANT_ORG_MISSING.MISSING_MESSAGE;
+      rspObj.responseCode = responseCode.unauthorized.status;
+      return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+    }
+
     userInformation = {
       userToken: token,
       userId: typeof decodedToken.data.id == 'string' ? decodedToken.data.id : JSON.stringify(decodedToken.data.id),
