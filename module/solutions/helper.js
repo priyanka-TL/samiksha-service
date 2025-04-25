@@ -1804,13 +1804,20 @@ module.exports = class SolutionsHelper {
    * @method
    * @name details
    * @param {String} solutionId - Solution Id.
+   * @param {Object} bodyData - Request body data.
+   * @param {String} userId - Logged in user id.
+   * @param {Object} tenantFilter - Tenant filter. 
    * @returns {Object} - Details of the solution.
    */
 
-  static details(solutionId, bodyData = {}, userId = '') {
+  static details(solutionId, bodyData = {}, userId = '',tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsQueries.solutionDocuments({ _id: solutionId }, [
+
+        let solutionData = await solutionsQueries.solutionDocuments({ _id: solutionId, 
+          orgId: {"$in": ["ALL", tenantFilter.orgId] },
+          tenantId: tenantFilter.tenantId,
+        }, [
           'type',
           'projectTemplateId',
           'programId',

@@ -513,15 +513,15 @@ module.exports = async function (req, res, next) {
 
     if (performInternalAccessTokenCheck) {
       // Validate the presence of required headers
-      let adminOrgId = req.get('orgId');
-      let adminTenantId = req.get('tenantId');
+      let orgIdPassedFromHeader = req.get('orgId');
+      let tenantIdPassedFromHeader = req.get('tenantId');
       let roles = decodedToken.data.roles;
       let isAdmin = req.get('admin-auth-token') === process.env.ADMIN_AUTH_TOKEN;
       let isTenantAdmin = checkForRole(roles, 'tenant_admin');
       let isOrgAdmin = checkForRole(roles, 'org_admin');
 
       if (isAdmin) {
-        if (!adminOrgId || !adminTenantId) {
+        if (!orgIdPassedFromHeader || !tenantIdPassedFromHeader) {
           rspObj.errCode = reqMsg.ADMIN_TOKEN.MISSING_CODE;
           rspObj.errMsg = reqMsg.ADMIN_TOKEN.MISSING_MESSAGE;
           rspObj.responseCode = responseCode.unauthorized.status;
@@ -530,18 +530,18 @@ module.exports = async function (req, res, next) {
 
         // If the user is an admin, override tenantId and orgId with values from the headers
         userInformation.tenantAndOrgInfo = {};
-        userInformation.tenantAndOrgInfo.orgId = adminOrgId.toString().split(',');
-        userInformation.tenantAndOrgInfo.tenantId = adminTenantId && adminTenantId.toString();
-      } else if (isTenantAdmin && adminOrgId && adminTenantId) {
+        userInformation.tenantAndOrgInfo.orgId = orgIdPassedFromHeader.toString().split(',');
+        userInformation.tenantAndOrgInfo.tenantId = tenantIdPassedFromHeader && tenantIdPassedFromHeader.toString();
+      } else if (isTenantAdmin && orgIdPassedFromHeader && tenantIdPassedFromHeader) {
         //validation
         let tenantId = decodedToken.data.tenant_id.toString();
         let orgId = decodedToken.data.organization_id;
 
-        if (adminTenantId !== tenantId) {
+        if (tenantIdPassedFromHeader !== tenantId) {
           return returnTenantError(res);
         }
 
-        let orgsFromHeader = adminOrgId.toString().split(',');
+        let orgsFromHeader = orgIdPassedFromHeader.toString().split(',');
         let orgsFromHeaderAfterValidation = [];
         let result = await validateOrgsPassedInHeader(orgsFromHeader, tenantId);
 
@@ -564,7 +564,7 @@ module.exports = async function (req, res, next) {
         userInformation.tenantAndOrgInfo = {};
         userInformation.tenantAndOrgInfo.orgId = [orgId.toString()];
         userInformation.tenantAndOrgInfo.tenantId = tenantId.toString();
-      }
+      } 
     }
 
   // Update user details object

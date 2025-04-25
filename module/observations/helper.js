@@ -946,6 +946,7 @@ module.exports = class ObservationsHelper {
    * @param  {String} observationId -observation id.
    * @param  {String} solutionId    -solutionId.
    * @param  {String} userId        -user id.
+   * @param  {Object} tenantData    -tenant data.
    * @returns {Object}              observation details.
    */
   static details(observationId = "", solutionId = "", userId = "",tenantData) {
