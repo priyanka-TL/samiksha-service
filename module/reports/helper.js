@@ -115,7 +115,7 @@ module.exports = class ReportsHelper {
           {
             _id: surveySubmissionsDocument.programId,
           },
-          ['name', 'description']
+          ['name', 'description',"externalId"]
         );
 
         surveySubmissionsDocument['programInfo'] = programDocument[0];
