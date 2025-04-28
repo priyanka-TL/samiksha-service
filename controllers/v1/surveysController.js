@@ -791,6 +791,7 @@ module.exports = class Surveys extends Abstract {
                 req.userDetails.userToken,
                 // appVersion,
                 // appName
+                req.query.fromPrjectService?gen.utils.convertStringToBoolean(req.query.fromPrjectService):false,
             );
             
         } else {

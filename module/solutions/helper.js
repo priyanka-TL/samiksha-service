@@ -1891,7 +1891,7 @@ module.exports = class SolutionsHelper {
 
   static createProgramAndSolutionFromTemplate(
     templateId,
-    // program,
+    program,
     userId,
     solutionData,
     isAPrivateProgram = false,
@@ -1919,10 +1919,10 @@ module.exports = class SolutionsHelper {
 
         //   program._id = programData._id;
         // }
-
+       
         let duplicateSolution = await this.importFromSolution(
           templateId,
-          // program._id.toString(),
+          program._id?program._id.toString():"",
           userId,
           solutionData,
           createdFor
@@ -2085,12 +2085,12 @@ module.exports = class SolutionsHelper {
             });
           });
         }
+        console.log(data.entities,"this is 2088 in solution")
+        // if (data.entities && data.entities.length > 0) {
+        //   let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solutionDocument[0].entityTypeId);
 
-        if (data.entities && data.entities.length > 0) {
-          let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solutionDocument[0].entityTypeId);
-
-          data.entities = entitiesToAdd.entityIds;
-        }
+        //   data.entities = entitiesToAdd.entityIds;
+        // }
 
         newSolutionDocument.externalId = data.externalId
           ? data.externalId
@@ -3350,7 +3350,7 @@ module.exports = class SolutionsHelper {
         if (Object.keys(filter).length > 0) {
           matchQuery = _.merge(matchQuery, filter);
         }
-
+       console.log(matchQuery,"this is matchquery")
         let searchData = [
           {
             name: new RegExp(searchText, 'i'),
@@ -3387,6 +3387,7 @@ module.exports = class SolutionsHelper {
             entityType:1,
             type:1,
             subType:1,
+            isReusable:1,
           };
         }
 
@@ -3589,19 +3590,28 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '') {
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',fromPrjectService=false) {
     
     return new Promise(async (resolve, reject) => {
       try {
-        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
-
-        
+        let queryData
+        console.log(fromPrjectService,"this is from project")
+        if(!fromPrjectService){
+         queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
 
         if (!queryData.success) {
           return resolve(queryData);
         }
-
         queryData.data['_id'] = solutionId;
+        }else{
+
+          queryData = { data: {} }; 
+          queryData.data["_id"] = solutionId;
+        }
+
+        console.log(queryData)
+
+
 
         
         let targetedSolutionDetails = await solutionsQueries.solutionDocuments(queryData.data, [
@@ -3635,7 +3645,6 @@ module.exports = class SolutionsHelper {
           data: targetedSolutionDetails[0],
         });
       } catch (error) {
-        
         return resolve({
           success: false,
           message: error.message,

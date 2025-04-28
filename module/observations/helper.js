@@ -88,7 +88,8 @@ module.exports = class ObservationsHelper {
     data,
     userId,
     requestingUserAuthToken = '',
-    userRoleAndProfileInformation
+    userRoleAndProfileInformation,
+    programId=""
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -130,12 +131,13 @@ module.exports = class ObservationsHelper {
 
         if (solutionData[0].isReusable) {
 
-
+          const solutionHelper = require(MODULES_BASE_PATH +'/solutions/helper');
+          console.log(solutionHelper,"this is solution")
           solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
             solutionId,
-            //   {
-            //     _id: programId,
-            //   },
+              {
+                _id: programId,
+              },
             userId,
             _.omit(data, ['entities']),
             true,
@@ -167,7 +169,7 @@ module.exports = class ObservationsHelper {
 
         let observationData = await this.createObservation(data, userId, solutionData,userProfileData);
 
-        return resolve(_.pick(observationData, ['_id', 'name', 'description']));
+        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId"]));
       } catch (error) {
         return reject(error);
       }
@@ -189,12 +191,12 @@ module.exports = class ObservationsHelper {
   static createObservation(data, userId, solution,userProfileInformation = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (validateEntities == 'ON') {
-          if (data.entities) {
-            let entitiesToAdd = await entityManagementService.validateEntities(data.entities, solution.entityTypeId);
-            data.entities = entitiesToAdd.entityIds;
-          }
-        }
+        // if (validateEntities == 'ON') {
+        //   if (data.entities) {
+        //     let entitiesToAdd = await entityManagementService.validateEntities(data.entities, solution.entityTypeId);
+        //     data.entities = entitiesToAdd.entityIds;
+        //   }
+        // }
 
         if (data.project) {
           data.project._id = new ObjectId(data.project._id);
