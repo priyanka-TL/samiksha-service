@@ -91,7 +91,7 @@ module.exports = class SurveySubmissionsHelper {
             {
               _id: surveySubmissionsDocument[0].programId,
             },
-            ['name', 'description']
+            ['name', 'description',"externalId"]
           );
 
           programDocument = programDocument?.data?.data;
@@ -166,6 +166,30 @@ module.exports = class SurveySubmissionsHelper {
             messageConstants.apiResponses.SUBMISSION_STATUS_NOT_COMPLETE
           );
         }
+
+        if (surveySubmissionsDocument[0].programId) {
+          let programDocument = await programsHelper.list(
+            {
+              _id: surveySubmissionsDocument[0].programId,
+            },
+            ['name', 'description',"externalId"]
+          );
+
+          programDocument = programDocument?.data?.data;
+
+          if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
+            surveySubmissionsDocument[0]['programInfo'] = programDocument[0];
+          }
+        }
+
+        let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
+          name: surveySubmissionsDocument[0].entityType,
+        });
+
+        if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
+          surveySubmissionsDocument[0]['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
+        }
+
 
         const kafkaMessage = await kafkaClient.pushInCompleteSurveySubmissionToKafka(surveySubmissionsDocument[0]);
 
