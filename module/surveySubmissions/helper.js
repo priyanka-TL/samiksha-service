@@ -193,10 +193,11 @@ module.exports = class SurveySubmissionsHelper {
    * @param {String} submissionId - survey submissionId
    * @param {String} evidenceId - evidence id
    * @param {String} userId - logged in userId
+   * @param {Object} tenantData - tenant data
    * @returns {Json} - survey list.
    */
 
-  static isAllowed(submissionId = '', evidenceId = '', userId = '') {
+  static isAllowed(submissionId = '', evidenceId = '', userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (submissionId == '') {
@@ -219,6 +220,8 @@ module.exports = class SurveySubmissionsHelper {
           {
             _id: submissionId,
             evidencesStatus: { $elemMatch: { externalId: evidenceId } },
+            tenantId:tenantData.tenantId,
+            orgId:tenantData.orgId
           },
           ['evidencesStatus.$', 'status', 'createdBy']
         );
@@ -265,10 +268,11 @@ module.exports = class SurveySubmissionsHelper {
    * @method
    * @name list
    * @param {String} userId - logged in userId
+   * @param {Object} tenantData - tenant data
    * @returns {Json} - survey list.
    */
 
-  static list(userId = '') {
+  static list(userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -284,6 +288,8 @@ module.exports = class SurveySubmissionsHelper {
                 type: messageConstants.common.SURVEY,
                 isReusable: false,
                 isDeleted: false,
+                tenantId:tenantData.tenantId,
+                orgId:{"$in": ["ALL", tenantData.orgId]}
               },
             },
             {
@@ -297,7 +303,10 @@ module.exports = class SurveySubmissionsHelper {
             { $sort: { createdAt: -1 } },
           ]),
           surveySubmissionQueries.getAggregate([
-            { $match: { createdBy: userId } },
+            { $match: { createdBy: userId,
+              tenantId:tenantData.tenantId,
+              orgId:tenantData.orgId
+             } },
             {
               $project: {
                 submissionId: '$_id',
@@ -352,17 +361,21 @@ module.exports = class SurveySubmissionsHelper {
    * @method
    * @name getStatus
    * @param {String} submissionId - survey submissionId
+   * @param {Object} tenantData - tenant data
    * @returns {Json} - status of survey submission.
    */
 
-  static getStatus(submissionId = '') {
+  static getStatus(submissionId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (submissionId == '') {
           throw new Error(messageConstants.apiResponses.SURVEY_SUBMISSION_ID_REQUIRED);
         }
 
-        let submissionDocument = await this.surveySubmissionDocuments({ _id: submissionId }, ['status']);
+        let submissionDocument = await this.surveySubmissionDocuments({ _id: submissionId
+          ,tenantId:tenantData.tenantId,
+          orgId:tenantData.orgId
+         }, ['status']);
 
         if (!submissionDocument.length) {
           throw messageConstants.apiResponses.SUBMISSION_NOT_FOUND;
@@ -625,17 +638,19 @@ module.exports = class SurveySubmissionsHelper {
    * @method
    * @name update
    * @param {Object} req -request data.
+   * @param {Object} tenantData - tenant data
    * @returns {JSON} - survey submissions creation.
    */
 
-  static update(req) {
+  static update(req,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         // Check if the survey has already been submitted
         let isSubmissionAllowed = await this.isAllowed(
           req.params._id,
           req.body.evidence.externalId,
-          req.userDetails.userId
+          req.userDetails.userId,
+          tenantData
         );
 
         if (

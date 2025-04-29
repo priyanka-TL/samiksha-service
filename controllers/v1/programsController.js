@@ -68,12 +68,14 @@ module.exports = class Programs extends Abstract {
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let listOfPrograms = await programsHelper.list(
           "",          //filter
           "",          // projection
           req.pageNo, //middleware convert req.params.page as req.PageNo
           req.pageSize, //middleware convert req.params.linit as req.PageSize
           req.query.searchText,
+          tenantFilter
         );
 
         listOfPrograms['result'] = listOfPrograms.data;
@@ -150,6 +152,15 @@ module.exports = class Programs extends Abstract {
       try {
         req.body.userId = req.userDetails.userId;
         req.body.tenantData = req.userDetails.tenantAndOrgInfo;
+
+        if(req.body.tenantId){
+          delete req.body.tenantId;
+        }
+
+        if(req.body.orgId){
+          delete req.body.orgId;
+        }
+
         let programCreationData = await programsHelper.create(
           req.body,
           true, // checkDate
@@ -236,11 +247,13 @@ module.exports = class Programs extends Abstract {
 
   async update(req) {
     try {
+      let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
       let programUpdationData = await programsHelper.update(
         req.params._id,
         req.body,
         req.userDetails.userId,
         true, //checkDate
+        tenantFilter
       );
 
       programUpdationData.result = programUpdationData.data;
@@ -289,7 +302,8 @@ module.exports = class Programs extends Abstract {
   async addRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programDetails = await programsHelper.addRolesInScope(req.params._id, req.body.roles);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let programDetails = await programsHelper.addRolesInScope(req.params._id, req.body.roles,tenantData);
 
         return resolve(programDetails);
       } catch (error) {
@@ -387,7 +401,8 @@ module.exports = class Programs extends Abstract {
   async removeRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programDetails = await programsHelper.removeRolesInScope(req.params._id, req.body.roles);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let programDetails = await programsHelper.removeRolesInScope(req.params._id, req.body.roles, tenantData);
 
         return resolve(programDetails);
       } catch (error) {
@@ -433,7 +448,8 @@ module.exports = class Programs extends Abstract {
   async removeEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities,tenantData);
 
         return resolve(programDetails);
       } catch (error) {
@@ -477,7 +493,8 @@ module.exports = class Programs extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programData = await programsHelper.details(req.params._id);
+        let tenantData =  gen.utils.returnTenantDataFromToken(req.userDetails);
+        let programData = await programsHelper.details(req.params._id,tenantData);
 
         programData['result'] = programData.data;
 
@@ -530,6 +547,7 @@ module.exports = class Programs extends Abstract {
   async join(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let programJoin = await programsHelper.join(
           req.params._id,
           req.body,
@@ -538,6 +556,7 @@ module.exports = class Programs extends Abstract {
           req.headers['x-app-id'] ? req.headers['x-app-id'] : req.headers.appname ? req.headers.appname : '',
           req.headers['x-app-ver'] ? req.headers['x-app-ver'] : req.headers.appversion ? req.headers.appversion : '',
           req.headers['internal-access-token'] ? true : req.headers.internalAccessToken ? true : false,
+          tenantFilter
         );
         programJoin['result'] = programJoin.data;
         return resolve(programJoin);
@@ -1172,7 +1191,8 @@ module.exports = class Programs extends Abstract {
   async listByIds(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programsData = await programsHelper.listByIds(req.body.programIds);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let programsData = await programsHelper.listByIds(req.body.programIds,tenantData);
 
         programsData.result = programsData.data;
 
@@ -1298,6 +1318,7 @@ module.exports = class Programs extends Abstract {
   async targetedPrograms(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let programs = await programsHelper.targetedPrograms(
           req.body,
           req.userDetails.userId,
@@ -1305,6 +1326,7 @@ module.exports = class Programs extends Abstract {
           req.pageNo,
           req.searchText,
           req.query.filter,
+          tenantData
         );
 
         programs['result'] = programs.data;

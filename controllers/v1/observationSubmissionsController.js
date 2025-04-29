@@ -407,7 +407,8 @@ module.exports = class ObservationSubmissions extends Abstract {
   async delete(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await observationSubmissionsHelper.delete(req.params._id, req.userDetails.userId);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let result = await observationSubmissionsHelper.delete(req.params._id, req.userDetails.userId,tenantData);
 
         return resolve(result);
       } catch (error) {
@@ -450,10 +451,12 @@ module.exports = class ObservationSubmissions extends Abstract {
   async title(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let result = await observationSubmissionsHelper.setTitle(
           req.params._id,
           req.userDetails.userId,
           req.body.title,
+          tenantData
         );
 
         return resolve(result);
@@ -975,7 +978,8 @@ module.exports = class ObservationSubmissions extends Abstract {
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let submissionDocument = await observationSubmissionsHelper.list(req.query.entityId, req.params._id);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let submissionDocument = await observationSubmissionsHelper.list(req.query.entityId, req.params._id,tenantData);
         return resolve(submissionDocument);
       } catch (error) {
         return reject({
@@ -1105,6 +1109,7 @@ module.exports = class ObservationSubmissions extends Abstract {
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let response = {};
         if (req.method === 'POST') {
           if (req.body.title) {
@@ -1112,12 +1117,14 @@ module.exports = class ObservationSubmissions extends Abstract {
               req.params._id,
               req.userDetails.userId,
               req.body.title,
+              tenantData
             );
           } else if (req.body.evidence) {
             let isSubmissionAllowed = await observationSubmissionsHelper.isAllowed(
               req.params._id,
               req.body.evidence.externalId,
               req.userDetails.userId,
+              tenantData
             );
 
             if (isSubmissionAllowed.data.allowed && isSubmissionAllowed.data.allowed == false) {

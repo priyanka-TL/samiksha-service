@@ -291,14 +291,14 @@ module.exports = class ObservationsHelper {
    * @returns {Object} observation list.
    */
 
-  static listV1(userId = '') {
+  static listV1(userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.INVALID_USER_ID);
         }
 
-        let observations = this.listCommon(userId, 'v1');
+        let observations = this.listCommon(userId, 'v1',tenantData);
 
         return resolve(observations);
       } catch (error) {
@@ -312,17 +312,18 @@ module.exports = class ObservationsHelper {
    * @method
    * @name listV2
    * @param {String} [userId = ""] -Logged in user id.
+   * @param {Object} tenantData - tenantData
    * @returns {Object} observation list.
    */
 
-  static listV2(userId = '') {
+  static listV2(userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.INVALID_USER_ID);
         }
 
-        let observations = this.listCommon(userId, 'v2');
+        let observations = this.listCommon(userId, 'v2',tenantData);
 
         return resolve(observations);
       } catch (error) {
@@ -336,10 +337,12 @@ module.exports = class ObservationsHelper {
    * @method
    * @name listV2
    * @param {String} [userId = ""] -Logged in user id.
+   * @param {String} [sourceApi = ""] - source api.
+   * @param {Object} [tenantData = ""] - tenant data.
    * @returns {Object} observation list.
    */
 
-  static listCommon(userId = '', sourceApi = 'v2') {
+  static listCommon(userId = '', sourceApi = 'v2',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -353,6 +356,8 @@ module.exports = class ObservationsHelper {
             $match: {
               createdBy: userId,
               status: { $ne: 'inactive' },
+              tenantId: tenantData.tenantId,
+              orgId:tenantData.orgId
             },
           },
           {
@@ -400,6 +405,8 @@ module.exports = class ObservationsHelper {
                   entityId: {
                     $in: observation.entities,
                   },
+                  tenantId: tenantData.tenantId,
+                  orgId: tenantData.orgId
                 },
                 {
                   themes: 0,
@@ -416,6 +423,8 @@ module.exports = class ObservationsHelper {
                 entityId: {
                   $in: observation.entities,
                 },
+                tenantId: tenantData.tenantId,
+                orgId: tenantData.orgId,
               },
               {
                 themes: 0,
@@ -1626,9 +1635,7 @@ module.exports = class ObservationsHelper {
             deleted: false,
             referenceFrom: { $ne: messageConstants.common.PROJECT },
             tenantId:tenantFilter.tenantId,
-            orgId:{
-              "$in": ["ALL", tenantFilter.orgId] 
-            }
+            orgId:tenantFilter.orgId
           },
         };
 
@@ -1694,6 +1701,10 @@ module.exports = class ObservationsHelper {
           let solutionDocuments = await solutionsQueries.solutionDocuments(
             {
               _id: { $in: solutionIds },
+              tenantId:tenantFilter.tenantId,
+              orgIds: {
+                $in: ['ALL', tenantFilter.orgId],
+              },
             },
             ['language', 'creator'],
           );
@@ -1862,6 +1873,8 @@ module.exports = class ObservationsHelper {
             {
               solutionId: solutionId,
               createdBy: userId,
+              tenantId:tenantData.tenantId,
+              orgId:tenantData.orgId
             },
             ['_id'],
           );
@@ -1872,7 +1885,7 @@ module.exports = class ObservationsHelper {
             let solutionData = await solutionsQueries.solutionDocuments({
               _id: solutionId,
               tenantId:tenantData.tenantId,
-              orgId:{$in:['ALL',tenantData.orgId]}
+              orgIds:{$in:['ALL',tenantData.orgId]}
             });
 
             if (solutionData.length === 0) {
@@ -1948,6 +1961,8 @@ module.exports = class ObservationsHelper {
           solutionData = await solutionsQueries.solutionDocuments(
             {
               _id: observationData[0].solutionId,
+              tenantId:tenantData.tenantId,
+              orgIds:{$in:['ALL',tenantData.orgId]}
             },
             ['allowMultipleAssessemts'],
           );
@@ -2152,7 +2167,7 @@ module.exports = class ObservationsHelper {
    * @returns {JSON} observation remoevable message
    */
 
-  static removeEntityFromObservation(observationId, requestedData, userId) {
+  static removeEntityFromObservation(observationId, requestedData, userId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         await database.models.observations.updateOne(
@@ -2160,6 +2175,8 @@ module.exports = class ObservationsHelper {
             _id:observationId,
             status: { $ne: 'completed' },
             createdBy: userId,
+            tenantId:tenantData.tenantId,
+            orgId:tenantData.orgId,
           },
           {
             $pull: {
@@ -2198,11 +2215,14 @@ module.exports = class ObservationsHelper {
 
     return new Promise(async (resolve, reject)=>{
 
+      let tenantData = req.userDetails.tenantData;
       let observationDocument = await this.observationDocuments({
         _id: req.params._id,
         createdBy: req.userDetails.userId,
         status: { $ne: 'inactive' },
-        entities: { '$in': [req.query.entityId]}
+        entities: { '$in': [req.query.entityId]},
+        tenantId:tenantData.tenantId,
+        orgId:tenantData.orgId,
       });
 
       if (!observationDocument[0]) {
@@ -2338,7 +2358,12 @@ module.exports = class ObservationsHelper {
          "description",
          "imageCompression",
          "isAPrivateProgram",
-       ]);
+       ],
+       '',
+       '',
+       '',
+       tenantData,
+      );
 
        programDocument = programDocument.data.data
        
@@ -2488,8 +2513,7 @@ module.exports = class ObservationsHelper {
       );
   
       let observations = new Array();
-  
-      observations = await this.listV2(req.userDetails.userId);
+      observations = await this.listV2(req.userDetails.userId,tenantData);
 
       let responseMessage = messageConstants.apiResponses.OBSERVATION_SUBMISSION_CREATED;
   
@@ -2548,7 +2572,7 @@ module.exports = class ObservationsHelper {
       let filterQuery = {
         "_id": requestedData[targetedEntityType],
         "tenantId": tenantData.tenantId,
-        "orgId": {$in:['ALL',tenantData.orgId]}
+        "orgIds": {$in:['ALL',tenantData.orgId]}
       };
 
       // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
@@ -2582,7 +2606,7 @@ module.exports = class ObservationsHelper {
     let filterData = {
       "_id": requestedData[targetedEntityType],
       "tenantId": tenantData.tenantId,
-      "orgId": {$in:['ALL',tenantData.orgId]}
+      "orgIds": {$in:['ALL',tenantData.orgId]}
     };
 
     // if (gen.utils.checkValidUUID(requestedData[targetedEntityType])) {
@@ -2652,7 +2676,7 @@ module.exports = class ObservationsHelper {
           let entitiesDocument = await entityManagementService.entityDocuments({
               _id: currentEntity._id,
               tenantId:tenantData.tenantId,
-              orgId:{$in:['ALL',tenantData.orgId]}
+              orgIds:{$in:['ALL',tenantData.orgId]}
           }, ["groups"]);
 
           if (!entitiesDocument.success || entitiesDocument.data.length == 0 ) {

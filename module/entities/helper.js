@@ -1444,7 +1444,9 @@ module.exports = class EntitiesHelper {
           if ( req.query.observationId ) {
               let findObject = {
                   "_id" : req.query.observationId,
-                  "createdBy" : userId
+                  "createdBy" : userId,
+                  "tenantId":req.userDetails.tenantData.tenantId,
+                  "orgId":req.userDetails.tenantData.orgId
               };
 
               projection.push(
@@ -1460,7 +1462,9 @@ module.exports = class EntitiesHelper {
 
           if ( req.query.solutionId ) {
               let findQuery = {
-                  _id: ObjectId(req.query.solutionId)
+                  _id: ObjectId(req.query.solutionId),
+                  tenantId: req.userDetails.tenantData.tenantId,
+                  orgId:{$in:['ALL',req.userDetails.tenantData.orgId]}
               };
               projection.push(
                   "entityType"

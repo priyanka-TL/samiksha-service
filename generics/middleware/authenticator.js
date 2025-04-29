@@ -34,39 +34,7 @@ var respUtil = function (resp) {
   };
 };
 
-/**
- *
- * @function
- * @name checkForRole
- * @param {Array} roles - Array of role objects.
- * @param {String} role - Role to check.
- * @returns {Boolean} Returns true if role is found, otherwise false.
- */
-var checkForRole = function (roles,role){
-  let result = false;
-  if (roles && roles.length > 0) {
-    roles.forEach((roleObj) => {
-      if (roleObj.title == role) {
-        result = true;
-      }
-    });
-  }
-  return result;
-}
-/**
- *
- * @function
- * @name returnTenantError
- * @param {Object} res - Express response object.
- * @returns {Object} Returns an HTTP response with error.
- */
-var returnTenantError = function(res){
-  let rspObj = {};
-  rspObj.errCode = reqMsg.TENANT.TENANT_MISMATCH;
-  rspObj.errMsg = reqMsg.TENANT.MISMATCH_MESSAGE;
-  rspObj.responseCode = responseCode.unauthorized.status;
-  return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
-}
+
 /**
  *
  * @function
@@ -104,35 +72,6 @@ var validateOrgsPassedInHeader = async function(orgsFromHeader,tenantId){
   return result;
 }
 
-/**
- *
- * @function
- * @name returnOrgError
- * @param {Object} res - Express response object.
- * @returns {Object} Returns an HTTP response with error.
- */
-var returnOrgError = function(res){
-  let rspObj = {};
-  rspObj.errCode = reqMsg.ORGID.INVALID_ORGS;
-  rspObj.errMsg = reqMsg.ORGID.INVALID_ORGS_MESSAGE;
-  rspObj.responseCode = responseCode.unauthorized.status;
-  return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
-}
-// var tokenAuthenticationFailureMessageToSlack = function (req, token, msg) {
-//   let jwtInfomration = jwtDecode(token);
-//   jwtInfomration["x-authenticated-user-token"] = token;
-//   const tokenByPassAllowedLog = {
-//     method: req.method,
-//     url: req.url,
-//     headers: req.headers,
-//     body: req.body,
-//     errorMsg: msg,
-//     customFields: jwtInfomration,
-//   };
-//   slackClient.sendExceptionLogMessage(tokenByPassAllowedLog);
-// };
-
-// var apiInterceptor = new ApiInterceptor(keyCloakConfig, cacheConfig);
 var removedHeaders = [
   'host',
   'origin',
@@ -217,7 +156,6 @@ module.exports = async function (req, res, next) {
     'pendingObservations',
     'completedObservations',
     'solutionDetails',
-    '/solutions/list',
     '/programs/listByIds',
     'frameworks/delete/',
     'questions/delete/',
@@ -235,15 +173,27 @@ module.exports = async function (req, res, next) {
     'solutionDetails',
     'solutions/updateSolutions',
     'solutions/addEntities',
+    'solutions/list',
     'frameworks/delete/',
     'questions/delete/',
     'observationSubmissions/disable/',
     'programs/create',
     'observations/importFromFramework',
-    'surveys/createSolutionTemplate'
+    'surveys/createSolutionTemplate',
+    'solutions/update',
+    'solutions/uploadThemesRubricExpressions',
+    'solutions/uploadCriteriaRubricExpressions',
+    'solutions/importFromSolution',
+    'surveys/importSurveryTemplateToSolution',
+    'surveys/mapSurverySolutionToProgram',
   ];
 
   let performInternalAccessTokenCheck = false;
+  let adminHeader = false;
+  if (process.env.ADMIN_ACCESS_TOKEN) {
+    adminHeader = req.headers[process.env.ADMIN_TOKEN_HEADER_NAME];
+  }
+
   await Promise.all(
     internalAccessApiPaths.map(async function (path) {
       if (req.path.includes(path)) {
@@ -251,7 +201,6 @@ module.exports = async function (req, res, next) {
       }
     })
   );
-
 
   if (performInternalAccessTokenCheck) {
     if (req.headers['internal-access-token'] !== process.env.INTERNAL_ACCESS_TOKEN) {
@@ -330,133 +279,87 @@ module.exports = async function (req, res, next) {
     }
   }
 
-  // let tokenCheckByPassAllowedForURL = false;
-  // let tokenCheckByPassAllowedForUser = false;
-  // let tokenCheckByPassAllowedUserDetails = {};
-  // if (
-  //   process.env.DISABLE_TOKEN_ON_OFF &&
-  //   process.env.DISABLE_TOKEN_ON_OFF === "ON" &&
-  //   process.env.DISABLE_TOKEN_CHECK_FOR_API &&
-  //   process.env.DISABLE_TOKEN_CHECK_FOR_API != ""
-  // ) {
-  //   process.env.DISABLE_TOKEN_CHECK_FOR_API.split(",").forEach(
-  //     (allowedEndpoints) => {
-  //       if (req.path.includes(allowedEndpoints)) {
-  //         tokenCheckByPassAllowedForURL = true;
-  //         let allowedUsersPath = "DISABLE_TOKEN_" + allowedEndpoints + "_USERS";
-  //         if (
-  //           process.env[allowedUsersPath] &&
-  //           process.env[allowedUsersPath] == "ALL"
-  //         ) {
-  //           tokenCheckByPassAllowedForUser = true;
-  //           tokenCheckByPassAllowedUserDetails = {
-  //             id: process.env.DISABLE_TOKEN_DEFAULT_USERID,
-  //             userId: process.env.DISABLE_TOKEN_DEFAULT_USERID,
-  //             roles: [process.env.DISABLE_TOKEN_DEFAULT_USER_ROLE],
-  //             name: process.env.DISABLE_TOKEN_DEFAULT_USER_NAME,
-  //             email: process.env.DISABLE_TOKEN_DEFAULT_USER_EMAIL,
-  //           };
-  //         } else if (process.env[allowedUsersPath]) {
-  //           let jwtInfo = jwtDecode(token);
-  //           process.env[allowedUsersPath].split(",").forEach((allowedUser) => {
-  //             if (allowedUser == jwtInfo.sub) {
-  //               tokenCheckByPassAllowedForUser = true;
-  //               tokenCheckByPassAllowedUserDetails = {
-  //                 id: jwtInfo.sub,
-  //                 userId: jwtInfo.sub,
-  //                 roles: [process.env.DISABLE_TOKEN_DEFAULT_USER_ROLE],
-  //                 name: jwtInfo.name,
-  //                 email: jwtInfo.email,
-  //               };
-  //             }
-  //           });
-  //         }
-  //       }
-  //     }
-  //   );
-  // }
-
-  let decodedToken = null
-	try {
-		if (process.env.AUTH_METHOD === messageConstants.common.AUTH_METHOD.NATIVE) {
-			try {
-				// If using native authentication, verify the JWT using the secret key
-				decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-			} catch (err) {
-				// If verification fails, send an unauthorized response
+  let decodedToken = null;
+  try {
+    if (process.env.AUTH_METHOD === messageConstants.common.AUTH_METHOD.NATIVE) {
+      try {
+        // If using native authentication, verify the JWT using the secret key
+        decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      } catch (err) {
+        // If verification fails, send an unauthorized response
         rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
         rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
         rspObj.responseCode = responseCode.unauthorized.status;
-				return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj))
-			}
-		} else if (process.env.AUTH_METHOD === messageConstants.common.AUTH_METHOD.KEYCLOAK_PUBLIC_KEY) {
-			// If using Keycloak with a public key for authentication
-			const keycloakPublicKeyPath = `${process.env.KEYCLOAK_PUBLIC_KEY_PATH}/`
-			const PEM_FILE_BEGIN_STRING = '-----BEGIN PUBLIC KEY-----'
-			const PEM_FILE_END_STRING = '-----END PUBLIC KEY-----'
+        return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj));
+      }
+    } else if (process.env.AUTH_METHOD === messageConstants.common.AUTH_METHOD.KEYCLOAK_PUBLIC_KEY) {
+      // If using Keycloak with a public key for authentication
+      const keycloakPublicKeyPath = `${process.env.KEYCLOAK_PUBLIC_KEY_PATH}/`;
+      const PEM_FILE_BEGIN_STRING = '-----BEGIN PUBLIC KEY-----';
+      const PEM_FILE_END_STRING = '-----END PUBLIC KEY-----';
 
-			// Decode the JWT to extract its claims without verifying
-			const tokenClaims = jwt.decode(token, { complete: true })
+      // Decode the JWT to extract its claims without verifying
+      const tokenClaims = jwt.decode(token, { complete: true });
 
-			if (!tokenClaims || !tokenClaims.header) {
-				// If the token does not contain valid claims or header, send an unauthorized response
+      if (!tokenClaims || !tokenClaims.header) {
+        // If the token does not contain valid claims or header, send an unauthorized response
         rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
         rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
         rspObj.responseCode = responseCode.unauthorized.status;
-				return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj))
-			}
+        return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj));
+      }
 
-			// Extract the key ID (kid) from the token header
-			const kid = tokenClaims.header.kid
-			// Construct the path to the public key file using the key ID
-			let filePath = path.resolve(__dirname, keycloakPublicKeyPath, kid.replace(/\.\.\//g, ''))
-			// Read the public key file from the resolved file path
-			const accessKeyFile = await fs.promises.readFile(filePath, 'utf8')
-			// Ensure the public key is properly formatted with BEGIN and END markers
-			const cert = accessKeyFile.includes(PEM_FILE_BEGIN_STRING)
-				? accessKeyFile
-				: `${PEM_FILE_BEGIN_STRING}\n${accessKeyFile}\n${PEM_FILE_END_STRING}`
+      // Extract the key ID (kid) from the token header
+      const kid = tokenClaims.header.kid;
+      // Construct the path to the public key file using the key ID
+      let filePath = path.resolve(__dirname, keycloakPublicKeyPath, kid.replace(/\.\.\//g, ''));
+      // Read the public key file from the resolved file path
+      const accessKeyFile = await fs.promises.readFile(filePath, 'utf8');
+      // Ensure the public key is properly formatted with BEGIN and END markers
+      const cert = accessKeyFile.includes(PEM_FILE_BEGIN_STRING)
+        ? accessKeyFile
+        : `${PEM_FILE_BEGIN_STRING}\n${accessKeyFile}\n${PEM_FILE_END_STRING}`;
 
-			let verifiedClaims
-			try {
-				// Verify the JWT using the public key and specified algorithms
-				verifiedClaims = jwt.verify(token, cert, { algorithms: ['sha1', 'RS256', 'HS256'] })
-			} catch (err) {
-				// If the token is expired or any other error occurs during verification
-				if (err.name === 'TokenExpiredError') {
+      let verifiedClaims;
+      try {
+        // Verify the JWT using the public key and specified algorithms
+        verifiedClaims = jwt.verify(token, cert, { algorithms: ['sha1', 'RS256', 'HS256'] });
+      } catch (err) {
+        // If the token is expired or any other error occurs during verification
+        if (err.name === 'TokenExpiredError') {
           rspObj.errCode = reqMsg.TOKEN.INVALID_CODE;
           rspObj.errMsg = reqMsg.TOKEN.INVALID_MESSAGE;
           rspObj.responseCode = responseCode.unauthorized.status;
-					return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj))
-				}
-			}
+          return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj));
+        }
+      }
 
-			// Extract the external user ID from the verified claims
-			const externalUserId = verifiedClaims.sub.split(':').pop()
+      // Extract the external user ID from the verified claims
+      const externalUserId = verifiedClaims.sub.split(':').pop();
 
-			const data = {
-				id: externalUserId,
-				roles: [], // this is temporariy set to an empty array, it will be corrected soon...
-				name: verifiedClaims.name,
-				organization_id: verifiedClaims.org || null,
-			}
+      const data = {
+        id: externalUserId,
+        roles: [], // this is temporariy set to an empty array, it will be corrected soon...
+        name: verifiedClaims.name,
+        organization_id: verifiedClaims.org || null,
+      };
 
-			// Ensure decodedToken is initialized as an object
-			decodedToken = decodedToken || {}
-			decodedToken['data'] = data
-		}
-	} catch (err) {
+      // Ensure decodedToken is initialized as an object
+      decodedToken = decodedToken || {};
+      decodedToken['data'] = data;
+    }
+  } catch (err) {
     rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
     rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
     rspObj.responseCode = responseCode.unauthorized.status;
-		return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj))
-	}
-	if (!decodedToken) {
+    return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj));
+  }
+  if (!decodedToken) {
     rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
     rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
     rspObj.responseCode = responseCode.unauthorized.status;
-		return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj))
-	}
+    return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj));
+  }
 
   // Path to config.json
   const configFilePath = path.resolve(__dirname, '../../', 'config.json');
@@ -488,8 +391,7 @@ module.exports = async function (req, res, next) {
   };
   // performing default token data extraction
   if (defaultTokenExtraction) {
-
-    if(!decodedToken.data.organization_id || !decodedToken.data.tenant_id){
+    if (!decodedToken.data.organization_id || !decodedToken.data.tenant_id) {
       rspObj.errCode = reqMsg.TENANT_ORG_MISSING.MISSING_CODE;
       rspObj.errMsg = reqMsg.TENANT_ORG_MISSING.MISSING_MESSAGE;
       rspObj.responseCode = responseCode.unauthorized.status;
@@ -502,14 +404,17 @@ module.exports = async function (req, res, next) {
       userName: decodedToken.data.name,
       firstName: decodedToken.data.name,
       organizationId: decodedToken.data.organization_id.toString(),
-      tenantId:decodedToken.data.tenant_id && decodedToken.data.tenant_id.toString()
+      tenantId: decodedToken.data.tenant_id && decodedToken.data.tenant_id.toString(),
+      roles: decodedToken.data.roles,
     };
   } else {
     // Iterate through each key in the config object
+    let stringTypeKeys = ['userId', 'tenantId', 'organizationId'];
     for (let key in configData) {
       if (configData.hasOwnProperty(key)) {
         let keyValue = getNestedValue(decodedToken, configData[key]);
-        if (key === 'userId') {
+
+        if (stringTypeKeys.includes(key)) {
           keyValue = keyValue.toString();
         }
         // For each key in config, assign the corresponding value from decodedToken
@@ -518,170 +423,160 @@ module.exports = async function (req, res, next) {
     }
   }
 
+  /**
+   * Validate if provided orgId(s) belong to the tenant by checking against related_orgs.
+   *
+   * @param {String} tenantId - ID of the tenant
+   * @param {String} orgId - Comma separated string of org IDs or 'ALL'
+   * @returns {Object} - Success with validOrgIds array or failure with error object
+   */
+  async function validateIfOrgsBelongsToTenant(tenantId, orgId) {
+    let orgIdArr = orgId?.split(',') || [];
+    let orgDetails = await userService.fetchDefaultOrgDetails(tenantId);
+    let validOrgIds = null;
 
-    if (performInternalAccessTokenCheck) {
-      // Validate the presence of required headers
-      let orgIdPassedFromHeader = req.get('orgId');
-      let tenantIdPassedFromHeader = req.get('tenantId');
-      let roles = decodedToken.data.roles;
-      let isAdmin = req.get('admin-auth-token') === process.env.ADMIN_AUTH_TOKEN;
-      let isTenantAdmin = checkForRole(roles, 'tenant_admin');
-      let isOrgAdmin = checkForRole(roles, 'org_admin');
+    if (orgIdArr.includes('ALL') || orgIdArr.includes('all')) {
+      validOrgIds = ['ALL'];
+    } else {
+      if (
+        !orgDetails ||
+        !orgDetails.success ||
+        !orgDetails.data ||
+        !(Object.keys(orgDetails.data).length > 0) ||
+        !orgDetails.data.related_orgs ||
+        !(orgDetails.data.related_orgs > 0)
+      ) {
+        let errorObj = {};
+        errorObj.errCode = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_CODE;
+        errorObj.errMsg = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE;
+        errorObj.responseCode = httpStatusCode['bad_request'].status;
+        return { success: false, errorObj: errorObj };
+      }
 
-      if (isAdmin) {
-        if (!orgIdPassedFromHeader || !tenantIdPassedFromHeader) {
-          rspObj.errCode = reqMsg.ADMIN_TOKEN.MISSING_CODE;
-          rspObj.errMsg = reqMsg.ADMIN_TOKEN.MISSING_MESSAGE;
-          rspObj.responseCode = responseCode.unauthorized.status;
-          return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
-        }
+      // convert the types of items to string
+      orgDetails.data.related_orgs = orgDetails.data.related_orgs.map(String);
+      // aggregate valid orgids
 
-        // If the user is an admin, override tenantId and orgId with values from the headers
-        userInformation.tenantAndOrgInfo = {};
-        userInformation.tenantAndOrgInfo.orgId = orgIdPassedFromHeader.toString().split(',');
-        userInformation.tenantAndOrgInfo.tenantId = tenantIdPassedFromHeader && tenantIdPassedFromHeader.toString();
-      } else if (isTenantAdmin && orgIdPassedFromHeader && tenantIdPassedFromHeader) {
-        //validation
-        let tenantId = decodedToken.data.tenant_id.toString();
-        let orgId = decodedToken.data.organization_id;
+      let relatedOrgIds = orgDetails.data.related_orgs;
 
-        if (tenantIdPassedFromHeader !== tenantId) {
-          return returnTenantError(res);
-        }
+      validOrgIds = orgIdArr.filter((id) => relatedOrgIds.includes(id));
 
-        let orgsFromHeader = orgIdPassedFromHeader.toString().split(',');
-        let orgsFromHeaderAfterValidation = [];
-        let result = await validateOrgsPassedInHeader(orgsFromHeader, tenantId);
-
-        if(result.success){
-          orgsFromHeaderAfterValidation = result.data;
-        }else{
-          return returnOrgError(res);
-        }
-
-        // If the user is an tenantAdmin, override tenantId and orgId with values from the headers
-        userInformation.tenantAndOrgInfo = {};
-        userInformation.tenantAndOrgInfo.orgId = orgsFromHeaderAfterValidation;
-        userInformation.tenantAndOrgInfo.tenantId = tenantId && tenantId.toString();
-      } else if (isOrgAdmin) {
-        //validation
-        let tenantId = decodedToken.data.tenant_id;
-        let orgId = decodedToken.data.organization_id;
-
-        // If the user is an tenantAdmin, override tenantId and orgId with values from the headers
-        userInformation.tenantAndOrgInfo = {};
-        userInformation.tenantAndOrgInfo.orgId = [orgId.toString()];
-        userInformation.tenantAndOrgInfo.tenantId = tenantId.toString();
-      } else {
-        rspObj.errCode = reqMsg.INVALID_ROLE.INVALID_CODE;
-        rspObj.errMsg = reqMsg.INVALID_ROLE.INVALID_MESSAGE;
-        rspObj.responseCode = responseCode.unauthorized.status;
-        return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj))
+      if (!(validOrgIds.length > 0)) {
+        let errorObj = {};
+        errorObj.errCode = reqMsg.ORGID.INVALID_ORGS;
+        errorObj.errMsg = reqMsg.ORGID.INVALID_ORGS_MESSAGE;
+        errorObj.responseCode = responseCode.unauthorized.status;
+        return { success: false, errorObj: errorObj };
       }
     }
 
+    return { success: true, validOrgIds: validOrgIds };
+  }
+  /**
+   * Extract tenantId and orgId from incoming request or decoded token.
+   *
+   * Priority order: body -> query -> headers -> decoded token data
+   *
+   * @param {Object} req - Express request object
+   * @param {Object} decodedTokenData - Decoded JWT token data
+   * @returns {Object} - Success with tenantId and orgId or failure object
+   */
+  function getTenantIdAndOrgIdFromTheTheReqIntoHeaders(req, decodedTokenData) {
+    // Step 1: Check in the request body
+    if (req.body && req.body.tenantId && req.body.orgId) {
+      return { success: true, tenantId: req.body.tenantId, orgId: req.body.orgId };
+    }
+
+    // Step 2: Check in query parameters if not found in body
+    if (req.query.tenantId && req.query.orgId) {
+      return { success: true, tenantId: req.query.tenantId, orgId: req.query.orgId };
+    }
+
+    // Step 3: Check in headers if not found in query params
+    if (req.headers['tenantid'] && req.headers['orgid']) {
+      return { success: true, tenantId: req.headers['tenantid'], orgId: req.headers['orgid'] };
+    }
+
+    // Step 4: Check in user token (already decoded) if still not found
+    if (decodedTokenData && decodedTokenData.tenantId && decodedTokenData.orgId) {
+      return { success: true, tenantId: decodedTokenData.tenantId, orgId: decodedTokenData.orgId };
+    }
+
+    return { sucess: false };
+  }
+
+  let userRoles = decodedToken.data.roles.map((role) => role.title);
+
+  if (performInternalAccessTokenCheck) {
+    if (adminHeader) {
+      if (adminHeader != process.env.ADMIN_ACCESS_TOKEN) {
+        rspObj.errCode = reqMsg.ADMIN_TOKEN.INVALID_CODE;
+        rspObj.errMsg = reqMsg.ADMIN_TOKEN.INVALID_CODE_MESSAGE;
+        rspObj.responseCode = responseCode.unauthorized.status;
+        return res.status(httpStatusCode['unauthorized'].status).send(respUtil(rspObj));
+      }
+      userInformation.roles.push({ title: messageConstants.common.ADMIN_ROLE });
+      userRoles.push(messageConstants.common.ADMIN);
+
+      let result = getTenantIdAndOrgIdFromTheTheReqIntoHeaders(req, decodedToken.data);
+
+      if (!result.success) {
+        rspObj.errCode = reqMsg.ADMIN_TOKEN.MISSING_CODE;
+        rspObj.errMsg = reqMsg.ADMIN_TOKEN.MISSING_MESSAGE;
+        rspObj.responseCode = responseCode.unauthorized.status;
+        return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+      }
+
+      req.headers['tenantid'] = result.tenantId;
+      req.headers['orgid'] = result.orgId;
+
+      let validateOrgsResult = await validateIfOrgsBelongsToTenant(req.headers['tenantid'], req.headers['orgid']);
+
+      if (!validateOrgsResult.success) {
+        return res.status(responseCode['unauthorized'].status).send(respUtil(validateOrgsResult.errorObj));
+      }
+
+      req.headers['orgid'] = validateOrgsResult.validOrgIds;
+    } else if (userRoles.includes(messageConstants.common.TENANT_ADMIN)) {
+      req.headers['tenantid'] = decodedToken.data.tenant_id.toString();
+
+      let orgId = req.body.orgId || req.headers['orgid'];
+
+      if (!orgId) {
+        rspObj.errCode = reqMsg.ORGID.INVALID_ORGS;
+        rspObj.errMsg = reqMsg.ORGID.INVALID_ORGS_MESSAGE;
+        rspObj.responseCode = responseCode.unauthorized.status;
+        return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+      }
+
+      req.headers['orgid'] = orgId;
+
+      let validateOrgsResult = await validateIfOrgsBelongsToTenant(req.headers['tenantid'], req.headers['orgid']);
+      if (!validateOrgsResult.success) {
+        return res.status(responseCode['unauthorized'].status).send(respUtil(validateOrgsResult.errorObj));
+      }
+      req.headers['orgid'] = validateOrgsResult.validOrgIds;
+    } else if (userRoles.includes(messageConstants.common.ORG_ADMIN)) {
+      req.headers['tenantid'] = userInformation.tenantId.toString();
+      req.headers['orgid'] = userInformation.organizationId.toString();
+    } else {
+      rspObj.errCode = reqMsg.INVALID_ROLE.INVALID_CODE;
+      rspObj.errMsg = reqMsg.INVALID_ROLE.INVALID_MESSAGE;
+      rspObj.responseCode = responseCode.unauthorized.status;
+      return res.status(responseCode['unauthorized'].status).send(respUtil(rspObj));
+    }
+
+    userInformation.tenantAndOrgInfo = {};
+    userInformation.tenantAndOrgInfo.tenantId = req.headers['tenantid'];
+    userInformation.tenantAndOrgInfo.orgId = req.headers['orgid'];
+  }
+
   // Update user details object
   req.userDetails = userInformation;
-
   // Helper function to access nested properties
   function getNestedValue(obj, path) {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
   }
 
-  // let userDetails = await getUserDetails(decodedToken)
-  /*
-  req.userDetails = {
-    userToken: token,
-    userId: JSON.stringify(decodedToken.data.id),
-    userName: decodedToken.data.name,
-    // email: decodedToken.data.email,
-    firstName: decodedToken.data.name,
-    organizationId: decodedToken.data.organization_id,
-  };
-  */
   next();
-
-  // if (!token) {
-  //   rspObj.errCode = reqMsg.TOKEN.MISSING_CODE;
-  //   rspObj.errMsg = reqMsg.TOKEN.MISSING_MESSAGE;
-  //   rspObj.responseCode = responseCode.unauthorized.status;
-  //   return res.status(401).send(respUtil(rspObj));
-  // }
-
-  // apiInterceptor.validateToken(token, function (err, tokenData) {
-  //   // console.error(err, tokenData, rspObj);
-
-  //   if (
-  //     err &&
-  //     tokenCheckByPassAllowedForURL &&
-  //     tokenCheckByPassAllowedForUser
-  //   ) {
-  //     req.rspObj.userId = tokenCheckByPassAllowedUserDetails.userId;
-  //     req.rspObj.userToken = req.headers["x-authenticated-user-token"];
-  //     delete req.headers["x-authenticated-userid"];
-  //     delete req.headers["x-authenticated-user-token"];
-  //     req.headers["x-authenticated-userid"] =
-  //       tokenCheckByPassAllowedUserDetails.userId;
-  //     req.rspObj = rspObj;
-  //     req.userDetails = tokenCheckByPassAllowedUserDetails;
-  //     req.userDetails.userToken = req.rspObj.userToken;
-  //     req.userDetails.allRoles = tokenCheckByPassAllowedUserDetails.roles;
-
-  //     tokenAuthenticationFailureMessageToSlack(
-  //       req,
-  //       token,
-  //       "TOKEN BYPASS ALLOWED"
-  //     );
-  //     next();
-  //     return;
-  //   }
-
-  //   if (err) {
-  //     rspObj.errCode = reqMsg.TOKEN.INVALID_CODE;
-  //     rspObj.errMsg = reqMsg.TOKEN.INVALID_MESSAGE;
-  //     rspObj.responseCode = responseCode.unauthorized.status;
-  //     tokenAuthenticationFailureMessageToSlack(
-  //       req,
-  //       token,
-  //       "TOKEN VERIFICATION WITH KEYCLOAK FAILED"
-  //     );
-  //     return res.status(401).send(respUtil(rspObj));
-  //   } else {
-  //     req.rspObj.userId = tokenData.userId;
-  //     req.rspObj.userToken = req.headers["x-authenticated-user-token"];
-  //     delete req.headers["x-authenticated-userid"];
-  //     delete req.headers["x-authenticated-user-token"];
-  //     // rspObj.telemetryData.actor = utilsService.getTelemetryActorData(req);
-  //     req.headers["x-authenticated-userid"] = tokenData.userId;
-  //     req.rspObj = rspObj;
-  //     shikshalokam
-  //       .userInfo(token, tokenData.userId)
-  //       .then(async (userDetails) => {
-  //         if (userDetails.responseCode == "OK") {
-  //           req.userDetails = userDetails.result.response;
-  //           req.userDetails.userToken = req.rspObj.userToken;
-  //           req.userDetails.allRoles = await getAllRoles(req.userDetails);
-  //           next();
-  //         } else {
-  //           tokenAuthenticationFailureMessageToSlack(
-  //             req,
-  //             token,
-  //             "TOKEN VERIFICATION - FAILED TO GET USER DETAIL FROM LEARNER SERVICE"
-  //           );
-  //           rspObj.errCode = reqMsg.TOKEN.INVALID_CODE;
-  //           rspObj.errMsg = reqMsg.TOKEN.INVALID_MESSAGE;
-  //           rspObj.responseCode = responseCode.unauthorized.status;
-  //           return res.status(401).send(respUtil(rspObj));
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         tokenAuthenticationFailureMessageToSlack(
-  //           req,
-  //           token,
-  //           "TOKEN VERIFICATION - ERROR FETCHING USER DETAIL FROM LEARNER SERVICE"
-  //         );
-  //         return res.status(401).send(error);
-  //       });
-  //   }
-  // });
 };

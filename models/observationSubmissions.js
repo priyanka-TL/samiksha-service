@@ -93,11 +93,13 @@ module.exports = {
     programInformation: Object,
     orgId:{
       type: String,
-      require: true
+      require: true,
+      index:true
     },
     tenantId: {
       type: String,
-      require: true
+      require: true,
+      index:true
     }
   },
 };

@@ -66,13 +66,15 @@ module.exports = {
       require : true
     },
     createdFor : Array,
-    orgId:{
+    orgIds:{
       type: Array,
-      require: true
+      require: true,
+      index:true
     },
     tenantId: {
       type: String,
-      require: true
+      require: true,
+      index:true
     }
   }
 };

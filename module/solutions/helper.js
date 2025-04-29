@@ -249,6 +249,8 @@ module.exports = class SolutionsHelper {
             let programsData = await programsQueries.programDocuments(
               {
                 _id: { $in: programIds },
+                tenantId: tenantFilter.tenantId,
+                orgIds:{"$in": ["ALL", tenantFilter.orgId]}
               },
               ['name']
             );
@@ -575,7 +577,7 @@ module.exports = class SolutionsHelper {
         }
 
         filterQuery.tenantId = data.tenantId;
-        filterQuery.orgId = {
+        filterQuery.orgIds = {
           "$in": ["ALL", data.orgId]
         };
 
@@ -926,15 +928,19 @@ module.exports = class SolutionsHelper {
    * @name update
    * @param {String} solutionId   - solution id.
    * @param {Object} solutionData - solution update data.
-   * @param {Boolean} checkDate   -this is true for when its called via API calls
+   * @param {Boolean} checkDate   -this is true for when its called via API calls\
+   * @param {String} userId       - logged in user id.
+   * @param {Object} tenantData   - tenant data.
    * @returns {JSON}              -solution updating data.
    */
 
-  static update(solutionId, solutionData, userId, checkDate = false) {
+  static update(solutionId, solutionData, userId, checkDate = false,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
           _id: solutionId,
+          tenantId: tenantData.tenantId,
+          orgIds:{"$in": ["ALL", ...tenantData.orgId]}
         };
         // Getting solution document to update based on solution id
         let solutionDocument = await solutionsQueries.solutionDocuments(queryObject, ['_id', 'programId']);
@@ -956,6 +962,8 @@ module.exports = class SolutionsHelper {
           let programData = await programsQueries.programDocuments(
             {
               _id: solutionDocument[0].programId,
+              tenantId: tenantData.tenantId,
+              orgIds:{"$in": ["ALL", ...tenantData.orgId]}
             },
             ['_id', 'endDate', 'startDate']
           );
@@ -994,7 +1002,7 @@ module.exports = class SolutionsHelper {
 
         
         let solutionUpdateData = solutionData;
-        Object.keys(_.omit(solutionUpdateData, ['scope'])).forEach((updationData) => {
+        Object.keys(_.omit(solutionUpdateData, ['scope','tenantId','orgId'])).forEach((updationData) => {
           updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
         updateObject['$set']['updatedBy'] = userId;
@@ -1003,6 +1011,8 @@ module.exports = class SolutionsHelper {
         let solutionUpdatedData = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionDocument[0]._id,
+            tenantId: tenantData.tenantId,
+            orgIds:{"$in": ["ALL", tenantData.orgId]}
           },
           updateObject,
           { new: true }
@@ -1138,14 +1148,17 @@ module.exports = class SolutionsHelper {
    * @method
    * @name getDetails
    * @param {String} solutionId - Solution Id.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} - Details of the solution.
    */
 
-  static getDetails(solutionId) {
+  static getDetails(solutionId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments({
           _id: solutionId,
+          tenantId: tenantData.tenantId,
+          orgIds:{"$in": ["ALL", tenantData.orgId]},
           isDeleted: false,
         });
 
@@ -1815,7 +1828,7 @@ module.exports = class SolutionsHelper {
       try {
 
         let solutionData = await solutionsQueries.solutionDocuments({ _id: solutionId, 
-          orgId: {"$in": ["ALL", tenantFilter.orgId] },
+          orgIds: {"$in": ["ALL", tenantFilter.orgId] },
           tenantId: tenantFilter.tenantId,
         }, [
           'type',
@@ -1865,6 +1878,8 @@ module.exports = class SolutionsHelper {
           let programData = await programsQueries.programDocuments(
             {
               _id: solutionData.programId,
+              tenantId: tenantFilter.tenantId,
+              orgIds: { $in: ['ALL', tenantFilter.orgId] },
             },
             ['rootOrganisations', 'requestForPIIConsent', 'name']
           );
@@ -1984,6 +1999,8 @@ module.exports = class SolutionsHelper {
    * @param {String} userId - logged in user id.
    * @param {Object} data - new solution data.
    * @param {String} isReusable - new solution isReusable value.
+   * @param {String} createdFor - createdFor value.
+   * @param {Object} entityTypeId - entityTypeId value.
    * @returns {Object} New solution information
    */
 
@@ -1992,8 +2009,9 @@ module.exports = class SolutionsHelper {
     programId,
     userId,
     data,
-    createdFor = ''
+    createdFor = '',
     // rootOrganisations = ""
+    tenantData
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -2006,6 +2024,9 @@ module.exports = class SolutionsHelper {
         } else {
           solutionQuery['externalId'] = solutionId;
         }
+
+        solutionQuery['tenantId'] = tenantData.tenantId;
+        solutionQuery['orgIds'] = { $in: ['ALL', ...tenantData.orgId] };
 
         let solutionDocument = await solutionsQueries.solutionDocuments(solutionQuery);
         
@@ -2024,7 +2045,12 @@ module.exports = class SolutionsHelper {
             "name",
             "description",
             "isAPrivateProgram",
-          ]);
+          ],
+          '',
+          '',
+          '',
+          tenantData
+        );
           programDocument = programDocument?.data?.data?.[0];
           if (programDocument) {
              Object.assign(newSolutionDocument, {
@@ -2198,10 +2224,11 @@ module.exports = class SolutionsHelper {
    * @param {String} solutionId - solution Id.
    * @param {String} appName - app Name.
    * @param {String} userId - user Id.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} - Details of the solution.
    */
 
-  static fetchLink(solutionId, userId) {
+  static fetchLink(solutionId, userId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -2209,6 +2236,8 @@ module.exports = class SolutionsHelper {
             _id: solutionId,
             isReusable: false,
             isAPrivateProgram: false,
+            tenantId: tenantData.tenantId,
+            orgIds:{ $in: ['ALL', tenantData.orgId] }
           },
           ['link', 'type', 'author']
         );
@@ -2227,7 +2256,7 @@ module.exports = class SolutionsHelper {
         if (!solutionData[0].link) {
           let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
           // update link to the solution documents
-          let updateSolution = await this.update(solutionId, { link: updateLink }, userId);
+          let updateSolution = await this.update(solutionId, { link: updateLink }, userId,false,{tenantId:tenantData.tenantId,orgId:[tenantData.orgId]});
           solutionLink = updateLink;
         } else {
           solutionLink = solutionData[0].link;
@@ -2266,10 +2295,10 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         // check solution document is exists and  end date validation
-        let verifySolution = await this.verifySolutionDetails(link, userId, userToken);
+        let verifySolution = await this.verifySolutionDetails(link, userId, userToken,tenantData);
 
         // Check targeted solution based on role and location
-        let checkForTargetedSolution = await this.checkForTargetedSolution(link, bodyData, userId, userToken);
+        let checkForTargetedSolution = await this.checkForTargetedSolution(link, bodyData, userId, userToken,tenantData);
 
         if (!checkForTargetedSolution || Object.keys(checkForTargetedSolution.result).length <= 0) {
           return resolve(checkForTargetedSolution);
@@ -2301,7 +2330,8 @@ module.exports = class SolutionsHelper {
             let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
               solutionData, //solution data
               userId, //User Id
-              userToken
+              userToken,
+              tenantData
             );
             if (!privateProgramAndSolutionDetails.success) {
               throw {
@@ -2403,10 +2433,11 @@ module.exports = class SolutionsHelper {
    * @param {String} link - link Id.
    * @param {String} userId - user Id.
    * @param {String} userToken - user token.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} - Details of the solution.
    */
 
-  static verifySolutionDetails(link = '', userId = '', userToken = '') {
+  static verifySolutionDetails(link = '', userId = '', userToken = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let response = {
@@ -2428,6 +2459,8 @@ module.exports = class SolutionsHelper {
             status: {
               $ne: messageConstants.common.INACTIVE_STATUS,
             },
+            tenantId: tenantData.tenantId,
+            orgIds: { $in: ['ALL', tenantData.orgId] },
           },
           ['type', 'status', 'endDate']
         );
@@ -2453,7 +2486,9 @@ module.exports = class SolutionsHelper {
               {
                 status: messageConstants.common.INACTIVE_STATUS,
               },
-              userId
+              userId,
+              false,
+              { tenantId: tenantData.tenantId, orgId: [tenantData.orgId] }
             );
           }
 
@@ -2486,15 +2521,18 @@ module.exports = class SolutionsHelper {
    * @param {Object} bodyData - Req Body.
    * @param {String} userId - user Id.
    * @param {String} userToken - user token.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} - Details of the solution.
    */
 
-  static checkForTargetedSolution(link = '', bodyData = {}, userId = '', userToken = '') {
+  static checkForTargetedSolution(link = '', bodyData = {}, userId = '', userToken = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let response = {
           isATargetedSolution: false,
           link: link,
+          tenantId: tenantData.tenantId,
+          orgIds: { $in: ['ALL', tenantData.orgId] },
         };
         // find the solution document based on the link
         let solutionDetails = await solutionsQueries.solutionDocuments({ link: link }, [
@@ -2507,6 +2545,8 @@ module.exports = class SolutionsHelper {
           'status',
         ]);
 
+        bodyData.tenantId = tenantData.tenantId;
+        bodyData.orgId = tenantData.orgId;
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData);
         if (!queryData.success) {
           return resolve(queryData);
@@ -2565,10 +2605,11 @@ module.exports = class SolutionsHelper {
    * @name PrivateProgramAndSolutionDetails
    * @param {Object} solutionData - solution data.
    * @param {String} userId - user Id.
+   * @param {Object} tenantData - tenantData
    * @returns {Object} - Details of the private solution.
    */
 
-  static privateProgramAndSolutionDetails(solutionData, userId = '') {
+  static privateProgramAndSolutionDetails(solutionData, userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         // Check if a private program and private solution already exist or not for this user.
@@ -2599,7 +2640,8 @@ module.exports = class SolutionsHelper {
           let solutionAndProgramCreation = await this.createProgramAndSolution(
             userId,
             programAndSolutionData,
-            'true' // create duplicate solution
+            'true', // create duplicate solution
+            tenantData
           );
 
           if (!solutionAndProgramCreation.success) {
@@ -2636,10 +2678,11 @@ module.exports = class SolutionsHelper {
    * @param {string} userId - logged in user Id.
    * @param {object} data - data needed for creation of program.
    * @param {object} solutionData - data needed for creation of solution.
+   * @param {Object} tenantData - tenantData information
    * @returns {Array} - Created user program and solution.
    */
 
-  static createProgramAndSolution(userId, data, createADuplicateSolution = '') {
+  static createProgramAndSolution(userId, data, createADuplicateSolution = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let userPrivateProgram = {};
@@ -2715,6 +2758,10 @@ module.exports = class SolutionsHelper {
           if (data.rootOrganisations) {
             programData.rootOrganisations = data.rootOrganisations;
           }
+
+          programData.tenantData = {}
+          programData.tenantData.tenantId = tenantData.tenantId;
+          programData.tenantData.orgId = tenantData.orgId;
           userPrivateProgram = await programsHelper.create(programData);
         }
 
@@ -2923,6 +2970,7 @@ module.exports = class SolutionsHelper {
    * @param {String} solutionId - solution Id.
    * @param {String} userId - user Id.
    * @param {Object} bodyData - Req Body.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} - Details of the solution.
    * Takes SolutionId and userRoleInformation as parameters.
    * @return {Object} - {
@@ -2935,13 +2983,15 @@ module.exports = class SolutionsHelper {
   }
    */
 
-  static isTargetedBasedOnUserProfile(solutionId = '', bodyData = {}) {
+  static isTargetedBasedOnUserProfile(solutionId = '', bodyData = {},tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let response = {
           isATargetedSolution: false,
           _id: solutionId,
         };
+        bodyData.tenantId = tenantData.tenantId;
+        bodyData.orgId = tenantData.orgId;
         //get the query based on the roles and locations
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData);
         if (!queryData.success) {
@@ -3023,11 +3073,12 @@ module.exports = class SolutionsHelper {
    * @method
    * @name deleteSolution
    * @param {String} solutionId - solution Internal id.
+   * @param {Object} tenantData - tenant data.
    * @param {String} userId - UserId.
    * @returns {Object} Delete Solution .
    */
 
-  static delete(solutionId = '', userId = '') {
+  static delete(solutionId = '', userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (solutionId == '') {
@@ -3043,6 +3094,8 @@ module.exports = class SolutionsHelper {
             _id: solutionId,
             isAPrivateProgram: true,
             author: userId,
+            tenantId: tenantData.tenantId,
+            orgIds:{ $in: ['ALL', tenantData.orgId] },
           },
           {
             $set: { isDeleted: true },
@@ -3276,10 +3329,11 @@ module.exports = class SolutionsHelper {
    * @name addEntityToSolution
    * @param {String} solutionId - solution id.
    * @param {Array} entityIds - Entity ids.
+   * @param {Object} tenantData - tenant data.
    * @returns {String} - message.
    */
 
-  static addEntityToSolution(solutionId, entityIds) {
+  static addEntityToSolution(solutionId, entityIds,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let responseMessage = messageConstants.apiResponses.ENTITIES_UPDATED;
@@ -3294,6 +3348,9 @@ module.exports = class SolutionsHelper {
           solutionQuery['externalId'] = solutionId;
         }
 
+        solutionQuery['tenantId'] = tenantData.tenantId;
+        solutionQuery['orgIds'] = { $in: ['ALL', tenantData.orgId] };
+
         let solutionDocument = await solutionsQueries.solutionDocuments(solutionQuery, ['entityType']);
 
         if (!solutionDocument.length > 0) {
@@ -3304,6 +3361,8 @@ module.exports = class SolutionsHelper {
           {
             _id: { $in: entityIds },
             entityType: solutionDocument[0].entityType,
+            tenantId: tenantData.tenantId,
+            orgIds: { $in: ['ALL', tenantData.orgId] },
           },
           ['_id']
         );
@@ -3350,15 +3409,21 @@ module.exports = class SolutionsHelper {
    * @param {String} pageSize - Page size.
    * @param {String} searchText - search text.
    * @param {Array}  projection
+   * @param {Object} tenantData - tenant data.
    * @returns {String} -        -list of solutions
    */
 
-  static list(type, subType, filter = {}, pageNo, pageSize, searchText, projection) {
+  static list(type, subType, filter = {}, pageNo, pageSize, searchText, projection,tenantData = {}) {
     return new Promise(async (resolve, reject) => {
       try {
         let matchQuery = {
-          isDeleted: false,
+          isDeleted: false
         };
+
+        if(tenantData.hasOwnProperty('tenantId') && tenantData.hasOwnProperty('orgId')) {
+          matchQuery['tenantId'] = tenantData.tenantId;
+          matchQuery['orgIds'] = { $in: ['ALL', tenantData.orgId] };
+        }
 
         if (type == messageConstants.common.SURVEY) {
           matchQuery['status'] = {
@@ -3612,15 +3677,17 @@ module.exports = class SolutionsHelper {
    * @param {String} solutionId - solution Id.
    * @param {Object} bodyData - Requested body data.
    * @param {String} type -Type of solution
+   * @param {Object} tenantData - tenant data.
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '') {
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',tenantData) {
     
     return new Promise(async (resolve, reject) => {
       try {
+        bodyData.tenantId = tenantData.tenantId;
+        bodyData.orgId = tenantData.orgId;
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
-
         if (!queryData.success) {
           return resolve(queryData);
         }
@@ -3676,10 +3743,11 @@ module.exports = class SolutionsHelper {
    * @name addRolesInScope
    * @param {String} solutionId - Solution Id.
    * @param {Array} roles - roles data.
+   * @param {Object} tenantData - tenant data.
    * @returns {JSON} - Added roles data.
    */
 
-  static addRolesInScope(solutionId, roles) {
+  static addRolesInScope(solutionId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         //Retrive the solution to update the role
@@ -3689,6 +3757,8 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
+            tenantId: tenantData.tenantId,
+            orgIds: { $in: ['ALL', tenantData.orgId] },
           },
           ['_id']
         );
@@ -3727,6 +3797,8 @@ module.exports = class SolutionsHelper {
           await solutionsQueries.updateSolutionDocument(
             {
               _id: solutionId,
+              tenantId: tenantData.tenantId,
+              orgIds: { $in: ['ALL', tenantData.orgId] },
             },
             {
               $pull: { 'scope.roles': { code: messageConstants.common.ALL_ROLES } },
@@ -3748,6 +3820,8 @@ module.exports = class SolutionsHelper {
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
+            tenantId: tenantData.tenantId,
+            orgIds: { $in: ['ALL', tenantData.orgId] },
           },
           updateQuery,
           { new: true }
@@ -3792,7 +3866,7 @@ module.exports = class SolutionsHelper {
             isReusable: false,
             isDeleted: false,
             tenantId: tenantData.tenantId,
-            orgId:{$in:['ALL',tenantData.orgId]}
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['_id', 'programId', 'scope.entityType']
         );
@@ -3809,6 +3883,8 @@ module.exports = class SolutionsHelper {
           programData = await programsQueries.programDocuments(
             {
               _id: solutionData[0].programId,
+              tenantId: tenantData.tenantId,
+              orgIds:{$in:['ALL',tenantData.orgId]}
             },
             ['scope.entities', 'scope.entityType']
           );
@@ -3825,7 +3901,7 @@ module.exports = class SolutionsHelper {
                 _id: programData[0].scope.entities,
                 [`groups.${solutionData[0].scope.entityType}`]: entities,
                 tenantId: tenantData.tenantId,
-                orgId: {$in:['ALL',tenantData.orgId ]}
+                orgIds: {$in:['ALL',tenantData.orgId ]}
               },
               ['_id']
             );
@@ -3843,7 +3919,7 @@ module.exports = class SolutionsHelper {
             _id: { $in: entities },
             entityType: solutionData[0].scope.entityType,
             tenantId: tenantData.tenantId,
-            orgId:{$in:['ALL',tenantData.orgId]}
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['_id']
         );
@@ -3894,10 +3970,11 @@ module.exports = class SolutionsHelper {
    * @name removeRolesInScope
    * @param {String} solutionId - Solution Id.
    * @param {Array} roles - roles data.
+   * @param {Object} tenantData - tenant data.
    * @returns {JSON} - Removed solution roles.
    */
 
-  static removeRolesInScope(solutionId, roles) {
+  static removeRolesInScope(solutionId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -3906,6 +3983,8 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
+            tenantId: tenantData.tenantId,
+            orgIds: { $in: ['ALL', tenantData.orgId] },
           },
           ['_id']
         );
@@ -3934,6 +4013,8 @@ module.exports = class SolutionsHelper {
           let updateSolution = await solutionsQueries.updateSolutionDocument(
             {
               _id: solutionId,
+              tenantId: tenantData.tenantId,
+              orgIds: { $in: ['ALL', tenantData.orgId] },
             },
             {
               $pull: { 'scope.roles': { $in: roles } },
@@ -3972,10 +4053,11 @@ module.exports = class SolutionsHelper {
    * @name removeEntitiesInScope
    * @param {String} solutionId - Program Id.
    * @param {Array} entities - entities.
+   * @param {Object} tenantData - tenant data.
    * @returns {JSON} - Removed entities from solution scope.
    */
 
-  static removeEntitiesInScope(solutionId, entities) {
+  static removeEntitiesInScope(solutionId, entities,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -3984,6 +4066,8 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
+            tenantId: tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['_id', 'scope.entities']
         );
@@ -4005,6 +4089,8 @@ module.exports = class SolutionsHelper {
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
+            tenantId: tenantData.tenantId,
+            orgIds: { $in: ['ALL', tenantData.orgId] },
           },
           {
             $pull: { 'scope.entities': { $in: entities } },

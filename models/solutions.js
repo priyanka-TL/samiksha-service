@@ -97,13 +97,15 @@ module.exports = {
       type : "ObjectId",
       index: true
     },
-    orgId:{
+    orgIds:{
       type: Array,
-      require: true
+      require: true,
+      index:true
     },
     tenantId: {
       type: String,
-      require: true
+      require: true,
+      index:true
     }
   }
 };

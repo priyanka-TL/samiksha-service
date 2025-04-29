@@ -119,6 +119,7 @@ module.exports = class Surveys extends Abstract {
           req.params._id,
           req.userDetails.userId,
           req.query.appName,
+          req.userDetails.tenantAndOrgInfo
         );
 
         return resolve({
@@ -164,7 +165,7 @@ module.exports = class Surveys extends Abstract {
   async mapSurverySolutionToProgram(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await surveysHelper.mapSurverySolutionToProgram(req.params._id, req.query.programId);
+        let result = await surveysHelper.mapSurverySolutionToProgram(req.params._id, req.query.programId,req.userDetails.tenantAndOrgInfo);
 
         return resolve({
           message: result.message,
@@ -556,13 +557,16 @@ module.exports = class Surveys extends Abstract {
   getDetailsByLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let bodyData = req.body ? req.body : {};
 
         let surveyDetails = await surveysHelper.getDetailsByLink(
           req.params._id,
           req.userDetails.userId,
-          req.rspObj.userToken,
+          req.userDetails.userToken,
           bodyData,
+          '',
+          tenantData,
         );
 
         return resolve({
@@ -805,6 +809,7 @@ module.exports = class Surveys extends Abstract {
                 req.userDetails.userToken,
                 bodyData,
                 "",                //version
+                req.userDetails.tenantData
                 // appVersion,
                 // appName
             );
@@ -928,6 +933,7 @@ module.exports = class Surveys extends Abstract {
   async userAssigned(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let surveys = await surveysHelper.userAssigned(
           req.userDetails.userId,
           req.pageSize,
@@ -935,6 +941,7 @@ module.exports = class Surveys extends Abstract {
           req.searchText,
           req.query.filter,
           req.query.surveyReportPage,
+          req.userDetails.tenantData
         );
 
         return resolve({
@@ -982,7 +989,8 @@ module.exports = class Surveys extends Abstract {
   async getLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveySolutionDetails = await surveysHelper.getLink(req.params._id, req.query.appName);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let surveySolutionDetails = await surveysHelper.getLink(req.params._id, req.query.appName,tenantData);
 
         return resolve({
           message: surveySolutionDetails.message,

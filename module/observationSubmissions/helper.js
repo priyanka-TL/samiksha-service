@@ -548,15 +548,18 @@ module.exports = class ObservationSubmissionsHelper {
    * @param {String} - entityId
    * @param {String} - solutionId
    * @param {String} - observationId
+   * @param {Object} - tenantData
    * @returns {Object} - list of submissions
    */
 
-  static list(entityId, observationId) {
+  static list(entityId, observationId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
           entityId: entityId,
           observationId: observationId,
+          tenantId: tenantData.tenantId,
+          orgId: tenantData.orgId,
         };
 
         let projection = [
@@ -646,10 +649,11 @@ module.exports = class ObservationSubmissionsHelper {
    * @param {String} submissionId - observation submissionId
    * @param {String} evidenceId - evidence id
    * @param {String} userId - logged in userId
+   * @param {Object} tenantData - tenant data
    * @returns {Json} - submission allowed or not.
    */
 
-  static isAllowed(submissionId = '', evidenceId = '', userId = '') {
+  static isAllowed(submissionId = '', evidenceId = '', userId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (submissionId == '') {
@@ -672,6 +676,8 @@ module.exports = class ObservationSubmissionsHelper {
           {
             _id: submissionId,
             evidencesStatus: { $elemMatch: { externalId: evidenceId } },
+            tenantId: tenantData.tenantId,
+            orgId: tenantData.orgId,
           },
           ['evidencesStatus.$'],
         );
@@ -863,10 +869,11 @@ module.exports = class ObservationSubmissionsHelper {
    * @name delete
    * @param {String} submissionId -observation submissions id.
    * @param {String} userId - logged in user id.
+   * @param {Object} tenantData - tenantData information
    * @returns {JSON} - message that observation submission is deleted.
    */
 
-  static delete(submissionId, userId) {
+  static delete(submissionId, userId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let message = messageConstants.apiResponses.OBSERVATION_SUBMISSION_DELETED;
@@ -875,6 +882,8 @@ module.exports = class ObservationSubmissionsHelper {
           _id: submissionId,
           status: { $in: ['started', 'draft'] },
           createdBy: userId,
+          tenantId: tenantData.tenantId,
+          orgId: tenantData.orgId,
         });
 
         // Check if a document was deleted
@@ -904,10 +913,11 @@ module.exports = class ObservationSubmissionsHelper {
    * @param {String} submissionId -observation submissions id.
    * @param {String} userId - logged in user id.
    * @param {String} title - submission title.
+   * @param {Object} tenantData - tenantData information
    * @returns {JSON} - message that observation submission title is set.
    */
 
-  static setTitle(submissionId, userId, title) {
+  static setTitle(submissionId, userId, title,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let message = messageConstants.apiResponses.OBSERVATION_SUBMISSION_UPDATED;
@@ -916,6 +926,8 @@ module.exports = class ObservationSubmissionsHelper {
           {
             _id: submissionId,
             createdBy: userId,
+            tenantId: tenantData.tenantId,
+            orgId: tenantData.orgId,
           },
           {
             $set: {

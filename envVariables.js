@@ -340,8 +340,8 @@ let enviromentVariables = {
 		optional: false,
 		default: 'survey',
 	},
-  ADMIN_AUTH_TOKEN:{
-    message: 'Required admin access token',
+  ADMIN_ACCESS_TOKEN:{
+    message: 'Required admin auth token',
     optional: false
   },
   PROJECT_SERVICE_NAME: {

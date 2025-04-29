@@ -41,11 +41,13 @@ module.exports = {
     },
     orgId:{
       type: String,
-      require: true
+      require: true,
+      index:true
     },
     tenantId: {
       type: String,
-      require: true
+      require: true,
+      index:true
     }
   },
 };
