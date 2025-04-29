@@ -344,6 +344,10 @@ let enviromentVariables = {
     message: 'Required admin auth token',
     optional: false
   },
+  ADMIN_TOKEN_HEADER_NAME:{
+    message: 'Required aadmin token header name',
+    optional: false
+  },
   PROJECT_SERVICE_NAME: {
 		message: 'project service name required',
 		optional: false,
