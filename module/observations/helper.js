@@ -2241,7 +2241,7 @@ module.exports = class ObservationsHelper {
           _id: req.query.entityId,
           entityType: observationDocument.entityType,
           tenantId: req.userDetails.tenantData.tenantId,
-          orgId: {$in:['ALL',req.userDetails.tenantData.orgId]}
+          orgIds: {$in:['ALL',req.userDetails.tenantData.orgId]}
          };
   
          let entitiesDocument = await entityManagementService.entityDocuments(
