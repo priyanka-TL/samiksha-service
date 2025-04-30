@@ -2850,7 +2850,7 @@ module.exports = class ObservationsHelper {
             entityType: topLevelEntityType,
             deleted:false,
             tenantId:solutionDocument[0].tenantId,
-            orgId:{$in:['ALL',solutionDocument[0].orgId]}
+            orgId:{$in:['ALL',...solutionDocument[0].orgId]}
            };
          
           //Retrieving the entity from the Entity Management Service
