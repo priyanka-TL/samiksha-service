@@ -150,6 +150,8 @@ module.exports = class ReportsHelper {
       entityId: entityId,
       observationId: observationId,
       status: 'completed',
+      tenantId: req.userDetails.tenantData.tenantId,
+      orgId: req.userDetails.tenantData.orgId,
     };
 
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
@@ -197,6 +199,8 @@ module.exports = class ReportsHelper {
 
     let solutionDocument = await solutionsQueries.solutionDocuments({
       _id: submissionDocument.solutionId,
+      tenantId: req.userDetails.tenantData.tenantId,
+      orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] },
     });
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
@@ -277,6 +281,8 @@ module.exports = class ReportsHelper {
       _id:submissionId,
       entityType:entityType,
       status: 'completed',
+      tenantId:req.userDetails.tenantData.tenantId,
+      orgId:req.userDetails.tenantData.orgId
     };
 
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
@@ -325,6 +331,8 @@ module.exports = class ReportsHelper {
     let solutionDocument = await solutionsQueries.solutionDocuments(
       {
         _id: submissionDocument.solutionId,
+        tenantId: req.userDetails.tenantData.tenantId,
+        orgIds:{"$in":['ALL',req.userDetails.tenantData.orgId]}
       }
     );
 
