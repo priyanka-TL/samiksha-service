@@ -157,10 +157,13 @@ module.exports = class ReportsHelper {
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
     let submissionDocument = submissionDocumentArr[0];
 
+    if (!submissionDocument) {
+      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
+    }
     // Initialize an empty array to collect all improvement project suggestions
     let improvementProjectSuggestions = [];
 
-    if (submissionDocument.criteria) {
+    if (submissionDocument.criteria && submissionDocument.isRubricDriven) {
       for (const criterias of submissionDocument.criteria) {
         // Build a query to find the criteria document by its unique _id
         let criteriaFindQuery = {
@@ -193,9 +196,7 @@ module.exports = class ReportsHelper {
         improvementProjectSuggestions.push(allCriteriaDocument[0]);
       }
     }
-    if (!submissionDocument) {
-      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
-    }
+
 
     let solutionDocument = await solutionsQueries.solutionDocuments({
       _id: submissionDocument.solutionId,
@@ -289,11 +290,13 @@ module.exports = class ReportsHelper {
 
     let submissionDocument = submissionDocumentArr[0];
 
-    console.log(submissionDocument,'submissionDocument')
+    if(!submissionDocument){
+      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
+    }
 
     let improvementProjectSuggestions = [];
 
-    if (submissionDocument.criteria) {
+    if (submissionDocument.criteria && submissionDocument.isRubricDriven) {
       for (const criterias of submissionDocument.criteria) {
         // Build a query to find the criteria document by its unique _id
         let criteriaFindQuery = {
@@ -306,7 +309,6 @@ module.exports = class ReportsHelper {
         // Fetch the criteria document from the database using a helper function
         let allCriteriaDocument = await criteriaHelper.criteriaDocument(criteriaFindQuery, criteriaProjectionArray);
 
-        console.log(allCriteriaDocument,'allCriteriaDocument')
         // Process the returned document(s)
         allCriteriaDocument.map((criteria) => {
           criteria.criteriaId = criteria._id;
@@ -326,9 +328,6 @@ module.exports = class ReportsHelper {
         // Since we're only expecting one match, push the first document to the suggestions array
         improvementProjectSuggestions.push(allCriteriaDocument[0]);
       }
-    }
-    if(!submissionDocument){
-      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
     }
 
     let solutionDocument = await solutionsQueries.solutionDocuments(
