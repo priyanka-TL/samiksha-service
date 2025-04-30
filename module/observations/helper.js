@@ -1908,7 +1908,7 @@ module.exports = class ObservationsHelper {
                   _id:bodyData[solutionData.data.entityType],
                   entityType: solutionData.data.entityType,
                   tenantId:tenantData.tenantId,
-                  orgId: {$in:['ALL',tenantData.orgId]}
+                  orgIds: {$in:['ALL',tenantData.orgId]}
                 };
                 
                 let entitiesDocument = await entityManagementService.entityDocuments(
@@ -2029,7 +2029,7 @@ module.exports = class ObservationsHelper {
               {
                 _id: { $in: observationDocument[0].entities },
                 tenantId:tenantData.tenantId,
-                orgId: {$in:['ALL',tenantData.orgId]}
+                orgIds: {$in:['ALL',tenantData.orgId]}
               },
               ['metaInformation.externalId', 'metaInformation.name'],
             );
@@ -2810,7 +2810,7 @@ module.exports = class ObservationsHelper {
             {
               _id: solutionId,
             },
-            ["entityType"]
+            ["entityType",'tenantId','orgIds']
           );
   
           if (!solutionDocument[0]) {
@@ -2850,7 +2850,7 @@ module.exports = class ObservationsHelper {
             entityType: topLevelEntityType,
             deleted:false,
             tenantId:solutionDocument[0].tenantId,
-            orgId:{$in:['ALL',...solutionDocument[0].orgId]}
+            orgIds:{$in:['ALL',...solutionDocument[0].orgIds]}
            };
          
           //Retrieving the entity from the Entity Management Service
