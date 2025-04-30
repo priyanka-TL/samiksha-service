@@ -558,7 +558,7 @@ module.exports = async function (req, res, next) {
       req.headers['orgid'] = validateOrgsResult.validOrgIds;
     } else if (userRoles.includes(messageConstants.common.ORG_ADMIN)) {
       req.headers['tenantid'] = userInformation.tenantId.toString();
-      req.headers['orgid'] = userInformation.organizationId.toString();
+      req.headers['orgid'] = [userInformation.organizationId.toString()];
     } else {
       rspObj.errCode = reqMsg.INVALID_ROLE.INVALID_CODE;
       rspObj.errMsg = reqMsg.INVALID_ROLE.INVALID_MESSAGE;
