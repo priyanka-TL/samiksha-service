@@ -580,7 +580,7 @@ module.exports = class Solutions extends Abstract {
           await database.models.solutions.findOneAndUpdate(
             { _id: solutionDocument._id,
               tenantId: tenantData.tenantId,
-              orgId:{"$in":[...tenantData.orgId,'ALL']},
+              orgIds:{"$in":[...tenantData.orgId,'ALL']},
            },
             {
               themes: themesWithRubricDetails.themes,
