@@ -289,6 +289,8 @@ module.exports = class ReportsHelper {
 
     let submissionDocument = submissionDocumentArr[0];
 
+    console.log(submissionDocument,'submissionDocument')
+
     let improvementProjectSuggestions = [];
 
     if (submissionDocument.criteria) {
@@ -304,6 +306,7 @@ module.exports = class ReportsHelper {
         // Fetch the criteria document from the database using a helper function
         let allCriteriaDocument = await criteriaHelper.criteriaDocument(criteriaFindQuery, criteriaProjectionArray);
 
+        console.log(allCriteriaDocument,'allCriteriaDocument')
         // Process the returned document(s)
         allCriteriaDocument.map((criteria) => {
           criteria.criteriaId = criteria._id;
