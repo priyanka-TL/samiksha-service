@@ -1265,8 +1265,6 @@ module.exports = class Observations extends Abstract {
         newSolutionDocument.tenantId = req.userDetails.tenantAndOrgInfo.tenantId;
         newSolutionDocument.orgIds = req.userDetails.tenantAndOrgInfo.orgId;
 
-
-        console.log(newSolutionDocument,'newSolutionDocument')
         let newBaseSolution = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 
         if (newBaseSolution._id) {

@@ -777,7 +777,6 @@ module.exports = class SurveysHelper {
    */
 
   static details(surveyId = '', userId = '', submissionId = '', roleInformation = {}, userToken ="",tenantData) {
-    console.log(tenantData,'tenantdata')
     return new Promise(async (resolve, reject) => {
       try {
         // Condition to check for surveyId and userId
