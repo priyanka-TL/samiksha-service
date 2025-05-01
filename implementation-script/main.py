@@ -116,6 +116,37 @@ ccRootOrgName = None
 ccRootOrgId  = None
 certificatetemplateid = None
 question_sequence_arr = []
+tenantID = None
+orgIDFromTemplate = None
+
+
+
+#helper function 
+def clean_single_value(value):
+    value = str(value).strip()
+    try:
+        f = float(value)
+        if f.is_integer():
+            return str(int(f))
+        return str(f)
+    except ValueError:
+        return value  # not a number, return as-is
+    
+def append_to_list(base, items_to_add):
+    if not isinstance(base, list):
+        base = [base]
+
+    if isinstance(items_to_add, list):
+        return base + items_to_add
+    else:
+        return base + [items_to_add]
+
+def normalize_cell_value(value):
+    if isinstance(value, str) and ',' in value:
+        return [clean_single_value(part) for part in value.split(',') if part.strip()]
+    return clean_single_value(value)
+
+
 
 # function to map course to program
 
@@ -206,7 +237,11 @@ def checkIfObsMappedToProgram(accessToken, obsExt, parentFolder):
     # fetch observation solution header
     headers = {'Content-Type': 'application/json',
                'Authorization': 'Bearer ' + config.get(environment, 'internal-access-token'),
-               'X-auth-token': accessToken, 'X-Channel-id': config.get(environment, 'X-Channel-id')}
+               'X-auth-token': accessToken, 'X-Channel-id': config.get(environment, 'X-Channel-id'),
+               'tenantId': tenantID,
+               'orgid': orgIDFromTemplate,
+               config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
+               }
     
     responseSearchSol = requests.request("POST", fetchSolutionDetailsURL, headers=headers, data=payload)
     
@@ -291,7 +326,11 @@ def programCreation(accessToken, parentFolder, externalId, pName, pDescription, 
     headers = {'X-auth-token': accessToken,
                'internal-access-token': config.get(environment, 'internal-access-token'),
                'Content-Type': 'application/json',
-               'Authorization':config.get(environment, 'Authorization')}
+               'Authorization':config.get(environment, 'Authorization'),
+               'tenantId': tenantID,
+               'orgid': orgIDFromTemplate,
+               config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken'),
+               }
     
     # program creation 
     responsePgmCreate = requests.request("POST", programCreationurl, headers=headers, data=(payload))
@@ -500,6 +539,10 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                     global startDateOfProgram, endDateOfProgram
                     startDateOfProgram = dictDetailsEnv['Start date of program']
                     endDateOfProgram = dictDetailsEnv['End date of program']
+                    # global tenantID 
+                    # tenantID = clean_single_value(dictDetailsEnv['Tenant ID'])
+                    # global orgIDFromTemplate 
+                    # orgIDFromTemplate = clean_single_value(dictDetailsEnv['Org ID'])
                     # taking the start date of program from program template and converting YYYY-MM-DD 00:00:00 format
                     
                     startDateArr = str(startDateOfProgram).split("-")
@@ -638,7 +681,9 @@ def fetchEntityType(solutionName_for_folder_path, accessToken, entitiesPGM, scop
         # Prepare the payload for the API request
         payload = {
             "query": {
-                "metaInformation.name": entityName  # Use the current entity name
+                "metaInformation.name": entityName,
+                  "tenantId":tenantID,  # Use the current entity name
+                  "orgIds": {"$in":append_to_list(normalize_cell_value(orgIDFromTemplate),'ALL')},
             },
             "projection": [
                 "entityType"
@@ -792,6 +837,12 @@ def generateAccessToken(solutionName_for_folder_path):
     if responseKeyClockUser.status_code == 200:
         responseKeyClockUser = responseKeyClockUser.json()
         accessTokenUser = responseKeyClockUser['result']['access_token']
+        jwtTokenSecret  = config.get(environment, 'jwtTokenSecret')
+        decode = jwt.decode(accessTokenUser, jwtTokenSecret , algorithms=["HS256"])
+        global tenantID 
+        tenantID = clean_single_value(decode['data']['tenant_id'])
+        global orgIDFromTemplate 
+        orgIDFromTemplate = clean_single_value(decode['data']['organization_id'])
         messageArr.append("Acccess Token : " + str(accessTokenUser))
         createAPILog(solutionName_for_folder_path, messageArr)
         fileheader = ["Access Token","Access Token succesfully genarated","Passed"]
@@ -870,7 +921,6 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
                         print("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         messageArr.append("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         createAPILog(solutionName_for_folder_path, messageArr)
-                        terminatingMessage("Aborting...")
 
                     else:
                         programID = getProgramDetails[0][0]
@@ -1151,7 +1201,9 @@ def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, s
     "query" : {
           "entityType": {
             "$in": scopeEntityType
-        }
+        },
+        "tenantId":tenantID,
+        "orgIds": {"$in":append_to_list(normalize_cell_value(orgIDFromTemplate),'ALL')}
     },
 
     "projection": [
@@ -1629,7 +1681,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
             else:
                 terminatingMessage('Sheet Names in excel file is wrong , Sheet Names are details,questions')
 
-        detailsColNames = ["survey_solution_name", "survey_solution_description", "Name_of_the_creator","survey_creator_username", "survey_start_date", "survey_end_date"]
+        detailsColNames = ["survey_solution_name", "survey_solution_description", "Name_of_the_creator","survey_creator_username", "survey_start_date", "survey_end_date","Tenant ID","Org ID"]
         questionsColNames = ["question_sequence", "question_id", "section_header", "instance_parent_question_id",
                              "parent_question_id", "show_when_parent_question_value_is", "parent_question_value",
                              "page", "question_number", "question_language1", "question_language2", "question_tip",
@@ -2196,7 +2248,11 @@ def createSolutionFromFramework(solutionName_for_folder_path, accessToken, frame
         'Content-Type': config.get(environment, 'Content-Type'),
         'Authorization': config.get(environment, 'Authorization'),
         'X-auth-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id')
+        'X-Channel-id': config.get(environment, 'X-Channel-id'),
+        "internal-access-token": config.get(environment, 'internal-access-token'),
+        'tenantId': tenantID,
+        'orgid': orgIDFromTemplate,
+        config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
     }
     queryparamsCreateSolutionApi = '?frameworkId=' + str(frameworkExternalId) + '&entityType=' + entityType
     responseCreateSolutionApi = requests.post(url=urlCreateSolutionApi + queryparamsCreateSolutionApi,
@@ -2208,6 +2264,7 @@ def createSolutionFromFramework(solutionName_for_folder_path, accessToken, frame
                   "Response : " + str(responseCreateSolutionApi.text)]
     createAPILog(solutionName_for_folder_path, messageArr)
     messageArr = []
+    print(responseCreateSolutionApi.text,'responseCreateSolutionApi')
     if responseCreateSolutionApi.status_code == 200:
         responseCreateSolutionApi = responseCreateSolutionApi.json()
         solutionId = responseCreateSolutionApi['result']['templateId']
@@ -2228,7 +2285,10 @@ def solutionUpdate(solutionName_for_folder_path, accessToken, solutionId, bodySo
         'Authorization': config.get(environment, 'Authorization'),
         'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
-        "internal-access-token": config.get(environment, 'internal-access-token')
+        "internal-access-token": config.get(environment, 'internal-access-token'),
+        'tenantId': tenantID,
+        'orgid': orgIDFromTemplate,
+        config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
         }
     responseUpdateSolutionApi = requests.post(url=solutionUpdateApi, headers=headerUpdateSolutionApi,data=json.dumps(bodySolutionUpdate))
     messageArr = ["Solution Update API called.", "URL : " + str(solutionUpdateApi), "Body : " + str(bodySolutionUpdate),"Response : " + str(responseUpdateSolutionApi.text),"Status Code : " + str(responseUpdateSolutionApi.status_code)]
@@ -3060,7 +3120,11 @@ def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAdd
     headerCriteriaRubricUploadApi = {
         'Authorization': config.get(environment, 'Authorization'),
         'X-auth-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id')
+        'X-Channel-id': config.get(environment, 'X-Channel-id'),
+        "internal-access-token": config.get(environment, 'internal-access-token'),
+        'tenantId': tenantID,
+        'orgid': orgIDFromTemplate,
+        config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
     }
     filesCriteriaRubric = {
         'criteria': open(solutionName_for_folder_path + '/criteriaRubrics/uploadSheet.csv', 'rb')
@@ -3163,7 +3227,11 @@ def uploadThemeRubrics(solutionName_for_folder_path, wbObservation, accessToken,
     headerThemeRubricUploadApi = {
         'Authorization': config.get(environment, 'Authorization'),
         'X-auth-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id')
+        'X-Channel-id': config.get(environment, 'X-Channel-id'),
+        'internal-access-token': config.get(environment, 'internal-access-token'),
+        'tenantId': tenantID,
+        'orgid': orgIDFromTemplate,
+        config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
     }
     filesThemeRubric = {
         'themes': open(solutionName_for_folder_path + '/themeRubrics/uploadSheet.csv', 'rb')
@@ -3193,7 +3261,10 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
         'Authorization': config.get(environment, 'Authorization'),
         'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
-        'internal-access-token': config.get(environment, 'internal-access-token')
+        'internal-access-token': config.get(environment, 'internal-access-token'),
+        'tenantId': tenantID,
+        'orgid': orgIDFromTemplate,
+        config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
     }
     payloadFetchSolutionApi = {}
 
@@ -3205,7 +3276,6 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
                   "solution ExternalId : " + responseFetchSolutionJson["result"]["externalId"]]
     messageArr.append("Upload status code : " + str(responseFetchSolutionApiUrl.status_code))
     createAPILog(solutionName_for_folder_path, messageArr)
-
     if responseFetchSolutionApiUrl.status_code == 200:
         print('Fetch solution Api Success')
         
@@ -3282,7 +3352,10 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
         'Authorization': config.get(environment, 'Authorization'),
         'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
-        'internal-access-token': config.get(environment, 'internal-access-token')
+        'internal-access-token': config.get(environment, 'internal-access-token'),
+        'tenantId': tenantID,
+        'orgid': orgIDFromTemplate,
+        config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
     }
     payloadFetchSolutionApi = {}
 
@@ -3503,7 +3576,12 @@ def createChild(solutionName_for_folder_path, observationExternalId, accessToken
     }
     headersSol_prog_mapping = {'Authorization': config.get(environment, 'Authorization'),
                                'X-auth-token': accessToken,
-                               'Content-Type': config.get(environment, 'Content-Type')}
+                               'Content-Type': config.get(environment, 'Content-Type'),
+                               'internal-access-token': config.get(environment, 'internal-access-token'),
+                               'tenantId': tenantID,
+                               'orgid': orgIDFromTemplate,
+                               config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
+                               }
     responseSol_prog_mapping = requests.request("POST", urlSol_prog_mapping, headers=headersSol_prog_mapping,
                                                 data=json.dumps(payloadSol_prog_mapping))
     messageArr = ["Create child API called.", "URL : " + urlSol_prog_mapping,
@@ -3583,10 +3661,14 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
                         urlCreateSolutionApi = config.get(environment, 'INTERNAL_KONG_IP')+ config.get(environment, 'surveySolutionCreationApiUrl')
                         headerCreateSolutionApi = {
                             'Content-Type': config.get(environment, 'content-type'),
+                            "internal-access-token": config.get(environment, 'internal-access-token'),
                             # 'Authorization': config.get(environment, 'Authorization'),
                             'X-auth-token': accessToken,
                             # 'X-Channel-id': config.get(environment, 'X-Channel-id'),
-                            # 'appName': config.get(environment, 'appName')
+                            # 'appName': config.get(environment, 'appName'),
+                            'tenantId': tenantID,
+                            'orgid': orgIDFromTemplate,
+                            config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
                         }
                         responseCreateSolutionApi = requests.post(url=urlCreateSolutionApi,
                                                                   headers=headerCreateSolutionApi,
@@ -3902,7 +3984,11 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                 urlImportSoluTemplate = config.get(environment, 'internal_kong_ip') + config.get(environment,'importSurveySolutionTemplateUrl') + str(surveyParentSolutionId) + "?appName=samiksha"
                 headerImportSoluTemplateApi = {
                     'X-auth-token': accessToken,
-                    'X-Channel-id': config.get(environment, 'X-Channel-id')
+                    'X-Channel-id': config.get(environment, 'X-Channel-id'),
+                    'internal-access-token': config.get(environment, 'internal-access-token'),
+                    'tenantId': tenantID,
+                    'orgid': orgIDFromTemplate,
+                    config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
                 }
                 responseImportSoluTemplateApi = requests.post(url=urlImportSoluTemplate,
                                                              headers=headerImportSoluTemplateApi)
@@ -3921,7 +4007,11 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                        urlSurveyProgramMapping = config.get(environment, 'internal_kong_ip') + config.get(environment, "importSurveySolutionToProgramUrl") + str(solutionIdSuc) + "?programId=" + programExternalId.lstrip().rstrip()
                        headeSurveyProgramMappingApi = {
                         'X-auth-token': accessToken,
-                        'X-Channel-id': config.get(environment, 'X-Channel-id')
+                        'X-Channel-id': config.get(environment, 'X-Channel-id'),
+                        'internal-access-token': config.get(environment, 'internal-access-token'),
+                        'tenantId': tenantID,
+                        'orgid': orgIDFromTemplate,
+                        config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
                        }
                        responseSurveyProgramMappingApi = requests.post(url=urlSurveyProgramMapping,headers=headeSurveyProgramMappingApi)
                        if responseSurveyProgramMappingApi.status_code == 200:
@@ -3952,7 +4042,7 @@ def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, access
                               scope[entity_type] = [entity_value]
                     # bodySolutionUpdate = {
                      #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                          scope["roles"] = scopeRoles
+                          scope["roles"] = rolesPGMID
                           bodySolutionUpdate = {
                             "scope": scope
                            }
@@ -4837,7 +4927,10 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
             'X-auth-token': accessToken,
             'X-Channel-id': config.get(environment, 'X-Channel-id'),
             'internal-access-token': config.get(environment, 'internal-access-token'),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'tenantId': tenantID,
+            'orgid': orgIDFromTemplate,
+            config.get(environment,'adminTokenHeaderName'): config.get(environment, 'adminAccessToken')
         }
 
         certificate_payload = json.dumps({
@@ -5097,7 +5190,7 @@ def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, list
                         scope[entity_type] = [entity_value]
                 # bodySolutionUpdate = {
                 #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                scope["roles"] = scopeRoles
+                scope["roles"] = rolesPGMID
                 bodySolutionUpdate = {
                   "scope": scope
                 }
@@ -5397,7 +5490,6 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                     bodySolutionUpdate = {
                         "scope": scope
                      }
-                    
                     solutionUpdate(parentFolder, accessToken, childId[0], bodySolutionUpdate)
                     if solutionDetails[1]:
                         startDateArr = str(solutionDetails[1]).split("-")

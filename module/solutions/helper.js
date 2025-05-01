@@ -1158,7 +1158,7 @@ module.exports = class SolutionsHelper {
         let solutionData = await solutionsQueries.solutionDocuments({
           _id: solutionId,
           tenantId: tenantData.tenantId,
-          orgIds:{"$in": ["ALL", tenantData.orgId]},
+          orgIds:{"$in": ["ALL", ...tenantData.orgId]},
           isDeleted: false,
         });
 

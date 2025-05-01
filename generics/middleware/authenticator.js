@@ -180,6 +180,7 @@ module.exports = async function (req, res, next) {
     'programs/create',
     'observations/importFromFramework',
     'surveys/createSolutionTemplate',
+    'solutions/getDetails',
     'solutions/update',
     'solutions/uploadThemesRubricExpressions',
     'solutions/uploadCriteriaRubricExpressions',
@@ -423,6 +424,14 @@ module.exports = async function (req, res, next) {
     }
   }
 
+  if (!userInformation.organizationId || !userInformation.tenantId) {
+    rspObj.errCode = reqMsg.TENANT_ORG_MISSING.MISSING_CODE;
+    rspObj.errMsg = reqMsg.TENANT_ORG_MISSING.MISSING_MESSAGE;
+    rspObj.responseCode = responseCode.unauthorized.status;
+    return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+  }
+  
+
   /**
    * Validate if provided orgId(s) belong to the tenant by checking against related_orgs.
    *
@@ -444,7 +453,7 @@ module.exports = async function (req, res, next) {
         !orgDetails.data ||
         !(Object.keys(orgDetails.data).length > 0) ||
         !orgDetails.data.related_orgs ||
-        !(orgDetails.data.related_orgs > 0)
+        !(orgDetails.data.related_orgs.length > 0)
       ) {
         let errorObj = {};
         errorObj.errCode = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_CODE;
@@ -505,7 +514,7 @@ module.exports = async function (req, res, next) {
     return { sucess: false };
   }
 
-  let userRoles = decodedToken.data.roles.map((role) => role.title);
+  let userRoles = userInformation.roles.map((role) => role.title);
 
   if (performInternalAccessTokenCheck) {
     if (adminHeader) {

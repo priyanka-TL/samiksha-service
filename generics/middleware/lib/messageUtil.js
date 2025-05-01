@@ -257,7 +257,7 @@ exports.REQUEST = {
     MISSING_CODE: 'ERR_ADMIN_FIELDS_MISSING',
     MISSING_MESSAGE: 'Required headers are missing: orgId or tenantId',
     INVALID_CODE:'ERR_INVALID_TOKEN',
-    INVALID_CODE_MESSAGE:'Invalid token provided'
+    INVALID_CODE_MESSAGE:'Invalid admin token provided'
   },
   TENANT: {
     TENANT_MISMATCH: 'ERR_TENANT_MISMATCH',

@@ -737,7 +737,7 @@ module.exports = class Solutions extends Abstract {
   async getDetails(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
+        let tenantData = req.userDetails.tenantAndOrgInfo;
         let solutionData = await solutionsHelper.getDetails(req.params._id,tenantData);
 
         solutionData['result'] = solutionData.data;
