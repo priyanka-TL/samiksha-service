@@ -118,6 +118,7 @@ certificatetemplateid = None
 question_sequence_arr = []
 tenantID = None
 orgIDFromTemplate = None
+roleOfResourceCreator = 'admin'
 
 
 
@@ -817,6 +818,21 @@ def envCheck():
     except Exception as e:
         print(e)
         return False
+    
+# function to get roles, tenant id and org id from user token
+def getRolesAndTenantIdAndOrgIdFromUserToken(decodedToken):
+        rolesInToken = decodedToken['data']['roles']
+        global roleOfResourceCreator
+        for element in rolesInToken:
+            if element.get('title') == 'org_admin':
+             roleOfResourceCreator = 'org_admin'
+            elif element.get('title') == 'tenant_admin':
+             roleOfResourceCreator = 'tenant_admin'
+
+        global tenantID 
+        tenantID = clean_single_value(decodedToken['data']['tenant_id'])
+        global orgIDFromTemplate 
+        orgIDFromTemplate = clean_single_value(decodedToken['data']['organization_id'])
 
 # Generate access token for the APIs. 
 def generateAccessToken(solutionName_for_folder_path):
@@ -839,10 +855,7 @@ def generateAccessToken(solutionName_for_folder_path):
         accessTokenUser = responseKeyClockUser['result']['access_token']
         jwtTokenSecret  = config.get(environment, 'jwtTokenSecret')
         decode = jwt.decode(accessTokenUser, jwtTokenSecret , algorithms=["HS256"])
-        global tenantID 
-        tenantID = clean_single_value(decode['data']['tenant_id'])
-        global orgIDFromTemplate 
-        orgIDFromTemplate = clean_single_value(decode['data']['organization_id'])
+        getRolesAndTenantIdAndOrgIdFromUserToken(decode)
         messageArr.append("Acccess Token : " + str(accessTokenUser))
         createAPILog(solutionName_for_folder_path, messageArr)
         fileheader = ["Access Token","Access Token succesfully genarated","Passed"]
@@ -1374,7 +1387,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
             else:
                 if sheetEnv.strip().lower() == 'details':
                     print("--->Checking details sheet...")
-                    detailsCols = ["observation_solution_name", "observation_solution_description", "Elevate_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type","start_date","end_date"]
+                    detailsCols = ["observation_solution_name", "observation_solution_description", "Elevate_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type","start_date","end_date","Tenant ID","Org ID"]
                     detailsEnvSheet = wbObservation1.sheet_by_name(sheetEnv)
                     keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
                                range(detailsEnvSheet.ncols)]
@@ -3401,7 +3414,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
             xfile = openpyxl.load_workbook(programFile)
         print(xfile.sheetnames)
 
-        sheet_name = 'Resource Details'.strip()
+        sheet_name = 'details'.strip()
 
         resourceDetailsSheet = xfile[sheet_name]
 
@@ -5384,6 +5397,73 @@ def downloadlogosign(filePathAddProject,projectName_for_folder_path):
                 else:
                     print("--->Logos and signature downlading are failed(check if drive link are  Anyone with the link or not)<---")
 
+def assignTenantOrgValuesToGlobalVariables(tenantIdFromTheSheets, orgIdsFromTheSheets):
+    global tenantID 
+    tenantID = clean_single_value(tenantIdFromTheSheets)
+    global orgIDFromTemplate 
+    orgIDFromTemplate = clean_single_value(orgIdsFromTheSheets)
+
+def validateTenantAndOrgIdsFromProgramSheet(programFileContent):
+        
+        tenantIdFromProgramFile = None
+        orgIdsFromProgramFile = None
+                    
+        sheetNames = programFileContent.sheet_names()
+        # iterate through the sheets 
+        for sheetEnv in sheetNames:
+
+            if sheetEnv == "Instructions":
+                # skip Instructions sheet 
+                pass
+            elif sheetEnv.strip().lower() == 'program details':
+                print("--->Checking Program details sheet...")
+                detailsEnvSheet = programFileContent.sheet_by_name(sheetEnv)
+                keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
+                           range(detailsEnvSheet.ncols)]
+                for row_index_env in range(2, detailsEnvSheet.nrows):
+                    dictDetailsEnv = {keysEnv[col_index_env]: detailsEnvSheet.cell(row_index_env, col_index_env).value
+                                      for
+                                      col_index_env in range(detailsEnvSheet.ncols)}
+                    tenantIdFromProgramFile = dictDetailsEnv.get('Tenant ID')
+                    orgIdsFromProgramFile = dictDetailsEnv.get('Org ID')
+
+        global roleOfResourceCreator
+        if roleOfResourceCreator not in ['org_admin', 'tenant_admin'] and not tenantIdFromProgramFile:
+            raise ValueError("Tenant ID is required in program template for role 'admin', it cannot be empty")
+
+        if roleOfResourceCreator not in ['org_admin'] and not orgIdsFromProgramFile:
+            raise ValueError("Org ID is required for role 'admin' and 'tenant_admin' in program template and cannot be empty")
+        
+        assignTenantOrgValuesToGlobalVariables(tenantIdFromProgramFile, orgIdsFromProgramFile)
+
+def validateTenantAndOrgIdsFromResourceSheet(resourceFileContent):
+        print('validating resourceFileconetnt .....')
+        tenantIdFromresourceFile = None
+        orgIdsFromresourceFile = None
+                    
+        sheetNames1 = resourceFileContent.sheet_names()
+        for sheetEnv in sheetNames1:
+            if sheetEnv.strip().lower() == 'details':
+                detailsEnvSheet = resourceFileContent.sheet_by_name(sheetEnv)
+                keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
+                       range(detailsEnvSheet.ncols)]
+
+                for row_index_env in range(2, detailsEnvSheet.nrows):
+                    dictDetailsEnv = {keysEnv[col_index_env]: detailsEnvSheet.cell(row_index_env, col_index_env).value
+                                  for
+                                  col_index_env in range(detailsEnvSheet.ncols)}
+                    tenantIdFromresourceFile = dictDetailsEnv.get('Tenant ID')
+                    orgIdsFromresourceFile = dictDetailsEnv.get('Org ID')
+
+        global roleOfResourceCreator
+        if roleOfResourceCreator not in ['org_admin', 'tenant_admin'] and not tenantIdFromresourceFile:
+            raise ValueError("Tenant ID is required in program template for role 'admin', it cannot be empty")
+
+        if roleOfResourceCreator not in ['org_admin'] and not orgIdsFromresourceFile:
+            raise ValueError("Org ID is required for role 'admin' and 'tenant_admin' in program template and cannot be empty")
+        
+        assignTenantOrgValuesToGlobalVariables(tenantIdFromresourceFile, orgIdsFromresourceFile)
+        
 def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isProgramnamePresent, isCourse,
              scopeEntityType=scopeEntityType):
     scopeEntityType = scopeEntityType
@@ -5395,6 +5475,7 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
         # sys.exit()
         wbObservation = xlrd.open_workbook(addObservationSolution, on_demand=True)
         wbProgram = xlrd.open_workbook(programFile, on_demand=True)
+        validateTenantAndOrgIdsFromProgramSheet(wbProgram)
         if typeofSolution == 1 or typeofSolution == 5:
             if typeofSolution == 5:
                 impLedObsFlag = True
@@ -5717,7 +5798,7 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
           accessToken = generateAccessToken(parentFolder)
           typeofSolution = validateSheets(addObservationSolution, accessToken, parentFolder)
           wbObservation = xlrd.open_workbook(addObservationSolution, on_demand=True)
-         
+          validateTenantAndOrgIdsFromResourceSheet(wbObservation)
           if typeofSolution == 1 or typeofSolution == 5:
             if typeofSolution == 5:
                 impLedObsFlag = True

@@ -102,4 +102,10 @@ module.exports = {
       index:true
     }
   },
+  compoundIndex: [
+    {
+      "name" :{ observationId: 1, entityId: 1, submissionNumber:1, tenantId: 1 , orgId: 1 },
+      "indexType" : { unique: true }
+    }
+  ]
 };

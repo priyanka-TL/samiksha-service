@@ -107,5 +107,11 @@ module.exports = {
       require: true,
       index:true
     }
-  }
+  },
+  compoundIndex: [
+		{
+			name: { externalId: 1, tenantId: 1 , orgIds: 1 },
+			indexType: { unique: true },
+		},
+	],
 };
