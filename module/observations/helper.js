@@ -104,7 +104,6 @@ module.exports = class ObservationsHelper {
         //     requestingUserAuthToken,
         //     userId
         //   );
-
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
@@ -121,7 +120,6 @@ module.exports = class ObservationsHelper {
             'isAPrivateProgram',
           ],
         );
-
         if (!solutionData.length > 0) {
           throw {
             status: httpStatusCode.bad_request.status,
@@ -132,7 +130,6 @@ module.exports = class ObservationsHelper {
         if (solutionData[0].isReusable) {
 
           const solutionHelper = require(MODULES_BASE_PATH +'/solutions/helper');
-          console.log(solutionHelper,"this is solution")
           solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
             solutionId,
               {
@@ -168,8 +165,8 @@ module.exports = class ObservationsHelper {
         }
 
         let observationData = await this.createObservation(data, userId, solutionData,userProfileData);
-
-        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId"]));
+        console.log(observationData)
+        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId","solutionExternalId"]));
       } catch (error) {
         return reject(error);
       }

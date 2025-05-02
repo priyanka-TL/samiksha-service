@@ -983,18 +983,17 @@ module.exports = class EntitiesHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let ids = [];
+        let query = {
+          _id: { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
+        };
+        
+        if (entityTypeId !== "") {
+          query.entityTypeId = entityTypeId;
+        }
 
         let entitiesDocuments = await database.models.entities
-          .find(
-            {
-              _id: { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
-              entityTypeId: entityTypeId,
-            },
-            {
-              _id: 1,
-            },
-          )
-          .lean();
+         .find(query, { _id: 1 })
+         .lean();
 
         if (entitiesDocuments.length > 0) {
           ids = entitiesDocuments.map((entityId) => entityId._id);

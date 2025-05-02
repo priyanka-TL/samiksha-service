@@ -276,7 +276,7 @@ module.exports = class Observations extends Abstract {
           req.userDetails.userToken,
           req.query.programId
         );
-
+        console.log(result,"in controller")
         return resolve({
           message: messageConstants.apiResponses.OBSERVATION_CREATED,
           result: result,

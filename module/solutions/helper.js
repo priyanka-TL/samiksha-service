@@ -2125,6 +2125,7 @@ module.exports = class SolutionsHelper {
         // }
 
         let duplicateSolutionDocument = await solutionsQueries.createSolution(_.omit(newSolutionDocument, ['_id']));
+        
 
         if (duplicateSolutionDocument._id) {
           if (data.scope && Object.keys(data.scope).length > 0) {
@@ -3390,6 +3391,7 @@ module.exports = class SolutionsHelper {
             type:1,
             subType:1,
             isReusable:1,
+            minNoOfSubmissionsRequired:1
           };
         }
 

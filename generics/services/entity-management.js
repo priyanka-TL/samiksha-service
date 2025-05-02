@@ -151,6 +151,7 @@ const validateEntities = async function (entityIds, entityTypeId) {
           };
        
           let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
+          console.log(entitiesDocumentsAPIData,bodyData,"this is mappin")
           let entitiesDocuments = entitiesDocumentsAPIData.data;
             if (entitiesDocuments.length > 0) {
               ids = entitiesDocuments.map((entityId) => entityId._id);
