@@ -150,15 +150,20 @@ module.exports = class ReportsHelper {
       entityId: entityId,
       observationId: observationId,
       status: 'completed',
+      tenantId: req.userDetails.tenantData.tenantId,
+      orgId: req.userDetails.tenantData.orgId,
     };
 
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
     let submissionDocument = submissionDocumentArr[0];
 
+    if (!submissionDocument) {
+      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
+    }
     // Initialize an empty array to collect all improvement project suggestions
     let improvementProjectSuggestions = [];
 
-    if (submissionDocument.criteria) {
+    if (submissionDocument.criteria && submissionDocument.isRubricDriven) {
       for (const criterias of submissionDocument.criteria) {
         // Build a query to find the criteria document by its unique _id
         let criteriaFindQuery = {
@@ -191,12 +196,12 @@ module.exports = class ReportsHelper {
         improvementProjectSuggestions.push(allCriteriaDocument[0]);
       }
     }
-    if (!submissionDocument) {
-      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND };
-    }
+
 
     let solutionDocument = await solutionsQueries.solutionDocuments({
       _id: submissionDocument.solutionId,
+      tenantId: req.userDetails.tenantData.tenantId,
+      orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] },
     });
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
@@ -277,15 +282,21 @@ module.exports = class ReportsHelper {
       _id:submissionId,
       entityType:entityType,
       status: 'completed',
+      tenantId:req.userDetails.tenantData.tenantId,
+      orgId:req.userDetails.tenantData.orgId
     };
 
     let submissionDocumentArr = await observationSubmissionsHelper.observationSubmissionsDocument(queryObject);
 
     let submissionDocument = submissionDocumentArr[0];
 
+    if(!submissionDocument){
+      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
+    }
+
     let improvementProjectSuggestions = [];
 
-    if (submissionDocument.criteria) {
+    if (submissionDocument.criteria && submissionDocument.isRubricDriven) {
       for (const criterias of submissionDocument.criteria) {
         // Build a query to find the criteria document by its unique _id
         let criteriaFindQuery = {
@@ -318,13 +329,12 @@ module.exports = class ReportsHelper {
         improvementProjectSuggestions.push(allCriteriaDocument[0]);
       }
     }
-    if(!submissionDocument){
-      throw { message: messageConstants.apiResponses.SUBMISSION_NOT_FOUND};
-    }
 
     let solutionDocument = await solutionsQueries.solutionDocuments(
       {
         _id: submissionDocument.solutionId,
+        tenantId: req.userDetails.tenantData.tenantId,
+        orgIds:{"$in":['ALL',req.userDetails.tenantData.orgId]}
       }
     );
 

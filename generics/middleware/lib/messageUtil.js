@@ -253,6 +253,28 @@ exports.REQUEST = {
     INVALID_CODE: 'ERR_TOKEN_INVALID',
     INVALID_MESSAGE: 'Access denied',
   },
+  ADMIN_TOKEN: {
+    MISSING_CODE: 'ERR_ADMIN_FIELDS_MISSING',
+    MISSING_MESSAGE: 'Required headers are missing: orgId or tenantId',
+    INVALID_CODE:'ERR_INVALID_TOKEN',
+    INVALID_CODE_MESSAGE:'Invalid admin token provided'
+  },
+  TENANT: {
+    TENANT_MISMATCH: 'ERR_TENANT_MISMATCH',
+    MISMATCH_MESSAGE: 'tenantId is not matching with the request',
+  },
+  ORGID: {
+    INVALID_ORGS: 'ERR_INVALID_ORG',
+    INVALID_ORGS_MESSAGE: 'Invalid orgId provided',
+  },
+  INVALID_ROLE:{
+    INVALID_CODE: 'ERR_INVALID_ROLE',
+    INVALID_MESSAGE: 'Invalid role provided for resource creation',
+  },
+  TENANT_ORG_MISSING:{
+    MISSING_CODE: 'ERR_TENANT_ORG_MISSING',
+    MISSING_MESSAGE: 'Required field tenantId or orgId is missing in the token',
+  }
 };
 
 exports.RESPONSE_CODE = {

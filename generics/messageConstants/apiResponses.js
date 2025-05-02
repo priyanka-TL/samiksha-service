@@ -423,5 +423,10 @@ module.exports = {
   ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role',
   EVIDENCE_ALREADY_MARKED_AS_NOT_APPLICABLE:'is already marked as not applicable',
   OBSERVATION_SOLUTION_ID_REQUIRED:'Observation or solution id is required',
-  OBSERVATION_NOT_RELEVENT_FOR_USER:'Dear User, this Observation is not relevant for your role and location'
+  OBSERVATION_NOT_RELEVENT_FOR_USER:'Dear User, this Observation is not relevant for your role and location',
+  ORG_DETAILS_FETCH_UNSUCCESSFUL_CODE: 'ORG_DETAILS_FETCH_UNSUCCESSFUL',
+  ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE: 'Could not fetch organisation details',
+  INVALID_TENANT_AND_ORG_CODE: 'INVALID_TENANT_AND_ORG',
+  INVALID_TENANT_AND_ORG_MESSAGE: 'Invalid tenant and org',
+  MISSING_TENANT_AND_ORG_FIELDS: 'MISSING_TENANT_AND_ORG_FIELDS',
 };

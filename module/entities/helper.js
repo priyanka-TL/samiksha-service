@@ -1444,7 +1444,9 @@ module.exports = class EntitiesHelper {
           if ( req.query.observationId ) {
               let findObject = {
                   "_id" : req.query.observationId,
-                  "createdBy" : userId
+                  "createdBy" : userId,
+                  "tenantId":req.userDetails.tenantData.tenantId,
+                  "orgId":req.userDetails.tenantData.orgId
               };
 
               projection.push(
@@ -1460,7 +1462,9 @@ module.exports = class EntitiesHelper {
 
           if ( req.query.solutionId ) {
               let findQuery = {
-                  _id: ObjectId(req.query.solutionId)
+                  _id: ObjectId(req.query.solutionId),
+                  tenantId: req.userDetails.tenantData.tenantId,
+                  orgIds:{$in:['ALL',req.userDetails.tenantData.orgId]}
               };
               projection.push(
                   "entityType"
@@ -1482,7 +1486,9 @@ module.exports = class EntitiesHelper {
           if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
 
               let filterData = {
-                  "_id" : req.query.parentEntityId
+                  "_id" : req.query.parentEntityId,
+                  "tenantId":req.userDetails.tenantData.tenantId,
+                  "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
               };
                   
               let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
@@ -1528,7 +1534,9 @@ module.exports = class EntitiesHelper {
                 let targetedGroup = groups[result.entityType];
     
                 let filterDataGroups = {
-                  "_id":targetedGroup
+                  "_id":targetedGroup,
+                  "tenantId":req.userDetails.tenantData.tenantId,
+                  "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
                 }
                 let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
 
@@ -1580,7 +1588,9 @@ module.exports = class EntitiesHelper {
             response.result = [];
             let filterData = {
               "entityType":result.entityType,
-              "_id":result.entities
+              "_id":result.entities,
+              "tenantId":req.userDetails.tenantData.tenantId,
+              "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
 
             }
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);

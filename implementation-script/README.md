@@ -4,9 +4,9 @@ Python script to upload a program and add multiple resources like   Surveys , Ob
 ### Resource templates
 - [Programs](https://docs.google.com/spreadsheets/d/1JjF7uEsY5P1TzrsekaKjy0JtCw_xvwA4/edit?usp=sharing&ouid=113799545932705393937&rtpof=true&sd=true)
 
-- [Surveys](https://docs.google.com/spreadsheets/d/1iA0lm_jq0IAgrvZRed8Vdj3uVdtvKAqni-SshiPbCo4/edit?usp=share_link)
-- [Observation with out rubrics](https://docs.google.com/spreadsheets/d/1uErekrCkuOXMdIvXsCSOr7YiBk4HcS4iJrh0tdALlsw/edit?usp=share_link)
-- [Observation with rubrics](https://docs.google.com/spreadsheets/d/1cWbFMOVwDny3r91yFW7_TSmRAfzOGynFksA9psj0uE8/edit?gid=653980971#gid=653980971)
+- [Surveys](https://docs.google.com/spreadsheets/d/1Aa7eiEAOau7Q0V7plt7f9KPQ_Yesr3dp9h5Dq1A99qg/edit?usp=sharing)
+- [Observation with out rubrics](https://docs.google.com/spreadsheets/d/1Fkxa5x_9IL93jnJ-Jn6OGobjRtOS4yC5kamLiOIquXk/edit?usp=sharing)
+- [Observation with rubrics](https://docs.google.com/spreadsheets/d/1cWbFMOVwDny3r91yFW7_TSmRAfzOGynFksA9psj0uE8/edit?usp=sharing)
 
 
 ## Initial steps to set up script in local
