@@ -3135,11 +3135,11 @@ submissionReport = async function (req) {
 fetch = async function (req) {
   return new Promise(async function (resolve, reject) {
     try {
-
+      req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         //  submission observation report
         if (req.body.submissionId && req.body.observation == true ) {
 
-         let response = await reportsHelper.instaceObservationReport(req);
+         let response = await reportsHelper.instaceObservationReport(req,);
          resolve({message:messageConstants.apiResponses.OBSERVATION_REPORT_SUCCESS,result:response});
 
       } else if (req.body.entityId && req.body.observationId && req.body.observation == true) {    // entity observation report

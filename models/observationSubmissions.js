@@ -91,5 +91,21 @@ module.exports = {
     criteriaLevelReport: Boolean,
     userProfile : Object,
     programInformation: Object,
+    orgId:{
+      type: String,
+      require: true,
+      index:true
+    },
+    tenantId: {
+      type: String,
+      require: true,
+      index:true
+    }
   },
+  compoundIndex: [
+    {
+      "name" :{ observationId: 1, entityId: 1, submissionNumber:1, tenantId: 1 , orgId: 1 },
+      "indexType" : { unique: true }
+    }
+  ]
 };

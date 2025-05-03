@@ -25,4 +25,5 @@ module.exports = {
 	ORGANIZATION_READ: '/v1/organization/read',
   USER_ROLE_EXTENSION:'/v1/userRoleExtension/find',
   PROFILE_READ:'/v1/profile/read',
+  PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds'
 };
