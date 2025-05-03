@@ -2306,6 +2306,7 @@ def solutionUpdate(solutionName_for_folder_path, accessToken, solutionId, bodySo
     responseUpdateSolutionApi = requests.post(url=solutionUpdateApi, headers=headerUpdateSolutionApi,data=json.dumps(bodySolutionUpdate))
     messageArr = ["Solution Update API called.", "URL : " + str(solutionUpdateApi), "Body : " + str(bodySolutionUpdate),"Response : " + str(responseUpdateSolutionApi.text),"Status Code : " + str(responseUpdateSolutionApi.status_code)]
     createAPILog(solutionName_for_folder_path, messageArr)
+    print(str(bodySolutionUpdate),'solutionUpdateBody')
     if responseUpdateSolutionApi.status_code == 200:
         print("Solution Update Success.")
         return True
@@ -3414,9 +3415,14 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
             xfile = openpyxl.load_workbook(programFile)
         print(xfile.sheetnames)
 
-        sheet_name = 'details'.strip()
+        #sheet_name = 'details'.strip()
+        sheet_name_primary = 'Resource Details'.strip()
+        sheet_name_fallback = 'details'.strip()
 
-        resourceDetailsSheet = xfile[sheet_name]
+        try:
+            resourceDetailsSheet = xfile[sheet_name_primary]
+        except KeyError:
+            resourceDetailsSheet = xfile[sheet_name_fallback]
 
         greenFill = PatternFill(start_color='0000FF00',
                                 end_color='0000FF00',
@@ -5567,7 +5573,7 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                           scope[entity_type] = [entity_value]
                     # bodySolutionUpdate = {
                     #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                    scope["roles"] = scopeRoles
+                    scope["roles"] = rolesPGMID
                     bodySolutionUpdate = {
                         "scope": scope
                      }
@@ -5646,7 +5652,7 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                           scope[entity_type] = [entity_value]
                     # bodySolutionUpdate = {
                      #     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                    scope["roles"] = scopeRoles
+                    scope["roles"] = rolesPGMID
                     bodySolutionUpdate = {
                          "scope": scope
                     }
