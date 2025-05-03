@@ -1,0 +1,55 @@
+# Service Config
+HOST = samiksha
+PORT = 4301
+LOG = debug
+NODE_ENV = development
+# Setting to turn on/off debug
+ENABLE_DEBUG_LOGGING = "OFF"
+# Setting to turn on/off bunyan logger service
+ENABLE_BUNYAN_LOGGING = "OFF"
+# Setting for custom request timeout for reports
+REQUEST_TIMEOUT_FOR_REPORTS = 600000
+APPLICATION_BASE_URL = "/survey/"
+MOBILE_APPLICATION_APP_TYPE = "samiksha"
+APPLICATION_BASE_HOST = "http://localhost"
+APP_PORTAL_BASE_URL = "http://localhost/4301"
+#Cloud Storage Configuration
+CLOUD_STORAGE = "GC"
+# Google Cloud Configuration
+GCP_PATH = "./generics/helpers/credentials/sl-dev-storage.json"
+GCP_BUCKET_NAME = "gcp bucket name"
+MONGODB_URL = mongodb://mongo:27017
+PUBLIC_FOLDER_PATH = "public"
+# DB = "sl-prod"
+DB = "elevate-samiksha"
+
+
+# For reports generation.
+
+INTERNAL_ACCESS_TOKEN = "8c3a94f0931e01a4940a"
+# INTERNAL_ACCESS_TOKEN="Fqn0m0HQ0gXydRtBCg5l"
+
+# CSV Config
+
+# Create the respective directory as provided in the path below.
+
+CSV_REPORTS_PATH = "reports"
+# Access token is same as user service AccessToken for validating JWT token
+ACCESS_TOKEN_SECRET=hsghasghjab1273JHajnbabsjdj1273981273jhajksdh8y3123yhjkah812398yhjqwe7617237yuhdhhdqwu271
+# ACCESS_TOKEN_SECRET = "asadsd8as7df9as8df987asdf"
+
+USER_SERVICE_URL=/user
+# ENTITY_SERVICE_URL="http://localhost:9000/entity_management"
+ENTITY_MANAGEMENT_SERVICE_URL=/entity-management
+
+IMPROVEMENT_PROJECT_BASE_URL = "http://localhost:5000"
+TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC=+05:30
+VALIDATE_ENTITIES = ON
+CLOUD_STORAGE_PROVIDER=gcloud
+CLOUD_STORAGE_ACCOUNTNAME=sl-mentoring-dev-storage@sl-dev-project.iam.gserviceaccount.com
+CLOUD_STORAGE_SECRET="-----BEGIN PRIVATE KEY-----\\/+\==\n-----END PRIVATE KEY-----\n"
+CLOUD_STORAGE_PROJECT =sl-dev-project
+CLOUD_STORAGE_BUCKETNAME=mentoring-dev-storage-private
+CLOUD_STORAGE_BUCKET_TYPE=private
+GOTENBERG_URL = http://localhost:3000
+API_DOC_URL = "/survey/api-doc"
