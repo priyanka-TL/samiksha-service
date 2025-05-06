@@ -392,11 +392,18 @@ module.exports = async function (req, res, next) {
   };
   // performing default token data extraction
   if (defaultTokenExtraction) {
-    if (!decodedToken.data.organization_id || !decodedToken.data.tenant_id) {
+    if (!decodedToken.data.organization_ids || !decodedToken.data.tenant_id) {
       rspObj.errCode = reqMsg.TENANT_ORG_MISSING.MISSING_CODE;
       rspObj.errMsg = reqMsg.TENANT_ORG_MISSING.MISSING_MESSAGE;
       rspObj.responseCode = responseCode.unauthorized.status;
       return res.status(responseCode.unauthorized.status).send(respUtil(rspObj));
+    }
+
+    //here assuming that req.headers['orgid'] will be a single value it multiple passed first element of the array will be taken
+    let fetchSingleOrgIdFunc = await fetchSingleOrgIdFromProvidedData(decodedToken.data.tenant_id.toString(),decodedToken.data.organization_ids,req.headers['orgid'])
+
+    if(!fetchSingleOrgIdFunc.success){
+      return res.status(responseCode.unauthorized.status).send(respUtil(fetchSingleOrgIdFunc.errorObj));
     }
 
     userInformation = {
@@ -404,7 +411,7 @@ module.exports = async function (req, res, next) {
       userId: typeof decodedToken.data.id == 'string' ? decodedToken.data.id : JSON.stringify(decodedToken.data.id),
       userName: decodedToken.data.name,
       firstName: decodedToken.data.name,
-      organizationId: decodedToken.data.organization_id.toString(),
+      organizationId:fetchSingleOrgIdFunc.orgId,
       tenantId: decodedToken.data.tenant_id && decodedToken.data.tenant_id.toString(),
       roles: decodedToken.data.roles,
     };
@@ -440,7 +447,7 @@ module.exports = async function (req, res, next) {
    * @returns {Object} - Success with validOrgIds array or failure with error object
    */
   async function validateIfOrgsBelongsToTenant(tenantId, orgId) {
-    let orgIdArr = orgId?.split(',') || [];
+    let orgIdArr = Array.isArray(orgId) ? orgId : typeof orgId === 'string' ? orgId.split(',') : [];
     let orgDetails = await userService.fetchDefaultOrgDetails(tenantId);
     let validOrgIds = null;
 
@@ -481,6 +488,57 @@ module.exports = async function (req, res, next) {
 
     return { success: true, validOrgIds: validOrgIds };
   }
+
+/**
+ * Fetches a valid orgId from the provided data, checking if it's valid for the given tenant.
+ *
+ * @param {String} tenantId - ID of the tenant
+ * @param {String[]} orgIdArr - Array of orgIds to choose from
+ * @param {String} orgIdFromHeader - The orgId provided in the request headers
+ * @returns {Promise<Object>} - Returns a promise resolving to an object containing the success status, orgId, or error details
+ */
+  async function fetchSingleOrgIdFromProvidedData(tenantId, orgIdArr, orgIdFromHeader) {
+    try {
+      // Check if orgIdFromHeader is provided and valid
+      if (orgIdFromHeader && orgIdFromHeader != '') {
+        if (!orgIdArr.includes(orgIdFromHeader)) {
+          throw reqMsg.ORG_ID_FETCH_ERROR.MISSING_CODE;
+        }
+  
+        let validateOrgsResult = await validateIfOrgsBelongsToTenant(tenantId, orgIdFromHeader);
+  
+        if (!validateOrgsResult.success) {
+          throw reqMsg.ORG_ID_FETCH_ERROR.MISSING_CODE;
+        }
+  
+        return { success: true, orgId: orgIdFromHeader };
+      }
+  
+      // If orgIdFromHeader is not provided, check orgIdArr
+      if (orgIdArr.length > 0) {
+        return { success: true, orgId: orgIdArr[0] };
+      }
+  
+      // If no orgId is found, throw error
+      throw reqMsg.ORG_ID_FETCH_ERROR.MISSING_CODE;
+  
+    } catch (err) {
+      // Handle error when no valid orgId is found
+      if (orgIdArr.length > 0) {
+        return { success: true, orgId: orgIdArr[0] };
+      }
+  
+      let rspObj = {
+        errCode: reqMsg.ORG_ID_FETCH_ERROR.MISSING_CODE,
+        errMsg: reqMsg.ORG_ID_FETCH_ERROR.MISSING_MESSAGE,
+        responseCode: responseCode.unauthorized.status
+      };
+  
+      return { success: false, errorObj: rspObj };
+    }
+  }
+  
+
   /**
    * Extract tenantId and orgId from incoming request or decoded token.
    *
