@@ -832,7 +832,7 @@ def getRolesAndTenantIdAndOrgIdFromUserToken(decodedToken):
         global tenantID 
         tenantID = clean_single_value(decodedToken['data']['tenant_id'])
         global orgIDFromTemplate 
-        orgIDFromTemplate = clean_single_value(decodedToken['data']['organization_id'])
+        orgIDFromTemplate = clean_single_value(decodedToken['data']['organization_ids'][0])
 
 # Generate access token for the APIs. 
 def generateAccessToken(solutionName_for_folder_path):

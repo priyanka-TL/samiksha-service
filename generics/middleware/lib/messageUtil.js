@@ -274,6 +274,12 @@ exports.REQUEST = {
   TENANT_ORG_MISSING:{
     MISSING_CODE: 'ERR_TENANT_ORG_MISSING',
     MISSING_MESSAGE: 'Required field tenantId or orgId is missing in the token',
+  },
+  ORG_ID_FETCH_ERROR:{
+    MISSING_CODE: 'ERR_ORG_FETCH_MISSING',
+    MISSING_MESSAGE: 'Fetching single orgId from given token failed.',
+    INVALID_ORG_CODE:'ERR_INVALID_ORG_PROVIDED',
+    INVALID_ORG_MESSAGE:'OrgId not present in org array of the token'
   }
 };
 

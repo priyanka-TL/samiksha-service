@@ -1108,7 +1108,7 @@ module.exports = class ObservationSubmissionsHelper {
           {
             _id: { $in: entityIds },
             tenantId: tenantData.tenantId,
-            orgId: {$in:['ALL',tenantData.orgId ]}
+            orgIds: {$in:['ALL',tenantData.orgId ]}
           },
           ['metaInformation.externalId', 'metaInformation.name'],
         );
