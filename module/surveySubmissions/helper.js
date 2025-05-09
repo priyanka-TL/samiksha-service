@@ -59,10 +59,11 @@ module.exports = class SurveySubmissionsHelper {
    * @method
    * @name pushCompletedSurveySubmissionForReporting
    * @param {String} surveySubmissionId - survey submission id.
+   * @param {Object} tenantData -  contains tenant and org data.
    * @returns {JSON} - message that survey submission is pushed to kafka.
    */
 
-  static pushCompletedSurveySubmissionForReporting(surveySubmissionId = '') {
+  static pushCompletedSurveySubmissionForReporting(surveySubmissionId = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (surveySubmissionId == '') {
@@ -91,16 +92,18 @@ module.exports = class SurveySubmissionsHelper {
             {
               _id: surveySubmissionsDocument[0].programId,
             },
-            ['name', 'description',"externalId"]
+            ['name', 'description',"externalId"],
+            "", //pageNo
+            "", //pageSize
+            "", //searchText
+            tenantData
           );
-
           programDocument = programDocument?.data?.data;
 
           if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
             surveySubmissionsDocument[0]['programInfo'] = programDocument[0];
           }
         }
-
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
           tenantId: surveySubmissionsDocument[0].tenantId,
@@ -139,11 +142,12 @@ module.exports = class SurveySubmissionsHelper {
    * @method
    * @name pushInCompleteSurveySubmissionForReporting
    * @param {String} surveySubmissionId - survey submission id.
+   * @param {Object} tenantData -  contains tenant and org data.
    * @returns {JSON} consists of kafka message whether it is pushed for reporting
    * or not.
    */
 
-  static pushInCompleteSurveySubmissionForReporting(surveySubmissionId) {
+  static pushInCompleteSurveySubmissionForReporting(surveySubmissionId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (surveySubmissionId == '') {
@@ -172,7 +176,11 @@ module.exports = class SurveySubmissionsHelper {
             {
               _id: surveySubmissionsDocument[0].programId,
             },
-            ['name', 'description',"externalId"]
+            ['name', 'description',"externalId"],
+            "", //pageNo
+            "", //pageSize
+            "", //searchText
+            tenantData
           );
 
           programDocument = programDocument?.data?.data;
@@ -696,10 +704,11 @@ module.exports = class SurveySubmissionsHelper {
         let response = await submissionsHelper.createEvidencesInSubmission(
           req,
           messageConstants.common.SURVEY_SUBMISSIONS,
-          false
+          false,
+          tenantData
         );
         if (response.result.status && response.result.status === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
-          await this.pushCompletedSurveySubmissionForReporting(req.params._id);
+          await this.pushCompletedSurveySubmissionForReporting(req.params._id,tenantData);
         }
 
         let appInformation = {};
