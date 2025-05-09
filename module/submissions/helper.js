@@ -353,7 +353,6 @@ module.exports = class SubmissionsHelper {
    * @name createEvidencesInSubmission
    * @param {Object} req - requested data.
    * @param {String} modelName - mongodb model name.
-   * @param {Object} tenantData - details of tenant and orgIds .
    * @returns {Object}
    */
 
