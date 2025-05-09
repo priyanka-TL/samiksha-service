@@ -357,7 +357,7 @@ module.exports = class SubmissionsHelper {
    * @returns {Object}
    */
 
-  static createEvidencesInSubmission(req, modelName, isSubmission,tenantData) {
+  static createEvidencesInSubmission(req, modelName, isSubmission) {
     return new Promise(async (resolve, reject) => {
       try {
         req.body = req.body || {};
@@ -508,7 +508,7 @@ module.exports = class SubmissionsHelper {
             // Push updated submission to kafka for reporting/tracking."
             const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/helper');
 
-            surveySubmissionsHelper.pushInCompleteSurveySubmissionForReporting(updatedSubmissionDocument._id,tenantData);
+            surveySubmissionsHelper.pushInCompleteSurveySubmissionForReporting(updatedSubmissionDocument._id);
           }
 
           let canRatingsBeEnabled = await this.canEnableRatingQuestionsOfSubmission(updatedSubmissionDocument);

@@ -59,11 +59,10 @@ module.exports = class SurveySubmissionsHelper {
    * @method
    * @name pushCompletedSurveySubmissionForReporting
    * @param {String} surveySubmissionId - survey submission id.
-   * @param {Object} tenantData -  contains tenant and org data.
    * @returns {JSON} - message that survey submission is pushed to kafka.
    */
 
-  static pushCompletedSurveySubmissionForReporting(surveySubmissionId = '',tenantData) {
+  static pushCompletedSurveySubmissionForReporting(surveySubmissionId = '') {
     return new Promise(async (resolve, reject) => {
       try {
         if (surveySubmissionId == '') {
@@ -87,22 +86,8 @@ module.exports = class SurveySubmissionsHelper {
           );
         }
 
-        if (surveySubmissionsDocument[0].programId) {
-          let programDocument = await programsHelper.list(
-            {
-              _id: surveySubmissionsDocument[0].programId,
-            },
-            ['name', 'description',"externalId"],
-            "", //pageNo
-            "", //pageSize
-            "", //searchText
-            tenantData
-          );
-          programDocument = programDocument?.data?.data;
-
-          if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
-            surveySubmissionsDocument[0]['programInfo'] = programDocument[0];
-          }
+        if (surveySubmissionsDocument[0].programId && surveySubmissionsDocument[0].programInformation) {      
+            surveySubmissionsDocument[0]['programInfo'] = surveySubmissionsDocument[0].programInformation;      
         }
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
@@ -142,12 +127,11 @@ module.exports = class SurveySubmissionsHelper {
    * @method
    * @name pushInCompleteSurveySubmissionForReporting
    * @param {String} surveySubmissionId - survey submission id.
-   * @param {Object} tenantData -  contains tenant and org data.
    * @returns {JSON} consists of kafka message whether it is pushed for reporting
    * or not.
    */
 
-  static pushInCompleteSurveySubmissionForReporting(surveySubmissionId,tenantData) {
+  static pushInCompleteSurveySubmissionForReporting(surveySubmissionId) {
     return new Promise(async (resolve, reject) => {
       try {
         if (surveySubmissionId == '') {
@@ -171,24 +155,9 @@ module.exports = class SurveySubmissionsHelper {
           );
         }
 
-        if (surveySubmissionsDocument[0].programId) {
-          let programDocument = await programsHelper.list(
-            {
-              _id: surveySubmissionsDocument[0].programId,
-            },
-            ['name', 'description',"externalId"],
-            "", //pageNo
-            "", //pageSize
-            "", //searchText
-            tenantData
-          );
-
-          programDocument = programDocument?.data?.data;
-
-          if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
-            surveySubmissionsDocument[0]['programInfo'] = programDocument[0];
-          }
-        }
+        if (surveySubmissionsDocument[0].programId && surveySubmissionsDocument[0].programInformation) {      
+          surveySubmissionsDocument[0]['programInfo'] = surveySubmissionsDocument[0].programInformation;      
+      }
 
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
@@ -705,10 +674,9 @@ module.exports = class SurveySubmissionsHelper {
           req,
           messageConstants.common.SURVEY_SUBMISSIONS,
           false,
-          tenantData
         );
         if (response.result.status && response.result.status === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
-          await this.pushCompletedSurveySubmissionForReporting(req.params._id,tenantData);
+          await this.pushCompletedSurveySubmissionForReporting(req.params._id);
         }
 
         let appInformation = {};
