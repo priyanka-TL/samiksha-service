@@ -46,6 +46,7 @@ module.exports = {
     appInformation: Object,
     userRoleInformation: Object,
     userProfile : Object,
+    programInformation:Object,
     orgId:{
       type: String,
       require: true,
