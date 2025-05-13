@@ -452,10 +452,12 @@ module.exports = async function (req, res, next) {
         }
       }
     }
-    if (userInformation.roles && Array.isArray(userInformation.roles) && userInformation.roles.length) {
-      userInformation.roles = userInformation.roles.map((role) => role.title)
-    }
   }
+
+  if (userInformation.roles && Array.isArray(userInformation.roles) && userInformation.roles.length) {
+    userInformation.roles = userInformation.roles.map((role) => role.title)
+  }
+
   if (!userInformation.organizationId || !userInformation.tenantId) {
     rspObj.errCode = reqMsg.TENANT_ORG_MISSING.MISSING_CODE;
     rspObj.errMsg = reqMsg.TENANT_ORG_MISSING.MISSING_MESSAGE;
@@ -597,7 +599,7 @@ module.exports = async function (req, res, next) {
     return { sucess: false };
   }
 
-  let userRoles = userInformation.roles.map((role) => role.title);
+  let userRoles = userInformation.roles;
 
   if (performInternalAccessTokenCheck) {
     if (adminHeader) {
