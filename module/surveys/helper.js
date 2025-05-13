@@ -1009,6 +1009,7 @@ module.exports = class SurveysHelper {
           if (programDocument.length > 0) {
             submissionDocument.programId = programDocument[0]._id;
             submissionDocument.programExternalId = programDocument[0].externalId;
+            submissionDocument.programInformation=programDocument[0]
           }
 
           submissionDocument.orgId = roleInformation.orgId;

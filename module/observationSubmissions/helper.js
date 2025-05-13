@@ -118,19 +118,11 @@ module.exports = class ObservationSubmissionsHelper {
               solutionDocument = solutionDocument[0];
               observationSubmissionsDocument['solutionInfo'] = solutionDocument;
 
-              if (observationSubmissionsDocument.programId) {
-                let programDocument = await programsHelper.list(
-                  {
-                    _id: observationSubmissionsDocument.programId,
-                  },
-                  ['name', 'description']
-                );
-
-                programDocument = programDocument?.data?.data;
-
-                if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
-                  observationSubmissionsDocument['programInfo'] = programDocument[0];
-                }
+              if (observationSubmissionsDocument.programId && observationSubmissionsDocument.programInformation) {      
+                observationSubmissionsDocument['programInfo'] = {
+                  ...observationSubmissionsDocument.programInformation,
+                  _id: observationSubmissionsDocument.programId
+                };
               }
 
               let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
@@ -236,12 +228,21 @@ module.exports = class ObservationSubmissionsHelper {
           })
           .lean();
 
+        
+
         if (!observationSubmissionsDocument) {
           throw (
             messageConstants.apiResponses.SUBMISSION_NOT_FOUND +
             'or' +
             messageConstants.apiResponses.SUBMISSION_STATUS_NOT_COMPLETE
           );
+        }
+
+        if (observationSubmissionsDocument.programId && observationSubmissionsDocument.programInformation) {      
+          observationSubmissionsDocument['programInfo'] = {
+            ...observationSubmissionsDocument.programInformation,
+            _id: observationSubmissionsDocument.programId
+          };
         }
 
         const kafkaMessage =

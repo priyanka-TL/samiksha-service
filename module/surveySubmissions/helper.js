@@ -86,21 +86,9 @@ module.exports = class SurveySubmissionsHelper {
           );
         }
 
-        if (surveySubmissionsDocument[0].programId) {
-          let programDocument = await programsHelper.list(
-            {
-              _id: surveySubmissionsDocument[0].programId,
-            },
-            ['name', 'description',"externalId"]
-          );
-
-          programDocument = programDocument?.data?.data;
-
-          if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
-            surveySubmissionsDocument[0]['programInfo'] = programDocument[0];
-          }
+        if (surveySubmissionsDocument[0].programId && surveySubmissionsDocument[0].programInformation) {      
+            surveySubmissionsDocument[0]['programInfo'] = surveySubmissionsDocument[0].programInformation;      
         }
-
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
           tenantId: surveySubmissionsDocument[0].tenantId,
@@ -167,20 +155,9 @@ module.exports = class SurveySubmissionsHelper {
           );
         }
 
-        if (surveySubmissionsDocument[0].programId) {
-          let programDocument = await programsHelper.list(
-            {
-              _id: surveySubmissionsDocument[0].programId,
-            },
-            ['name', 'description',"externalId"]
-          );
-
-          programDocument = programDocument?.data?.data;
-
-          if (programDocument && Array.isArray(programDocument) && programDocument[0]) {
-            surveySubmissionsDocument[0]['programInfo'] = programDocument[0];
-          }
-        }
+        if (surveySubmissionsDocument[0].programId && surveySubmissionsDocument[0].programInformation) {      
+          surveySubmissionsDocument[0]['programInfo'] = surveySubmissionsDocument[0].programInformation;      
+      }
 
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
@@ -696,7 +673,7 @@ module.exports = class SurveySubmissionsHelper {
         let response = await submissionsHelper.createEvidencesInSubmission(
           req,
           messageConstants.common.SURVEY_SUBMISSIONS,
-          false
+          false,
         );
         if (response.result.status && response.result.status === messageConstants.common.SUBMISSION_STATUS_COMPLETED) {
           await this.pushCompletedSurveySubmissionForReporting(req.params._id);
