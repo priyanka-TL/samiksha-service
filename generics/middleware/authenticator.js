@@ -385,6 +385,9 @@ module.exports = async function (req, res, next) {
     defaultTokenExtraction = true;
   }
 
+
+	let organizationKey = 'organization_id'
+
   let userInformation = {};
   // Create user details to request
   req.userDetails = {
@@ -416,21 +419,43 @@ module.exports = async function (req, res, next) {
       roles: decodedToken.data.roles,
     };
   } else {
-    // Iterate through each key in the config object
-    let stringTypeKeys = ['userId', 'tenantId', 'organizationId'];
     for (let key in configData) {
       if (configData.hasOwnProperty(key)) {
-        let keyValue = getNestedValue(decodedToken, configData[key]);
-
-        if (stringTypeKeys.includes(key)) {
-          keyValue = keyValue.toString();
+        let keyValue = getNestedValue(decodedToken, configData[key])
+        if(key == 'userId'){
+          keyValue = keyValue?.toString()
         }
+        if (key === organizationKey) {
+          let value = getOrgId(req.headers, decodedToken, configData[key])
+          userInformation[`organizationId`] = value.toString()
+          decodedToken.data[key] = value
+          continue
+        }
+        if (key === 'roles') {
+          let orgId = getOrgId(req.headers, decodedToken, configData[organizationKey])
+          // Now extract roles using fully dynamic path
+          const rolePathTemplate = configData['roles']
+          decodedToken.data[organizationKey] = orgId
+          const resolvedRolePath = resolvePathTemplate(rolePathTemplate, decodedToken.data)
+          const roles = getNestedValue(decodedToken, resolvedRolePath) || []
+          userInformation[`${key}`] = roles
+          decodedToken.data[key] = roles
+          continue
+        }
+
         // For each key in config, assign the corresponding value from decodedToken
-        userInformation[key] = keyValue;
+        decodedToken.data[key] = keyValue
+        if (key == 'tenant_id') {
+          userInformation[`tenantId`] = keyValue.toString()
+        } else {
+          userInformation[`${key}`] = keyValue
+        }
       }
     }
+    if (userInformation.roles && Array.isArray(userInformation.roles) && userInformation.roles.length) {
+      userInformation.roles = userInformation.roles.map((role) => role.title)
+    }
   }
-
   if (!userInformation.organizationId || !userInformation.tenantId) {
     rspObj.errCode = reqMsg.TENANT_ORG_MISSING.MISSING_CODE;
     rspObj.errMsg = reqMsg.TENANT_ORG_MISSING.MISSING_MESSAGE;
@@ -640,10 +665,57 @@ module.exports = async function (req, res, next) {
 
   // Update user details object
   req.userDetails = userInformation;
+
   // Helper function to access nested properties
-  function getNestedValue(obj, path) {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
-  }
+	function getOrgId(headers, decodedToken, orgConfigData) {
+		if (headers['organization_id']) {
+			return (orgId = headers['organization_id'].toString())
+		} else {
+			const orgIdPath = orgConfigData
+			return (orgId = getNestedValue(decodedToken, orgIdPath)?.toString())
+		}
+	}
+
+	function getNestedValue(obj, path) {
+		const parts = path.split('.')
+		let current = obj
+
+		for (const part of parts) {
+			if (!current) return undefined
+
+			// Conditional match: key[?field=value]
+			const conditionalMatch = part.match(/^(\w+)\[\?(\w+)=([^\]]+)\]$/)
+			if (conditionalMatch) {
+				const [, arrayKey, field, expected] = conditionalMatch
+				const array = current[arrayKey]
+				if (!Array.isArray(array)) return undefined
+				const found = array.find((item) => String(item[field]) === String(expected))
+				if (!found) return undefined
+				current = found
+				continue
+			}
+
+			// Index match: key[0]
+			const indexMatch = part.match(/^(\w+)\[(\d+)\]$/)
+			if (indexMatch) {
+				const [, key, index] = indexMatch
+				const array = current[key]
+				if (!Array.isArray(array)) return undefined
+				current = array[parseInt(index, 10)]
+				continue
+			}
+
+			current = current[part]
+		}
+		return current
+	}
+
+	function resolvePathTemplate(template, contextObject) {
+		return template.replace(/\{\{(.*?)\}\}/g, (_, path) => {
+			const value = getNestedValue(contextObject, path.trim())
+			return value?.toString?.() ?? ''
+		})
+	}
 
   next();
 };
