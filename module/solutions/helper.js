@@ -489,6 +489,7 @@ module.exports = class SolutionsHelper {
             };
           }
 
+          /*
           if (!data.role) {
             throw {
               message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
@@ -500,6 +501,7 @@ module.exports = class SolutionsHelper {
           filterQuery['scope.roles'] = {
             $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           };
+          */
           // filterQuery['scope.entities'] = { $in: entities };
           filterQuery.$or = [];
           Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
@@ -599,6 +601,7 @@ module.exports = class SolutionsHelper {
           filterQuery = _.merge(filterQuery, data.filter);
         }
 
+        delete filterQuery['scope.entityType'];
         return resolve({
           success: true,
           data: filterQuery,
