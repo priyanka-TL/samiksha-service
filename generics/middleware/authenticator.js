@@ -452,6 +452,7 @@ module.exports = async function (req, res, next) {
         }
       }
     }
+    userInformation['userToken'] = token;
   }
 
   if (userInformation.roles && Array.isArray(userInformation.roles) && userInformation.roles.length) {
