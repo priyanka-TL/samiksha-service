@@ -1,0 +1,219 @@
+version: '3'
+services:
+  zookeeper:
+    image: 'confluentinc/cp-zookeeper:7.3.0'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    networks:
+      - elevate_net
+    logging:
+      driver: none
+  kafka:
+    image: 'confluentinc/cp-kafka:7.3.0'
+    ports:
+      - '9092:9092'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - elevate_net
+    logging:
+      driver: none
+# Mongo config
+  mongo:
+    image: 'mongo:4.4.14'
+    restart: 'always'
+    ports:
+      - '27017:27017'
+    networks:
+      - elevate_net
+    # volumes:
+    #   - mongo-data:/data/db
+    logging:
+      driver: none
+  redis:
+    image: 'redis:7.0.0'
+    restart: 'always'
+    expose:
+      - '6379'
+    networks:
+      - elevate_net
+    logging:
+      driver: none
+  user:
+    image: shikshalokamqa/elevate-user:3.1.1
+    ports:
+      - '3001:3001'
+    command: >
+      bash -c "echo 'Waiting for PostgreSQL on citus_master:5432 to accept connections...' &&
+      while ! timeout 1 bash -c 'cat < /dev/null > /dev/tcp/citus_master/5432' 2> /dev/null; do
+        echo 'Waiting for citus_master to be ready...';
+        sleep 1;
+      done;
+      echo 'Database is ready.';
+      npm run db:init && npm run db:seed:all &&
+      (echo 'Running nodeee' && nodemon app.js &) &&
+      (while ! curl -sSf http://user:3001 > /dev/null; do
+        sleep 1;
+      done && echo 'Service is up' &&
+      /bin/bash -c 'cd scripts && echo Running user service scripts && node insertDefaultOrg.js && node viewsScript.js && node -r module-alias/register uploadSampleCSV.js');
+      tail -f /dev/null"
+    depends_on:
+      - kafka
+      - citus
+      - redis
+      - scheduler
+    environment:
+      - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/user
+      - KAFKA_URL=kafka:9092
+      - REDIS_HOST=redis://redis:6379
+    networks:
+      - elevate_net
+    env_file:
+      - ${users_env}
+ 
+  notification:
+    image: shikshalokamqa/elevate-notification:2.6.1
+    ports:
+      - '3002:3002'
+    command: >
+      bash -c "echo 'Waiting for PostgreSQL on citus_master:5432 to accept connections...' &&
+      while ! timeout 1 bash -c 'cat < /dev/null > /dev/tcp/citus_master/5432' 2> /dev/null; do
+        echo 'Waiting for citus_master to be ready...';
+        sleep 1;
+      done;
+      echo 'Database is ready.';
+      npm run db:init && nodemon app.js"
+    depends_on:
+      - kafka
+      - citus
+    environment:
+      - KAFKA_HOST=kafka:9092
+      - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/notification
+    networks:
+      - elevate_net
+    env_file:
+      - ${notification_env}
+  scheduler:
+    # Update with latest image
+    image: shikshalokamqa/elevate-scheduler:2.6.1
+    ports:
+      - '4000:4000'
+    command: ['nodemon', 'app.js']
+    environment:
+      - KAFKA_URL=kafka:9092
+    depends_on:
+      - kafka
+      - redis
+    networks:
+      - elevate_net
+    env_file:
+      - ${scheduler_env}
+  samiksha:
+    image: shikshalokamqa/elevate-samiksha-service:1.0
+    container_name: samiksha
+    ports:
+      - '4301:4301'
+    command: ['nodemon', 'dev']
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017
+    env_file:
+      - ${samiksha_env}
+    depends_on:
+      - mongo
+    networks:
+      - elevate_net
+
+  interface:
+    # Update with latest image
+    image: shikshalokamqa/elevate-interface:3.1.1
+    ports:
+      - '3569:3569'
+    command: ['node', 'app.js']
+    networks:
+      - elevate_net
+    env_file:
+      - ${interface_env}
+  citus:
+    image: citusdata/citus:11.2.0
+    container_name: 'citus_master'
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    environment: &AUTH
+      POSTGRES_USER: '${POSTGRES_USER:-postgres}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-postgres}'
+      PGUSER: '${POSTGRES_USER:-postgres}'
+      PGPASSWORD: '${POSTGRES_PASSWORD:-postgres}'
+      POSTGRES_DB: 'postgres'
+      POSTGRES_HOST_AUTH_METHOD: '${POSTGRES_HOST_AUTH_METHOD:-trust}'
+      POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
+    networks:
+      - elevate_net
+    # volumes:
+    #   - citus-data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: elevate-pgadmin
+    restart: always
+    ports:
+      - '5500:80'
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@shikshalokam.org
+      - PGADMIN_DEFAULT_PASSWORD=password
+    networks:
+      - elevate_net
+    logging:
+      driver: none
+   # Gotenberg config
+  gotenberg:
+    image: gotenberg/gotenberg:latest
+    container_name: gotenberg
+    ports:
+      - '3003:3000'
+    networks:
+      - elevate_net
+    restart: 'always'
+ 
+   # Entity-management config
+  entity_management:
+    image: shikshalokamqa/elevate-entity-management:1.0.0
+    ports:
+      - '5001:5001'
+    command: ['nodemon', 'app.js']
+    env_file:
+      - ${entity_management_env}
+    depends_on:
+      - mongo
+    networks:
+      - elevate_net
+  portal:
+    # Update with latest image
+    image: shikshalokamqa/elevate-project-obervation-pwa:2.2
+    container_name: portal
+    ports:
+      - '7007:7007'
+    volumes:
+      - /home/praveendass/Desktop/survey/env.js:/usr/src/app/www/assets/env/env.js
+    # command: >
+    #   /bin/bash -c "ionic build --prod && ionic serve --host 0.0.0.0"
+    networks:
+      - elevate_net
+networks:
+  elevate_net:
+     external: false
+
+# volumes:
+#   mongo-data:
+#   citus-data:

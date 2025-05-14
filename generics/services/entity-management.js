@@ -135,10 +135,12 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
  * Validates entities based on provided entity IDs and entity type ID.
  * @param {string[]} entityIds - An array of entity IDs to validate.
  * @param {string} entityTypeId - The ID of the entity type to check against.
+ * @param {Object} tenantData - tenantData object containing tenant information.
  * @returns {Promise<{entityIds: string[]}>} A promise that resolves to an object containing validated entity IDs.
  * @throws {Error} If there's an error during validation.
  */
-const validateEntities = async function (entityIds, entityTypeId) {
+const validateEntities = async function (entityIds, entityTypeId,tenantData) {
+
     return new Promise(async (resolve, reject) => {
       try {
         let ids = [];
@@ -148,8 +150,9 @@ const validateEntities = async function (entityIds, entityTypeId) {
         let bodyData = {
           _id : isObjectIdArray ? {$in: gen.utils.arrayIdsTobjectIdsNew(entityIds)} : { $in: entityIds },
           entityTypeId: entityTypeId,
+          tenantId: tenantData.tenantId,
+          orgIds: {$in:['ALL',tenantData.orgId]}
           };
-       
           let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
           console.log(entitiesDocumentsAPIData,bodyData,"this is mappin")
           let entitiesDocuments = entitiesDocumentsAPIData.data;

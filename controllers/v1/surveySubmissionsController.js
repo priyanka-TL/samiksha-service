@@ -51,10 +51,12 @@ module.exports = class SurveySubmissions extends Abstract {
   async isAllowed(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let validateSubmission = await surveySubmissionsHelper.isAllowed(
           req.params._id,
           req.query.evidenceId,
           req.userDetails.userId,
+          tenantData
         );
 
         return resolve({
@@ -105,7 +107,8 @@ module.exports = class SurveySubmissions extends Abstract {
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveyList = await surveySubmissionsHelper.list(req.userDetails.userId);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let surveyList = await surveySubmissionsHelper.list(req.userDetails.userId,tenantData);
 
         return resolve({
           message: surveyList.message,
@@ -151,7 +154,8 @@ module.exports = class SurveySubmissions extends Abstract {
   async getStatus(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let getStatusOfSubmission = await surveySubmissionsHelper.getStatus(req.params._id);
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let getStatusOfSubmission = await surveySubmissionsHelper.getStatus(req.params._id,tenantData);
 
         return resolve({
           message: getStatusOfSubmission.message,
@@ -354,8 +358,8 @@ module.exports = class SurveySubmissions extends Abstract {
     return new Promise(async (resolve, reject) => {
 
       try {
-        
-        let updatedSurveySubmissions = await surveySubmissionsHelper.update(req)
+        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let updatedSurveySubmissions = await surveySubmissionsHelper.update(req,tenantData)
         return resolve(updatedSurveySubmissions)
 
       } catch (error) {

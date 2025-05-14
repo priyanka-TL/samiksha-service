@@ -45,6 +45,17 @@ module.exports = {
     surveyInformation: Object,
     appInformation: Object,
     userRoleInformation: Object,
-    userProfile : Object
+    userProfile : Object,
+    programInformation:Object,
+    orgId:{
+      type: String,
+      require: true,
+      index:true
+    },
+    tenantId: {
+      type: String,
+      require: true,
+      index:true
+    }
   },
 };

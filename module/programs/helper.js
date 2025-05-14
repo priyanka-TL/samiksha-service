@@ -27,15 +27,25 @@ module.exports = class ProgramsHelper {
    * @param {String} searchText - text to search.
    *  @param {Object} filter - filter.
    *  @param {Array} projection - projection.
+   * @param {Object} tenantFilter - tenant filter.
    * @returns {Object} - Programs list.
    */
 
-  static list(filter = {}, projection, pageNo = '', pageSize = '', searchText) {
+  static list(filter = {}, projection, pageNo = '', pageSize = '', searchText,tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         let programDocument = [];
+        let orgIdArr = [];
+        if (tenantFilter.orgId) {
+          orgIdArr = Array.isArray(tenantFilter.orgId)
+            ? tenantFilter.orgId
+            : [tenantFilter.orgId];
+        }
 
-        let matchQuery = { status: messageConstants.common.ACTIVE_STATUS };
+        let matchQuery = { status: messageConstants.common.ACTIVE_STATUS,
+          orgIds:{$in:['ALL',...orgIdArr]},
+          tenantId:tenantFilter.tenantId,
+         };
 
         if (Object.keys(filter).length > 0) {
           matchQuery = _.merge(matchQuery, filter);
@@ -146,6 +156,8 @@ module.exports = class ProgramsHelper {
           },
           components: [],
           isAPrivateProgram: data.isAPrivateProgram ? data.isAPrivateProgram : false,
+          tenantId:data.tenantData.tenantId,
+          orgIds:data.tenantData.orgId
         };
 
         // Adding Start and End date in program document
@@ -197,10 +209,11 @@ module.exports = class ProgramsHelper {
    * @param {Array} data
    * @param {String} userId
    * @param {Boolean} checkDate -this is true for when its called via API calls
+   * @param {Object} tenantData - tenant data
    * @returns {JSON}            - update program.
    */
 
-  static update(programId, data, userId, checkDate = false) {
+  static update(programId, data, userId, checkDate = false,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         data.updatedBy = userId;
@@ -223,8 +236,10 @@ module.exports = class ProgramsHelper {
         let program = await programsQueries.findOneAndUpdate(
           {
             _id: programId,
+            tenantId:tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
-          { $set: _.omit(data, ['scope']) },
+          { $set: _.omit(data, ['scope','tenantId']) },
           { new: true }
         );
 
@@ -267,10 +282,11 @@ module.exports = class ProgramsHelper {
    * @name addRolesInScope
    * @param {String} programId - Program Id.
    * @param {Array} roles - roles data.
+   * @param {Object} tenantData - tenant data
    * @returns {JSON} - Added roles data.
    */
 
-  static addRolesInScope(programId, roles) {
+  static addRolesInScope(programId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         // check if program exits in program collection and also it has scope
@@ -279,6 +295,8 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
+            tenantId:tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['_id']
         );
@@ -362,10 +380,11 @@ module.exports = class ProgramsHelper {
    * @name addEntitiesInScope
    * @param {String} programId - Program Id.
    * @param {Array} entities - entities data.
+   * @param {Object} tenantData - tenantData
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(programId, entities) {
+  static addEntitiesInScope(programId, entities,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await programsQueries.programDocuments(
@@ -373,6 +392,8 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
+            tenantId: tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['_id', 'scope.entityType']
         );
@@ -389,6 +410,8 @@ module.exports = class ProgramsHelper {
           {
             _id: { $in: entities },
             entityType: programData[0].scope.entityType,
+            tenantId: tenantData.tenantId,
+            orgId:{$in:['ALL',tenantData.orgId]}
           },
           ['_id']
         );
@@ -408,6 +431,8 @@ module.exports = class ProgramsHelper {
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
             _id: programId,
+            tenantId: tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           {
             $addToSet: { 'scope.entities': { $each: entityIds } },
@@ -440,10 +465,11 @@ module.exports = class ProgramsHelper {
    * @name removeRolesInScope
    * @param {String} programId - Program Id.
    * @param {Array} roles - roles data.
+   * @param {Object} tenantData - tenant data
    * @returns {JSON} - Added roles data.
    */
 
-  static removeRolesInScope(programId, roles) {
+  static removeRolesInScope(programId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await programsQueries.programDocuments(
@@ -451,6 +477,8 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
+            tenantId:tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['_id']
         );
@@ -504,10 +532,11 @@ module.exports = class ProgramsHelper {
    * @name removeEntitiesInScope
    * @param {String} programId - Program Id.
    * @param {Array} entities - entities.
+   * @param {Object} tenantData - tenant data
    * @returns {JSON} - Removed entities data.
    */
 
-  static removeEntitiesInScope(programId, entities) {
+  static removeEntitiesInScope(programId, entities,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = await programsQueries.programDocuments(
@@ -515,6 +544,8 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
+            tenantId:tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['_id', 'scope.entities']
         );
@@ -567,15 +598,18 @@ module.exports = class ProgramsHelper {
    * @method
    * @name details
    * @param {String} programId - Program Id.
+   * @param {Object} tenantData - tenant data
    * @returns {Object} - Details of the program.
    */
 
-  static details(programId) {
+  static details(programId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         // Get the details or dump of the program based on the programid
         let programData = await programsQueries.programDocuments({
           _id: programId,
+          tenantId:tenantData.tenantId,
+          orgIds:{$in:['ALL',tenantData.orgId]}
         });
 
         if (!(programData.length > 0)) {
@@ -610,11 +644,12 @@ module.exports = class ProgramsHelper {
    * @param {String} userToken - User token
    * @param {String} [appName = ""] - App Name.
    * @param {String} [appVersion = ""] - App Version.
+   * @param {Object} tenantData - tenant data
    * @param {Boolean} callConsetAPIOnBehalfOfUser - required to call consent api or not
    * @returns {Object} - Details of the program join.
    */
 
-  static join(programId, data, userId, userToken,appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false) {
+  static join(programId, data, userId, userToken,appName = '', appVersion = '', callConsetAPIOnBehalfOfUser = false,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let pushProgramUsersDetailsToKafka = false;
@@ -624,6 +659,8 @@ module.exports = class ProgramsHelper {
             _id: programId,
             status: messageConstants.common.ACTIVE_STATUS,
             isDeleted: false,
+            tenantId:tenantData.tenantId,
+            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           ['name', 'externalId', 'requestForPIIConsent', 'rootOrganisations']
         );
@@ -960,10 +997,11 @@ module.exports = class ProgramsHelper {
    * @method
    * @name listByIds
    * @param {Array} programIds - Program ids.
+   * @param {Object} tenantData - tenantData info
    * @returns {Array} List of Programs.
    */
 
-  static listByIds(programIds) {
+  static listByIds(programIds,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let programsData;
@@ -974,7 +1012,10 @@ module.exports = class ProgramsHelper {
               _id: { $in: programIds },
             },
             'all',
-            ['components', 'imageCompression', 'updatedAt', 'createdAt', 'startDate', 'endDate', 'updatedBy']
+            ['components', 'imageCompression', 'updatedAt', 'createdAt', 'startDate', 'endDate', 'updatedBy'],
+            '',
+            '',
+            tenantData
           );
 
           if (!programsData.length > 0) {
@@ -1129,13 +1170,14 @@ module.exports = class ProgramsHelper {
    * @param {Number} pageSize       - Size of page.
    * @param {String} search         - search text.
    * @param {String} [ filter = ""] - filter text.
+   * @param {Object} tenantData - tenant data
    * @returns {Object} - Details of the program.
    */
-  static targetedPrograms(requestedData, userId, pageSize, pageNo, search, filter) {
+  static targetedPrograms(requestedData, userId, pageSize, pageNo, search, filter,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         //fetch the assigned programs for the user
-        let assignedPrograms = await this.assignedUserPrograms(userId);
+        let assignedPrograms = await this.assignedUserPrograms(userId,tenantData);
         let mergedData = [];
         let programIds = [];
         if (assignedPrograms.success && assignedPrograms.data) {
@@ -1164,7 +1206,8 @@ module.exports = class ProgramsHelper {
             filter,
             pageSize,
             pageNo,
-            search
+            search,
+            tenantData
           );
         }
 
@@ -1184,10 +1227,11 @@ module.exports = class ProgramsHelper {
    * @method
    * @name assignedUserPrograms
    * @param {String} userId         - logged in user id.
+   * @param {Object} tenantData - tenant data
    * @returns {Object} - Details of the program.
    */
 
-  static assignedUserPrograms(userId) {
+  static assignedUserPrograms(userId,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
 
@@ -1195,7 +1239,10 @@ module.exports = class ProgramsHelper {
         //Checking for user assigned programs based on userId
 
         let userAssignedPrograms = await programUsersQueries.programUsersDocument(
-          { userId: userId } ,
+          { userId: userId,
+            tenantId:tenantData.tenantId,
+            orgIds:{"$in":['ALL',tenantData.orgId]}
+          } ,
           projection// find query
         );
 
@@ -1217,7 +1264,7 @@ module.exports = class ProgramsHelper {
     });
   }
 
-  static forUserRoleAndLocation(bodyData, programIds, filter, pageSize, pageNo, searchText = '') {
+  static forUserRoleAndLocation(bodyData, programIds, filter, pageSize, pageNo, searchText = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         //Getting query based on roles and entity
@@ -1236,6 +1283,8 @@ module.exports = class ProgramsHelper {
         }
         matchQuery['startDate'] ={ $lte: new Date() }
         matchQuery['endDate'] =  { $gte: new Date() }
+        matchQuery['tenantId'] = tenantData.tenantId
+        matchQuery['orgIds'] = {$in:['ALL',tenantData.orgId]}
         //adding programIds array to matchQuery
         // matchQuery['_id'] = { $in: programIds };
         let projection = [
@@ -1250,7 +1299,7 @@ module.exports = class ProgramsHelper {
           "metaInformation"
         ];
         //listing the solution based on type and query
-        let targetedPrograms = await this.list(matchQuery, projection, pageNo, pageSize, searchText);
+        let targetedPrograms = await this.list(matchQuery, projection, pageNo, pageSize, searchText,tenantData);
         return resolve({
           success: true,
           message: messageConstants.apiResponses.TARGETED_PROGRAM_FETCHED,

@@ -26,5 +26,6 @@ module.exports = {
   USER_ROLE_EXTENSION:'/v1/userRoleExtension/find',
   PROFILE_READ:'/v1/profile/read',
   PROGRAM_DETAILS: '/v1/programs/details',
-  PROGRAM_UPDATE: '/v1/programs/update'
+  PROGRAM_UPDATE: '/v1/programs/update',
+  PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds'
 };

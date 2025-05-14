@@ -465,8 +465,7 @@ module.exports = class FilesHelper {
           );
 
 					response.url = Array.isArray(response.url) ? response.url[0] : response.url
-					response.getDownloadableUrl = Array.isArray(response.getDownloadableUrl) ? response.getDownloadableUrl : [response.getDownloadableUrl]
-
+          response.getDownloadableUrl = Array.isArray(response.getDownloadableUrl) ? response.getDownloadableUrl : [response.getDownloadableUrl]
 					return response
 				})
 

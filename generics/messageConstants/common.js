@@ -98,5 +98,8 @@ module.exports = {
    AUTH_METHOD: {
 		NATIVE: 'native',
 		KEYCLOAK_PUBLIC_KEY: 'keycloak_public_key',
-	}
+	},
+  ADMIN:'admin',
+  TENANT_ADMIN:'tenant_admin',
+  ORG_ADMIN:'org_admin',
 };
