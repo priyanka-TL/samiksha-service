@@ -31,6 +31,8 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
 const validateRole = process.env.VALIDATE_ROLE;
 const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
 const surveyService = require(ROOT_PATH + "/generics/services/survey");
+let projectService = require(ROOT_PATH + '/generics/services/project')
+
 /**
  * ObservationsHelper
  * @class
@@ -89,7 +91,8 @@ module.exports = class ObservationsHelper {
     userId,
     requestingUserAuthToken = '',
     userRoleAndProfileInformation,
-    programId=""
+    programId="",
+    isExternal
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -142,6 +145,8 @@ module.exports = class ObservationsHelper {
             _.omit(data, ['entities']),
             true,
             userId,
+            requestingUserAuthToken,
+            isExternal
             //   organisationAndRootOrganisation.,
             //   organisationAndRootOrganisation.rootOrganisations
           );
@@ -169,7 +174,7 @@ module.exports = class ObservationsHelper {
 
         let observationData = await this.createObservation(data, userId, solutionData,userProfileData);
 
-        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId"]));
+        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId","solutionExternalId"]));
       } catch (error) {
         return reject(error);
       }

@@ -26,6 +26,7 @@ const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const surveyQueries = require(DB_QUERY_BASE_PATH + '/surveys');
 const surveyService = require(ROOT_PATH + "/generics/services/survey");
+let projectService = require(ROOT_PATH + '/generics/services/project')
 /**
  * SurveysHelper
  * @class
@@ -211,7 +212,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - sharable link.
    */
 
-  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '') {
+  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '', programId,userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         if (solutionId == '') {
@@ -308,10 +309,21 @@ module.exports = class SurveysHelper {
         newSolutionDocument.createdAt = new Date();
         newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
 
-        let newSolution = await solutionsQueries.createSolution(newSolutionDocument);
+
+        // let programDocument = await projectService.programDetails(userToken,programId);
+        // newSolutionDocument.programId = programDocument.result._id;
+        // newSolutionDocument.programExternalId = programDocument.result.externalId;
+        // newSolutionDocument.programName = programDocument.result.name;
+        // newSolutionDocument.programDescription = programDocument.result.description;   
+
+        const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+
+        let newSolution = await solutionsHelper.createSolution(newSolutionDocument);
+        console.log(newSolution,"line no 325");
+        
       // If the new solution is created successfully, generate a link for the solution
 
-        if (newSolution._id) {
+        if (newSolution.data._id) {
           let link = await gen.utils.md5Hash(userId + '###' + newSolution._id);
 
           await solutionsQueries.updateSolutionDocument(
@@ -331,7 +343,7 @@ module.exports = class SurveysHelper {
             success: true,
             message: messageConstants.apiResponses.SURVEY_SOLUTION_IMPORTED,
             data: {
-              solutionId: newSolution._id,
+              solutionId: newSolution.data._id,
               solutionExternalId: newSolution.externalId,
               link: appsPortalBaseUrl + appName + messageConstants.common.TAKE_SURVEY + link,
             },

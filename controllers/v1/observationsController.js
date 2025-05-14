@@ -268,13 +268,14 @@ module.exports = class Observations extends Abstract {
   create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(req.body.data,"this is data")
         let result = await observationsHelper.create(
           req.query.solutionId,
           req.body.data,
           req.userDetails.userId,
           req.userDetails.userToken,
-          req.query.programId
+          req.userDetails,
+          req.query.programId,
+          req.query.isExternal
         );
 
         return resolve({
