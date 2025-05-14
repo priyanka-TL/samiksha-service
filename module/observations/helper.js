@@ -196,12 +196,12 @@ module.exports = class ObservationsHelper {
   static createObservation(data, userId, solution,userProfileInformation = {}) {
     return new Promise(async (resolve, reject) => {
       try {
-        // if (validateEntities == 'ON') {
-        //   if (data.entities) {
-        //     let entitiesToAdd = await entityManagementService.validateEntities(data.entities, solution.entityTypeId);
-        //     data.entities = entitiesToAdd.entityIds;
-        //   }
-        // }
+        if (validateEntities == 'ON') {
+          if (data.entities) {
+            let entitiesToAdd = await entityManagementService.validateEntities(data.entities, solution.entityTypeId);
+            data.entities = entitiesToAdd.entityIds;
+          }
+        }
 
         if (data.project) {
           data.project._id = new ObjectId(data.project._id);
@@ -221,9 +221,10 @@ module.exports = class ObservationsHelper {
           createdBy: userId,
           createdFor: userId,
           isAPrivateProgram: solution.isAPrivateProgram,
+          startDate:solution.startDate,
+          endDate:solution.endDate,
           "userProfile" : userProfileInformation ? userProfileInformation : {}
         });
-
         let observationDataEntry = await database.models.observations.create(
           observationData
         );

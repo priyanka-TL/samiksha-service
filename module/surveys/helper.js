@@ -550,7 +550,6 @@ module.exports = class SurveysHelper {
           },
         });
       } catch (error) {
-        console.log(error)
         return resolve({
           success: false,
           message: error.message,
@@ -780,7 +779,6 @@ module.exports = class SurveysHelper {
           status: messageConstants.common.PUBLISHED,
           isDeleted: false,
         });
-        console.log(surveyDocument,"this is document")
         if (!surveyDocument.length) {
           throw new Error(messageConstants.apiResponses.SURVEY_NOT_FOUND);
         }
@@ -866,7 +864,6 @@ module.exports = class SurveysHelper {
         assessment.name = solutionDocument.name;
         assessment.description = solutionDocument.description;
         assessment.externalId = solutionDocument.externalId;
-        console.log(solutionDocument.themes[0],solutionDocument.themes[0].criteria[0].weightage,"thus is data 856")
         let criteriaId = solutionDocument.themes[0].criteria[0].criteriaId;
         let weightage = solutionDocument.themes[0].criteria[0].weightage;
         // Get the criteriaQuestionDocument
@@ -1542,7 +1539,6 @@ module.exports = class SurveysHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,fromPrjectService);
-
         if (!surveyData.success) {
           return resolve(surveyData);
         }

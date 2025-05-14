@@ -1940,12 +1940,14 @@ module.exports = class SolutionsHelper {
             'externalId',
             'frameworkExternalId',
             'frameworkId',
-            // "programExternalId",
-            // "programId",
+            "programExternalId",
+            "programId",
             'entityTypeId',
             'entityType',
             'isAPrivateProgram',
             'entities',
+            "startDate",
+            "endDate"
           ])
         );
       } catch (error) {
@@ -2099,11 +2101,11 @@ module.exports = class SolutionsHelper {
           });
         }
         console.log(data.entities,"this is 2088 in solution")
-        // if (data.entities && data.entities.length > 0) {
-        //   let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solutionDocument[0].entityTypeId);
+        if (data.entities && data.entities.length > 0) {
+          let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solutionDocument[0].entityTypeId);
 
-        //   data.entities = entitiesToAdd.entityIds;
-        // }
+          data.entities = entitiesToAdd.entityIds;
+        }
 
         newSolutionDocument.externalId = data.externalId
           ? data.externalId
@@ -3625,7 +3627,6 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let queryData
-        console.log(fromPrjectService,"this is from project")
         if(!fromPrjectService){
          queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
 
@@ -3638,11 +3639,6 @@ module.exports = class SolutionsHelper {
           queryData = { data: {} }; 
           queryData.data["_id"] = solutionId;
         }
-
-        console.log(queryData)
-
-
-
         
         let targetedSolutionDetails = await solutionsQueries.solutionDocuments(queryData.data, [
           'name',
