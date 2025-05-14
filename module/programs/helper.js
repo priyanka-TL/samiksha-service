@@ -1348,6 +1348,7 @@ module.exports = class ProgramsHelper {
 						}
 					}
 
+          /*
 					if (!data.role) {
 						throw {
 							message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
@@ -1357,7 +1358,7 @@ module.exports = class ProgramsHelper {
 					filterQuery['scope.roles'] = {
 						$in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
 					}
-
+          */
 					filterQuery.$or = []
 					Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((key) => {
 						filterQuery.$or.push({
@@ -1416,6 +1417,8 @@ module.exports = class ProgramsHelper {
 				if (type != '') {
 					filterQuery.type = type
 				}
+
+        delete filterQuery['scope.entityType'];
 				return resolve({
 					success: true,
 					data: filterQuery,
