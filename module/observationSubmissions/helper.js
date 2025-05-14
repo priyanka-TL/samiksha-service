@@ -983,9 +983,9 @@ module.exports = class ObservationSubmissionsHelper {
         let result = {};
         // Search for user roles
         let userRoleFilterArray = new Array;
-         bodyData.role.split(",").forEach((eachRole) => {
-         userRoleFilterArray.push(new RegExp(eachRole))
-        })
+        //  bodyData.role.split(",").forEach((eachRole) => {
+        //  userRoleFilterArray.push(new RegExp(eachRole))
+        // })
 
         
         let query = {
