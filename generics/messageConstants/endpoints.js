@@ -25,4 +25,6 @@ module.exports = {
 	ORGANIZATION_READ: '/v1/organization/read',
   USER_ROLE_EXTENSION:'/v1/userRoleExtension/find',
   PROFILE_READ:'/v1/profile/read',
+  PROGRAM_DETAILS: '/v1/programs/details',
+  PROGRAM_UPDATE: '/v1/programs/update'
 };

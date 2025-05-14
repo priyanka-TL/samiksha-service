@@ -119,6 +119,8 @@ module.exports = class Surveys extends Abstract {
           req.params._id,
           req.userDetails.userId,
           req.query.appName,
+          req.query.programId,
+          req.userDetails.userToken
         );
 
         return resolve({
