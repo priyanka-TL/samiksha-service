@@ -1624,7 +1624,118 @@
       ],
       "service": "survey"
     },
-
+    {
+      "sourceRoute": "/survey/v1/surveySubmissions/pushCompletedSurveySubmissionForReporting/:id",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
+    {
+      "sourceRoute": "/survey/v1/surveySubmissions/pushCompletedSurveySubmissionForReporting",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
+    {
+      "sourceRoute": "/survey/v1/surveySubmissions/pushInCompleteSurveySubmissionForReporting/:id",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
+    {
+      "sourceRoute": "/survey/v1/surveySubmissions/pushInCompleteSurveySubmissionForReporting",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
+    {
+      "sourceRoute": "/survey/v1/observationSubmissions/pushCompletedObservationSubmissionForReporting/:id",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
+    {
+      "sourceRoute": "/survey/v1/observationSubmissions/pushCompletedObservationSubmissionForReporting",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
+    {
+      "sourceRoute": "/survey/v1/observationSubmissions/pushInCompleteObservationSubmissionForReporting/:id",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
+    {
+      "sourceRoute": "/survey/v1/observationSubmissions/pushInCompleteObservationSubmissionForReporting",
+      "type": "POST",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "survey"
+    },
     {
       "sourceRoute": "/user/v1/account/login",
       "type": "POST",

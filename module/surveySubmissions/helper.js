@@ -98,7 +98,6 @@ module.exports = class SurveySubmissionsHelper {
         if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
           surveySubmissionsDocument[0]['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
         }
-        
         const kafkaMessage = await kafkaClient.pushCompletedSurveySubmissionToKafka(surveySubmissionsDocument[0]);
 
         if (kafkaMessage.status != 'success') {
@@ -139,7 +138,7 @@ module.exports = class SurveySubmissionsHelper {
         }
 
         if (typeof surveySubmissionId == 'string') {
-          surveySubmissionId = ObjectId(surveySubmissionId);
+          surveySubmissionId = new ObjectId(surveySubmissionId);
         }
 
         let surveySubmissionsDocument = await this.surveySubmissionDocuments({
@@ -166,7 +165,6 @@ module.exports = class SurveySubmissionsHelper {
         if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
           surveySubmissionsDocument[0]['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
         }
-
 
         const kafkaMessage = await kafkaClient.pushInCompleteSurveySubmissionToKafka(surveySubmissionsDocument[0]);
 
