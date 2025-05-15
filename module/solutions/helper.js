@@ -38,13 +38,17 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} solution creation data.
    */
 
-  static createSolution(solutionData, checkDate = false,tenantData) {
+  static createSolution(solutionData, checkDate = false,tenantData,userToken,isExternalProgram) {
     return new Promise(async (resolve, reject) => {
       try {
+        console.log("create sol",isExternalProgram,solutionData.programExternalId)
         //Get the program details to update on the new solution document
         let programData = [];
         //Condition for check solution falls under the program or not
-        if (solutionData.programExternalId) {
+        if (solutionData.programExternalId && isExternalProgram) {
+          programData = await projectService.programDetails(userToken,solutionData.programExternalId );
+          programData=[programData.result]
+        }else{
           programData = await programsQueries.programDocuments(
             {
               externalId: solutionData.programExternalId,
@@ -56,11 +60,12 @@ module.exports = class SolutionsHelper {
               message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
             };
           }
-          //adding program details to the solution document
-          solutionData.programId = programData[0]._id;
-          solutionData.programName = programData[0].name;
-          solutionData.programDescription = programData[0].description;
         }
+
+         //adding program details to the solution document
+         solutionData.programId = programData[0]._id;
+         solutionData.programName = programData[0].name;
+         solutionData.programDescription = programData[0].description;
 
         if (solutionData.type == messageConstants.common.COURSE && !solutionData.link) {
           return resolve({
@@ -145,14 +150,30 @@ module.exports = class SolutionsHelper {
         }
 
         // adding solution id to the program components key
-        if (solutionData.programExternalId) {
-          let updateProgram = await programsQueries.findOneAndUpdate(
+        if (solutionData.programExternalId && isExternalProgram) {
+          let updateProgram = await projectService.programUpdate(userToken, solutionData.programId,
             {
-              _id: solutionData.programId,
-            },
-            {
-              $addToSet: { components: solutionCreation._id },
+              $addToSet: {
+                components: solutionCreation._id.toString()
+              }
             }
+          );
+          
+          if (!updateProgram.success) {
+            throw {
+              message: messageConstants.apiResponses.PROGRAM_UPDATED_FAILED,
+            };
+          }
+
+        } else {
+           
+            let updateProgram = await programsQueries.findOneAndUpdate(
+              {
+                _id: solutionData.programId,
+              },
+              {
+                $addToSet: { components: solutionCreation._id },
+              }
           );
         }
         // adding scope to the solution document
@@ -168,6 +189,7 @@ module.exports = class SolutionsHelper {
           message: messageConstants.apiResponses.SOLUTION_CREATED,
           data: {
             _id: solutionCreation._id,
+            
           },
         });
       } catch (error) {

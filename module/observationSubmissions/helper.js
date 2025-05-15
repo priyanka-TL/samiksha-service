@@ -134,7 +134,7 @@ module.exports = class ObservationSubmissionsHelper {
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
                 observationSubmissionsDocument['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
               }
-
+              console.log(observationSubmissionsDocument)
               return resolve(observationSubmissionsDocument);
 
           } catch (error) {

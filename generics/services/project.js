@@ -6,7 +6,7 @@
  */
 
 const request = require('request');
-const projectServiceUrl = process.env.INTERFACE_SERVICE_URL;
+const projectServiceUrl = process.env.IMPROVEMENT_PROJECT_BASE_URL;
 
 /**
  * Fetches the project template(s) based on the given externalId(s).
@@ -33,7 +33,7 @@ const templateLists = function (userToken, externalId) {
           externalIds: externalId,
         },
       };
-
+     console.log(url,options)
       request.post(url, options, projectServiceCallback);
       let result = {
         success: true,
@@ -135,6 +135,7 @@ const programUpdate = function (userToken, programId,reqBody) {
         headers: {
           'content-type': 'application/json',
           'X-auth-token': userToken,
+					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
         },
         json: reqBody,
       };

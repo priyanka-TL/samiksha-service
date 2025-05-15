@@ -56,6 +56,8 @@ module.exports = {
       type: String,
       require: true,
       index:true
-    }
+    },
+    project: Object,
+    referenceFrom: String,
   },
 };
