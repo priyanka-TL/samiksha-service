@@ -218,7 +218,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         if (typeof observationSubmissionId == 'string') {
-          observationSubmissionId = ObjectId(observationSubmissionId);
+          observationSubmissionId = new ObjectId(observationSubmissionId);
         }
 
         let observationSubmissionsDocument = await database.models.observationSubmissions
@@ -244,7 +244,6 @@ module.exports = class ObservationSubmissionsHelper {
             _id: observationSubmissionsDocument.programId
           };
         }
-
         const kafkaMessage =
           await kafkaClient.pushInCompleteObservationSubmissionToKafka(observationSubmissionsDocument);
 
@@ -260,6 +259,7 @@ module.exports = class ObservationSubmissionsHelper {
 
         return resolve(kafkaMessage);
       } catch (error) {
+        console.log(error)
         return reject(error);
       }
     });
