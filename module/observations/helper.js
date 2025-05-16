@@ -94,7 +94,7 @@ module.exports = class ObservationsHelper {
     userRoleAndProfileInformation,
     tenantData,
     programId="",
-    isExternal
+    isExternalProgram
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -145,24 +145,26 @@ module.exports = class ObservationsHelper {
             true,
             userId,
             requestingUserAuthToken,
-            isExternal
+            tenantData,
+            isExternalProgram
             //   organisationAndRootOrganisation.,
             //   organisationAndRootOrganisation.rootOrganisations
           );
         } else {
           solutionData = solutionData[0];
         }
+        // if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
+        //   userRoleAndProfileInformation.role=userRoleAndProfileInformation.roles.join()
 
-        if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
-          //validate the user access to create observation
-          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
-          if (!validateUserRole.success) {
-            throw {
-              status: httpStatusCode.bad_request.status,
-              message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
-            };
-          }
-        }
+        //   //validate the user access to create observation
+        //   let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
+        //   if (!validateUserRole.success) {
+        //     throw {
+        //       status: httpStatusCode.bad_request.status,
+        //       message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+        //     };
+        //   }
+        // }
 
         let userProfileData = await surveyService.profileRead(requestingUserAuthToken)
         if (userProfileData.success && userProfileData.data) {
@@ -175,6 +177,8 @@ module.exports = class ObservationsHelper {
 
         return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId","solutionExternalId"]));
       } catch (error) {
+        console.log(error,"this is error")
+
         return reject(error);
       }
     });
@@ -239,6 +243,7 @@ module.exports = class ObservationsHelper {
 
         return resolve(observationDataEntry);
       } catch (error) {
+        console.log(error,"this is error")
         return reject(error);
       }
     });

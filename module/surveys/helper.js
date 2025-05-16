@@ -316,24 +316,19 @@ module.exports = class SurveysHelper {
         newSolutionDocument.parentSolutionId = solutionId;
         newSolutionDocument.createdAt = new Date();
         newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
-        console.log(isExternalProgram, bodyData.project,programId)
-        // let programDocument = await projectService.programDetails(userToken,programId);
-        // newSolutionDocument.programId = programDocument.result._id;
+
+        //isExternalProgram true then calling projectService for programDetails
         if(isExternalProgram && bodyData.project){
           newSolutionDocument.programExternalId = programId;
           newSolutionDocument['project'] = bodyData.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
         }
-        // newSolutionDocument.programName = programDocument.result.name;
-        // newSolutionDocument.programDescription = programDocument.result.description;   
-
+        
         const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 
         let newSolution = await solutionsHelper.createSolution(newSolutionDocument,false,tenantAndOrgInfo,userToken,isExternalProgram);
-        console.log(newSolution,"line no 325");
         
       // If the new solution is created successfully, generate a link for the solution
-
         if (newSolution.data._id) {
           let link = await gen.utils.md5Hash(userId + '###' + newSolution._id);
 
@@ -552,10 +547,10 @@ module.exports = class SurveysHelper {
           if (solution.programId) {
             survey["programId"] = solution.programId;
           }
+
           if (solution.programExternalId) {
             survey["programExternalId"] = solution.programExternalId;
           }
-          console.log(solution,"before creating")
           if(solution.project){
             survey["project"] = solution.project;
             survey["referenceFrom"] =solution.referenceFrom
@@ -564,15 +559,13 @@ module.exports = class SurveysHelper {
           survey['tenantId'] = tenantData.tenantId;
           survey['orgId'] = tenantData.orgId;
 
-          console.log(survey)
-
         // Create a survey with solution and program details
           surveyDocument = await this.create(survey);
 
           if (surveyDocument._id) {
             surveyId = surveyDocument._id;
           }
-
+         
           surveyId ? (status = `${surveyId._id} created`) : (status = `${surveyId._id} could not be created`);
         }
 
@@ -810,7 +803,6 @@ module.exports = class SurveysHelper {
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
-        console.log(surveyId,"this is oidded",tenantData.tenantId,tenantData.orgId)
         //Get the surveyDetails based on the surveyId and status
         let surveyDocument = await this.surveyDocuments({
           _id: surveyId,
@@ -916,7 +908,7 @@ module.exports = class SurveysHelper {
         let criteriaId = solutionDocument.themes[0].criteria[0].criteriaId;
         let weightage = solutionDocument.themes[0].criteria[0].weightage;
         // Get the criteriaQuestionDocument
-        let criteriaQuestionDocument = await criteriaQuestionsHelper.list({ _id: "66c84917933415620e0ceb23" }, 'all', [
+        let criteriaQuestionDocument = await criteriaQuestionsHelper.list({ _id: criteriaId }, 'all', [
           'resourceType',
           'language',
           'keywords',
@@ -1012,7 +1004,6 @@ module.exports = class SurveysHelper {
             submissionDocument.referenceFrom=surveyDocument.referenceFrom
             submissionDocument.project =surveyDocument.project
           }
-          console.log(submissionDocument,"this is s===================")
           let userProfileData = await surveyService.profileRead(userToken)
 
           if (userProfileData.success && userProfileData.data) {

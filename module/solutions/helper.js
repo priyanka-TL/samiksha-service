@@ -41,14 +41,20 @@ module.exports = class SolutionsHelper {
   static createSolution(solutionData, checkDate = false,tenantData,userToken,isExternalProgram) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log("create sol",isExternalProgram,solutionData.programExternalId)
         //Get the program details to update on the new solution document
         let programData = [];
-        //Condition for check solution falls under the program or not
+        //Condition for check solution falls under the program or not and same service Program or not
         if (solutionData.programExternalId && isExternalProgram) {
           programData = await projectService.programDetails(userToken,solutionData.programExternalId );
           programData=[programData.result]
-        }else{
+
+         //adding program details to the solution document
+         solutionData.programId = programData[0]._id;
+         solutionData.programName = programData[0].name;
+         solutionData.programDescription = programData[0].description;
+
+        }else if (solutionData.programExternalId && !isExternalProgram) {
+
           programData = await programsQueries.programDocuments(
             {
               externalId: solutionData.programExternalId,
@@ -60,12 +66,13 @@ module.exports = class SolutionsHelper {
               message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
             };
           }
-        }
 
          //adding program details to the solution document
          solutionData.programId = programData[0]._id;
          solutionData.programName = programData[0].name;
          solutionData.programDescription = programData[0].description;
+
+        }
 
         if (solutionData.type == messageConstants.common.COURSE && !solutionData.link) {
           return resolve({
@@ -151,11 +158,12 @@ module.exports = class SolutionsHelper {
 
         // adding solution id to the program components key
         if (solutionData.programExternalId && isExternalProgram) {
+          programData[0].components.push(solutionCreation._id.toString());                      
           let updateProgram = await projectService.programUpdate(userToken, solutionData.programId,
             {
-              $addToSet: {
-                components: solutionCreation._id.toString()
-              }
+             
+                components: programData[0].components
+           
             }
           );
           
@@ -165,7 +173,7 @@ module.exports = class SolutionsHelper {
             };
           }
 
-        } else {
+        } else if(solutionData.programExternalId && !isExternalProgram) {
            
             let updateProgram = await programsQueries.findOneAndUpdate(
               {
@@ -1404,7 +1412,6 @@ module.exports = class SolutionsHelper {
 
         return resolve(csvArray);
       } catch (error) {
-        
         return reject(error);
       }
     });
@@ -1964,7 +1971,8 @@ module.exports = class SolutionsHelper {
     isAPrivateProgram = false,
     createdFor = [],
     requestingUserAuthToken,
-    isExternal
+    tenantData,
+    isExternalProgram
     // rootOrganisations = []
   ) {
     return new Promise(async (resolve, reject) => {
@@ -1988,7 +1996,6 @@ module.exports = class SolutionsHelper {
 
         //   program._id = programData._id;
         // }
-       
         let duplicateSolution = await this.importFromSolution(
           templateId,
           program._id?program._id.toString():"",
@@ -1996,7 +2003,8 @@ module.exports = class SolutionsHelper {
           solutionData,
           createdFor,
           requestingUserAuthToken,
-          isExternal
+          tenantData,
+          isExternalProgram
           // rootOrganisations
         );
 
@@ -2013,7 +2021,9 @@ module.exports = class SolutionsHelper {
             'isAPrivateProgram',
             'entities',
             "startDate",
-            "endDate"
+            "endDate",
+            "project",
+            "referenceFrom"
           ])
         );
       } catch (error) {
@@ -2043,9 +2053,9 @@ module.exports = class SolutionsHelper {
     data,
     createdFor = '',
     requestingUserAuthToken,
-    isExternal,
+    tenantData,
+    isExternalProgram,
     // rootOrganisations = ""
-    tenantData
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -2072,35 +2082,40 @@ module.exports = class SolutionsHelper {
         let newSolutionDocument = _.cloneDeep(solutionDocument[0]);
         let programQuery = {};
         let programDocument;
-      if (programId) {
+        if (programId && isExternalProgram) {
+          programDocument = await projectService.programDetails(requestingUserAuthToken,programId );
+          programDocument=programDocument.result
+          if (programDocument) {
+             Object.assign(newSolutionDocument, {
+               programId: programDocument._id,
+               programExternalId: programDocument.externalId,
+               programName: programDocument.name,
+               programDescription: programDocument.description
+              });
+          }
+
+        }else if(programId && !isExternalProgram){
           programQuery[gen.utils.isValidMongoId(programId) ? "_id" : "externalId"] = programId;    
           programDocument = await programsHelper.list(programQuery, [
             "externalId",
             "name",
             "description",
             "isAPrivateProgram",
-          ]);
-          programDocument = programDocument?.data?.data?.[0];
-          if (programDocument) {
-            Object.assign(newSolutionDocument, {
-              programId: programDocument.result._id,
-              programExternalId: programDocument.result.externalId,
-              programName: programDocument.result.name,
-              programDescription: programDocument.result.description,
+          ],
+          '',
+          '',
+          '',
+          tenantData
+        );
+        programDocument = programDocument?.data?.data?.[0];
+        if (programDocument) {
+           Object.assign(newSolutionDocument, {
+             programId: programDocument._id,
+             programExternalId: programDocument.externalId,
+             programName: programDocument.name,
+             programDescription: programDocument.description
             });
-          }
-        } else {
-
-          programDocument = await programsHelper.details(programId);
-          if (programDocument) {
-            Object.assign(newSolutionDocument, {
-              programId: programDocument.data._id,
-              programExternalId: programDocument.data.externalId,
-              programName: programDocument.data.name,
-              programDescription: programDocument.data.description,
-            });
-          }
-          
+        }
         }
        
 
@@ -2178,7 +2193,6 @@ module.exports = class SolutionsHelper {
             });
           });
         }
-        console.log(data.entities,"this is 2088 in solution")
         if (data.entities && data.entities.length > 0) {
           let entitiesToAdd = await entitiesHelper.validateEntities(data.entities, solutionDocument[0].entityTypeId);
 
@@ -2237,13 +2251,15 @@ module.exports = class SolutionsHelper {
             );
           }
 
-          if (programDocument && isExternal) {
-                        
+          if (programDocument && isExternalProgram) {
+            programDocument.components.push(duplicateSolutionDocument._id.toString());                      
             let programUpdate = await projectService.programUpdate(requestingUserAuthToken, programId,
               {
-                components: [duplicateSolutionDocument._id.toString()] 
-              }          );
-            
+                  components: programDocument.components
+              
+              }   
+              );
+            console.log(programUpdate)
             if (!programUpdate.success) {
               throw {
                 message: messageConstants.apiResponses.PROGRAM_UPDATED_FAILED,
@@ -2251,7 +2267,7 @@ module.exports = class SolutionsHelper {
             }
 
            
-          }else {
+          }else if(programDocument && !isExternalProgram) {
          
             let programUpdate = await database.models.programs.updateOne(
               { _id: programDocument._id },
@@ -3780,6 +3796,8 @@ module.exports = class SolutionsHelper {
           'link',
           'certificateTemplateId',
           'endDate',
+          "project",
+          "referenceFrom"
         ]);
         if (!(targetedSolutionDetails.length > 0)) {
           throw {
