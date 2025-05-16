@@ -218,7 +218,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         if (typeof observationSubmissionId == 'string') {
-          observationSubmissionId = ObjectId(observationSubmissionId);
+          observationSubmissionId = new ObjectId(observationSubmissionId);
         }
 
         let observationSubmissionsDocument = await database.models.observationSubmissions
