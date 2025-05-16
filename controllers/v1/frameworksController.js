@@ -50,6 +50,7 @@ module.exports = class Frameworks extends Abstract {
         const fileName = `Theme-Upload-Result`;
         let fileStream = new FileStream(fileName);
         let input = fileStream.initStream();
+        let tenantFilter = req.userDetails.tenantAndOrgInfo;
 
         (async function () {
           await fileStream.getProcessorPromise();
@@ -60,7 +61,14 @@ module.exports = class Frameworks extends Abstract {
         })();
 
         let frameworkDocument = await database.models.frameworks
-          .findOne({ externalId: req.params._id }, { _id: 1 })
+          .findOne(
+            {
+              externalId: req.params._id,
+              tenantId: tenantFilter.tenantId,
+              orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+            },
+            { _id: 1 }
+          )
           .lean();
 
         if (!frameworkDocument) {
@@ -81,7 +89,7 @@ module.exports = class Frameworks extends Abstract {
           'frameworks',
           frameworkDocument._id,
           themes,
-          headerSequence,
+          headerSequence
         );
 
         for (
@@ -128,7 +136,7 @@ module.exports = class Frameworks extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let frameworkData = JSON.parse(req.files.framework.data.toString());
-
+        let tenantFilter = req.userDetails.tenantAndOrgInfo;
         if (!frameworkData.externalId) {
           throw messageConstants.apiResponses.REQUIRED_FRAMEWORK_EXTERNALID;
         }
@@ -153,12 +161,13 @@ module.exports = class Frameworks extends Abstract {
           name: frameworkData.name,
           description: frameworkData.description,
           entityType: frameworkData.entityType,
+          tenantId: tenantFilter.tenantId,
+          orgIds: { $in: ['ALL', ...tenantFilter.orgId] },
         };
 
         let frameworkMandatoryFields = frameworksHelper.mandatoryField();
 
         let frameworkDocument = await database.models.frameworks.findOne(queryObject, { _id: 1 }).lean();
-
         if (frameworkDocument) {
           throw messageConstants.apiResponses.FRAMEWORK_EXISTS;
         }
@@ -172,6 +181,8 @@ module.exports = class Frameworks extends Abstract {
         // frameworkData["entityTypeId"] = entityDocument._id;
         frameworkData['createdBy'] = req.userDetails.id;
         frameworkData.isDeleted = false;
+        frameworkData['tenantId'] = tenantFilter.tenantId;
+        frameworkData['orgIds'] = tenantFilter.orgId;
 
         frameworkDocument = await database.models.frameworks.create(frameworkData);
 
@@ -235,7 +246,7 @@ module.exports = class Frameworks extends Abstract {
           {
             _id: frameworkDocument._id,
           },
-          updateObject,
+          updateObject
         );
 
         return resolve({

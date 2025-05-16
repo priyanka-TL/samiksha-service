@@ -2066,7 +2066,7 @@ module.exports = class SolutionsHelper {
 
         }
 
-        let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes);
+        let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes,tenantData);
 
         let criteriaIdMap = {};
         let questionExternalIdMap = {};
@@ -3690,6 +3690,7 @@ module.exports = class SolutionsHelper {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
+        console.log(tenantData.tenantId, tenantData.orgId)
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
         if (!queryData.success) {
           return resolve(queryData);

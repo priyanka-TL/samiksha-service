@@ -46,7 +46,7 @@ module.exports = class Criteria extends Abstract {
   async upload(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(req.files);
+        let tenantFilter = req.userDetails.tenantAndOrgInfo
         if (!req.files || !req.files.criteria) {
           throw messageConstants.apiResponses.CRITERIA_FILE_NOT_FOUND;
         }
@@ -65,7 +65,7 @@ module.exports = class Criteria extends Abstract {
           });
         })();
 
-        let updatedCriteria = await criteriaHelper.upload(criteriaData, req.userDetails.id, req.userDetails.userToken);
+        let updatedCriteria = await criteriaHelper.upload(criteriaData, req.userDetails.id, req.userDetails.userToken,tenantFilter);
 
         if (updatedCriteria.length > 0) {
           updatedCriteria.forEach((criteria) => {

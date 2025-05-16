@@ -53,7 +53,7 @@ module.exports = {
   schema: formSchema,
   compoundIndex: [
     {
-      name: { type: 1, subType: 1, tenantId: 1, orgIds },
+      name: { type: 1, subType: 1, tenantId: 1, orgIds:1 },
       indexType: { unique: true },
     },
   ],

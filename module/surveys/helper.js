@@ -250,12 +250,14 @@ module.exports = class SurveysHelper {
 
         let solutionCriteria = await criteriaHelper.criteriaDocument({
           _id: criteriaId[0],
+          tenantId: tenantAndOrgInfo.tenantId,
+          orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]}
         });
 
         // Update the external ID of the criteria to reflect the new solution
         solutionCriteria[0].externalId = solutionExternalId + '-' + surveyAndFeedback;
         // Duplicate the questions associated with the criteria
-        let duplicateQuestionsResponse = await questionsHelper.duplicate([solutionCriteria[0]._id]);
+        let duplicateQuestionsResponse = await questionsHelper.duplicate([solutionCriteria[0]._id],tenantAndOrgInfo);
         // If the duplication was successful and there are new questions, update the criteria with the new question ID
         if (
           duplicateQuestionsResponse.success &&
@@ -296,7 +298,7 @@ module.exports = class SurveysHelper {
         solutionCriteria[0].parentCriteriaId = solutionCriteria[0]._id;
         solutionCriteria[0].tenantId= tenantAndOrgInfo.tenantId;
         solutionCriteria[0].orgId= tenantAndOrgInfo.orgId;
-
+        
         let newCriteriaId = await criteriaHelper.create(_.omit(solutionCriteria[0], ['_id']));
 
       // If the new criteria is created successfully, update the solution's theme with the new criteria
@@ -309,9 +311,7 @@ module.exports = class SurveysHelper {
             },
           ];
         }
-
-
-        let result = await criteriaQuestionsHelper.createOrUpdate(newCriteriaId._id, true);
+        let result = await criteriaQuestionsHelper.createOrUpdate(newCriteriaId._id, true,tenantAndOrgInfo);
 
         newSolutionDocument.externalId = solutionExternalId;
         newSolutionDocument.isReusable = false;
@@ -1500,7 +1500,6 @@ module.exports = class SurveysHelper {
                 messageConstants.common.SURVEY,
                 tenantData
               );
-
             if (!solutionData.success) {
               throw new Error(
                 messageConstants.apiResponses.SOLUTION_DETAILS_NOT_FOUND
