@@ -105,7 +105,13 @@ module.exports = class Criteria extends Abstract {
   create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let criteriaDocuments = await criteriaHelper.create(req.body);
+        let tenantData = req.userDetails.tenantAndOrgInfo
+        const bodyData = {
+          ...req.body,
+          tenantId: tenantData.tenantId,
+          orgIds: tenantData.orgId,
+        };
+        let criteriaDocuments = await criteriaHelper.create(bodyData);
         return resolve({
           result: criteriaDocuments,
         });
@@ -150,11 +156,13 @@ module.exports = class Criteria extends Abstract {
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantData = req.userDetails.tenantAndOrgInfo
         let criteriaData = await criteriaHelper.update(
           req.query.externalId,
           req.query.frameworkIdExists ? Boolean(req.query.frameworkIdExists) : false,
           req.body,
           req.userDetails.id,
+          tenantData
         );
 
         return resolve(criteriaData);

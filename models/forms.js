@@ -5,29 +5,35 @@
  * Description : Schema for Forms.
  */
 
-const { Schema } = require('mongoose')
+const { Schema } = require('mongoose');
 
 const formSchema = new Schema({
-	type: {
-		type: String,
-		required: true,
-	},
-	subType: {
-		type: String,
-		required: true,
-	},
-	version: {
-		type: Number,
-		default: 0,
-	},
-	data: {
-		type: Schema.Types.Mixed,
-	},
-	organizationId: {
-		type: String,
-		required: true,
-	},
-})
+  type: {
+    type: String,
+    required: true,
+  },
+  subType: {
+    type: String,
+    required: true,
+  },
+  version: {
+    type: Number,
+    default: 0,
+  },
+  data: {
+    type: Schema.Types.Mixed,
+  },
+  orgIds: {
+    type: Array,
+    require: true,
+    index: true,
+  },
+  tenantId: {
+    type: String,
+    require: true,
+    index: true,
+  },
+});
 
 // Pre-update hook to increment version
 formSchema.pre('findOneAndUpdate', function (next) {
@@ -42,14 +48,13 @@ formSchema.pre('updateOne', function (next) {
   next();
 });
 
-
 module.exports = {
-	name: 'forms',
-	schema: formSchema,
-	compoundIndex: [
-		{
-			name: { type: 1, subType: 1, organizationId: 1 },
-			indexType: { unique: true },
-		},
-	],
-}
+  name: 'forms',
+  schema: formSchema,
+  compoundIndex: [
+    {
+      name: { type: 1, subType: 1, tenantId: 1, orgIds },
+      indexType: { unique: true },
+    },
+  ],
+};

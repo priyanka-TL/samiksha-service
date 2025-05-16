@@ -166,6 +166,8 @@ module.exports = class SurveysHelper {
           language: ['English'],
           keywords: ['Keyword 1', 'Keyword 2'],
           frameworkCriteriaId: null,
+          tenantId: tenantData.tenantId,
+          orgIds: tenantData.orgId
         };
         //Creating new criteria
         let newCriteria = await criteriaHelper.create(criteriaDocument);
@@ -292,6 +294,8 @@ module.exports = class SurveysHelper {
         }
 
         solutionCriteria[0].parentCriteriaId = solutionCriteria[0]._id;
+        solutionCriteria[0].tenantId= tenantAndOrgInfo.tenantId;
+        solutionCriteria[0].orgId= tenantAndOrgInfo.orgId;
 
         let newCriteriaId = await criteriaHelper.create(_.omit(solutionCriteria[0], ['_id']));
 

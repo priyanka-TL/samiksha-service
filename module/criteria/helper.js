@@ -384,11 +384,13 @@ module.exports = class criteriaHelper {
    * @returns {Array} - returns updated criteria.
    */
 
-  static update(criteriaExternalId, frameworkIdExists, bodyData, userId) {
+  static update(criteriaExternalId, frameworkIdExists, bodyData, userId, tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
           externalId: criteriaExternalId,
+          tenantId: tenantData.tenantId,
+          orgIds:{"$in": ["ALL", tenantData.orgId]}
         };
 
         if (frameworkIdExists) {
