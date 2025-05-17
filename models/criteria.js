@@ -1,7 +1,10 @@
 module.exports = {
   name: 'criteria',
   schema: {
-    externalId: String,
+    externalId: {
+      type: String,
+      index: true,
+    },
     owner: String,
     timesUsed: Number,
     weightage: Number,
@@ -22,5 +25,21 @@ module.exports = {
     criteriaType: { type: String, default: 'manual' },
     frameworkCriteriaId: 'ObjectId',
     parentCriteriaId: 'ObjectId',
+    orgIds: {
+      type: Array,
+      require: true,
+      index: true,
+    },
+    tenantId: {
+      type: String,
+      require: true,
+      index: true,
+    },
   },
+  compoundIndex: [
+    {
+      name: { externalId: 1, tenantId: 1, orgIds: 1 },
+      indexType: { unique: true },
+    },
+  ],
 };
