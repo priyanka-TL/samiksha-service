@@ -4,7 +4,7 @@ const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
 let projectService = require(ROOT_PATH + '/generics/services/project')
 
 module.exports = class criteriaHelper {
-  static setCriteriaRubricExpressions(criteriaId, existingCriteria, criteriaRubricData, solutionLevelKeys) {
+  static setCriteriaRubricExpressions(criteriaId, existingCriteria, criteriaRubricData, solutionLevelKeys,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let expressionVariables = {};
@@ -71,14 +71,16 @@ module.exports = class criteriaHelper {
         });
 
         await database.models.criteria.findOneAndUpdate(
-          { _id: criteriaId },
+          { _id: criteriaId, 
+            tenantId: tenantData.tenantId,
+            orgIds:{"$in":[...tenantData.orgId,'ALL']}
+          },
           {
             rubric: rubric,
             criteriaType: messageConstants.common.AUTO_RATING,
           },
         );
-
-        await criteriaQuestionsHelper.createOrUpdate(criteriaId);
+        await criteriaQuestionsHelper.createOrUpdate(criteriaId,false,tenantData);
 
         return resolve({
           success: true,
@@ -163,7 +165,7 @@ module.exports = class criteriaHelper {
    * @returns {Array} - returns created criteria.
    */
 
-  static upload(criteriaData, userId, token) {
+  static upload(criteriaData, userId, token,tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         let improvementProjectIds = [];
@@ -277,13 +279,14 @@ module.exports = class criteriaHelper {
               criteriaDocuments = await database.models.criteria.findOneAndUpdate(
                 {
                   _id: parsedCriteria._SYSTEM_ID,
+                  tenantId: tenantFilter.tenantId,
+            			orgIds:{"$in": ["ALL", ...tenantFilter.orgId]}
                 },
                 {
                   $set: criteriaStructure,
                 },
               );
-
-              await criteriaQuestionsHelper.createOrUpdate(parsedCriteria._SYSTEM_ID);
+              await criteriaQuestionsHelper.createOrUpdate(parsedCriteria._SYSTEM_ID,tenantFilter);
             } else {
               criteriaStructure['resourceType'] = ['Program', 'Framework', 'Criteria'];
 
@@ -349,7 +352,8 @@ module.exports = class criteriaHelper {
                 : messageConstants.common.MANUAL_RATING;
               criteriaStructure['score'] = '';
               criteriaStructure['flag'] = '';
-
+              criteriaStructure["tenantId"]=tenantFilter.tenantId
+              criteriaStructure["orgIds"]=tenantFilter.orgId
               criteriaDocuments = await database.models.criteria.create(criteriaStructure);
             }
 
@@ -384,11 +388,13 @@ module.exports = class criteriaHelper {
    * @returns {Array} - returns updated criteria.
    */
 
-  static update(criteriaExternalId, frameworkIdExists, bodyData, userId) {
+  static update(criteriaExternalId, frameworkIdExists, bodyData, userId, tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
           externalId: criteriaExternalId,
+          tenantId: tenantData.tenantId,
+          orgIds:{"$in": ["ALL", ...tenantData.orgId]}
         };
 
         if (frameworkIdExists) {
@@ -431,7 +437,7 @@ module.exports = class criteriaHelper {
    * @returns {Object}  old and new Mapped criteria id Object .
    */
 
-  static duplicate(themes = []) {
+  static duplicate(themes = [],tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (!themes.length) {
@@ -446,6 +452,8 @@ module.exports = class criteriaHelper {
 
         let criteriaDocuments = await this.criteriaDocument({
           _id: { $in: criteriaIds },
+          tenantId: tenantData.tenantId,
+          orgIds:{ $in: ['ALL', ...tenantData.orgId] }
         });
 
         if (!criteriaDocuments.length) {
@@ -456,7 +464,7 @@ module.exports = class criteriaHelper {
         let questionIdMap = {};
         let questionExternalIdMap = {};
 
-        let duplicateQuestionsResponse = await questionsHelper.duplicate(criteriaIds);
+        let duplicateQuestionsResponse = await questionsHelper.duplicate(criteriaIds,tenantData);
 
         if (
           duplicateQuestionsResponse.success &&
@@ -522,7 +530,10 @@ module.exports = class criteriaHelper {
                 });
 
                 await database.models.criteria.updateOne(
-                  { _id: newCriteriaId._id },
+                  { _id: newCriteriaId._id ,
+                    tenantId: tenantData.tenantId,
+                    orgIds:{ $in: ['ALL', ...tenantData.orgId] }
+                  },
                   {
                     $set: {
                       rubric: criteria.rubric,
@@ -535,7 +546,7 @@ module.exports = class criteriaHelper {
         );
 
         if (Object.keys(criteriaIdMap).length > 0) {
-          await criteriaQuestionsHelper.createOrUpdate(Object.values(criteriaIdMap), true);
+          await criteriaQuestionsHelper.createOrUpdate(Object.values(criteriaIdMap), true,tenantData);
         }
 
         return resolve({

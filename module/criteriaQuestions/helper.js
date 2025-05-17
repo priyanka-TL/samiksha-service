@@ -116,7 +116,7 @@ module.exports = class CriteriaQuestionsHelper {
    * @returns {JSON} - success true or false
    */
 
-  static createOrUpdate(criteriaIds, updateQuestion = false) {
+  static createOrUpdate(criteriaIds, updateQuestion = false,tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         let result = '';
@@ -125,7 +125,7 @@ module.exports = class CriteriaQuestionsHelper {
           result = [];
 
           for (let criteria = 0; criteria < criteriaIds.length; criteria++) {
-            let data = await singleCriteriaCreateOrUpdate(criteriaIds[criteria], updateQuestion);
+            let data = await singleCriteriaCreateOrUpdate(criteriaIds[criteria], updateQuestion,tenantFilter);
 
             result.push({
               criteriaId: criteriaIds[criteria],
@@ -133,7 +133,7 @@ module.exports = class CriteriaQuestionsHelper {
             });
           }
         } else {
-          result = await singleCriteriaCreateOrUpdate(criteriaIds, updateQuestion);
+          result = await singleCriteriaCreateOrUpdate(criteriaIds, updateQuestion,tenantFilter);
         }
 
         return resolve(result);
@@ -203,7 +203,7 @@ module.exports = class CriteriaQuestionsHelper {
  * @returns {JSON} success true or false
  */
 
-function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion) {
+function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion,tenantFilter) {
   return new Promise(async function (resolve, reject) {
     try {
       let criteriaModel = Object.keys(criteriaSchema.schema);
@@ -212,6 +212,8 @@ function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion) {
         $match: {
           _id: new ObjectId(criteriaId),
           frameworkCriteriaId: { $exists: true },
+          tenantId: tenantFilter.tenantId,
+          orgIds:{"$in": ["ALL", ...tenantFilter.orgId]}
         },
       };
 
@@ -294,6 +296,8 @@ function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion) {
       await database.models.criteriaQuestions.findOneAndUpdate(
         {
           _id: criteriaId,
+          tenantId: tenantFilter.tenantId,
+          orgIds:{"$in": ["ALL", ...tenantFilter.orgId]}
         },
         {
           $set: criteriaData[0],

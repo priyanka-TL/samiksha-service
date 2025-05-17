@@ -45,17 +45,23 @@ module.exports = {
     surveyInformation: Object,
     appInformation: Object,
     userRoleInformation: Object,
-    userProfile : Object,
-    programInformation:Object,
-    orgId:{
+    userProfile: Object,
+    programInformation: Object,
+    orgId: {
       type: String,
       require: true,
-      index:true
+      index: true,
     },
     tenantId: {
       type: String,
       require: true,
-      index:true
-    }
+      index: true,
+    },
   },
+  compoundIndex: [
+    {
+      name: { surveyId: 1, solutionId: 1, tenantId: 1, orgId: 1 },
+      indexType: { unique: true },
+    },
+  ],
 };

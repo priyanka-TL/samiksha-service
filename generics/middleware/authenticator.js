@@ -155,7 +155,7 @@ module.exports = async function (req, res, next) {
     'completedAssessments',
     'pendingObservations',
     'completedObservations',
-    'solutionDetails',
+    // 'solutionDetails',
     '/programs/listByIds',
     'frameworks/delete/',
     'questions/delete/',
@@ -187,6 +187,10 @@ module.exports = async function (req, res, next) {
     'solutions/importFromSolution',
     'surveys/importSurveryTemplateToSolution',
     'surveys/mapSurverySolutionToProgram',
+    "criteria/upload",
+    "questions/bulkCreate",
+    "frameworks/create",
+    "frameworks/uploadThemes"
   ];
 
   let performInternalAccessTokenCheck = false;

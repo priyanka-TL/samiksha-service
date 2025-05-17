@@ -21,5 +21,21 @@ module.exports = {
     flag: Object,
     criteriaType: String,
     frameworkCriteriaId: 'ObjectId',
+    orgIds: {
+      type: Array,
+      require: true,
+      index: true,
+    },
+    tenantId: {
+      type: String,
+      require: true,
+      index: true,
+    },
   },
+  compoundIndex: [
+    {
+      name: { externalId: 1, tenantId: 1, orgIds: 1 },
+      indexType: { unique: true },
+    },
+  ],
 };
