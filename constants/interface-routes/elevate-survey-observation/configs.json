@@ -2916,6 +2916,20 @@
       "service": "user"
     },
     {
+      "sourceRoute": "/user/v1/tenant/read/:id",
+      "type": "GET",
+      "priority": "MUST_HAVE",
+      "inSequence": false,
+      "orchestrated": false,
+      "targetPackages": [
+        {
+          "basePackageName": "survey",
+          "packageName": "elevate-survey-observation"
+        }
+      ],
+      "service": "user"
+    },
+    {
       "sourceRoute": "/scheduler/jobs/create",
       "type": "POST",
       "priority": "MUST_HAVE",
