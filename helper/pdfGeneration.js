@@ -12,6 +12,35 @@ const filesHelpers = require(MODULES_BASE_PATH + '/files/helper')
 const cloudStorage = process.env.CLOUD_STORAGE_PROVIDER
 const bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
 const path = require('path')
+
+/**
+ * Processes a matrix-style response object by mapping selected answer values
+ * to their corresponding labels, only for multiselect or radio types.
+ *
+ * @param {Object} obj - The response object to process.
+ * @param {string} obj.responseType - Type of response ("multiselect" or "radio").
+ * @param {Array<string>} obj.answers - Array of selected answer values.
+ * @param {Array<{ value: string, label: string }>} obj.optionsAvailableForUser - Available options with value-label pairs.
+ * @returns {Object} The modified response object with `answers` mapped to labels.
+ */
+function processMatrixResponse(obj) {
+
+    if (obj.responseType !== "multiselect" && obj.responseType !== "radio") return obj;
+    const values = Array.isArray(obj.answers) ? obj.answers.filter(v => v && v.trim() !== "") : [];
+    if (values.length === 0) {
+      obj.value = [];
+      return obj;
+    }
+  
+    const labelMap = new Map(
+      (Array.isArray(obj.optionsAvailableForUser) ? obj.optionsAvailableForUser : [])
+        .map(opt => [opt.value, opt.label])
+    );
+  
+    obj.answers = values.map(val => labelMap.get(val)).filter(label => label !== undefined);
+    return obj;
+}
+
 /**
  * Generate a PDF report for entity
  * @param {Object} instaRes - The response object containing report data
@@ -309,8 +338,333 @@ exports.pdfGeneration = async function pdfGeneration(instaRes) {
 }
 
 /**
- * Generate a PDF report for instance observation
- * @param {Object} instaRes - The response object containing instance observation data
+ * Generate a PDF report for instance Survey
+ * @param {Object} instaRes - The response object containing instance Survey data
+ * @returns {Promise<Object>} The generated PDF report information
+ */
+exports.instanceSurveyPdfReport = async function instanceObservationPdfGeneration(instaRes) {
+    return new Promise(async function (resolve, reject) {
+
+        var currentTempFolder = 'tmp/' + uuidv4() + "--" + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
+
+        var imgPath = __dirname + '/../' + currentTempFolder;
+
+
+        try {
+
+            if (!fs.existsSync(imgPath)) {
+                fs.mkdirSync(imgPath);
+            }
+
+            let bootstrapStream = await copyBootStrapFile(__dirname + '/../public/css/bootstrap.min.css', imgPath + '/style.css');
+
+            // let headerFile = await copyBootStrapFile(__dirname + '/../views/header.html', imgPath + '/header.html');
+            let footerFile = await copyBootStrapFile(__dirname + '/../views/footer.html', imgPath + '/footer.html');
+
+            var multiSelectArray = [];
+            var radioArray = [];
+            let formData = [];
+            
+            instaRes.response = instaRes.response ? instaRes.response : instaRes.reportSections;
+
+            //loop the response and store multiselect and radio questions of matrix type
+            //this was not handled previously 
+            //they are pushed in the array to create chart object
+
+            instaRes.response
+
+            await Promise.all(instaRes.response.map(async ele => {
+                if (ele.responseType == "matrix") {
+                    await Promise.all(ele.instanceQuestions.map(element => {
+                        if (element.responseType == "multiselect") {
+                            multiSelectArray.push(element);
+                        }
+                        else if (element.responseType == "radio") {
+                            radioArray.push(element);
+                        }
+                    }))
+
+                    let matrixAnswerArray = ele.instanceQuestions;
+
+                    for(let answerInstance of matrixAnswerArray){
+
+                        for(let questionKey in answerInstance){
+
+                            let anwerObject = answerInstance[questionKey];
+
+                            if (anwerObject.responseType == "multiselect") {
+                                anwerObject.options = anwerObject.optionsAvailableForUser
+                                anwerObject.chart = {}
+                                multiSelectArray.push(anwerObject);
+                            }
+                            else if (anwerObject.responseType == "radio") {
+                                anwerObject.chart = {}
+                                radioArray.push(anwerObject);
+                            }
+
+                        }
+                        
+                    }
+
+                }
+            }))
+
+            //select all the multiselect response objects and create a chart object
+            let multiSelectChartObj = await getChartObject(multiSelectArray);
+            let radioChartObj = await getChartObject(radioArray);
+
+            let multiselectFormData = await createChart(multiSelectChartObj, imgPath);
+            let radioFormData = await createChart(radioChartObj, imgPath);
+
+            formData.push(...multiselectFormData);
+            formData.push(...radioFormData);
+
+            var params = {
+                surveyName: instaRes.surveyName
+            }
+            ejs.renderFile(__dirname + '/../views/header.ejs', {
+                data: params
+            })
+                .then(function (headerHtml) {
+
+                    var dir = imgPath;
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir);
+                    }
+
+                    fs.writeFile(dir + '/header.html', headerHtml, async function (errWr, dataWr) {
+                        if (errWr) {
+                            throw errWr;
+                        } else {
+
+                            //Arrange the questions based on the order field
+                            var arrOfData = [];
+                            var matrixData = [];
+
+                            await Promise.all(instaRes.response.map(async ele => {
+
+                                if (ele.responseType === "text" || ele.responseType === "date" || ele.responseType === "number" || ele.responseType === "slider" || ele.responseType === "multiselect" || ele.responseType === "radio") {
+
+                                    arrOfData.push(ele);
+
+                                } else if (ele.responseType === "matrix") {
+
+                                    //push main matrix question object into array
+                                    arrOfData.push(ele);
+                                    let obj = {
+                                        order: ele.order,
+                                        data: []
+                                    }
+                                    await Promise.all(ele.instanceQuestions.map(element => {
+                                        //push the instance questions to the array
+                                        if (element.responseType == "text" || element.responseType == "date" || element.responseType == "number" || ele.responseType == "slider") {
+                                            obj.data.push(element);
+                                        }
+                                        else if (element.responseType == "radio") {
+                                            let dt = radioFormData.filter(or => {
+                                                if (or.order == element.order) {
+                                                    return or;
+                                                }
+                                            })
+
+                                            dt[0].options.responseType = "radio";
+                                            dt[0].options.answers = element.answers;
+                                            obj.data.push(dt);
+
+                                        }
+                                        else if (element.responseType == "multiselect") {
+                                            let dt = multiselectFormData.filter(or => {
+                                                if (or.order == element.order) {
+                                                    return or;
+                                                }
+                                            })
+
+                                            dt[0].options.responseType = "multiselect";
+                                            dt[0].options.answers = element.answers;
+
+                                            obj.data.push(dt);
+
+                                        }
+                                    }))
+
+                                    let matrixAnswerArray = ele.instanceQuestions;
+
+                                    let instanceNumber = 1
+                                    for(let answerInstance of matrixAnswerArray){
+                
+                                        for(let questionKey in answerInstance){
+                
+                                            let anwerObject = answerInstance[questionKey];
+                                            anwerObject.instanceNumber = instanceNumber;
+                                            //push the instance questions to the array
+                                             if (anwerObject.responseType == "text" || anwerObject.responseType == "date" || anwerObject.responseType == "number" || anwerObject.responseType == "slider") {
+                                                obj.data.push(anwerObject);
+                                            }else{
+                                                //need to add more code to handle chart data for multiselect/radio
+                                                obj.data.push(anwerObject);
+                                            }
+                                        }
+                                        ++instanceNumber;
+                                    }
+                                    matrixData.push(obj);
+                                }
+                            }));
+
+                           // console.log(arrOfData,'arrOfData')
+                            const result = arrOfData
+                            .map(obj => {
+                                if(obj.responseType == 'matrix'){
+                                    obj.answers = obj.instanceQuestions;
+                                }
+                                return obj;
+                            })
+
+                            arrOfData.forEach((questionObj)=>{
+                               // console.log(questionObj,'questionOb')
+                                if(questionObj.responseType == 'multiselect' || questionObj.responseType == 'radio' ){
+                                    processMatrixResponse(questionObj)
+                                }else if(questionObj.responseType == 'matrix'){
+
+                                    for(let i=0;i<questionObj.instanceQuestions.length;i++){
+
+                                        let eachInstanceAnswerObject = questionObj.instanceQuestions[i];
+
+                                        for(let key in eachInstanceAnswerObject){
+                                            if(key !== 'instanceIdentifier'){
+                                                let answerObject = eachInstanceAnswerObject[key];
+
+                                                if(answerObject.responseType == 'multiselect' || answerObject.responseType == 'radio' ){
+                                                    let result = processMatrixResponse(answerObject)
+                                                    eachInstanceAnswerObject[key] = result;
+                                                }
+
+                                            } 
+                                        }
+
+
+                                    }
+
+                                }
+                            })
+
+                            arrOfData.filter(obj => obj.responseType === "matrix").forEach((questionObj)=>{
+                                for(let i=0;i<questionObj.instanceQuestions.length;i++){
+                                    let eachInstanceAnswerObject = questionObj.instanceQuestions[i];
+                                    for(let key in eachInstanceAnswerObject){
+                                        if(key !== 'instanceIdentifier'){
+                                            let answerObject = eachInstanceAnswerObject[key];
+                                            if(answerObject.answers && answerObject.answers.length === 1 && answerObject.answers[0] === undefined){
+                                                delete eachInstanceAnswerObject[key]
+                                            }
+                                        } 
+                                    }
+                                }
+                           })
+
+                            var obj = {
+                                orderData: arrOfData,
+                                matrixRes: matrixData,
+                                matrixFormatedData:groupAnswersByQuestion(arrOfData.filter(obj => obj.responseType === "matrix"))
+                            };
+
+                            ejs.renderFile(__dirname + '/../views/instanceObservationTemplate.ejs', {
+                                data: obj
+                            })
+                                .then(function (dataEjsRender) {
+
+                                    var dir = imgPath;
+                                    if (!fs.existsSync(dir)) {
+                                        fs.mkdirSync(dir);
+                                    }
+                                    fs.writeFile(dir + '/index.html', dataEjsRender, function (errWriteFile, dataWriteFile) {
+                                        if (errWriteFile) {
+                                            throw errWriteFile;
+                                        } else {
+
+                                            let optionsHtmlToPdf = gen.utils.getGotenbergConnection();
+                                            optionsHtmlToPdf.formData = {
+                                                files: [
+                                                ]
+                                            };
+                                            formData.push({
+                                                value: fs.createReadStream(dir + '/index.html'),
+                                                options: {
+                                                    filename: 'index.html'
+                                                }
+                                            });
+                                            formData.push({
+                                                value: fs.createReadStream(dir + '/style.css'),
+                                                options: {
+                                                    filename: 'style.css'
+                                                }
+                                            });
+                                            formData.push({
+                                                value: fs.createReadStream(dir + '/header.html'),
+                                                options: {
+                                                    filename: 'header.html'
+                                                }
+                                            });
+                                            formData.push({
+                                                value: fs.createReadStream(dir + '/footer.html'),
+                                                options: {
+                                                    filename: 'footer.html'
+                                                }
+                                            });
+                                            optionsHtmlToPdf.formData.files = formData;
+                                            optionsHtmlToPdf.formData.marginTop = 1.4;
+                                            optionsHtmlToPdf.formData.marginBottom = 1;
+
+                                            rp(optionsHtmlToPdf)
+                                                .then(function (responseHtmlToPdf) {
+
+                                                    let pdfBuffer = Buffer.from(responseHtmlToPdf.body);
+                                                    if (responseHtmlToPdf.statusCode == 200) {
+                                                        let pdfFile = uuidv4() + ".pdf";
+                                                        fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
+                                                            if (err) {
+                                                                return console.log(err);
+                                                            }
+                                                            else {
+
+                                                                let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir);
+                                                                rimraf(imgPath,function () { console.log("done")});
+                                                                return resolve({
+                                                                    status: messageConstants.common.status_success,
+                                                                    message: messageConstants.apiResponses.pdf_report_generated,
+                                                                    pdfUrl:uploadFileResponse.getDownloadableUrl
+                                                                })
+
+                                                            }
+                                                        });
+                                                    }
+                                                })
+                                                .catch(function (err) {
+                                                  console.log("error in converting HtmlToPdf", err);
+                                                  resolve(err);
+                                                  throw err;
+                                                });
+                                        }
+                                    });
+                                })
+                                .catch(function (errEjsRender) {
+                                  reject(errEjsRender);
+                                });
+
+                        }
+
+                    });
+                });
+
+        } catch (exp) {
+            console.log(exp,'exp')
+          return reject(exp);
+        } 
+    })
+}
+
+/**
+ * Generate a PDF report for instance Observation
+ * @param {Object} instaRes - The response object containing instance Observation data
  * @returns {Promise<Object>} The generated PDF report information
  */
 exports.instanceObservationPdfGeneration = async function instanceObservationPdfGeneration(instaRes) {

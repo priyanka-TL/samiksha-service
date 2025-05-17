@@ -133,7 +133,54 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 }
 
 
+const fetchTenantDetails = function (tenantId, userToken) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			let url =
+            userServiceUrl +
+            messageConstants.endpoints.TENANT_READ +
+            '/' +
+            tenantId
+			const options = {
+				headers: {
+                    "content-type": "application/json",
+					'X-auth-token':  userToken
+				},
+			}
+			request.get(url, options, userReadCallback)
+			let result = {
+				success: true,
+			}
+			function userReadCallback(err, data) {
+				if (err) {
+					result.success = false
+				} else {
+					let response = JSON.parse(data.body)
+					if (response.responseCode === httpStatusCode['ok_userService'].message) {
+						result['data'] = response.result
+					} else {
+						result.success = false
+					}
+				}
+
+				return resolve(result)
+			}
+			setTimeout(function () {
+				return resolve(
+					(result = {
+						success: false,
+					})
+				)
+			}, messageConstants.common.SERVER_TIME_OUT)
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
+
 module.exports = {
   profile:profile,
-  fetchDefaultOrgDetails
+  fetchDefaultOrgDetails,
+  fetchTenantDetails
 };
