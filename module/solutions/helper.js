@@ -3690,7 +3690,6 @@ module.exports = class SolutionsHelper {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
-        console.log(tenantData.tenantId, tenantData.orgId)
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
         if (!queryData.success) {
           return resolve(queryData);
