@@ -180,9 +180,9 @@ module.exports = class ReportsHelper {
         allCriteriaDocument.map((criteria) => {
           criteria.criteriaId = criteria._id;
           criteria.criteriaName = criteria.name;
-          criteria.level = criteria.rubric.levels[criterias.score].level;
-          criteria.label = criteria.rubric.levels[criterias.score].label;
-          if (criteria.rubric.levels[criterias.score]['improvement-projects']) {
+          criteria.level = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].level?criteria.rubric.levels[criterias.score].level:"No Level Matched";
+          criteria.label = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].label?criteria.rubric.levels[criterias.score].label:"No Level Matched";
+          if (criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score]['improvement-projects']) {
             criteria.improvementProjects = criteria.rubric.levels[criterias.score]['improvement-projects'];
           }
 
@@ -313,9 +313,9 @@ module.exports = class ReportsHelper {
         allCriteriaDocument.map((criteria) => {
           criteria.criteriaId = criteria._id;
           criteria.criteriaName = criteria.name;
-          criteria.level = criteria.rubric.levels[criterias.score].level;
-          criteria.label = criteria.rubric.levels[criterias.score].label;
-          if (criteria.rubric.levels[criterias.score]['improvement-projects']) {
+          criteria.level = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].level? criteria.rubric.levels[criterias.score].level :" No Level Matched";
+          criteria.label = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].label?criteria.rubric.levels[criterias.score].label:"No Level Matched";
+          if (criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score]['improvement-projects']) {
             criteria.improvementProjects = criteria.rubric.levels[criterias.score]['improvement-projects'];
           }
 
