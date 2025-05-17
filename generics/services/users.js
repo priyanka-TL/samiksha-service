@@ -132,6 +132,12 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 	})
 }
 
+/**
+ * Fetches the tenant details for a given tenant ID along with org it is associated with.
+ * @param {string} tenantId - The code/id of the organization.
+ * @param {String} userToken - user token
+ * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
+ */
 
 const fetchTenantDetails = function (tenantId, userToken) {
 	return new Promise(async (resolve, reject) => {

@@ -546,7 +546,8 @@ exports.instanceSurveyPdfReport = async function instanceObservationPdfGeneratio
 
                                 }
                             })
-
+                            
+                            //filtering is done to remove optional questions which are not answered in the matrix type of question
                             arrOfData.filter(obj => obj.responseType === "matrix").forEach((questionObj)=>{
                                 for(let i=0;i<questionObj.instanceQuestions.length;i++){
                                     let eachInstanceAnswerObject = questionObj.instanceQuestions[i];
