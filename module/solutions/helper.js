@@ -3425,7 +3425,7 @@ module.exports = class SolutionsHelper {
 
         if(tenantData.hasOwnProperty('tenantId') && tenantData.hasOwnProperty('orgId')) {
           matchQuery['tenantId'] = tenantData.tenantId;
-          matchQuery['orgIds'] = { $in: ['ALL', tenantData.orgId] };
+          matchQuery['orgIds'] = { $in: ['ALL', ...tenantData.orgId] };
         }
 
         if (type == messageConstants.common.SURVEY) {
@@ -3500,6 +3500,7 @@ module.exports = class SolutionsHelper {
           },
         };
 
+        console.log(matchQuery,'matchQuery')
         
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
