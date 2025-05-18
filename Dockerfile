@@ -1,5 +1,18 @@
 FROM node:20
 
+# Install necessary system dependencies for canvas
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    libfreetype6-dev \
+    pkg-config \
+    gcc \
+    g++ \
+    make \
+    python3
+    
 WORKDIR /opt/samiksha/
 
 #copy package.json file

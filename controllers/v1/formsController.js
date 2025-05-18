@@ -80,7 +80,8 @@ module.exports = class Forms extends Abstract {
 	async create(req) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let createdForm = await formsHelper.create(req.body, req.userDetails.organizationId)
+				let tenantData = req.userDetails.tenantAndOrgInfo
+				let createdForm = await formsHelper.create(req.body, tenantData)
 
 				return resolve(createdForm)
 			} catch (error) {
@@ -146,10 +147,11 @@ module.exports = class Forms extends Abstract {
 	async update(req) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				let tenantData = req.userDetails.tenantAndOrgInfo
 				const updatedForm = await formsHelper.update(
 					req.params._id,
 					req.body,
-					req.userDetails.organizationId
+					tenantData
 				)
 				return resolve(updatedForm)
 			} catch (error) {
@@ -212,6 +214,7 @@ module.exports = class Forms extends Abstract {
 	async read(req) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				let tenantData = req.userDetails.tenantAndOrgInfo
 				if (!req.params._id && Object.keys(req.body).length === 0) {
 					const formData = await formsHelper.readAllFormsVersion()
 					return resolve(formData)
@@ -219,7 +222,7 @@ module.exports = class Forms extends Abstract {
 					const formData = await formsHelper.read(
 						req.params._id,
 						req.body,
-						req.userDetails.organizationId,
+						tenantData,
 						req.userDetails.userToken
 					)
 					return resolve(formData)

@@ -83,6 +83,8 @@ module.exports = class ReportsHelper {
       let surveySubmissionsDocumentArray = await surveySubmissionsHelper.surveySubmissionDocuments({
         _id: submissionId,
         status: 'completed',
+        tenantId: req.userDetails.tenantData.tenantId,
+        orgId: req.userDetails.tenantData.orgId,
       });
 
       let surveySubmissionsDocument = surveySubmissionsDocumentArray[0];
@@ -99,6 +101,8 @@ module.exports = class ReportsHelper {
       let solutionDocument = await solutionsQueries.solutionDocuments(
         {
           _id: surveySubmissionsDocument.solutionId,
+          tenantId: req.userDetails.tenantData.tenantId,
+          orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] },
         },
         ['name', 'scoringSystem', 'description', 'questionSequenceByEcm']
       );
@@ -114,6 +118,8 @@ module.exports = class ReportsHelper {
         let programDocument = await programsHelper.list(
           {
             _id: surveySubmissionsDocument.programId,
+            tenantId: req.userDetails.tenantData.tenantId,
+            orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] },
           },
           ['name', 'description',"externalId"]
         );
@@ -129,6 +135,15 @@ module.exports = class ReportsHelper {
         surveyName: surveySubmissionsDocument.surveyInformation.name,
         report: report,
       };
+
+      if (req.query.pdf) {
+        let pdfResponse = await pdfHelper.instanceSurveyPdfReport({
+          surveyName: surveySubmissionsDocument.surveyInformation.name,
+          response: report,
+        });
+        responseObj.response.pdfLink = pdfResponse.pdfUrl;
+        delete responseObj.response.report;
+      }
 
       return {
         status: httpStatusCode.ok.status,
@@ -180,9 +195,9 @@ module.exports = class ReportsHelper {
         allCriteriaDocument.map((criteria) => {
           criteria.criteriaId = criteria._id;
           criteria.criteriaName = criteria.name;
-          criteria.level = criteria.rubric.levels[criterias.score].level;
-          criteria.label = criteria.rubric.levels[criterias.score].label;
-          if (criteria.rubric.levels[criterias.score]['improvement-projects']) {
+          criteria.level = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].level?criteria.rubric.levels[criterias.score].level:"No Level Matched";
+          criteria.label = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].label?criteria.rubric.levels[criterias.score].label:"No Level Matched";
+          if (criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score]['improvement-projects']) {
             criteria.improvementProjects = criteria.rubric.levels[criterias.score]['improvement-projects'];
           }
 
@@ -313,9 +328,9 @@ module.exports = class ReportsHelper {
         allCriteriaDocument.map((criteria) => {
           criteria.criteriaId = criteria._id;
           criteria.criteriaName = criteria.name;
-          criteria.level = criteria.rubric.levels[criterias.score].level;
-          criteria.label = criteria.rubric.levels[criterias.score].label;
-          if (criteria.rubric.levels[criterias.score]['improvement-projects']) {
+          criteria.level = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].level? criteria.rubric.levels[criterias.score].level :" No Level Matched";
+          criteria.label = criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score].label?criteria.rubric.levels[criterias.score].label:"No Level Matched";
+          if (criteria.rubric.levels[criterias.score]&&criteria.rubric.levels[criterias.score]['improvement-projects']) {
             criteria.improvementProjects = criteria.rubric.levels[criterias.score]['improvement-projects'];
           }
 

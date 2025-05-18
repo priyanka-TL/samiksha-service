@@ -1192,6 +1192,8 @@ module.exports = class Observations extends Abstract {
         let frameworkDocument = await database.models.frameworks
           .findOne({
             externalId: req.query.frameworkId,
+            tenantId: req.userDetails.tenantData.tenantId,
+            orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] }
           })
           .lean();
 
@@ -1213,7 +1215,11 @@ module.exports = class Observations extends Abstract {
 
         let criteriasIdArray = gen.utils.getCriteriaIds(frameworkDocument.themes);
 
-        let frameworkCriteria = await database.models.criteria.find({ _id: { $in: criteriasIdArray } }).lean();
+        let frameworkCriteria = await database.models.criteria.find({
+           _id: { $in: criteriasIdArray }, 
+          tenantId: req.userDetails.tenantData.tenantId,
+          orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] } 
+        }).lean();
 
         let solutionCriteriaToFrameworkCriteriaMap = {};
 

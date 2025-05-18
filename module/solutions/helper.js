@@ -2119,7 +2119,7 @@ module.exports = class SolutionsHelper {
         }
        
 
-        let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes);
+        let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes,tenantData);
 
         let criteriaIdMap = {};
         let questionExternalIdMap = {};

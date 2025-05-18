@@ -883,6 +883,8 @@ module.exports = class Solutions extends Abstract {
               _id: {
                 $in: allCriteriaIdInSolution,
               },
+              tenantId: tenantData.tenantId,
+              orgIds:{"$in":[...tenantData.orgId,'ALL']}
             },
             {
               _id: 1,
@@ -928,6 +930,7 @@ module.exports = class Solutions extends Abstract {
                 allCriteriaExternalIdToInternalIdMap[criteriaRow.externalId],
                 criteriaRow,
                 solutionLevelKeys,
+                tenantData
               );
 
               if (criteriaRubricUpdation.success) {
@@ -963,7 +966,10 @@ module.exports = class Solutions extends Abstract {
 
             if (solutionThemes.success && solutionThemes.themes) {
               await database.models.solutions.findOneAndUpdate(
-                { _id: solutionDocument._id },
+                { _id: solutionDocument._id, 
+                  tenantId: tenantData.tenantId,
+                  orgIds:{"$in":[...tenantData.orgId,'ALL']}
+                },
                 {
                   themes: solutionThemes.themes,
                   flattenedThemes: solutionThemes.flattenedThemes,
@@ -979,7 +985,9 @@ module.exports = class Solutions extends Abstract {
 
         if (updateSubmissions) {
           let criteriaQuestionDocument = await database.models.criteriaQuestions.find({
-            _id: { $in: allCriteriaIdInSolution },
+            _id: { $in: allCriteriaIdInSolution }, 
+            tenantId: tenantData.tenantId,
+            orgIds:{"$in":[...tenantData.orgId,'ALL']},
           });
 
           let submissionDocumentCriterias = new Array();
