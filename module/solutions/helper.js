@@ -3500,7 +3500,6 @@ module.exports = class SolutionsHelper {
           },
         };
 
-        console.log(matchQuery,'matchQuery')
         
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
