@@ -407,7 +407,7 @@ module.exports = async function (req, res, next) {
     }
 
     //here assuming that req.headers['orgid'] will be a single value it multiple passed first element of the array will be taken
-    let fetchSingleOrgIdFunc = await fetchSingleOrgIdFromProvidedData(decodedToken.data.tenant_id.toString(),decodedToken.data.organization_ids,req.headers['orgid'])
+    let fetchSingleOrgIdFunc = await fetchSingleOrgIdFromProvidedData(decodedToken.data.tenant_id.toString(),decodedToken.data.organization_ids,req.headers['orgid'],token)
 
     if(!fetchSingleOrgIdFunc.success){
       return res.status(responseCode.unauthorized.status).send(respUtil(fetchSingleOrgIdFunc.errorObj));
@@ -476,11 +476,12 @@ module.exports = async function (req, res, next) {
    *
    * @param {String} tenantId - ID of the tenant
    * @param {String} orgId - Comma separated string of org IDs or 'ALL'
+   * @param {String} token - User token
    * @returns {Object} - Success with validOrgIds array or failure with error object
    */
-  async function validateIfOrgsBelongsToTenant(tenantId, orgId) {
+  async function validateIfOrgsBelongsToTenant(tenantId, orgId,token) {
     let orgIdArr = Array.isArray(orgId) ? orgId : typeof orgId === 'string' ? orgId.split(',') : [];
-    let orgDetails = await userService.fetchDefaultOrgDetails(tenantId);
+    let orgDetails = await userService.fetchTenantDetails(tenantId,token);
     let validOrgIds = null;
 
     if (orgIdArr.includes('ALL') || orgIdArr.includes('all')) {
@@ -491,8 +492,8 @@ module.exports = async function (req, res, next) {
         !orgDetails.success ||
         !orgDetails.data ||
         !(Object.keys(orgDetails.data).length > 0) ||
-        !orgDetails.data.related_orgs ||
-        !(orgDetails.data.related_orgs.length > 0)
+        !orgDetails.data.organizations ||
+        !(orgDetails.data.organizations.length > 0)
       ) {
         let errorObj = {};
         errorObj.errCode = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_CODE;
@@ -502,7 +503,9 @@ module.exports = async function (req, res, next) {
       }
 
       // convert the types of items to string
-      orgDetails.data.related_orgs = orgDetails.data.related_orgs.map(String);
+      orgDetails.data.related_orgs = orgDetails.data.organizations.map((data)=>{
+        return data.id.toString();
+      });
       // aggregate valid orgids
 
       let relatedOrgIds = orgDetails.data.related_orgs;
@@ -527,9 +530,10 @@ module.exports = async function (req, res, next) {
  * @param {String} tenantId - ID of the tenant
  * @param {String[]} orgIdArr - Array of orgIds to choose from
  * @param {String} orgIdFromHeader - The orgId provided in the request headers
+ * @param {String} token - User token
  * @returns {Promise<Object>} - Returns a promise resolving to an object containing the success status, orgId, or error details
  */
-  async function fetchSingleOrgIdFromProvidedData(tenantId, orgIdArr, orgIdFromHeader) {
+  async function fetchSingleOrgIdFromProvidedData(tenantId, orgIdArr, orgIdFromHeader,token) {
     try {
       // Check if orgIdFromHeader is provided and valid
       if (orgIdFromHeader && orgIdFromHeader != '') {
@@ -537,7 +541,7 @@ module.exports = async function (req, res, next) {
           throw reqMsg.ORG_ID_FETCH_ERROR.MISSING_CODE;
         }
   
-        let validateOrgsResult = await validateIfOrgsBelongsToTenant(tenantId, orgIdFromHeader);
+        let validateOrgsResult = await validateIfOrgsBelongsToTenant(tenantId, orgIdFromHeader,token);
   
         if (!validateOrgsResult.success) {
           throw reqMsg.ORG_ID_FETCH_ERROR.MISSING_CODE;
@@ -629,8 +633,7 @@ module.exports = async function (req, res, next) {
       req.headers['tenantid'] = result.tenantId;
       req.headers['orgid'] = result.orgId;
 
-      let validateOrgsResult = await validateIfOrgsBelongsToTenant(req.headers['tenantid'], req.headers['orgid']);
-
+      let validateOrgsResult = await validateIfOrgsBelongsToTenant(req.headers['tenantid'], req.headers['orgid'],token);
       if (!validateOrgsResult.success) {
         return res.status(responseCode['unauthorized'].status).send(respUtil(validateOrgsResult.errorObj));
       }
@@ -650,7 +653,7 @@ module.exports = async function (req, res, next) {
 
       req.headers['orgid'] = orgId;
 
-      let validateOrgsResult = await validateIfOrgsBelongsToTenant(req.headers['tenantid'], req.headers['orgid']);
+      let validateOrgsResult = await validateIfOrgsBelongsToTenant(req.headers['tenantid'], req.headers['orgid'],token);
       if (!validateOrgsResult.success) {
         return res.status(responseCode['unauthorized'].status).send(respUtil(validateOrgsResult.errorObj));
       }
