@@ -498,10 +498,8 @@ function getColorForLevel(level) {
  */
 function returnTenantDataFromToken(userDetails) {
   let tenantData = {};
-  tenantData.tenantId = "1";
-  tenantData.orgId = "1"
-  // tenantData.tenantId = userDetails.tenantId;
-  // tenantData.orgId = userDetails.organizationId
+  tenantData.tenantId = userDetails.tenantId;
+  tenantData.orgId = userDetails.organizationId
   return tenantData
 }
 

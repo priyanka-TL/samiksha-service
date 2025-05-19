@@ -20,6 +20,8 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 const criteriaQuestionHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper')
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const projectService = require(ROOT_PATH + '/generics/services/project')
+
 /**
  * ObservationSubmissionsHelper
  * @class
@@ -134,7 +136,6 @@ module.exports = class ObservationSubmissionsHelper {
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
                 observationSubmissionsDocument['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
               }
-              console.log(observationSubmissionsDocument)
               return resolve(observationSubmissionsDocument);
 
           } catch (error) {
@@ -175,11 +176,11 @@ module.exports = class ObservationSubmissionsHelper {
           );
         }
 
-        // if (observationSubmissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
-        //   await this.pushSubmissionToImprovementService(
-        //     _.pick(observationSubmissionsDocument, ['project', 'status', '_id', 'completedDate']),
-        //   );
-        // }
+        if (observationSubmissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
+          await this.pushSubmissionToImprovementService(
+            _.pick(observationSubmissionsDocument, ['project', 'status', '_id', 'completedDate']),
+          );
+        }
 
         const kafkaMessage =
           await kafkaClient.pushCompletedObservationSubmissionToKafka(observationSubmissionsDocument);
@@ -759,38 +760,42 @@ module.exports = class ObservationSubmissionsHelper {
    * or not.
    */
 
-  // static pushSubmissionToImprovementService(observationSubmissionDocument) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let observationSubmissionData = {
-  //         taskId: observationSubmissionDocument.project.taskId,
-  //         projectId: observationSubmissionDocument.project._id,
-  //         _id: observationSubmissionDocument._id,
-  //         status: observationSubmissionDocument.status,
-  //       };
+  static pushSubmissionToImprovementService(observationSubmissionDocument) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let observationSubmissionData = {
+          taskId: observationSubmissionDocument.project.taskId,
+          projectId: observationSubmissionDocument.project._id,
+          _id: observationSubmissionDocument._id,
+          status: observationSubmissionDocument.status,
+        };
 
-  //       if (observationSubmissionDocument.completedDate) {
-  //         observationSubmissionData['submissionDate'] = observationSubmissionDocument.completedDate;
-  //       }
+        if (observationSubmissionDocument.completedDate) {
+          observationSubmissionData['submissionDate'] = observationSubmissionDocument.completedDate;
+        }
+        let kafkaMessage
+        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON"){
+          kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(observationSubmissionData);
 
-  //       const kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(observationSubmissionData);
+        if (kafkaMessage.status != 'success') {
+          let errorObject = {
+            formData: {
+              submissionId: observationSubmissionDocument._id.toString(),
+              message: kafkaMessage.message,
+            },
+          };
+          slackClient.kafkaErrorAlert(errorObject);
+        }
+        }else{
+          kafkaMessage = await projectService.pushSubmissionToTask(observationSubmissionDocument.project._id,observationSubmissionDocument.project.taskId,observationSubmissionData)
+        }
 
-  //       if (kafkaMessage.status != 'success') {
-  //         let errorObject = {
-  //           formData: {
-  //             submissionId: observationSubmissionDocument._id.toString(),
-  //             message: kafkaMessage.message,
-  //           },
-  //         };
-  //         slackClient.kafkaErrorAlert(errorObject);
-  //       }
-
-  //       return resolve(kafkaMessage);
-  //     } catch (error) {
-  //       return reject(error);
-  //     }
-  //   });
-  // }
+        return resolve(kafkaMessage);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 
   /**
    * Disable Observation Submission Based on Solution Id

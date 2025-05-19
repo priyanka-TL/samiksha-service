@@ -31,7 +31,7 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
 const validateRole = process.env.VALIDATE_ROLE;
 const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
 const surveyService = require(ROOT_PATH + "/generics/services/survey");
-let projectService = require(ROOT_PATH + '/generics/services/project')
+const projectService = require(ROOT_PATH + '/generics/services/project')
 
 /**
  * ObservationsHelper
@@ -83,6 +83,7 @@ module.exports = class ObservationsHelper {
    * @param {String} requestingUserAuthToken - Requesting user auth token.
    * @param {Object} tenantData - tenantData information
    * @param {String} [programId = ""] - program id
+   * @param {Boolean} isExternalProgram -Check external(ProjectServiceprogram) or not
    * @returns {Object} observation creation data.
    */
 
@@ -91,7 +92,6 @@ module.exports = class ObservationsHelper {
     data,
     userId,
     requestingUserAuthToken = '',
-    userRoleAndProfileInformation,
     tenantData,
     programId="",
     isExternalProgram
@@ -123,6 +123,8 @@ module.exports = class ObservationsHelper {
             'entityType',
             'entityTypeId',
             'isAPrivateProgram',
+            "project",
+            "referenceFrom"
           ],
         );
         if (!solutionData.length > 0) {
@@ -167,18 +169,12 @@ module.exports = class ObservationsHelper {
         // }
 
         let userProfileData = await surveyService.profileRead(requestingUserAuthToken)
-        if (userProfileData.success && userProfileData.data) {
-          userProfileData = userProfileData.data;
-        }else{
-          userProfileData = {}
-        }
+        userProfileData = (userProfileData.success && userProfileData.data) ? userProfileData.data : {};
 
         let observationData = await this.createObservation(data, userId, solutionData,userProfileData,tenantData);
 
         return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId","solutionExternalId"]));
       } catch (error) {
-        console.log(error,"this is error")
-
         return reject(error);
       }
     });
@@ -200,7 +196,17 @@ module.exports = class ObservationsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         if (validateEntities == 'ON') {
-          if (data.entities) {
+          if (data.entities ) {
+            if(!solution.entityTypeId){
+              let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
+                name: solution.entityType,
+                tenantId: tenantData.tenantId,
+                orgIds: {$in:['ALL',tenantData.orgId]}
+              });
+              if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
+                solution['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
+              }
+            }
             let entitiesToAdd = await entityManagementService.validateEntities(data.entities, solution.entityTypeId,tenantData);
             data.entities = entitiesToAdd.entityIds;
           }
@@ -243,7 +249,6 @@ module.exports = class ObservationsHelper {
 
         return resolve(observationDataEntry);
       } catch (error) {
-        console.log(error,"this is error")
         return reject(error);
       }
     });
@@ -2253,11 +2258,9 @@ module.exports = class ObservationsHelper {
           tenantId: req.userDetails.tenantData.tenantId,
           orgIds: {$in:['ALL',req.userDetails.tenantData.orgId]}
          };
-  
          let entitiesDocument = await entityManagementService.entityDocuments(
            filterData
          );
-
          if(!entitiesDocument.success){
           throw new Error({
             message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
@@ -2354,15 +2357,20 @@ module.exports = class ObservationsHelper {
       lastSubmissionNumber = lastSubmissionForObservationEntity.result + 1;
   
       let programInformation = null;
-
       if(solutionDocument.programId){
+        let programDocument
+        let programQueryObject = {
+          _id: solutionDocument.programId,
+          status: messageConstants.common.ACTIVE_STATUS
+        };
+        if(solutionDocument.project && solutionDocument.referenceFrom === messageConstants.common.PROJECT){
 
-      let programQueryObject = {
-        _id: solutionDocument.programId,
-        status: messageConstants.common.ACTIVE_STATUS
-      };
+          programDocument = await projectService.programDetails(req.userDetails.userToken,solutionDocument.programId );
+          programDocument=[programDocument.result]
 
-      let programDocument = await programsHelper.list(programQueryObject, [
+        }else{   
+
+          programDocument = await programsHelper.list(programQueryObject, [
          "externalId",
          "name",
          "description",
@@ -2373,9 +2381,9 @@ module.exports = class ObservationsHelper {
        '',
        '',
        tenantData,
-      );
-
-       programDocument = programDocument.data.data
+           );
+           programDocument = programDocument.data.data
+        }
        
        if (!programDocument[0]._id) {
          throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
@@ -2511,11 +2519,11 @@ module.exports = class ObservationsHelper {
   
       let newObservationSubmissionDocument = await database.models.observationSubmissions.create(submissionDocument);
   
-      // if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-      //   await observationSubmissionsHelper.pushSubmissionToImprovementService(
-      //     _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
-      //   );
-      // }
+      if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
+        await observationSubmissionsHelper.pushSubmissionToImprovementService(
+          _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
+        );
+      }
   
       // Push new observation submission to kafka for reporting/tracking.
       observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(

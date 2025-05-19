@@ -979,7 +979,7 @@ module.exports = class EntitiesHelper {
    * @param {Array} entityIds - Array of entity ids.
    */
 
-  static validateEntities(entityIds, entityTypeId) {
+  static validateEntities(entityIds, entityTypeId="") {
     return new Promise(async (resolve, reject) => {
       try {
         let ids = [];

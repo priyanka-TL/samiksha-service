@@ -20,6 +20,8 @@ const entityAssessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/help
 const criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
 const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper');
 const path = require('path');
+const projectService = require(ROOT_PATH + '/generics/services/project')
+
 
 /**
  * SubmissionsHelper
@@ -130,9 +132,9 @@ module.exports = class SubmissionsHelper {
           // Push new submission to kafka for reporting/tracking.
           this.pushInCompleteSubmissionForReporting(submissionDocument._id);
 
-          // if (submissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-          //   this.pushSubmissionToImprovementService(_.pick(submissionDocument, ['project', 'status', '_id']));
-          // }
+          if (submissionDocument.referenceFrom === messageConstants.common.PROJECT) {
+            this.pushSubmissionToImprovementService(_.pick(submissionDocument, ['project', 'status', '_id']));
+          }
         } else {
           let assessorElement = submissionDocument[0].assessors.find((assessor) => assessor.userId === userId);
           if (assessorElement && assessorElement.externalId != '') {
@@ -620,11 +622,11 @@ module.exports = class SubmissionsHelper {
           throw messageConstants.apiResponses.SUBMISSION_NOT_FOUND + 'or' + SUBMISSION_STATUS_NOT_COMPLETE;
         }
 
-        // if (submissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
-        //   await this.pushSubmissionToImprovementService(
-        //     _.pick(submissionsDocument, ['project', 'status', '_id', 'completedDate']),
-        //   );
-        // }
+        if (submissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
+          await this.pushSubmissionToImprovementService(
+            _.pick(submissionsDocument, ['project', 'status', '_id', 'completedDate']),
+          );
+        }
 
         const kafkaMessage = await kafkaClient.pushCompletedSubmissionToKafka(submissionsDocument);
 
@@ -1738,37 +1740,43 @@ module.exports = class SubmissionsHelper {
    * or not.
    */
 
-  // static pushSubmissionToImprovementService(submissionDocument) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let submissionData = {
-  //         taskId: submissionDocument.project.taskId,
-  //         projectId: submissionDocument.project._id,
-  //         _id: submissionDocument._id,
-  //         status: submissionDocument.status,
-  //       };
+  static pushSubmissionToImprovementService(submissionDocument) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let submissionData = {
+          taskId: submissionDocument.project.taskId,
+          projectId: submissionDocument.project._id,
+          _id: submissionDocument._id,
+          status: submissionDocument.status,
+        };
 
-  //       if (submissionDocument.completedDate) {
-  //         submissionData['submissionDate'] = submissionDocument.completedDate;
-  //       }
-  //       const kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(submissionData);
+        if (submissionDocument.completedDate) {
+          submissionData['submissionDate'] = submissionDocument.completedDate;
+        }
+        let kafkaMessage
+        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON"){
 
-  //       if (kafkaMessage.status != 'success') {
-  //         let errorObject = {
-  //           formData: {
-  //             submissionId: submissionDocument._id.toString(),
-  //             message: kafkaMessage.message,
-  //           },
-  //         };
-  //         slackClient.kafkaErrorAlert(errorObject);
-  //       }
+         kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(submissionData);
 
-  //       return resolve(kafkaMessage);
-  //     } catch (error) {
-  //       return reject(error);
-  //     }
-  //   });
-  // }
+        if (kafkaMessage.status != 'success') {
+          let errorObject = {
+            formData: {
+              submissionId: submissionDocument._id.toString(),
+              message: kafkaMessage.message,
+            },
+          };
+          slackClient.kafkaErrorAlert(errorObject);
+        }
+      }else{
+        kafkaMessage = await projectService.pushSubmissionToTask(submissionDocument.project._id,submissionDocument.project.taskId,submissionDocument)
+      }
+
+        return resolve(kafkaMessage);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 
   /**
    * Add app information in submissions

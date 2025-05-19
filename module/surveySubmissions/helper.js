@@ -13,6 +13,8 @@ const surveySubmissionQueries = require(DB_QUERY_BASE_PATH + '/surveySubmissions
 const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const projectService = require(ROOT_PATH + '/generics/services/project')
+
 /**
  * SurveySubmissionsHelper
  * @class
@@ -99,6 +101,11 @@ module.exports = class SurveySubmissionsHelper {
           surveySubmissionsDocument[0]['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
         }
         
+        if (surveySubmissionsDocument[0].referenceFrom === messageConstants.common.PROJECT) {
+          await this.pushSubmissionToImprovementService(
+            _.pick( surveySubmissionsDocument[0], ['project', 'status', '_id', 'completedDate']),
+          );
+        }
         const kafkaMessage = await kafkaClient.pushCompletedSurveySubmissionToKafka(surveySubmissionsDocument[0]);
 
         if (kafkaMessage.status != 'success') {
@@ -167,7 +174,11 @@ module.exports = class SurveySubmissionsHelper {
           surveySubmissionsDocument[0]['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
         }
 
-
+        if (surveySubmissionsDocument[0].referenceFrom === messageConstants.common.PROJECT) {
+          await this.pushSubmissionToImprovementService(
+            _.pick( surveySubmissionsDocument[0], ['project', 'status', '_id', 'completedDate']),
+          );
+        }
         const kafkaMessage = await kafkaClient.pushInCompleteSurveySubmissionToKafka(surveySubmissionsDocument[0]);
 
         if (kafkaMessage.status != 'success') {
@@ -180,6 +191,51 @@ module.exports = class SurveySubmissionsHelper {
           slackClient.kafkaErrorAlert(errorObject);
         }
 
+        return resolve(kafkaMessage);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+
+   /**
+   * Push observation submission to improvement service.
+   * @method
+   * @name pushSubmissionToImprovementService
+   * @param {String} observationSubmissionDocument - observation submission document.
+   * @returns {JSON} consists of kafka message whether it is pushed for reporting
+   * or not.
+   */
+
+   static pushSubmissionToImprovementService(surveySubmissionDocument) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let surveySubmissionData = {
+          taskId: surveySubmissionDocument.project.taskId,
+          projectId: surveySubmissionDocument.project._id,
+          _id: surveySubmissionDocument._id,
+          status: surveySubmissionDocument.status,
+        };
+
+        if (surveySubmissionDocument.completedDate) {
+          surveySubmissionData['submissionDate'] = surveySubmissionDocument.completedDate;
+        }
+        let kafkaMessage
+        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON"){
+         kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(surveySubmissionData);
+
+        if (kafkaMessage.status != 'success') {
+          let errorObject = {
+            formData: {
+              submissionId: surveySubmissionDocument._id.toString(),
+              message: kafkaMessage.message,
+            },
+          };
+          slackClient.kafkaErrorAlert(errorObject);
+        }
+      }else{
+        kafkaMessage = await projectService.pushSubmissionToTask(surveySubmissionData.projectId,surveySubmissionData.taskId,surveySubmissionData)
+      }
         return resolve(kafkaMessage);
       } catch (error) {
         return reject(error);

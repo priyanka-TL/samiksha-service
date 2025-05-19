@@ -526,39 +526,10 @@ module.exports = class Solutions extends Abstract {
    async updateSolutions(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let queryObject = {
-          externalId: req.query.solutionExternalId
-        };
-
-        let solutionDocument = await database.models.solutions.findOne(queryObject, { _id : 1 }).lean();
-
-        if (!solutionDocument) {
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.SOLUTION_NOT_FOUND
-          });
-        }
-
-        let updateObject = {
-          "$set" : {}
-        };
-
-        let solutionUpdateData = req.body;
-        
-        Object.keys(solutionUpdateData).forEach(solutionData=>{
-          updateObject[solutionData] = solutionUpdateData[solutionData];
-        });
-        updateObject["$set"]["updatedBy"] = req.userDetails.userId;
-
-        //update the solution document
-        await database.models.solutions.findOneAndUpdate({
-          _id: solutionDocument._id
-        }, updateObject)
-
-        return resolve({
-          status: httpStatusCode.ok.status,
-          message: messageConstants.apiResponses.SOLUTION_UPDATED
-        });
+        console.log("entering here")
+        let solutionData = await solutionsHelper.updateSolutions(req)
+        console.log(solutionData)
+        return resolve(solutionData);
       }
       catch (error) {
         reject({

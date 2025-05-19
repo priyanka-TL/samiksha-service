@@ -31,6 +31,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
         query: filterData,
         projection: projection,
       }
+
      // Include pagination if pageNumber and pageLimit are explicitly provided
       if (page !== null && limit !== null) {
         requestJSON.query.page = page;
@@ -145,17 +146,20 @@ const validateEntities = async function (entityIds, entityTypeId,tenantData) {
       try {
         let ids = [];
         let isObjectIdArray = entityIds.every(gen.utils.isValidMongoId);
-
+        console.log(entityIds)
       if(validateEntity == 'ON' && entityIds.length >0){
+        console.log(entityTypeId,"this is entityTypeId")
         let bodyData = {
           _id : isObjectIdArray ? {$in: gen.utils.arrayIdsTobjectIdsNew(entityIds)} : { $in: entityIds },
           entityTypeId: entityTypeId,
           tenantId: tenantData.tenantId,
           orgIds: {$in:['ALL',tenantData.orgId]}
           };
-          let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
-          console.log(entitiesDocumentsAPIData,bodyData,"this is mappin")
+          console.log(bodyData,"this is data")
+          let entitiesDocumentsAPIData = await entityDocuments(bodyData);
+          console.log(entitiesDocumentsAPIData)
           let entitiesDocuments = entitiesDocumentsAPIData.data;
+          console.log(entitiesDocuments,"this is document")
             if (entitiesDocuments.length > 0) {
               ids = entitiesDocuments.map((entityId) => entityId._id);
             }

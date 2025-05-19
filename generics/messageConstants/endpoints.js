@@ -28,5 +28,7 @@ module.exports = {
   PROFILE_READ:'/v1/profile/read',
   PROGRAM_DETAILS: '/v1/programs/details',
   PROGRAM_UPDATE: '/v1/programs/update',
-  PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds'
+  PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
+  PUSH_SUBMISSION_TASK: '/v1/userProjects/pushSubmissionToTask',
+
 };

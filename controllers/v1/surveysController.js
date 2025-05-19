@@ -115,7 +115,6 @@ module.exports = class Surveys extends Abstract {
   async importSurveryTemplateToSolution(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log("entering heeree...",req.query)
         let result = await surveysHelper.importSurveryTemplateToSolution(
           req.params._id,
           req.userDetails.userId,
@@ -123,10 +122,9 @@ module.exports = class Surveys extends Abstract {
           req.userDetails.tenantAndOrgInfo,
           req.query.programId,
           req.userDetails.userToken,
-          req.query.isExternalProgram?gen.utils.convertStringToBoolean(req.query.isExternalProgram):false,
+          req.query.isExternalProgram ? gen.utils.convertStringToBoolean(req.query.isExternalProgram) : false,
           req.body.data
         );
-         console.log(result.data)
         return resolve({
           message: result.message,
           result: result.data,
@@ -802,7 +800,7 @@ module.exports = class Surveys extends Abstract {
                 req.userDetails.tenantData,
                 // appVersion,
                 // appName
-                req.query.fromPrjectService?gen.utils.convertStringToBoolean(req.query.fromPrjectService):false,
+                req.query.fromPrjectService ? gen.utils.convertStringToBoolean(req.query.fromPrjectService) : false,
             );
             
         } else {

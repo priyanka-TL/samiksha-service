@@ -32,10 +32,10 @@ const inCompleteSurveySubmissionKafkaTopic =
   process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC && process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC != 'OFF'
     ? process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC
     : 'elevate_incomplete_surveys_raw';
-// const improvementProjectSubmissionTopic =
-//   process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC != 'OFF'
-//     ? process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
-//     : 'sl-improvement-project-submission-dev';
+const improvementProjectSubmissionTopic =
+  process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC != 'OFF'
+    ? process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
+    : 'sl-improvement-project-submission-dev';
 
 const pushCompletedObservationSubmissionToKafka = function (message) {
   return new Promise(async (resolve, reject) => {
@@ -190,22 +190,22 @@ const pushInCompleteSurveySubmissionToKafka = function (message) {
   });
 };
 
-// const pushSubmissionToImprovementService = function (message) {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       let kafkaPushStatus = await pushMessageToKafka([
-//         {
-//           topic: improvementProjectSubmissionTopic,
-//           messages: JSON.stringify(message),
-//         },
-//       ]);
+const pushSubmissionToImprovementService = function (message) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let kafkaPushStatus = await pushMessageToKafka([
+        {
+          topic: improvementProjectSubmissionTopic,
+          messages: JSON.stringify(message),
+        },
+      ]);
 
-//       return resolve(kafkaPushStatus);
-//     } catch (error) {
-//       return reject(error);
-//     }
-//   });
-// };
+      return resolve(kafkaPushStatus);
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
 
 const pushMessageToKafka = function (payload) {
   return new Promise((resolve, reject) => {
@@ -248,5 +248,5 @@ module.exports = {
   pushInCompleteObservationSubmissionToKafka: pushInCompleteObservationSubmissionToKafka,
   pushCompletedSurveySubmissionToKafka: pushCompletedSurveySubmissionToKafka,
   pushInCompleteSurveySubmissionToKafka: pushInCompleteSurveySubmissionToKafka,
-  // pushSubmissionToImprovementService: pushSubmissionToImprovementService,
+  pushSubmissionToImprovementService: pushSubmissionToImprovementService,
 };

@@ -26,7 +26,7 @@ const userRolesHelper = require(MODULES_BASE_PATH + '/userRoles/helper');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const surveyQueries = require(DB_QUERY_BASE_PATH + '/surveys');
 const surveyService = require(ROOT_PATH + "/generics/services/survey");
-let projectService = require(ROOT_PATH + '/generics/services/project')
+const projectService = require(ROOT_PATH + '/generics/services/project')
 /**
  * SurveysHelper
  * @class
@@ -215,6 +215,10 @@ module.exports = class SurveysHelper {
    * @param {String} userId - logged in userId
    * @param {String} appName - name of the app
    * @param {Object} tenantAndOrgInfo - tenant and org info
+   * @param {string} programId -programId
+   * @param {String} userToken -auth Token
+   * @param {Booleas} isExternalProgram - Check if its a externalProgram or Not
+   * @param {Object} bodyData - Req body
    * @returns {JSON} - sharable link.
    */
 
@@ -236,8 +240,8 @@ module.exports = class SurveysHelper {
         //Getting the solution documents
         let solutionDocument = await solutionsQueries.solutionDocuments({
           _id: solutionId,
-          // tenantId: tenantAndOrgInfo.tenantId,
-          // orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]},
+          tenantId: tenantAndOrgInfo.tenantId,
+          orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]},
         });
 
         if (!solutionDocument.length) {
@@ -850,6 +854,7 @@ module.exports = class SurveysHelper {
 
         let programDocument = [];
         // if programId is present, getting the program details
+        
         if (surveyDocument.programId) {
             let programQueryObject = {
               _id: surveyDocument.programId,
@@ -857,19 +862,30 @@ module.exports = class SurveysHelper {
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
             };
 
-           programDocument = await programsHelper.list(programQueryObject, [
-             'externalId',
-             'name',
-             'description',
-             'imageCompression',
-             'isAPrivateProgram',
-           ],
-           '',
-           '',
-           '',
-           tenantData
-          );
-           programDocument = programDocument.data.data
+            if(surveyDocument.project && surveyDocument.referenceFrom){
+
+              programDocument=  await projectService.programDetails(
+                userToken,
+                surveyDocument.programId
+              );
+              programDocument=[_.pick(programDocument.result,["_id",'externalId','name',  'description'])]
+            }else{
+              programDocument = await programsHelper.list(programQueryObject, [
+                'externalId',
+                'name',
+                'description',
+                'imageCompression',
+                'isAPrivateProgram',
+              ],
+              '',
+              '',
+              '',
+              tenantData
+             );
+              programDocument = programDocument.data.data
+            }
+
+          
 
          }
 
@@ -908,7 +924,6 @@ module.exports = class SurveysHelper {
         assessment.name = solutionDocument.name;
         assessment.description = solutionDocument.description;
         assessment.externalId = solutionDocument.externalId;
-        console.log(solutionDocument.themes[0].criteria[0].weightage)
         let criteriaId = solutionDocument.themes[0].criteria[0].criteriaId;
         let weightage = solutionDocument.themes[0].criteria[0].weightage;
         // Get the criteriaQuestionDocument
@@ -1597,7 +1612,6 @@ module.exports = class SurveysHelper {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
         let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,fromPrjectService);
-        console.log(surveyData)
         if (!surveyData.success) {
           return resolve(surveyData);
         }
