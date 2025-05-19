@@ -1192,7 +1192,7 @@ module.exports = class ObservationSubmissions extends Abstract {
             }
           }
         } else if (req.method === 'DELETE') {
-          response = await observationSubmissionsHelper.delete(req.params._id, req.userDetails.userId);
+          response = await observationSubmissionsHelper.delete(req.params._id, req.userDetails.userId,tenantData);
         }
 
         return resolve(response);
