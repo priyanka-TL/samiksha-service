@@ -233,9 +233,9 @@ module.exports = class FileUpload {
 				})
 			} catch (error) {
 				return reject({
-					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					status: error.status || httpStatusCode.internal_server_error.status,
 
-					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					message: error.message || httpStatusCode.internal_server_error.message,
 
 					errorObject: error,
 				})
