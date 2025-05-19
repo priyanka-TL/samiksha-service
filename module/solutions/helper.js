@@ -1117,7 +1117,6 @@ module.exports = class SolutionsHelper {
         };
 
         let solutionDocument = await database.models.solutions.findOne(queryObject, { _id : 1 }).lean();
-       console.log(solutionDocument,"this is document")
         if (!solutionDocument) {
           return resolve({
             status: httpStatusCode.bad_request.status,
@@ -2064,8 +2063,8 @@ module.exports = class SolutionsHelper {
           userId,
           solutionData,
           createdFor,
-          requestingUserAuthToken,
           tenantData,
+          requestingUserAuthToken,
           isExternalProgram
           // rootOrganisations
         );
@@ -2116,15 +2115,14 @@ module.exports = class SolutionsHelper {
     userId,
     data,
     createdFor = '',
-    requestingUserAuthToken,
     tenantData,
+    requestingUserAuthToken,
     isExternalProgram,
     // rootOrganisations = ""
   ) {
     return new Promise(async (resolve, reject) => {
       try {
         let validateSolutionId = gen.utils.isValidMongoId(solutionId);
-
         let solutionQuery = {};
 
         if (validateSolutionId) {
@@ -2153,7 +2151,6 @@ module.exports = class SolutionsHelper {
         if (programId ) {
           if(isExternalProgram){
             programDocument = await projectService.programDetails(requestingUserAuthToken,programId );
-            console.log(programDocument,"this is ")
             programDocument=programDocument.result
           }else{
             programQuery[gen.utils.isValidMongoId(programId) ? "_id" : "externalId"] = programId;    
@@ -2264,7 +2261,6 @@ module.exports = class SolutionsHelper {
         newSolutionDocument.externalId = data.externalId
           ? data.externalId
           : solutionDocument[0].externalId + '-' + gen.utils.epochTime();
-
         newSolutionDocument.name = data.name;
         newSolutionDocument.description = data.description;
         newSolutionDocument.author = userId;
@@ -2293,7 +2289,6 @@ module.exports = class SolutionsHelper {
 
         let duplicateSolutionDocument = await solutionsQueries.createSolution(_.omit(newSolutionDocument, ['_id']));
         
-
         if (duplicateSolutionDocument._id) {
           if (data.scope && Object.keys(data.scope).length > 0) {
             await this.setScope(
@@ -2341,7 +2336,6 @@ module.exports = class SolutionsHelper {
             }
           
           }
-
           return resolve(duplicateSolutionDocument);
         } else {
           throw {
@@ -3635,7 +3629,6 @@ module.exports = class SolutionsHelper {
           },
         };
 
-        console.log(JSON.stringify(matchQuery))
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {
@@ -3645,7 +3638,6 @@ module.exports = class SolutionsHelper {
           facetQuery,
           projection2,
         ]);
-        console.log(solutionDocuments,"this is details")
         return resolve({
           success: true,
           message: messageConstants.apiResponses.SOLUTIONS_LIST,

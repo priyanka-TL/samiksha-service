@@ -228,7 +228,6 @@ module.exports = class SurveysHelper {
         if (solutionId == '') {
           throw new Error(messageConstants.apiResponses.SOLUTION_ID_REQUIRED);
         }
-
         if (userId == '') {
           throw new Error(messageConstants.apiResponses.USER_ID_REQUIRED_CHECK);
         }
@@ -236,14 +235,12 @@ module.exports = class SurveysHelper {
         if (appName == '') {
           throw new Error(messageConstants.apiResponses.APP_NAME_FIELD_REQUIRED);
         }
-        console.log(tenantAndOrgInfo)
         //Getting the solution documents
         let solutionDocument = await solutionsQueries.solutionDocuments({
           _id: solutionId,
           tenantId: tenantAndOrgInfo.tenantId,
           orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]},
         });
-
         if (!solutionDocument.length) {
           throw messageConstants.apiResponses.SOLUTION_NOT_FOUND;
         }
@@ -251,7 +248,6 @@ module.exports = class SurveysHelper {
         let newSolutionDocument = solutionDocument[0];
         let solutionExternalId =
           solutionDocument[0].externalId.split(surveySolutionTemplate)[0] + '-' + gen.utils.epochTime();
-
         let criteriaId = await gen.utils.getCriteriaIds(newSolutionDocument.themes);
 
         let solutionCriteria = await criteriaHelper.criteriaDocument({
@@ -259,7 +255,6 @@ module.exports = class SurveysHelper {
           tenantId: tenantAndOrgInfo.tenantId,
           orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]}
         });
-
         // Update the external ID of the criteria to reflect the new solution
         solutionCriteria[0].externalId = solutionExternalId + '-' + surveyAndFeedback;
         // Duplicate the questions associated with the criteria
@@ -366,7 +361,6 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.ERROR_IMPORTING_SURVEY_SOLUTION);
         }
       } catch (error) {
-        console.log(error)
         return resolve({
           success: false,
           message: error.message,
@@ -1583,7 +1577,6 @@ module.exports = class SurveysHelper {
           data: surveyId,
         });
       } catch (error) {
-        console.log(error)
         return resolve({
           success: false,
           message: error.message,

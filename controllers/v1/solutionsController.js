@@ -526,9 +526,7 @@ module.exports = class Solutions extends Abstract {
    async updateSolutions(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log("entering here")
         let solutionData = await solutionsHelper.updateSolutions(req)
-        console.log(solutionData)
         return resolve(solutionData);
       }
       catch (error) {
@@ -1322,19 +1320,20 @@ module.exports = class Solutions extends Abstract {
             message: responseMessage,
           });
         }
-
         let duplicateSolution = await solutionsHelper.importFromSolution(
           req.query.solutionId,
           req.body.programExternalId ? req.body.programExternalId : "",
           req.userDetails.userId,
           req.body,
           '',
-          tenantData
+          tenantData,
+          req.userDetails.userToken,
+          req.query.isExternalProgram ? gen.utils.convertStringToBoolean(req.query.isExternalProgram) : false
         );
 
         return resolve({
           message: messageConstants.apiResponses.DUPLICATE_SOLUTION,
-          result: _.pick(duplicateSolution, ['_id']),
+          result: _.pick(duplicateSolution, ['_id',"externalId"]),
         });
       } catch (error) {
         return reject({

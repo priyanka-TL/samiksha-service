@@ -826,7 +826,6 @@ module.exports = class Observations extends Abstract {
         let programId = null;
         let programExternalId = null;
         let programInformation = null;
-        console.log(observationDocument);
         if (observationDocument.programId) {
           let programQueryObject = {
             _id: observationDocument.programId,
