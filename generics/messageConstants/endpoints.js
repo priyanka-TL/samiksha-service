@@ -26,5 +26,6 @@ module.exports = {
   TENANT_READ: '/v1/tenant/read',
   USER_ROLE_EXTENSION:'/v1/userRoleExtension/find',
   PROFILE_READ:'/v1/profile/read',
-  PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds'
+  PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
+  AUTO_DOWNLOAD: '/v1/files/download',
 };

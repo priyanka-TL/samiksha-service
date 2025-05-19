@@ -1460,7 +1460,7 @@ const uploadPdfToCloud = async function(fileName, folderPath) {
                     return resolve({
                         success: true,
                         data: getSignedUrl.result[0].payload.sourcePath,
-                        getDownloadableUrl:getSignedUrl.result[0].getDownloadableUrl[0]
+                        getDownloadableUrl:`${process.env.ELEVATE_SURVEY_SERVICE_URL}/${process.env.SERVICE_NAME}${messageConstants.endpoints.AUTO_DOWNLOAD}?file=${getSignedUrl.result[0].cloudFilePath}`
                     })
 
                   })
