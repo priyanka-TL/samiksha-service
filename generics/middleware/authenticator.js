@@ -167,6 +167,24 @@ module.exports = async function (req, res, next) {
 
   let token = req.headers['x-auth-token'];
 
+  	// Allow search endpoints for non-logged in users.
+	let guestAccess = false
+	let guestAccessPaths = [
+		'files/download',
+	]
+	await Promise.all(
+		guestAccessPaths.map(async function (path) {
+			if (req.path.includes(path)) {
+				guestAccess = true
+			}
+		})
+	)
+
+	if (guestAccess == true && !token) {
+		next()
+		return
+	}
+
   let internalAccessApiPaths = [
     'createGesture',
     'createEmoji',
@@ -504,7 +522,7 @@ module.exports = async function (req, res, next) {
 
       // convert the types of items to string
       orgDetails.data.related_orgs = orgDetails.data.organizations.map((data)=>{
-        return data.id.toString();
+        return data.code.toString();
       });
       // aggregate valid orgids
 

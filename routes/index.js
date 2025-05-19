@@ -5,7 +5,8 @@ let userPrograms = require(ROOT_PATH + '/generics/middleware/userPrograms');
 let slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications');
 const fs = require('fs');
 const inputValidator = require(ROOT_PATH + '/generics/middleware/validator');
-
+const path = require('path')
+const https = require('https')
 module.exports = function (app) {
   const applicationBaseUrl = process.env.APPLICATION_BASE_URL || '/samiksha/';
 
@@ -56,19 +57,40 @@ module.exports = function (app) {
         // var result = await controllers[req.params.version][req.params.controller][req.params.method](req);
 
         if (result.isResponseAStream == true) {
-          // Check if file specified by the filePath exists
-          fs.exists(result.fileNameWithPath, function (exists) {
-            if (exists) {
-              res.setHeader('Content-disposition', 'attachment; filename=' + result.fileNameWithPath.split('/').pop());
-              res.set('Content-Type', 'application/octet-stream');
-              fs.createReadStream(result.fileNameWithPath).pipe(res);
-            } else {
-              throw {
-                status: httpStatusCode.internal_server_error.status,
-                message: httpStatusCode.internal_server_error.message,
-              };
-            }
-          });
+
+          if(result.fileNameWithPath){
+            fs.exists(result.fileNameWithPath, function (exists) {
+              if (exists) {
+                res.setHeader('Content-disposition', 'attachment; filename=' + result.fileNameWithPath.split('/').pop());
+                res.set('Content-Type', 'application/octet-stream');
+                fs.createReadStream(result.fileNameWithPath).pipe(res);
+              } else {
+                throw {
+                  status: httpStatusCode.internal_server_error.status,
+                  message: httpStatusCode.internal_server_error.message,
+                };
+              }
+            });
+          } else if (result.fileURL) {
+						let extName = path.extname(result.file)
+						let uniqueFileName = 'File_' + gen.utils.generateUUId() + extName
+						https
+							.get(result.fileURL, (fileStream) => {
+								res.setHeader('Content-Disposition', `attachment; filename="${uniqueFileName}"`)
+								res.setHeader('Content-Type', fileStream.headers['content-type'])
+								fileStream.pipe(res)
+							})
+							.on('error', (err) => {
+								console.error('Error downloading the file:', err)
+								throw err
+							})
+					} else {
+						throw {
+							status: 500,
+							message: 'Oops! Something went wrong!',
+						}
+					}
+
         } else {
           res.status(result.status ? result.status : httpStatusCode.ok.status).json({
             message: result.message,
