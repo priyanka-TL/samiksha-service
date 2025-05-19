@@ -1176,7 +1176,7 @@ module.exports = class Observations extends Abstract {
   async importFromFramework(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let tenantFilter = req.userDetails.tenantAndOrgInfo;
         if (
           !req.query.frameworkId ||
           req.query.frameworkId == '' ||
@@ -1189,6 +1189,8 @@ module.exports = class Observations extends Abstract {
         let frameworkDocument = await database.models.frameworks
           .findOne({
             externalId: req.query.frameworkId,
+            tenantId: tenantFilter.tenantId,
+            orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
           })
           .lean();
 
@@ -1210,7 +1212,11 @@ module.exports = class Observations extends Abstract {
 
         let criteriasIdArray = gen.utils.getCriteriaIds(frameworkDocument.themes);
 
-        let frameworkCriteria = await database.models.criteria.find({ _id: { $in: criteriasIdArray } }).lean();
+        let frameworkCriteria = await database.models.criteria.find({
+           _id: { $in: criteriasIdArray }, 
+          tenantId: tenantFilter.tenantId,
+          orgIds: { $in: ['ALL', ...tenantFilter.orgId] } 
+        }).lean();
 
         let solutionCriteriaToFrameworkCriteriaMap = {};
 
@@ -1262,8 +1268,8 @@ module.exports = class Observations extends Abstract {
         // newSolutionDocument.entityTypeId = entityTypeDocument._id;
         // newSolutionDocument.entityType = entityTypeDocument.name;
         newSolutionDocument.isReusable = true;  
-        newSolutionDocument.tenantId = req.userDetails.tenantAndOrgInfo.tenantId;
-        newSolutionDocument.orgIds = req.userDetails.tenantAndOrgInfo.orgId;
+        newSolutionDocument.tenantId = tenantFilter.tenantId;
+        newSolutionDocument.orgIds = tenantFilter.orgId;
 
         let newBaseSolution = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 

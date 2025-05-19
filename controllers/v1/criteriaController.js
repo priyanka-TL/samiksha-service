@@ -46,7 +46,7 @@ module.exports = class Criteria extends Abstract {
   async upload(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(req.files);
+        let tenantFilter = req.userDetails.tenantAndOrgInfo
         if (!req.files || !req.files.criteria) {
           throw messageConstants.apiResponses.CRITERIA_FILE_NOT_FOUND;
         }
@@ -65,7 +65,7 @@ module.exports = class Criteria extends Abstract {
           });
         })();
 
-        let updatedCriteria = await criteriaHelper.upload(criteriaData, req.userDetails.id, req.userDetails.userToken);
+        let updatedCriteria = await criteriaHelper.upload(criteriaData, req.userDetails.id, req.userDetails.userToken,tenantFilter);
 
         if (updatedCriteria.length > 0) {
           updatedCriteria.forEach((criteria) => {
@@ -105,7 +105,13 @@ module.exports = class Criteria extends Abstract {
   create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let criteriaDocuments = await criteriaHelper.create(req.body);
+        let tenantData = req.userDetails.tenantAndOrgInfo
+        const bodyData = {
+          ...req.body,
+          tenantId: tenantData.tenantId,
+          orgIds: tenantData.orgId,
+        };
+        let criteriaDocuments = await criteriaHelper.create(bodyData);
         return resolve({
           result: criteriaDocuments,
         });
@@ -150,11 +156,13 @@ module.exports = class Criteria extends Abstract {
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantData = req.userDetails.tenantAndOrgInfo
         let criteriaData = await criteriaHelper.update(
           req.query.externalId,
           req.query.frameworkIdExists ? Boolean(req.query.frameworkIdExists) : false,
           req.body,
           req.userDetails.id,
+          tenantData
         );
 
         return resolve(criteriaData);

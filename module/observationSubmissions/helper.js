@@ -218,7 +218,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         if (typeof observationSubmissionId == 'string') {
-          observationSubmissionId = ObjectId(observationSubmissionId);
+          observationSubmissionId = new ObjectId(observationSubmissionId);
         }
 
         let observationSubmissionsDocument = await database.models.observationSubmissions
@@ -983,9 +983,9 @@ module.exports = class ObservationSubmissionsHelper {
         let result = {};
         // Search for user roles
         let userRoleFilterArray = new Array;
-         bodyData.role.split(",").forEach((eachRole) => {
-         userRoleFilterArray.push(new RegExp(eachRole))
-        })
+        //  bodyData.role.split(",").forEach((eachRole) => {
+        //  userRoleFilterArray.push(new RegExp(eachRole))
+        // })
 
         
         let query = {

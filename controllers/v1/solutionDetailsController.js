@@ -154,10 +154,13 @@ module.exports = class SolutionDetails {
   async criteria(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  req.userDetails.tenantAndOrgInfo;
         let solutionDocument = await database.models.solutions
           .findOne(
             {
               externalId: req.params._id,
+              tenantId: tenantFilter.tenantId,
+              orgIds:{"$in":[...tenantFilter.orgId,'ALL']}
             },
             { themes: 1 },
           )
@@ -169,6 +172,8 @@ module.exports = class SolutionDetails {
           .find(
             {
               _id: { $in: criteriaIds },
+              tenantId: tenantFilter.tenantId,
+              orgIds:{"$in":[...tenantFilter.orgId,'ALL']}
             },
             { name: 1, externalId: 1, rubric: 1, _id: 1 },
           )

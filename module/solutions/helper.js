@@ -489,6 +489,7 @@ module.exports = class SolutionsHelper {
             };
           }
 
+          /*
           if (!data.role) {
             throw {
               message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
@@ -500,6 +501,7 @@ module.exports = class SolutionsHelper {
           filterQuery['scope.roles'] = {
             $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           };
+          */
           // filterQuery['scope.entities'] = { $in: entities };
           filterQuery.$or = [];
           Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
@@ -599,6 +601,7 @@ module.exports = class SolutionsHelper {
           filterQuery = _.merge(filterQuery, data.filter);
         }
 
+        delete filterQuery['scope.entityType'];
         return resolve({
           success: true,
           data: filterQuery,
@@ -2063,7 +2066,7 @@ module.exports = class SolutionsHelper {
 
         }
 
-        let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes);
+        let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes,tenantData);
 
         let criteriaIdMap = {};
         let questionExternalIdMap = {};
@@ -3422,7 +3425,7 @@ module.exports = class SolutionsHelper {
 
         if(tenantData.hasOwnProperty('tenantId') && tenantData.hasOwnProperty('orgId')) {
           matchQuery['tenantId'] = tenantData.tenantId;
-          matchQuery['orgIds'] = { $in: ['ALL', tenantData.orgId] };
+          matchQuery['orgIds'] = { $in: ['ALL', ...tenantData.orgId] };
         }
 
         if (type == messageConstants.common.SURVEY) {
