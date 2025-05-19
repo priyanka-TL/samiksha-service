@@ -67,5 +67,6 @@ generics/helpers/credentials/*
 public/reports/*
 tmp/*
 implementation-script/programFiles/*
+implementation-script-shiksha-saas/programFiles/*
 
 config.json
