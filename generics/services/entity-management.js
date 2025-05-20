@@ -26,15 +26,11 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
-      const url = entityManagementServiceUrl+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS;
+      const url = entityManagementServiceUrl+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS+`?page=${page}&limit=${limit}`;
+
       let requestJSON = {
         query: filterData,
         projection: projection,
-      }
-     // Include pagination if pageNumber and pageLimit are explicitly provided
-      if (page !== null && limit !== null) {
-        requestJSON.query.page = page;
-        requestJSON.query.limit = limit;
       }
 
       // Set the options for the HTTP POST request
