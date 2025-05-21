@@ -22,6 +22,7 @@ const programUsersHelper = require(MODULES_BASE_PATH + '/programUsers/helper');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const userService = require(ROOT_PATH + '/generics/services/users');
 
 /**
  * SolutionsHelper
@@ -199,7 +200,9 @@ module.exports = class SolutionsHelper {
     filter,
     surveyReportPage = '',
     currentScopeOnly = false,
-    tenantFilter
+    tenantFilter,
+    userToken,
+    origin
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -299,7 +302,7 @@ module.exports = class SolutionsHelper {
         }
         // solutions based on role and location
         if (getTargetedSolution) {
-          targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search);
+          targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search,origin,userToken);
         }
 
         
@@ -462,7 +465,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Auto targeted solutions query.
    */
 
-  static queryBasedOnRoleAndLocation(data, type = '') {
+  static queryBasedOnRoleAndLocation(data, type = '',origin,userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
@@ -510,6 +513,26 @@ module.exports = class SolutionsHelper {
             });
           });
           filterQuery['scope.entityType'] = { $in: entityTypes };
+          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
+
+          let orgDetails = await userService.tenantDetails(origin,userToken);          
+          if (orgDetails.data.meta.hasOwnProperty('factors') && orgDetails.data.meta.factors.length > 0) {
+            let factors = orgDetails.data.meta.factors;
+            let queryFilter = [];
+
+            // Build query based on each key
+            factors.forEach((factor) => {
+              let scope = 'scope.' + factor;
+              let values = userRoleInfo[factor];
+              if (!Array.isArray(values)) {
+                queryFilter.push({ [scope]: { $in: values.split(',') } });
+              } else {
+                queryFilter.push({ [scope]: { $in: [...values] } });
+              }
+            });
+            // append query filter
+            filterQuery['$and'] = queryFilter;
+          }
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
           // let userRoleKeys = Object.keys(userRoleInfo);
@@ -631,11 +654,11 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - List of solutions based on role and location.
    */
 
-  static forUserRoleAndLocation(bodyData, type, subType = '', programId, pageSize, pageNo, searchText = '') {
+  static forUserRoleAndLocation(bodyData, type, subType = '', programId, pageSize, pageNo, searchText = '',origin,userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         //Getting query based on roles and entity
-        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType, programId);
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type,origin,userToken, subType, programId);
         if (!queryData.success) {
           return resolve(queryData);
         }
