@@ -208,7 +208,8 @@ module.exports = async function (req, res, next) {
     "criteria/upload",
     "questions/bulkCreate",
     "frameworks/create",
-    "frameworks/uploadThemes"
+    "frameworks/uploadThemes",
+    'users/deleteUserPIIData'
   ];
 
   let performInternalAccessTokenCheck = false;
