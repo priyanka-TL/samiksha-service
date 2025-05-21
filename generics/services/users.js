@@ -187,7 +187,7 @@ const fetchTenantDetails = function (tenantId, userToken) {
 
 /**
  * Fetches the tenant details for a given tenant ID along with org it is associated with.
- * @param {String} userToken - user token
+ * @param {String} origin - origin details
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
