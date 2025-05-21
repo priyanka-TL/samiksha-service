@@ -87,7 +87,6 @@ module.exports = class Solutions extends Abstract {
           req.query.surveyReportPage ? req.query.surveyReportPage : '',
           req.query.currentScopeOnly ? req.query.currentScopeOnly : false,
           tenantFilter,
-          req.userDetails.userToken,
           req.headers.origin
         );
 

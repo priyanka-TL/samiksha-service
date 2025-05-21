@@ -187,12 +187,11 @@ const fetchTenantDetails = function (tenantId, userToken) {
 
 /**
  * Fetches the tenant details for a given tenant ID along with org it is associated with.
- * @param {string} origin - The code/id of the organization.
  * @param {String} userToken - user token
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const tenantDetails = function (origin, userToken) {
+const tenantDetails = function (origin) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			let url =
@@ -201,7 +200,6 @@ const tenantDetails = function (origin, userToken) {
 			const options = {
 				headers: {
                     "content-type": "application/json",
-					'X-auth-token':  userToken,
 					'origin':origin
 				},
 			}
