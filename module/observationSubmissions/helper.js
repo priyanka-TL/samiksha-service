@@ -1347,4 +1347,29 @@ module.exports = class ObservationSubmissionsHelper {
     
         })
     } 
+
+   /**
+    * Update observations submission
+     * @method
+     * @name updateMany
+     * @param {Object} query 
+     * @param {Object} update 
+     * @param {Object} options 
+     * @returns {JSON} - update observations submission.
+    */
+    static updateMany(query, update, options={}) {
+        return new Promise(async (resolve, reject) => {
+            try {
+            
+                let observationSubmissionUpdate = await database.models.observationSubmissions.updateMany(
+                    query, 
+                    update,
+                    options
+                );
+                return resolve(observationSubmissionUpdate)
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
 };

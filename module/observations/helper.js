@@ -2895,4 +2895,30 @@ module.exports = class ObservationsHelper {
       
         return highestHierarchyValue;
     }
+
+  /**
+   * Update observations
+   * @method
+   * @name updateMany
+   * @param {Object} query 
+   * @param {Object} update 
+   * @param {Object} options 
+   * @returns {JSON} - updated response.
+  */
+  
+  static updateMany(query, update, options={}) {
+    return new Promise(async (resolve, reject) => {
+        try {
+        
+            let observationUpdate = await database.models.observations.updateMany(
+                query, 
+                update,
+                options
+            );
+           return resolve(observationUpdate);
+        } catch (error) {
+            return reject(error);
+        }
+    })
+  }
 };

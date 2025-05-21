@@ -98,5 +98,9 @@ module.exports = {
    AUTH_METHOD: {
 		NATIVE: 'native',
 		KEYCLOAK_PUBLIC_KEY: 'keycloak_public_key',
-	}
+	},
+  USER_PROFILE_KEY: 'userProfile.',
+  USER_PROFILE_KEY_OBS: 'observationInformation.userProfile.',
+  DELETE_EVENT_ENTITY: 'user',
+	DELETE_EVENT_TYPE: 'delete',
 };

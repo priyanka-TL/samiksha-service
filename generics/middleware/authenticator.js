@@ -151,6 +151,7 @@ module.exports = async function (req, res, next) {
     'frameworks/delete/',
     'questions/delete/',
     'observationSubmissions/disable/',
+    'users/deleteUserPIIData'
   ];
 
   let performInternalAccessTokenCheck = false;

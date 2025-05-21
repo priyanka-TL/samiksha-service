@@ -20,6 +20,7 @@ const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/
 const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
+const userProfileConfig = require('@config/userProfileConfig')
 
 /**
  * UserHelper
@@ -998,7 +999,115 @@ module.exports = class UserHelper {
       }
     });
   }
+
+  /**
+   * deleteUserPIIData function to delete users Data.
+   * @method
+   * @name deleteUserPIIData
+   * @param {userDeleteEvent} - userDeleteEvent message object 
+   * {
+        "entity": "user",
+        "eventType": "delete",
+        "entityId": 101,
+        "changes": {},
+        "created_by": 4,
+        "organization_id": 22,
+        "tenant_code": "shikshagraha",
+        "status": "INACTIVE",
+        "deleted": true,
+        "id": 101,
+        "username" : "user_shqwq1ssddw"
+    }* @returns {Promise} success Data.
+   */
+
+  static deleteUserPIIData(userDeleteEvent) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let userId = userDeleteEvent.id
+				if (!userId) {
+					throw {
+						status: httpStatusCode.bad_request.status,
+						message: messageConstants.apiResponses.USER_ID_MISSING,
+					}
+				}
+
+        const filter = { createdBy: userId }
+
+        // Create update objects for each collection
+        const userProfileOps = _buildUpdateOperations(userProfileConfig, messageConstants.common.USER_PROFILE_KEY);
+        const nestedProfileOps = _buildUpdateOperations(userProfileConfig, messageConstants.common.USER_PROFILE_KEY_OBS);
+
+        // Merge updates for observation submissions
+        const observationUpdateOperations = {
+            ...(userProfileOps.$set || nestedProfileOps.$set ? { $set: { ...userProfileOps.$set, ...nestedProfileOps.$set } } : {}),
+            ...(userProfileOps.$unset || nestedProfileOps.$unset ? { $unset: { ...userProfileOps.$unset, ...nestedProfileOps.$unset } } : {})
+        }
+         
+        let updateDataStatus = await Promise.all([surveySubmissionsHelper.updateMany(filter,userProfileOps),
+            observationsHelper.updateMany(filter,userProfileOps),
+            observationSubmissionsHelper.updateMany(filter,observationUpdateOperations)
+        ])
+
+        const isAnyModified = updateDataStatus?.some(status => status?.modifiedCount > 0);
+        return resolve({
+            success: true,
+            message: isAnyModified
+                ? messageConstants.apiResponses.DATA_DELETED_SUCCESSFULLY
+                : messageConstants.apiResponses.FAILED_TO_DELETE_DATA
+        });
+
+      } catch (err) {
+        console.log(err,'err')
+        return resolve({
+          status: err.status ? err.status : httpStatusCode['internal_server_error'].status,
+          message: err.message || err,
+          success: false,
+        });
+      }
+    });
+  }
 };
+
+/**
+ * Create the operation object
+ * @method
+ * @name _buildUpdateOperations - helper functionality for create operation
+ * @param {Object} fieldConfig - config data
+ * @param {Object} prefix - list of masked data keys.
+ * @returns {Array} - Entity types key-value pair.
+ */
+
+function _buildUpdateOperations(fieldConfig, prefix = '') {
+    const setOperations = {};
+    const unsetOperations = {};
+
+    // Mask data keys with specific or default values
+    if (Array.isArray(fieldConfig.preserveAndMask)) {
+        for (const key of fieldConfig.preserveAndMask) {
+            // Use specific masked value if available, otherwise default
+            const value =
+                fieldConfig.specificMaskedValues && fieldConfig.specificMaskedValues[key] !== undefined
+                    ? fieldConfig.specificMaskedValues[key]
+                    : fieldConfig.defaultMaskedDataPlaceholder;
+
+            setOperations[`${prefix}${key}`] = value;
+        }
+    }
+
+    // Unset keys
+    if (Array.isArray(fieldConfig.fieldsToRemove)) {
+        for (const key of fieldConfig.fieldsToRemove) {
+            unsetOperations[`${prefix}${key}`] = 1;
+        }
+    }
+
+    return {
+        $set: Object.keys(setOperations).length > 0 ? setOperations : undefined,
+        $unset: Object.keys(unsetOperations).length > 0 ? unsetOperations : undefined,
+    };
+}
+
 
 /**
  * Entity types .

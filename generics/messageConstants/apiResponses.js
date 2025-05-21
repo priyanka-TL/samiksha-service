@@ -423,5 +423,8 @@ module.exports = {
   ENTITIES_NOT_ALLOWED_IN_ROLE:'Entities not allowed in role',
   EVIDENCE_ALREADY_MARKED_AS_NOT_APPLICABLE:'is already marked as not applicable',
   OBSERVATION_SOLUTION_ID_REQUIRED:'Observation or solution id is required',
-  OBSERVATION_NOT_RELEVENT_FOR_USER:'Dear User, this Observation is not relevant for your role and location'
+  OBSERVATION_NOT_RELEVENT_FOR_USER:'Dear User, this Observation is not relevant for your role and location',
+  DATA_DELETED_SUCCESSFULLY: 'Data deleted successfully',
+	FAILED_TO_DELETE_DATA: 'No user data found to delete.',
+	USER_ID_MISSING: 'User ID is missing',
 };
