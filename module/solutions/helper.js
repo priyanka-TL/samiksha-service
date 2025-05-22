@@ -372,10 +372,15 @@ module.exports = class SolutionsHelper {
 								}
 							})
 
-							totalCount = mergedData.length
-						}
-					}
-				}
+              totalCount = mergedData.length;
+            }
+          }
+        } else {
+          return resolve({
+            ...targetedSolutions,
+            status: httpStatusCode.bad_request.status,
+          });
+        }
 
         if (mergedData.length > 0) {
           let startIndex = pageSize * (pageNo - 1);
@@ -517,7 +522,13 @@ module.exports = class SolutionsHelper {
           filterQuery['scope.entityType'] = { $in: entityTypes };
           let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
-          let tenantDetails = await userService.tenantDetails(origin);          
+          let tenantDetails = await userService.tenantDetails(origin);
+          if (!tenantDetails.data && !tenantDetails.data.meta) {
+            return resolve({
+              success: false,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            });
+          }
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
             let factors = tenantDetails.data.meta.factors;
             let queryFilter = [];
@@ -534,6 +545,7 @@ module.exports = class SolutionsHelper {
             });
             // append query filter
             filterQuery['$and'] = queryFilter;
+            console.log(filterQuery, 'line no 537');
           }
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
