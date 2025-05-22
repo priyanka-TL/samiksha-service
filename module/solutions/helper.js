@@ -513,13 +513,6 @@ module.exports = class SolutionsHelper {
           };
           */
           // filterQuery['scope.entities'] = { $in: entities };
-          filterQuery.$or = [];
-          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
-            filterQuery.$or.push({
-              [`scope.${key}`]: { $in: data[key] },
-            });
-          });
-          filterQuery['scope.entityType'] = { $in: entityTypes };
           let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
           let tenantDetails = await userService.tenantDetails(origin);
@@ -529,8 +522,9 @@ module.exports = class SolutionsHelper {
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             });
           }
+          let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-            let factors = tenantDetails.data.meta.factors;
+            factors = tenantDetails.data.meta.factors;
             let queryFilter = [];
 
             // Build query based on each key
@@ -545,8 +539,21 @@ module.exports = class SolutionsHelper {
             });
             // append query filter
             filterQuery['$and'] = queryFilter;
-            console.log(filterQuery, 'line no 537');
           }
+          let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
+          // factors.append(dataToOmit)
+
+          const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
+
+          filterQuery.$or = [];
+          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
+            filterQuery.$or.push({
+              [`scope.${key}`]: { $in: data[key] },
+            });
+          });
+          filterQuery['scope.entityType'] = { $in: entityTypes };
+          console.log(filterQuery,"line no 554");
+          
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
           // let userRoleKeys = Object.keys(userRoleInfo);
