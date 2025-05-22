@@ -517,9 +517,9 @@ module.exports = class SolutionsHelper {
           filterQuery['scope.entityType'] = { $in: entityTypes };
           let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
-          let orgDetails = await userService.tenantDetails(origin);          
-          if (orgDetails.data.meta.hasOwnProperty('factors') && orgDetails.data.meta.factors.length > 0) {
-            let factors = orgDetails.data.meta.factors;
+          let tenantDetails = await userService.tenantDetails(origin);          
+          if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
+            let factors = tenantDetails.data.meta.factors;
             let queryFilter = [];
 
             // Build query based on each key
