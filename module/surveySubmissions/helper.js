@@ -92,7 +92,7 @@ module.exports = class SurveySubmissionsHelper {
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
           tenantId: surveySubmissionsDocument[0].tenantId,
-          orgId: {$in:['ALL',surveySubmissionsDocument[0].orgId]}
+          orgIds: {$in:['ALL',surveySubmissionsDocument[0].orgId]}
         });
 
         if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {

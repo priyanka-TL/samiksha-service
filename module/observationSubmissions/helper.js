@@ -128,7 +128,7 @@ module.exports = class ObservationSubmissionsHelper {
               let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
                 name: observationSubmissionsDocument.entityType,
                 tenantId: observationSubmissionsDocument.tenantId,
-                orgId: {$in:['ALL',observationSubmissionsDocument.orgId]}
+                orgIds: {$in:['ALL',observationSubmissionsDocument.orgId]}
               });
 
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
