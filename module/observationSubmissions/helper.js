@@ -774,7 +774,7 @@ module.exports = class ObservationSubmissionsHelper {
           observationSubmissionData['submissionDate'] = observationSubmissionDocument.completedDate;
         }
         let kafkaMessage
-        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON"){
+        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC){
           kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(observationSubmissionData);
 
         if (kafkaMessage.status != 'success') {

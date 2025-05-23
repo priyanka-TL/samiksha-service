@@ -140,7 +140,7 @@ const programUpdate = function (userToken, programId, reqBody) {
         },
         json: reqBody,
       };
-      request.get(url, options, projectServiceCallback);
+      request.post(url, options, projectServiceCallback);
       let result = {
         success: true,
       };
@@ -177,8 +177,9 @@ const programUpdate = function (userToken, programId, reqBody) {
  * Fetches the update program  based on the given Id.
  *
  * @param {string} userToken - The user's authentication token.
- * @param {string[]|string} programId - ProgramId
- * @param {object} reqBody - update query
+ * @param {string} projectIdId - projectIdId
+ * @param {string} taskId     - taskId
+ * @param {object} reqBody    - task Submission to update
  * @returns {Promise<Object>} update success message
  */
 const pushSubmissionToTask = function (projectIdId,taskId, reqBody) {
@@ -195,7 +196,7 @@ const pushSubmissionToTask = function (projectIdId,taskId, reqBody) {
         },
         json: reqBody,
       };
-      request.get(url, options, projectServiceCallback);
+      request.post(url, options, projectServiceCallback);
       let result = {
         success: true,
       };

@@ -147,20 +147,22 @@ const validateEntities = async function (entityIds, entityTypeId,tenantData) {
       try {
         let ids = [];
         let isObjectIdArray = entityIds.every(gen.utils.isValidMongoId);
-        console.log(entityIds)
       if(validateEntity == 'ON' && entityIds.length >0){
-        console.log(entityTypeId,"this is entityTypeId")
         let bodyData = {
           _id : isObjectIdArray ? {$in: gen.utils.arrayIdsTobjectIdsNew(entityIds)} : { $in: entityIds },
           entityTypeId: entityTypeId,
           tenantId: tenantData.tenantId,
           orgIds: {$in:['ALL',tenantData.orgId]}
           };
-          console.log(bodyData,"this is data")
           let entitiesDocumentsAPIData = await entityDocuments(bodyData);
-          console.log(entitiesDocumentsAPIData)
+        
+          if (!entitiesDocumentsAPIData.success && entitiesDocumentsAPIData.data.length >0) {
+            throw {
+              message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+            };
+          }
+          
           let entitiesDocuments = entitiesDocumentsAPIData.data;
-          console.log(entitiesDocuments,"this is document")
             if (entitiesDocuments.length > 0) {
               ids = entitiesDocuments.map((entityId) => entityId._id);
             }

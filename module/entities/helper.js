@@ -979,21 +979,22 @@ module.exports = class EntitiesHelper {
    * @param {Array} entityIds - Array of entity ids.
    */
 
-  static validateEntities(entityIds, entityTypeId="") {
+  static validateEntities(entityIds, entityTypeId) {
     return new Promise(async (resolve, reject) => {
       try {
         let ids = [];
-        let query = {
-          _id: { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
-        };
-        
-        if (entityTypeId !== "") {
-          query.entityTypeId = entityTypeId;
-        }
 
         let entitiesDocuments = await database.models.entities
-         .find(query, { _id: 1 })
-         .lean();
+          .find(
+            {
+              _id: { $in: gen.utils.arrayIdsTobjectIds(entityIds) },
+              entityTypeId: entityTypeId,
+            },
+            {
+              _id: 1,
+            },
+          )
+          .lean();
 
         if (entitiesDocuments.length > 0) {
           ids = entitiesDocuments.map((entityId) => entityId._id);
@@ -1007,6 +1008,7 @@ module.exports = class EntitiesHelper {
       }
     });
   }
+
 
   /**
    * Implement find query for entity

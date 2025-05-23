@@ -332,7 +332,7 @@ module.exports = class SurveysHelper {
         let newSolution = await solutionsHelper.createSolution(newSolutionDocument,false,tenantAndOrgInfo,userToken,isExternalProgram);
         
       // If the new solution is created successfully, generate a link for the solution
-        if (newSolution.data._id) {
+        if (newSolution?.data?._id) {
           let link = await gen.utils.md5Hash(userId + '###' + newSolution._id);
 
           await solutionsQueries.updateSolutionDocument(
@@ -856,12 +856,15 @@ module.exports = class SurveysHelper {
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
             };
 
-            if(surveyDocument.project && surveyDocument.referenceFrom){
+            if(surveyDocument.project && surveyDocument.referenceFrom === messageConstants.common.PROJECT){
 
               programDocument=  await projectService.programDetails(
                 userToken,
                 surveyDocument.programId
               );
+              if(!programDocument?.result?._id){
+                throw messageConstants.apiResponses.PROGRAM_NOT_FOUND; 
+              }
               programDocument=[_.pick(programDocument.result,["_id",'externalId','name',  'description'])]
             }else{
               programDocument = await programsHelper.list(programQueryObject, [
@@ -1013,7 +1016,7 @@ module.exports = class SurveysHelper {
           };
           submissionDocument.surveyInformation.startDate = new Date();
           
-          if(surveyDocument.project){
+          if(surveyDocument.project && surveyDocument.referenceFrom === messageConstants.common.PROJECT){
             submissionDocument.referenceFrom=surveyDocument.referenceFrom
             submissionDocument.project =surveyDocument.project
           }
@@ -1489,7 +1492,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '',fromPrjectService) {
+  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '',disableScopeQuery) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -1516,7 +1519,6 @@ module.exports = class SurveysHelper {
             },
             ['_id'],
           );
-
           if (surveyDocument.length > 0) {
             surveyId = surveyDocument[0]._id;
           } else {
@@ -1529,7 +1531,7 @@ module.exports = class SurveysHelper {
                 bodyData,
                 messageConstants.common.SURVEY,
                 tenantData,
-                fromPrjectService
+                disableScopeQuery
               );
             if (!solutionData.success) {
               throw new Error(
@@ -1600,12 +1602,12 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData,fromPrjectService=false) {
+  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData,disableScopeQuery=false) {
     return new Promise(async (resolve, reject) => {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
-        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,fromPrjectService);
+        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,disableScopeQuery);
         if (!surveyData.success) {
           return resolve(surveyData);
         }

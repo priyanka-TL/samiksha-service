@@ -3858,14 +3858,14 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',tenantData,fromPrjectService=false) {
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',tenantData,disableScopeQuery=false) {
     
     return new Promise(async (resolve, reject) => {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
         let queryData
-        if(!fromPrjectService){
+        if(!disableScopeQuery){
          queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
 
         if (!queryData.success) {
@@ -3903,7 +3903,7 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           };
         }
-
+        
         return resolve({
           success: true,
           message: messageConstants.apiResponses.TARGETED_SOLUTIONS_FETCHED,
