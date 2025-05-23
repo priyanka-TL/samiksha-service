@@ -76,8 +76,11 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
+        let reqBody = req.body
+        reqBody['tenantId'] = tenantFilter.tenantId
+        reqBody['orgId'] = tenantFilter.orgId
         let observations = await solutionsHelper.targetedSolutions(
-          req.body,
+          reqBody,
           req.query.type,
           req.userDetails.userId,
           req.pageSize,

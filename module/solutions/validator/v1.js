@@ -92,7 +92,7 @@ module.exports = (req) => {
       req.checkParams('_id').exists().withMessage('required solution link');
     },
     targetedSolutions: function () {
-			req.checkBody('tenantId').exists().withMessage('Required tenantId')
+			// req.checkBody('tenantId').exists().withMessage('Required tenantId')
     },
   };
 
