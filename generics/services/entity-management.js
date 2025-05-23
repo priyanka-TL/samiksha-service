@@ -22,11 +22,11 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  */
 
 // Function to find entity documents based on the given filter and projection
-const entityDocuments = function (filterData = 'all', projection = 'all',page = null,limit = null) {
+const entityDocuments = function (filterData = 'all', projection = 'all',page = null,limit = null,search = '') {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
-      const url = entityManagementServiceUrl+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS+`?page=${page}&limit=${limit}`;
+      const url = entityManagementServiceUrl+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS+`?page=${page}&limit=${limit}&search=${search}`;
 
       if(filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0){
         filterData['_id'] = {
