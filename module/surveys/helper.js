@@ -1051,6 +1051,7 @@ module.exports = class SurveysHelper {
             assessment.submissionId = submissionDoc._id;
             assessment.status = submissionDoc.status
              //add report infromation to survey solution code
+             surveySubmissionsHelper.pushInCompleteSurveySubmissionForReporting(submissionDoc._id);
           }
         }
         let assessmentsHelper = require(MODULES_BASE_PATH + '/assessments/helper');

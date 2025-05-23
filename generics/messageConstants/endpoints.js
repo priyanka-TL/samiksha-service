@@ -24,6 +24,7 @@ module.exports = {
   USER_READ:"/v1/user/read",
 	ORGANIZATION_READ: '/v1/organization/read',
   TENANT_READ: '/v1/tenant/read',
+  PUBLIC_BRANDING : '/v1/public/branding',
   USER_ROLE_EXTENSION:'/v1/userRoleExtension/find',
   PROFILE_READ:'/v1/profile/read',
   PROGRAM_DETAILS: '/v1/programs/details',
