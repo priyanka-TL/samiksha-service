@@ -769,33 +769,50 @@ module.exports = class ObservationSubmissionsHelper {
           _id: observationSubmissionDocument._id,
           status: observationSubmissionDocument.status,
         };
-
+  
         if (observationSubmissionDocument.completedDate) {
-          observationSubmissionData['submissionDate'] = observationSubmissionDocument.completedDate;
+          observationSubmissionData["submissionDate"] =
+            observationSubmissionDocument.completedDate;
         }
-        let kafkaMessage
-        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC){
-          kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(observationSubmissionData);
-
-        if (kafkaMessage.status != 'success') {
-          let errorObject = {
-            formData: {
-              submissionId: observationSubmissionDocument._id.toString(),
-              message: kafkaMessage.message,
-            },
-          };
-          slackClient.kafkaErrorAlert(errorObject);
+        let pushSubmissionToProject;
+        if (
+          process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" &&
+          process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
+        ) {
+          pushSubmissionToProject = await kafkaClient.pushSubmissionToImprovementService(
+            observationSubmissionData
+          );
+  
+          if (pushSubmissionToProject.status != "success") {
+            let errorObject = {
+              formData: {
+                submissionId: observationSubmissionDocument._id.toString(),
+                message: pushSubmissionToProject.message,
+              },
+            };
+            slackClient.kafkaErrorAlert(errorObject);
+          }
+        } else {
+          pushSubmissionToProject = await projectService.pushSubmissionToTask(
+            observationSubmissionDocument.project._id,
+            observationSubmissionDocument.project.taskId,
+            observationSubmissionData
+          );
+          if (!pushSubmissionToProject.success) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message : messageConstants.apiResponses.PUSH_SUBMISSION_FAILED
+            };
+          }
         }
-        }else{
-          kafkaMessage = await projectService.pushSubmissionToTask(observationSubmissionDocument.project._id,observationSubmissionDocument.project.taskId,observationSubmissionData)
-        }
-
-        return resolve(kafkaMessage);
+  
+        return resolve(pushSubmissionToProject);
       } catch (error) {
         return reject(error);
       }
     });
   }
+  
 
   /**
    * Disable Observation Submission Based on Solution Id

@@ -65,8 +65,7 @@ const templateLists = function (userToken, externalId) {
 };
 
 /**
- * Fetches the program Details based on the given Id(.
- *
+ * Fetches the program Details based on the given Id.
  * @param {string} userToken - The user's authentication token.
  * @param {string[]|string} programId - ProgramId
  * @returns {Promise<Object>} A promise that resolves to an object indicating success and containing the fetched data if successful.
@@ -118,8 +117,7 @@ const programDetails = function (userToken, programId) {
 };
 
 /**
- * Fetches the update program  based on the given Id.
- *
+ * update the program  based on the given Id.
  * @param {string} userToken - The user's authentication token.
  * @param {string[]|string} programId - ProgramId
  * @param {object} reqBody - update query
@@ -186,7 +184,7 @@ const pushSubmissionToTask = function (projectIdId,taskId, reqBody) {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the project service
-      let url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.PUSH_SUBMISSION_TASK}/${projectIdId}?taskId=${taskId}`;
+      let url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.PUSH_SUBMISSION_TO_TASK}/${projectIdId}?taskId=${taskId}`;
 
       // Set the options for the HTTP GET request
       const options = {

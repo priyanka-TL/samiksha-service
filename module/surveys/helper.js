@@ -553,7 +553,7 @@ module.exports = class SurveysHelper {
           if (solution.programExternalId) {
             survey["programExternalId"] = solution.programExternalId;
           }
-          if(solution.project){
+          if(solution.project && solution.referenceFrom){
             survey["project"] = solution.project;
             survey["referenceFrom"] =solution.referenceFrom
           }
@@ -863,7 +863,10 @@ module.exports = class SurveysHelper {
                 surveyDocument.programId
               );
               if(!programDocument?.result?._id){
-                throw messageConstants.apiResponses.PROGRAM_NOT_FOUND; 
+                throw {
+                  status: httpStatusCode.bad_request.status,
+                  message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+                };
               }
               programDocument=[_.pick(programDocument.result,["_id",'externalId','name',  'description'])]
             }else{
@@ -1492,7 +1495,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '',disableScopeQuery) {
+  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '',skipScopeCheck=false) {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -1531,7 +1534,7 @@ module.exports = class SurveysHelper {
                 bodyData,
                 messageConstants.common.SURVEY,
                 tenantData,
-                disableScopeQuery
+                skipScopeCheck
               );
             if (!solutionData.success) {
               throw new Error(
@@ -1602,12 +1605,12 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData,disableScopeQuery=false) {
+  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData,skipScopeCheck=false) {
     return new Promise(async (resolve, reject) => {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
-        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,disableScopeQuery);
+        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,skipScopeCheck);
         if (!surveyData.success) {
           return resolve(surveyData);
         }

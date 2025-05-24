@@ -42,46 +42,24 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} solution creation data.
    */
 
-  static createSolution(solutionData, checkDate = false,tenantData,userToken,isExternalProgram) {
+  static createSolution(solutionData, checkDate = false,tenantData,userToken,isExternalProgram=false) {
     return new Promise(async (resolve, reject) => {
       try {
         //Get the program details to update on the new solution document
         let programData = [];
-        //Condition for check solution falls under the program or not and same service Program or not
-        // if (solutionData.programExternalId && isExternalProgram) {
-        //   programData = await projectService.programDetails(userToken,solutionData.programExternalId );
-        //   programData=[programData.result]
-
-        //  //adding program details to the solution document
-        //  solutionData.programId = programData[0]._id;
-        //  solutionData.programName = programData[0].name;
-        //  solutionData.programDescription = programData[0].description;
-
-        // }else if (solutionData.programExternalId && !isExternalProgram) {
-
-        //   programData = await programsQueries.programDocuments(
-        //     {
-        //       externalId: solutionData.programExternalId,
-        //     },
-        //     ['name', 'description', 'scope', 'endDate', 'startDate']
-        //   );
-        //   if (!(programData.length > 0)) {
-        //     throw {
-        //       message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
-        //     };
-        //   }
-
-        //  //adding program details to the solution document
-        //  solutionData.programId = programData[0]._id;
-        //  solutionData.programName = programData[0].name;
-        //  solutionData.programDescription = programData[0].description;
-
-        // }
-
         if (solutionData.programExternalId) {
+         //Condition for check solution falls under the program or not and same service Program or not
           if (isExternalProgram) {
             const programResponse = await projectService.programDetails(
                 userToken, solutionData.programExternalId);
+
+            if(!programResponse?.result?._id){             
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              };
+            }
+            
             programData = [programResponse.result];
           } else {
             programData = await programsQueries.programDocuments(
@@ -91,7 +69,7 @@ module.exports = class SolutionsHelper {
               throw {message : messageConstants.apiResponses.PROGRAM_NOT_FOUND};
             }
           }
-        
+           //adding program details to the solution document
            solutionData.programId = programData[0]._id;
            solutionData.programName = programData[0].name;
            solutionData.programDescription = programData[0].description;
@@ -190,7 +168,10 @@ module.exports = class SolutionsHelper {
                   components : programData[0].components,
                 });
             if (!updateProgram.success) {
-              throw {message : messageConstants.apiResponses.PROGRAM_UPDATED_FAILED};
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message : messageConstants.apiResponses.PROGRAM_UPDATED_FAILED
+              };
             }
           } else {
             await programsQueries.findOneAndUpdate(
@@ -1150,19 +1131,21 @@ module.exports = class SolutionsHelper {
    * update solutions
    * @method
    * @name updateSolutions
-   * @param {Object} req - req object.
-   * @returns {Array} List of solutions.
+   * @param {String} solutionExternalId - solutionExternalId.
+   * @param {Object} requestBody - req body data
+   * @param {String} userId      -userId
+   * @returns {Promise<Object>} Solution update sucess message with status code.
    */
 
-   static updateSolutions(req) {
+   static updateSolutions(solutionExternalId,requestBody,userId) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
-          externalId: req.query.solutionExternalId
+          externalId: solutionExternalId
         };
 
         let solutionDocument = await database.models.solutions.findOne(queryObject, { _id : 1 }).lean();
-        if (!solutionDocument) {
+        if (!solutionDocument?._id) {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND
@@ -1173,17 +1156,25 @@ module.exports = class SolutionsHelper {
           "$set" : {}
         };
 
-        let solutionUpdateData = req.body;
+        let solutionUpdateData = requestBody;
         
         Object.keys(solutionUpdateData).forEach(solutionData=>{
           updateObject[solutionData] = solutionUpdateData[solutionData];
         });
-        updateObject["$set"]["updatedBy"] = req.userDetails.userId;
+        updateObject["$set"]["updatedBy"] = userId;
 
         //update the solution document
-        await database.models.solutions.findOneAndUpdate({
+        let updateSolutionDocument = await database.models.solutions.findOneAndUpdate({
           _id: solutionDocument._id
         }, updateObject)
+
+        if (!updateSolutionDocument) {
+          throw {
+           status:httpStatusCode.bad_request.status,
+           message: messageConstants.apiResponses.OBSERVATION_NOT_FOUND
+          }
+        }
+
         return resolve({
           status: httpStatusCode.ok.status,
           message: messageConstants.apiResponses.SOLUTION_UPDATED
@@ -2078,7 +2069,7 @@ module.exports = class SolutionsHelper {
     createdFor = [],
     requestingUserAuthToken,
     tenantData,
-    isExternalProgram
+    isExternalProgram=false
     // rootOrganisations = []
   ) {
     return new Promise(async (resolve, reject) => {
@@ -2162,7 +2153,7 @@ module.exports = class SolutionsHelper {
     createdFor = '',
     tenantData,
     requestingUserAuthToken,
-    isExternalProgram,
+    isExternalProgram=false,
     // rootOrganisations = ""
   ) {
     return new Promise(async (resolve, reject) => {
@@ -2196,6 +2187,12 @@ module.exports = class SolutionsHelper {
         if (programId ) {
           if(isExternalProgram){
             programDocument = await projectService.programDetails(requestingUserAuthToken,programId );
+            if(!programDocument?.result?._id){
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              };
+            }
             programDocument=programDocument.result
           }else{
             programQuery[gen.utils.isValidMongoId(programId) ? "_id" : "externalId"] = programId;    
@@ -2365,6 +2362,7 @@ module.exports = class SolutionsHelper {
                 );
                 if (!programUpdate.success) {
                   throw {
+                    status: httpStatusCode.bad_request.status,
                     message: messageConstants.apiResponses.PROGRAM_UPDATED_FAILED,
                   };
                 }
@@ -3858,14 +3856,14 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',tenantData,disableScopeQuery=false) {
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',tenantData,skipScopeCheck=false) {
     
     return new Promise(async (resolve, reject) => {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
         let queryData
-        if(!disableScopeQuery){
+        if(!skipScopeCheck){
          queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
 
         if (!queryData.success) {

@@ -31,6 +31,6 @@ module.exports = {
   PROGRAM_UPDATE: '/v1/programs/update',
   PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
   AUTO_DOWNLOAD: '/v1/files/download',
-  PUSH_SUBMISSION_TASK: '/v1/userProjects/pushSubmissionToTask',
+  PUSH_SUBMISSION_TO_TASK: '/v1/userProjects/pushSubmissionToTask',
 
 };

@@ -190,6 +190,15 @@ const pushInCompleteSurveySubmissionToKafka = function (message) {
   });
 };
 
+ /**
+   * Push observation and survey submission to improvement project service.
+   * @method
+   * @name pushSubmissionToImprovementService
+   * @param {String} message  -   submission document.
+   * @returns {JSON} kafkaPushStatus- consists of kafka message whether it is pushed for reporting
+   * or not.
+   */
+
 const pushSubmissionToImprovementService = function (message) {
   return new Promise(async (resolve, reject) => {
     try {

@@ -220,23 +220,30 @@ module.exports = class SurveySubmissionsHelper {
         if (surveySubmissionDocument.completedDate) {
           surveySubmissionData['submissionDate'] = surveySubmissionDocument.completedDate;
         }
-        let kafkaMessage
-        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON"){
-         kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(surveySubmissionData);
+        let pushSubmissionToProject
+        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON"&&
+          process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC){
+            pushSubmissionToProject = await kafkaClient.pushSubmissionToImprovementService(surveySubmissionData);
 
-        if (kafkaMessage.status != 'success') {
+        if (pushSubmissionToProject.status != 'success') {
           let errorObject = {
             formData: {
               submissionId: surveySubmissionDocument._id.toString(),
-              message: kafkaMessage.message,
+              message: pushSubmissionToProject.message,
             },
           };
           slackClient.kafkaErrorAlert(errorObject);
         }
       }else{
-        kafkaMessage = await projectService.pushSubmissionToTask(surveySubmissionData.projectId,surveySubmissionData.taskId,surveySubmissionData)
+        pushSubmissionToProject = await projectService.pushSubmissionToTask(surveySubmissionData.projectId,surveySubmissionData.taskId,surveySubmissionData)
+        if (!pushSubmissionToProject.success) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message : messageConstants.apiResponses.PUSH_SUBMISSION_FAILED
+          };
+        }
       }
-        return resolve(kafkaMessage);
+        return resolve(pushSubmissionToProject);
       } catch (error) {
         return reject(error);
       }

@@ -2366,6 +2366,12 @@ module.exports = class ObservationsHelper {
         if(solutionDocument.project && solutionDocument.referenceFrom === messageConstants.common.PROJECT){
 
           programDocument = await projectService.programDetails(req.userDetails.userToken,solutionDocument.programId );
+          if(!programDocument?.result?._id){
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            };
+          }
           programDocument=[programDocument.result]
 
         }else{   

@@ -528,7 +528,11 @@ module.exports = class Solutions extends Abstract {
    async updateSolutions(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.updateSolutions(req)
+        let solutionData = await solutionsHelper.updateSolutions(
+          req.query.solutionExternalId,
+          req.body,
+          req.userDetails.userId
+        )
         return resolve(solutionData);
       }
       catch (error) {

@@ -18,7 +18,7 @@ const assessorsHelper = require(MODULES_BASE_PATH + '/entityAssessors/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
-let projectService = require(ROOT_PATH + '/generics/services/project')
+const projectService = require(ROOT_PATH + '/generics/services/project')
 
 /**
  * Observations
@@ -837,6 +837,12 @@ module.exports = class Observations extends Abstract {
               req.userDetails.userToken,
               observationDocument.programId
             );
+            if(!programDocument?.result?._id){            
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              };
+            }
             programDocument = [programDocument.result];
           } else {
             programDocument = await programsHelper.list(

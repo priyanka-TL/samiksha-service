@@ -50,7 +50,10 @@ module.exports = {
       index: true,
     },
     project: Object,
-    referenceFrom: String,
+    referenceFrom: {
+      type: String,
+      index: true,
+    },
     userProfile : Object,
     orgId:{
       type: String,
