@@ -519,22 +519,12 @@ module.exports = class SolutionsHelper {
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             });
           }
+
+          // factors = [ 'professional_role', 'professional_subroles' ]
           let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-            factors = tenantDetails.data.meta.factors;
-            let queryFilter = [];
-
-            // Build query based on each key
-            factors.forEach((factor) => {
-              let scope = 'scope.' + factor;
-              let values = userRoleInfo[factor];
-              if (!Array.isArray(values)) {
-                queryFilter.push({ [scope]: { $in: values.split(',') } });
-              } else {
-                queryFilter.push({ [scope]: { $in: [...values] } });
-              }
-            });
-            // append query filter
+            factors = tenantDetails.data.meta.factors;            
+            let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
             filterQuery['$and'] = queryFilter;
           }
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
@@ -564,6 +554,7 @@ module.exports = class SolutionsHelper {
           let queryFilter = [];
 
           // if factors are passed or query has to be build based on the keys passed
+          // factors = [ 'professional_role', 'professional_subroles' ]
           if (data.hasOwnProperty('factors') && data.factors.length > 0) {
             let factors = data.factors;
             // Build query based on each key
@@ -642,8 +633,6 @@ module.exports = class SolutionsHelper {
 
         delete filterQuery['scope.entityType'];
         filterQuery.tenantId = data.tenantId
-				filterQuery.orgIds = { $in: ['ALL', data.orgId] }
-        console.log(filterQuery,"line no 644");
         return resolve({
           success: true,
           data: filterQuery,
