@@ -1025,6 +1025,7 @@ module.exports = class UserHelper {
       try {
 
         let userId = userDeleteEvent.id
+        // Throw an error if userId is missing
 				if (!userId) {
 					throw {
 						status: httpStatusCode.bad_request.status,
@@ -1044,6 +1045,7 @@ module.exports = class UserHelper {
             ...(userProfileOps.$unset || nestedProfileOps.$unset ? { $unset: { ...userProfileOps.$unset, ...nestedProfileOps.$unset } } : {})
         }
 
+        //update in db
         let updateDataStatus = await Promise.all([surveySubmissionsHelper.updateMany(filter,userProfileOps),
             observationsHelper.updateMany(filter,userProfileOps),
             observationSubmissionsHelper.updateMany(filter,observationUpdateOperations)
