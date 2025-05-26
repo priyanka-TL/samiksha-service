@@ -177,7 +177,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         if (observationSubmissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
-          await this.pushSubmissionToImprovementService(
+          await this.pushSubmissionToProjectService(
             _.pick(observationSubmissionsDocument, ['project', 'status', '_id', 'completedDate']),
           );
         }
@@ -754,13 +754,13 @@ module.exports = class ObservationSubmissionsHelper {
   /**
    * Push observation submission to improvement service.
    * @method
-   * @name pushSubmissionToImprovementService
+   * @name pushSubmissionToProjectService
    * @param {String} observationSubmissionDocument - observation submission document.
    * @returns {JSON} consists of kafka message whether it is pushed for reporting
    * or not.
    */
 
-  static pushSubmissionToImprovementService(observationSubmissionDocument) {
+  static pushSubmissionToProjectService(observationSubmissionDocument) {
     return new Promise(async (resolve, reject) => {
       try {
         let observationSubmissionData = {
@@ -779,18 +779,14 @@ module.exports = class ObservationSubmissionsHelper {
           process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" &&
           process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
         ) {
-          pushSubmissionToProject = await kafkaClient.pushSubmissionToImprovementService(
+          pushSubmissionToProject = await kafkaClient.pushSubmissionToProjectService(
             observationSubmissionData
           );
   
           if (pushSubmissionToProject.status != "success") {
-            let errorObject = {
-              formData: {
-                submissionId: observationSubmissionDocument._id.toString(),
-                message: pushSubmissionToProject.message,
-              },
-            };
-            slackClient.kafkaErrorAlert(errorObject);
+            throw new Error(
+              `Failed to push submission to project. Submission ID: ${observationSubmissionDocument._id.toString()}, Message: ${pushSubmissionToProject.message}`
+            );
           }
         } else {
           pushSubmissionToProject = await projectService.pushSubmissionToTask(

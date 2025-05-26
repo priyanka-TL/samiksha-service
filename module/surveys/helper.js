@@ -321,10 +321,11 @@ module.exports = class SurveysHelper {
         newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
 
         //isExternalProgram true then calling projectService for programDetails
-        if(isExternalProgram && bodyData.project){
+        if(bodyData.project){
           newSolutionDocument.programExternalId = programId;
           newSolutionDocument['project'] = bodyData.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
+          newSolutionDocument['isExternalProgram']=true
         }
         
         const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
@@ -556,6 +557,7 @@ module.exports = class SurveysHelper {
           if(solution.project && solution.referenceFrom){
             survey["project"] = solution.project;
             survey["referenceFrom"] =solution.referenceFrom
+            survey["isExternalProgram"]=solution.isExternalProgram
           }
 
           survey['tenantId'] = tenantData.tenantId;
@@ -856,7 +858,7 @@ module.exports = class SurveysHelper {
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
             };
 
-            if(surveyDocument.project && surveyDocument.referenceFrom === messageConstants.common.PROJECT){
+            if(surveyDocument.isExternalProgram){
 
               programDocument=  await projectService.programDetails(
                 userToken,
@@ -1022,6 +1024,7 @@ module.exports = class SurveysHelper {
           if(surveyDocument.project && surveyDocument.referenceFrom === messageConstants.common.PROJECT){
             submissionDocument.referenceFrom=surveyDocument.referenceFrom
             submissionDocument.project =surveyDocument.project
+            submissionDocument.isExternalProgram =surveyDocument.isExternalProgram
           }
           let userProfileData = await surveyService.profileRead(userToken)
 
@@ -1160,6 +1163,7 @@ module.exports = class SurveysHelper {
         'enableQuestionReadOut',
         'author',
         "endDate",
+        "isExternalProgram"
       ]);
     });
   }
@@ -1495,7 +1499,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '',skipScopeCheck=false) {
+  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '') {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -1534,7 +1538,7 @@ module.exports = class SurveysHelper {
                 bodyData,
                 messageConstants.common.SURVEY,
                 tenantData,
-                skipScopeCheck
+                solutionDocument[0].referenceFrom,
               );
             if (!solutionData.success) {
               throw new Error(
@@ -1605,12 +1609,12 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData,skipScopeCheck=false) {
+  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
-        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,skipScopeCheck);
+        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token);
         if (!surveyData.success) {
           return resolve(surveyData);
         }

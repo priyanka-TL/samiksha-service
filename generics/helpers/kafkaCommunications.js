@@ -32,10 +32,7 @@ const inCompleteSurveySubmissionKafkaTopic =
   process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC && process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC != 'OFF'
     ? process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC
     : 'elevate_incomplete_surveys_raw';
-const improvementProjectSubmissionTopic =
-  process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC != 'OFF'
-    ? process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
-    : 'sl-improvement-project-submission-dev';
+const improvementProjectSubmissionTopic = process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC 
 
 const pushCompletedObservationSubmissionToKafka = function (message) {
   return new Promise(async (resolve, reject) => {
@@ -193,13 +190,13 @@ const pushInCompleteSurveySubmissionToKafka = function (message) {
  /**
    * Push observation and survey submission to improvement project service.
    * @method
-   * @name pushSubmissionToImprovementService
+   * @name pushSubmissionToProjectService
    * @param {String} message  -   submission document.
    * @returns {JSON} kafkaPushStatus- consists of kafka message whether it is pushed for reporting
    * or not.
    */
 
-const pushSubmissionToImprovementService = function (message) {
+const pushSubmissionToProjectService = function (message) {
   return new Promise(async (resolve, reject) => {
     try {
       let kafkaPushStatus = await pushMessageToKafka([
@@ -257,5 +254,5 @@ module.exports = {
   pushInCompleteObservationSubmissionToKafka: pushInCompleteObservationSubmissionToKafka,
   pushCompletedSurveySubmissionToKafka: pushCompletedSurveySubmissionToKafka,
   pushInCompleteSurveySubmissionToKafka: pushInCompleteSurveySubmissionToKafka,
-  pushSubmissionToImprovementService: pushSubmissionToImprovementService,
+  pushSubmissionToProjectService: pushSubmissionToProjectService,
 };

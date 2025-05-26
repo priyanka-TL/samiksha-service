@@ -109,7 +109,8 @@ module.exports = {
       type: String,
       require: true,
       index:true
-    }
+    },
+    isExternalProgram:Boolean
   },
   compoundIndex: [
 		{

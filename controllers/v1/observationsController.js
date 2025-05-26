@@ -936,6 +936,7 @@ module.exports = class Observations extends Abstract {
           programExternalId: programExternalId,
           isAPrivateProgram: solutionDocument.isAPrivateProgram,
           programInformation: programInformation,
+          isExternalProgram:false,
           frameworkId: solutionDocument.frameworkId,
           frameworkExternalId: solutionDocument.frameworkExternalId,
           entityTypeId: solutionDocument.entityTypeId,
@@ -963,6 +964,7 @@ module.exports = class Observations extends Abstract {
         if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
           submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
           submissionDocument['project'] = solutionDocument.project;
+          submissionDocument["isExternalProgram"]=solutionDocument.isExternalProgram
         }
 
         let assessment = {};

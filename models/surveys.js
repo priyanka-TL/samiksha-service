@@ -53,7 +53,8 @@ module.exports = {
     referenceFrom: {
       type: String,
       index: true,
-    }
+    },
+    isExternalProgram:Boolean
   },
   compoundIndex: [
     {

@@ -94,9 +94,6 @@ module.exports = (req) => {
     targetedSolutions: function () {
       req.checkHeaders('origin').exists().withMessage('Required origin');
     },
-    updateSolutions: function () {
-      req.checkQuery('solutionExternalId').exists().withMessage('required solution externalId');
-    },
   };
 
   if (solutionValidator[req.params.method]) solutionValidator[req.params.method]();

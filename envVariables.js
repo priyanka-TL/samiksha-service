@@ -356,7 +356,12 @@ let enviromentVariables = {
   INTERFACE_SERVICE_URL: {
 		message: 'interface service url required',
 		optional: false,
-	}
+	},
+  IMPROVEMENT_PROJECT_SUBMISSION_TOPIC: {
+		message: 'Required IMPROVEMENT_PROJECT_SUBMISSION_TOPIC',
+		optional: true,
+    default: 'elevate-improvement-project-submission-dev'
+	},  
 };
 
 let success = true;

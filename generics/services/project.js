@@ -118,6 +118,8 @@ const programDetails = function (userToken, programId) {
 
 /**
  * update the program  based on the given Id.
+ * This functionality helps add survey and observation solutions to the components array of a program
+ * This function will be called when creating child solution for survey and observation
  * @param {string} userToken - The user's authentication token.
  * @param {string[]|string} programId - ProgramId
  * @param {object} reqBody - update query
@@ -170,21 +172,20 @@ const programUpdate = function (userToken, programId, reqBody) {
   });
 };
 
-
 /**
- * Fetches the update program  based on the given Id.
- *
- * @param {string} userToken - The user's authentication token.
- * @param {string} projectIdId - projectIdId
+ * pushSubmissionToTask on based on given project and taskId.
+ * Updates the status of a survey or observation task in the project service based on the given project and task ID.
+ * It will be called when start and complete the observation/survey
+ * @param {string} projectId - projectId
  * @param {string} taskId     - taskId
  * @param {object} reqBody    - task Submission to update
  * @returns {Promise<Object>} update success message
  */
-const pushSubmissionToTask = function (projectIdId,taskId, reqBody) {
+const pushSubmissionToTask = function (projectId, taskId, reqBody) {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the project service
-      let url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.PUSH_SUBMISSION_TO_TASK}/${projectIdId}?taskId=${taskId}`;
+      let url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.PUSH_SUBMISSION_TO_TASK}/${projectId}?taskId=${taskId}`;
 
       // Set the options for the HTTP GET request
       const options = {
@@ -230,5 +231,5 @@ module.exports = {
   templateLists: templateLists,
   programDetails: programDetails,
   programUpdate: programUpdate,
-  pushSubmissionToTask:pushSubmissionToTask
+  pushSubmissionToTask: pushSubmissionToTask,
 };

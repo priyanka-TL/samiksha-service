@@ -800,7 +800,6 @@ module.exports = class Surveys extends Abstract {
                 req.userDetails.tenantData,
                 // appVersion,
                 // appName
-                req.query.skipScopeCheck ? gen.utils.convertStringToBoolean(req.query.skipScopeCheck) : false,
             );
             
         } else {

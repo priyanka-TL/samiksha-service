@@ -215,6 +215,7 @@ module.exports = class ObservationsHelper {
         if (data.project) {
           data.project._id = new ObjectId(data.project._id);
           data.referenceFrom = messageConstants.common.PROJECT;
+          data.isExternalProgram =true
         }
         
         let observationData = _.merge(data, {
@@ -520,7 +521,7 @@ module.exports = class ObservationsHelper {
           submissionDocument = await database.models.observationSubmissions.create(document);
 
           if (submissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-            await submissionsHelper.pushSubmissionToImprovementService(submissionDocument);
+            await submissionsHelper.pushSubmissionToProjectService(submissionDocument);
           }
 
           // Push new observation submission to kafka for reporting/tracking.
@@ -2414,6 +2415,7 @@ module.exports = class ObservationsHelper {
         programId: solutionDocument.programId ? solutionDocument.programId :undefined,
         programExternalId: solutionDocument.programExternalId ? solutionDocument.programExternalId: undefined ,
         isAPrivateProgram: solutionDocument.isAPrivateProgram,
+        isExternalProgram:false,
         frameworkId: solutionDocument.frameworkId,
         frameworkExternalId: solutionDocument.frameworkExternalId,
         entityTypeId: solutionDocument.entityTypeId,
@@ -2446,6 +2448,7 @@ module.exports = class ObservationsHelper {
       if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
         submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
         submissionDocument['project'] = solutionDocument.project;
+        submissionDocument['isExternalProgram']=solutionDocument.isExternalProgram
       }
   
       let criteriaId = new Array();
@@ -2526,7 +2529,7 @@ module.exports = class ObservationsHelper {
       let newObservationSubmissionDocument = await database.models.observationSubmissions.create(submissionDocument);
   
       if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-        await observationSubmissionsHelper.pushSubmissionToImprovementService(
+        await observationSubmissionsHelper.pushSubmissionToProjectService(
           _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
         );
       }

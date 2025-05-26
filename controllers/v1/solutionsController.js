@@ -516,35 +516,6 @@ module.exports = class Solutions extends Abstract {
     });
   }
 
-   /**
-   * Update solution.
-   * @method
-   * @name updateSolutions
-   * @param {Object} req - requested data.
-   * @param {String} req.query.solutionExternalId -  solution external id.
-   * @returns {JSON}
-   */
-
-   async updateSolutions(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let solutionData = await solutionsHelper.updateSolutions(
-          req.query.solutionExternalId,
-          req.body,
-          req.userDetails.userId
-        )
-        return resolve(solutionData);
-      }
-      catch (error) {
-        reject({
-          status: error.status || httpStatusCode.internal_server_error.status,
-          message: error.message || httpStatusCode.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  } 
-
 
   /**
    * @api {post} /samiksha/v1/solutions/uploadThemesRubricExpressions/{{solutionsExternalID}} Upload Rubric For Themes Of Solutions

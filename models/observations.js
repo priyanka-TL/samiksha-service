@@ -54,6 +54,7 @@ module.exports = {
       type: String,
       index: true,
     },
+    isExternalProgram:Boolean,
     userProfile : Object,
     orgId:{
       type: String,

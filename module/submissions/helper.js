@@ -133,7 +133,7 @@ module.exports = class SubmissionsHelper {
           this.pushInCompleteSubmissionForReporting(submissionDocument._id);
 
           if (submissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-            this.pushSubmissionToImprovementService(_.pick(submissionDocument, ['project', 'status', '_id']));
+            this.pushSubmissionToProjectService(_.pick(submissionDocument, ['project', 'status', '_id']));
           }
         } else {
           let assessorElement = submissionDocument[0].assessors.find((assessor) => assessor.userId === userId);
@@ -623,7 +623,7 @@ module.exports = class SubmissionsHelper {
         }
 
         if (submissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
-          await this.pushSubmissionToImprovementService(
+          await this.pushSubmissionToProjectService(
             _.pick(submissionsDocument, ['project', 'status', '_id', 'completedDate']),
           );
         }
@@ -1734,13 +1734,13 @@ module.exports = class SubmissionsHelper {
   /**
    * Push submission to improvement service.
    * @method
-   * @name pushSubmissionToImprovementService
+   * @name pushSubmissionToProjectService
    * @param {String} submissionDocument - submission document.
    * @returns {JSON} consists of kafka message whether it is pushed for reporting
    * or not.
    */
 
-  static pushSubmissionToImprovementService(submissionDocument) {
+  static pushSubmissionToProjectService(submissionDocument) {
     return new Promise(async (resolve, reject) => {
       try {
         let submissionData = {
@@ -1757,16 +1757,12 @@ module.exports = class SubmissionsHelper {
         if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" &&
           process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC){
 
-            pushSubmissionToProject = await kafkaClient.pushSubmissionToImprovementService(submissionData);
+            pushSubmissionToProject = await kafkaClient.pushSubmissionToProjectService(submissionData);
 
         if (pushSubmissionToProject.status != 'success') {
-          let errorObject = {
-            formData: {
-              submissionId: submissionDocument._id.toString(),
-              message: pushSubmissionToProject.message,
-            },
-          };
-          slackClient.kafkaErrorAlert(errorObject);
+             throw new Error(
+            `Failed to push submission to project. Submission ID: ${submissionDocument._id.toString()}, Message: ${pushSubmissionToProject.message}`
+             );
         }
       }else{
         pushSubmissionToProject = await projectService.pushSubmissionToTask(submissionDocument.project._id,submissionDocument.project.taskId,submissionDocument)
