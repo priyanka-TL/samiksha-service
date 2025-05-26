@@ -3062,7 +3062,6 @@ submissionReport = async function (req) {
       resolve(generateSubmissionReport);
 
     } catch (err) {
-      console.log(err,'err')
       let response = {
         result: false,
         message: err.message || 'INTERNAL_SERVER_ERROR',
