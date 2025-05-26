@@ -93,7 +93,6 @@ module.exports = class ObservationSubmissions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let createObservationStatus = await observationsHelper.createNewObservation(req)
         return resolve(createObservationStatus);
       } catch (error) {
@@ -407,8 +406,7 @@ module.exports = class ObservationSubmissions extends Abstract {
   async delete(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
-        let result = await observationSubmissionsHelper.delete(req.params._id, req.userDetails.userId,tenantData);
+        let result = await observationSubmissionsHelper.delete(req.params._id, req.userDetails.userId,req.userDetails.tenantData);
 
         return resolve(result);
       } catch (error) {
@@ -451,12 +449,11 @@ module.exports = class ObservationSubmissions extends Abstract {
   async title(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let result = await observationSubmissionsHelper.setTitle(
           req.params._id,
           req.userDetails.userId,
           req.body.title,
-          tenantData
+          req.userDetails.tenantData
         );
 
         return resolve(result);
@@ -978,8 +975,7 @@ module.exports = class ObservationSubmissions extends Abstract {
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
-        let submissionDocument = await observationSubmissionsHelper.list(req.query.entityId, req.params._id,tenantData);
+        let submissionDocument = await observationSubmissionsHelper.list(req.query.entityId, req.params._id,req.userDetails.tenantData);
         return resolve(submissionDocument);
       } catch (error) {
         return reject({
@@ -1109,7 +1105,7 @@ module.exports = class ObservationSubmissions extends Abstract {
   async update(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+        let tenantData = req.userDetails.tenantData;
         let response = {};
         if (req.method === 'POST') {
           if (req.body.title) {
@@ -1266,7 +1262,7 @@ module.exports = class ObservationSubmissions extends Abstract {
   async solutionList(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+
         let entityType = req.query.entityType ? req.query.entityType : '';
 
         let solutions = await observationSubmissionsHelper.solutionList(

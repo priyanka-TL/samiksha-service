@@ -43,8 +43,10 @@ module.exports = class ProgramsHelper {
         }
 
         let matchQuery = { status: messageConstants.common.ACTIVE_STATUS,
-          orgIds:{$in:['ALL',...orgIdArr]},
           tenantId:tenantFilter.tenantId,
+          "scope.organizations": {
+            "$in": ["ALL", tenantFilter.orgId]
+          },
          };
 
         if (Object.keys(filter).length > 0) {
@@ -157,7 +159,7 @@ module.exports = class ProgramsHelper {
           components: [],
           isAPrivateProgram: data.isAPrivateProgram ? data.isAPrivateProgram : false,
           tenantId:data.tenantData.tenantId,
-          orgIds:data.tenantData.orgId
+          orgId:data.tenantData.orgId[0]
         };
 
         // Adding Start and End date in program document
@@ -185,6 +187,7 @@ module.exports = class ProgramsHelper {
 
         //if scope exits adding scope to programDocument
         if (data.scope) {
+          data.scope.organizations = data.tenantData.orgId;
           let programScopeUpdated = await this.setScope(program._id, data.scope);
 
           if (!programScopeUpdated.success) {
@@ -237,7 +240,6 @@ module.exports = class ProgramsHelper {
           {
             _id: programId,
             tenantId:tenantData.tenantId,
-            orgIds:{$in:['ALL',tenantData.orgId]}
           },
           { $set: _.omit(data, ['scope','tenantId']) },
           { new: true }
@@ -295,8 +297,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId:tenantData.tenantId,
-            orgIds:{$in:['ALL',tenantData.orgId]}
+            tenantId:tenantData.tenantId
           },
           ['_id']
         );
@@ -392,8 +393,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId: tenantData.tenantId,
-            orgIds:{$in:['ALL',tenantData.orgId]}
+            tenantId: tenantData.tenantId
           },
           ['_id', 'scope.entityType']
         );
@@ -431,8 +431,7 @@ module.exports = class ProgramsHelper {
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
             _id: programId,
-            tenantId: tenantData.tenantId,
-            orgIds:{$in:['ALL',tenantData.orgId]}
+            tenantId: tenantData.tenantId
           },
           {
             $addToSet: { 'scope.entities': { $each: entityIds } },
@@ -477,8 +476,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId:tenantData.tenantId,
-            orgIds:{$in:['ALL',tenantData.orgId]}
+            tenantId:tenantData.tenantId
           },
           ['_id']
         );
@@ -544,8 +542,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId:tenantData.tenantId,
-            orgIds:{$in:['ALL',tenantData.orgId]}
+            tenantId:tenantData.tenantId
           },
           ['_id', 'scope.entities']
         );
@@ -608,8 +605,7 @@ module.exports = class ProgramsHelper {
         // Get the details or dump of the program based on the programid
         let programData = await programsQueries.programDocuments({
           _id: programId,
-          tenantId:tenantData.tenantId,
-          orgIds:{$in:['ALL',tenantData.orgId]}
+          tenantId:tenantData.tenantId
         });
 
         if (!(programData.length > 0)) {
@@ -659,8 +655,7 @@ module.exports = class ProgramsHelper {
             _id: programId,
             status: messageConstants.common.ACTIVE_STATUS,
             isDeleted: false,
-            tenantId:tenantData.tenantId,
-            orgIds:{$in:['ALL',tenantData.orgId]}
+            tenantId:tenantData.tenantId
           },
           ['name', 'externalId', 'requestForPIIConsent', 'rootOrganisations']
         );
@@ -1240,8 +1235,7 @@ module.exports = class ProgramsHelper {
 
         let userAssignedPrograms = await programUsersQueries.programUsersDocument(
           { userId: userId,
-            tenantId:tenantData.tenantId,
-            orgIds:{"$in":['ALL',tenantData.orgId]}
+            tenantId:tenantData.tenantId
           } ,
           projection// find query
         );
@@ -1284,7 +1278,7 @@ module.exports = class ProgramsHelper {
         matchQuery['startDate'] ={ $lte: new Date() }
         matchQuery['endDate'] =  { $gte: new Date() }
         matchQuery['tenantId'] = tenantData.tenantId
-        matchQuery['orgIds'] = {$in:['ALL',tenantData.orgId]}
+        //matchQuery['orgIds'] = {$in:['ALL',tenantData.orgId]}
         //adding programIds array to matchQuery
         // matchQuery['_id'] = { $in: programIds };
         let projection = [
