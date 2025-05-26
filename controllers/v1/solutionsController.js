@@ -75,7 +75,6 @@ module.exports = class Solutions extends Abstract {
   async targetedSolutions(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(req.headers.origin , "origin name logs");
         let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let observations = await solutionsHelper.targetedSolutions(
           req.body,
@@ -88,7 +87,6 @@ module.exports = class Solutions extends Abstract {
           req.query.surveyReportPage ? req.query.surveyReportPage : '',
           req.query.currentScopeOnly ? req.query.currentScopeOnly : false,
           tenantFilter,
-          req.headers.origin
         );
 
         observations['result'] = observations.data;
@@ -1696,6 +1694,7 @@ module.exports = class Solutions extends Abstract {
   async verifyLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let solutionData = await solutionsHelper.verifyLink(
           req.params._id,
           req.body,
