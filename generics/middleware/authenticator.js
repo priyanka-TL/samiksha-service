@@ -74,7 +74,7 @@ var validateOrgsPassedInHeader = async function(orgsFromHeader,tenantId){
 
 var removedHeaders = [
   'host',
-  'origin',
+  // 'origin',
   'accept',
   'referer',
   'content-length',

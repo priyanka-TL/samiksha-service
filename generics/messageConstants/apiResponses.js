@@ -432,4 +432,5 @@ module.exports = {
   DATA_DELETED_SUCCESSFULLY: 'Data deleted successfully',
 	FAILED_TO_DELETE_DATA: 'No user data found to delete.',
 	USER_ID_MISSING: 'User ID is missing',
+  FAILED_TO_FETCH_TENANT_DETAILS: 'Failed to fetch tenant details'
 };
