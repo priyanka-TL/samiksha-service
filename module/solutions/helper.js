@@ -512,8 +512,8 @@ module.exports = class SolutionsHelper {
           // filterQuery['scope.entities'] = { $in: entities };
           let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
-          let tenantDetails = await userService.tenantDetails(data.tenantId);
-          if (!tenantDetails.data && !tenantDetails.data.meta) {
+          let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
+					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
             return resolve({
               success: false,
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
@@ -549,8 +549,6 @@ module.exports = class SolutionsHelper {
             });
           });
           filterQuery['scope.entityType'] = { $in: entityTypes };
-          console.log(filterQuery,"line no 554");
-          
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
           // let userRoleKeys = Object.keys(userRoleInfo);
@@ -643,6 +641,9 @@ module.exports = class SolutionsHelper {
         }
 
         delete filterQuery['scope.entityType'];
+        filterQuery.tenantId = data.tenantId
+				filterQuery.orgIds = { $in: ['ALL', data.orgId] }
+        console.log(filterQuery,"line no 644");
         return resolve({
           success: true,
           data: filterQuery,

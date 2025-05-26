@@ -76,11 +76,10 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
-        let reqBody = req.body
-        reqBody['tenantId'] = tenantFilter.tenantId
-        reqBody['orgId'] = tenantFilter.orgId
+        req.body['tenantId'] = tenantFilter.tenantId
+        req.body['orgId'] = tenantFilter.orgId
         let observations = await solutionsHelper.targetedSolutions(
-          reqBody,
+          req.body,
           req.query.type,
           req.userDetails.userId,
           req.pageSize,
@@ -209,6 +208,8 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
+        req.body['tenantId'] = tenantFilter.tenantId
+        req.body['orgId'] = tenantFilter.orgId
         let solutionData = await solutionsHelper.details(req.params._id, req.body, req.userDetails.userId,tenantFilter);
 
         return resolve(solutionData);
@@ -1697,6 +1698,9 @@ module.exports = class Solutions extends Abstract {
   async verifyLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
+        req.body['tenantId'] = tenantFilter.tenantId
+        req.body['orgId'] = tenantFilter.orgId
         let solutionData = await solutionsHelper.verifyLink(
           req.params._id,
           req.body,

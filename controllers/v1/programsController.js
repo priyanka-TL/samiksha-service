@@ -1318,6 +1318,9 @@ module.exports = class Programs extends Abstract {
   async targetedPrograms(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
+        req.body['tenantId'] = tenantFilter.tenantId
+        req.body['orgId'] = tenantFilter.orgId
         let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let programs = await programsHelper.targetedPrograms(
           req.body,

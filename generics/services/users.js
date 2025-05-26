@@ -191,7 +191,7 @@ const fetchTenantDetails = function (tenantId, userToken) {
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const tenantDetails = function (tenantId) {
+const fetchPublicTenantDetails = function (tenantId) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			let url =
@@ -239,5 +239,5 @@ module.exports = {
   profile:profile,
   fetchDefaultOrgDetails,
   fetchTenantDetails,
-  tenantDetails
+  fetchPublicTenantDetails
 };
