@@ -546,6 +546,8 @@ module.exports = class SurveysHelper {
           survey['name'] = solution.name;
           survey['description'] = solution.description;
           survey['isAPrivateProgram'] = solution.isAPrivateProgram;
+          survey["isExternalProgram"]=solution.isExternalProgram;
+
 
           if (solution.programId) {
             survey["programId"] = solution.programId;
@@ -557,7 +559,6 @@ module.exports = class SurveysHelper {
           if(solution.project && solution.referenceFrom){
             survey["project"] = solution.project;
             survey["referenceFrom"] =solution.referenceFrom
-            survey["isExternalProgram"]=solution.isExternalProgram
           }
 
           survey['tenantId'] = tenantData.tenantId;
@@ -1020,11 +1021,11 @@ module.exports = class SurveysHelper {
             isAPrivateProgram: surveyDocument.isAPrivateProgram,
           };
           submissionDocument.surveyInformation.startDate = new Date();
-          
+          submissionDocument.isExternalProgram =surveyDocument.isExternalProgram
+
           if(surveyDocument.project && surveyDocument.referenceFrom === messageConstants.common.PROJECT){
             submissionDocument.referenceFrom=surveyDocument.referenceFrom
             submissionDocument.project =surveyDocument.project
-            submissionDocument.isExternalProgram =surveyDocument.isExternalProgram
           }
           let userProfileData = await surveyService.profileRead(userToken)
 

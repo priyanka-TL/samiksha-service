@@ -124,7 +124,8 @@ module.exports = class ObservationsHelper {
             'entityTypeId',
             'isAPrivateProgram',
             "project",
-            "referenceFrom"
+            "referenceFrom",
+            "isExternalProgram"
           ],
         );
         if (!solutionData.length > 0) {
@@ -215,7 +216,6 @@ module.exports = class ObservationsHelper {
         if (data.project) {
           data.project._id = new ObjectId(data.project._id);
           data.referenceFrom = messageConstants.common.PROJECT;
-          data.isExternalProgram =true
         }
         
         let observationData = _.merge(data, {
@@ -236,6 +236,7 @@ module.exports = class ObservationsHelper {
           "userProfile" : userProfileInformation ? userProfileInformation : {},
           tenantId: tenantData.tenantId,
           orgId: tenantData.orgId,
+          isExternalProgram:solution.entityTypeId
         });
         let observationDataEntry = await database.models.observations.create(
           observationData
@@ -1065,7 +1066,8 @@ module.exports = class ObservationsHelper {
         referenceFrom: 1,
         pageHeading: 1,
         criteriaLevelReport: 1,
-        endDate: 1
+        endDate: 1,
+        isExternalProgram:1
       });
     });
   }
@@ -2304,6 +2306,7 @@ module.exports = class ObservationsHelper {
           'project',
           'referenceFrom',
           'criteriaLevelReport',
+          'isExternalProgram'
         ],
       );
   
@@ -2364,7 +2367,7 @@ module.exports = class ObservationsHelper {
           _id: solutionDocument.programId,
           status: messageConstants.common.ACTIVE_STATUS
         };
-        if(solutionDocument.project && solutionDocument.referenceFrom === messageConstants.common.PROJECT){
+        if(solutionDocument.isExternalProgram){
 
           programDocument = await projectService.programDetails(req.userDetails.userToken,solutionDocument.programId );
           if(!programDocument?.result?._id){
@@ -2415,7 +2418,6 @@ module.exports = class ObservationsHelper {
         programId: solutionDocument.programId ? solutionDocument.programId :undefined,
         programExternalId: solutionDocument.programExternalId ? solutionDocument.programExternalId: undefined ,
         isAPrivateProgram: solutionDocument.isAPrivateProgram,
-        isExternalProgram:false,
         frameworkId: solutionDocument.frameworkId,
         frameworkExternalId: solutionDocument.frameworkExternalId,
         entityTypeId: solutionDocument.entityTypeId,
@@ -2434,7 +2436,8 @@ module.exports = class ObservationsHelper {
         themes: solutionDocument.themes,
         programInformation:programInformation,
         tenantId: observationDocument.tenantId,
-        orgId: observationDocument.orgId
+        orgId: observationDocument.orgId,
+        isExternalProgram:solutionDocument.isExternalProgram
       };
   
       if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
@@ -2448,7 +2451,6 @@ module.exports = class ObservationsHelper {
       if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
         submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
         submissionDocument['project'] = solutionDocument.project;
-        submissionDocument['isExternalProgram']=solutionDocument.isExternalProgram
       }
   
       let criteriaId = new Array();

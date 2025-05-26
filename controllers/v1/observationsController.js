@@ -832,7 +832,7 @@ module.exports = class Observations extends Abstract {
             status: 'active',
           };
           let programDocument;
-          if (observationDocument.project && observationDocument.referenceFrom === messageConstants.common.PROJECT) {
+          if (solutionDocument.isExternalProgram) {
             programDocument = await projectService.programDetails(
               req.userDetails.userToken,
               observationDocument.programId
@@ -936,7 +936,6 @@ module.exports = class Observations extends Abstract {
           programExternalId: programExternalId,
           isAPrivateProgram: solutionDocument.isAPrivateProgram,
           programInformation: programInformation,
-          isExternalProgram:false,
           frameworkId: solutionDocument.frameworkId,
           frameworkExternalId: solutionDocument.frameworkExternalId,
           entityTypeId: solutionDocument.entityTypeId,

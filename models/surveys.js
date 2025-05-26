@@ -54,7 +54,10 @@ module.exports = {
       type: String,
       index: true,
     },
-    isExternalProgram:Boolean
+    isExternalProgram:{
+      default : false,
+      type : Boolean
+    }
   },
   compoundIndex: [
     {

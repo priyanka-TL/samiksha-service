@@ -101,7 +101,10 @@ module.exports = {
       require: true,
       index:true
     },
-    isExternalProgram:Boolean
+    isExternalProgram:{
+      default : false,
+      type : Boolean
+    }
   },
   compoundIndex: [
     {

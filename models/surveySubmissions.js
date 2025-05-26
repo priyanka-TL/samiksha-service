@@ -59,7 +59,10 @@ module.exports = {
     },
     project: Object,
     referenceFrom: String,
-    isExternalProgram:Boolean
+    isExternalProgram:{
+      default : false,
+      type : Boolean
+    }
   },
   compoundIndex: [
     {

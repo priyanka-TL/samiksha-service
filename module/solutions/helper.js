@@ -517,7 +517,6 @@ module.exports = class SolutionsHelper {
         Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type', 'tenantId', 'orgId'])).forEach((key) => {
           data[key] = data[key].split(',');
         });
-        console.log(referenceFrom,"this is refer")
         // If validate entity set to ON . strict scoping should be applied
         if (referenceFrom === '') {
           if (validateEntity !== messageConstants.common.OFF) {
@@ -2278,12 +2277,11 @@ module.exports = class SolutionsHelper {
         newSolutionDocument.updatedAt = startDate;
         newSolutionDocument.isAPrivateProgram = false;
         newSolutionDocument.isReusable = false;
-        newSolutionDocument.isExternalProgram = false;
 
         if (data.project) {
           newSolutionDocument['project'] = data.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
-          newSolutionDocument['isExternalProgram'] = true;
+          newSolutionDocument['isExternalProgram'] = isExternalProgram;
         }
 
         if (createdFor !== '') {
