@@ -189,7 +189,6 @@ module.exports = async function (req, res, next) {
     'createGesture',
     'createEmoji',
     'solutionDetails',
-    'solutions/updateSolutions',
     'solutions/addEntities',
     'solutions/list',
     'frameworks/delete/',
