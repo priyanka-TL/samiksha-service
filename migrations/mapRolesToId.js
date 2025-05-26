@@ -6,12 +6,13 @@
  */
 
 
+require('dotenv').config({ path: '../.env' });
 const { MongoClient } = require('mongodb');
 const mongoose = require('mongoose');
-const MONGODB_URL = 'mongodb://localhost:27017';
-const DB = 'elevate-samiksha';
-const tenantId = 'shikshagraha';
-const entityBaseURL = 'http://localhost:5001';
+const MONGODB_URL = process.env.MONGODB_URL; 
+const DB = process.env.DB;
+const tenantId = process.env.TENANT_ID;
+const entityBaseURL = process.env.ENTITY_BASE_URL;
 
 const dbClient = new MongoClient(MONGODB_URL);
 const request = require('request');
