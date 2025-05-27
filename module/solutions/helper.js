@@ -492,7 +492,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Auto targeted solutions query.
    */
 
-  static queryBasedOnRoleAndLocation(data, type = '') {
+  static queryBasedOnRoleAndLocation(data, type = '', referenceFrom="" ) {
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
@@ -505,6 +505,7 @@ module.exports = class SolutionsHelper {
         Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId','organizations'])).forEach((key) => {
           data[key] = data[key].split(',');
         });
+        if(referenceFrom === ""){
         // If validate entity set to ON . strict scoping should be applied
         if (validateEntity !== messageConstants.common.OFF) {
           // Getting entities and entity types from request body
@@ -620,7 +621,7 @@ module.exports = class SolutionsHelper {
               }
             }
           }
-        }
+      }
         if (type === messageConstants.common.SURVEY) {
           filterQuery['status'] = {
             $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
@@ -3788,11 +3789,11 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '') {
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '', referenceFrom="") {
     
     return new Promise(async (resolve, reject) => {
       try {
-        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, referenceFrom);
         if (!queryData.success) {
           return resolve(queryData);
         }

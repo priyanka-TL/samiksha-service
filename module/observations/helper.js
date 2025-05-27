@@ -236,7 +236,7 @@ module.exports = class ObservationsHelper {
           "userProfile" : userProfileInformation ? userProfileInformation : {},
           tenantId: tenantData.tenantId,
           orgId: tenantData.orgId,
-          isExternalProgram:solution.entityTypeId
+          isExternalProgram:solution.isExternalProgram
         });
         let observationDataEntry = await database.models.observations.create(
           observationData
