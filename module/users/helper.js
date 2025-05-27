@@ -20,8 +20,8 @@ const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/
 const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
-const defaultUserProfileConfig = require('@config/defaultUserProfileDeleteConfig')
-const configFilePath = process.env.AUTH_CONFIG_FILE_PATH
+const defaultUserProfileConfig = require('@config/defaultUserProfileDeleteConfig');
+const configFilePath = process.env.AUTH_CONFIG_FILE_PATH;
 
 /**
  * UserHelper
@@ -1024,63 +1024,69 @@ module.exports = class UserHelper {
   static deleteUserPIIData(userDeleteEvent) {
     return new Promise(async (resolve, reject) => {
       try {
-
-        let userId = userDeleteEvent.id
+        let userId = userDeleteEvent.id;
         // Throw an error if userId is missing
-				if (!userId) {
-					throw {
-						status: httpStatusCode.bad_request.status,
-						message: messageConstants.apiResponses.USER_ID_MISSING,
-					}
-				}
+        if (!userId) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.USER_ID_MISSING,
+          };
+        }
 
-        //Set the default configuration from defaultUserProfileConfig 
-        let userProfileConfig = defaultUserProfileConfig
-        
+        //Set the default configuration from defaultUserProfileConfig
+        let userProfileConfig = defaultUserProfileConfig;
+
         // Attempt to load configuration from the config JSON file if path is provided
-				if (configFilePath) {
-					const absolutePath = path.resolve(ROOT_PATH, configFilePath)
-					if (fs.existsSync(absolutePath)) {
-						const fileContent = fs.readFileSync(absolutePath)
-						const parsed = JSON.parse(fileContent)
+        if (configFilePath) {
+          const absolutePath = path.resolve(ROOT_PATH, configFilePath);
+          if (fs.existsSync(absolutePath)) {
+            const fileContent = fs.readFileSync(absolutePath);
+            const parsed = JSON.parse(fileContent);
 
-						if (
-							parsed &&
-							typeof parsed === messageConstants.common.OBJECT &&
-							parsed.userProfileKeysForDelete &&
-							typeof parsed.userProfileKeysForDelete === messageConstants.common.OBJECT
-						) {
-							userProfileConfig = parsed.userProfileKeysForDelete
-						}
-					}
-				}
+            if (
+              parsed &&
+              typeof parsed === messageConstants.common.OBJECT &&
+              parsed.userProfileKeysForDelete &&
+              typeof parsed.userProfileKeysForDelete === messageConstants.common.OBJECT
+            ) {
+              userProfileConfig = parsed.userProfileKeysForDelete;
+            }
+          }
+        }
 
-        const filter = { createdBy: userId }
+        const filter = { createdBy: userId };
 
         // Create update objects for each collection
         const userProfileOps = _buildUpdateOperations(userProfileConfig, messageConstants.common.USER_PROFILE_KEY);
-        const nestedProfileOps = _buildUpdateOperations(userProfileConfig, messageConstants.common.USER_PROFILE_KEY_OBS);
+        const nestedProfileOps = _buildUpdateOperations(
+          userProfileConfig,
+          messageConstants.common.USER_PROFILE_KEY_OBS
+        );
 
         // Merge updates for observation submissions
         const observationUpdateOperations = {
-            ...(userProfileOps.$set || nestedProfileOps.$set ? { $set: { ...userProfileOps.$set, ...nestedProfileOps.$set } } : {}),
-            ...(userProfileOps.$unset || nestedProfileOps.$unset ? { $unset: { ...userProfileOps.$unset, ...nestedProfileOps.$unset } } : {})
-        }
+          ...(userProfileOps.$set || nestedProfileOps.$set
+            ? { $set: { ...userProfileOps.$set, ...nestedProfileOps.$set } }
+            : {}),
+          ...(userProfileOps.$unset || nestedProfileOps.$unset
+            ? { $unset: { ...userProfileOps.$unset, ...nestedProfileOps.$unset } }
+            : {}),
+        };
 
         //update in db
-        let updateDataStatus = await Promise.all([surveySubmissionsHelper.updateMany(filter,userProfileOps),
-            observationsHelper.updateMany(filter,userProfileOps),
-            observationSubmissionsHelper.updateMany(filter,observationUpdateOperations)
-        ])
+        let updateDataStatus = await Promise.all([
+          surveySubmissionsHelper.updateMany(filter, userProfileOps),
+          observationsHelper.updateMany(filter, userProfileOps),
+          observationSubmissionsHelper.updateMany(filter, observationUpdateOperations),
+        ]);
 
-        const isAnyModified = updateDataStatus?.some(status => status?.modifiedCount > 0);
+        const isAnyModified = updateDataStatus?.some((status) => status?.modifiedCount > 0);
         return resolve({
-            success: true,
-            message: isAnyModified
-                ? messageConstants.apiResponses.DATA_DELETED_SUCCESSFULLY
-                : messageConstants.apiResponses.FAILED_TO_DELETE_DATA
+          success: true,
+          message: isAnyModified
+            ? messageConstants.apiResponses.DATA_DELETED_SUCCESSFULLY
+            : messageConstants.apiResponses.FAILED_TO_DELETE_DATA,
         });
-
       } catch (err) {
         return resolve({
           status: err.status ? err.status : httpStatusCode['internal_server_error'].status,
@@ -1102,33 +1108,33 @@ module.exports = class UserHelper {
  */
 
 function _buildUpdateOperations(fieldConfig, prefix = '') {
-    const setOperations = {};
-    const unsetOperations = {};
+  const setOperations = {};
+  const unsetOperations = {};
 
-    // Mask data keys with specific or default values
-    if (Array.isArray(fieldConfig.preserveAndMask)) {
-        for (const key of fieldConfig.preserveAndMask) {
-            // Use specific masked value if available, otherwise default
-            const value =
-                fieldConfig.specificMaskedValues && fieldConfig.specificMaskedValues[key] !== undefined
-                    ? fieldConfig.specificMaskedValues[key]
-                    : fieldConfig.defaultMaskedDataPlaceholder;
+  // Mask data keys with specific or default values
+  if (Array.isArray(fieldConfig.preserveAndMask)) {
+    for (const key of fieldConfig.preserveAndMask) {
+      // Use specific masked value if available, otherwise default
+      const value =
+        fieldConfig.specificMaskedValues && fieldConfig.specificMaskedValues[key] !== undefined
+          ? fieldConfig.specificMaskedValues[key]
+          : fieldConfig.defaultMaskedDataPlaceholder;
 
-            setOperations[`${prefix}${key}`] = value;
-        }
+      setOperations[`${prefix}${key}`] = value;
     }
+  }
 
-    // Unset keys
-    if (Array.isArray(fieldConfig.fieldsToRemove)) {
-        for (const key of fieldConfig.fieldsToRemove) {
-            unsetOperations[`${prefix}${key}`] = 1;
-        }
+  // Unset keys
+  if (Array.isArray(fieldConfig.fieldsToRemove)) {
+    for (const key of fieldConfig.fieldsToRemove) {
+      unsetOperations[`${prefix}${key}`] = 1;
     }
+  }
 
-    return {
-        $set: Object.keys(setOperations).length > 0 ? setOperations : undefined,
-        $unset: Object.keys(unsetOperations).length > 0 ? unsetOperations : undefined,
-    };
+  return {
+    $set: Object.keys(setOperations).length > 0 ? setOperations : undefined,
+    $unset: Object.keys(unsetOperations).length > 0 ? unsetOperations : undefined,
+  };
 }
 
 /**
