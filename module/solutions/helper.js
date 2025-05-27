@@ -578,8 +578,8 @@ module.exports = class SolutionsHelper {
             // let dataToOmit = ['filter', 'role', 'factors', 'type', 'tenantId', 'orgId'];
             // factors.append(dataToOmit)
 
-            const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
-
+            // const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
+            const finalKeysToRemove=[]
             filterQuery.$or = [];
             Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
               filterQuery.$or.push({
