@@ -293,9 +293,6 @@ module.exports = class SolutionsHelper {
           }
         }
 
-        requestedData['tenantId'] = tenantFilter.tenantId;
-        requestedData['orgId'] = tenantFilter.orgId;
-
         let targetedSolutions = {
           success: false,
         };
@@ -487,13 +484,13 @@ module.exports = class SolutionsHelper {
           isDeleted: false,
         };
 
-        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
+        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId','organizations'])).forEach((key) => {
           data[key] = data[key].split(',');
         });
         // If validate entity set to ON . strict scoping should be applied
         if (validateEntity !== messageConstants.common.OFF) {
           // Getting entities and entity types from request body
-          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId'])).forEach((requestedDataKey) => {
+          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId','organizations'])).forEach((requestedDataKey) => {
              entities.push(...data[requestedDataKey]);
             // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
             entityTypes.push(requestedDataKey);
@@ -618,9 +615,6 @@ module.exports = class SolutionsHelper {
         }
 
         filterQuery.tenantId = data.tenantId;
-        filterQuery['scope.organizations'] = {
-          "$in": ["ALL", data.orgId]
-        };
 
         if (data.filter && Object.keys(data.filter).length > 0) {
           let solutionsSkipped = [];
@@ -3716,12 +3710,10 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',tenantData,orgin) {
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',orgin) {
     
     return new Promise(async (resolve, reject) => {
       try {
-        bodyData.tenantId = tenantData.tenantId;
-        bodyData.orgId = tenantData.orgId;
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, orgin);
         if (!queryData.success) {
           return resolve(queryData);

@@ -2157,7 +2157,7 @@ module.exports = class Solutions extends Abstract {
           req.params._id,
           req.body,
           req.query.type ? req.query.type : '',
-          req.userDetails.tenantData
+          req.headers.origin
         );
 
         solutionDetails.result = solutionDetails.data;
