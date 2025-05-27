@@ -401,11 +401,6 @@ module.exports = class SolutionsHelper {
               totalCount = mergedData.length;
             }
           }
-        } else {
-          return resolve({
-            ...targetedSolutions,
-            status: httpStatusCode.bad_request.status,
-          });
         }
 
         if (mergedData.length > 0) {
