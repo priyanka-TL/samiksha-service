@@ -2259,10 +2259,11 @@ module.exports = class SolutionsHelper {
    * @param {String} appName - app Name.
    * @param {String} userId - user Id.
    * @param {Object} tenantData - tenant data.
+   * @param {String} userToken - user token.
    * @returns {Object} - Details of the solution.
    */
 
-  static fetchLink(solutionId, userId,tenantData) {
+  static fetchLink(solutionId, userId,tenantData, userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -2273,7 +2274,7 @@ module.exports = class SolutionsHelper {
             tenantId: tenantData.tenantId,
             orgIds:{ $in: ['ALL', tenantData.orgId] }
           },
-          ['link', 'type', 'author']
+          ['link', 'type', 'author','tenantId']
         );
 
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
@@ -2285,7 +2286,7 @@ module.exports = class SolutionsHelper {
 
         let prefix = messageConstants.common.PREFIX_FOR_SOLUTION_LINK;
 
-        let solutionLink, link;
+        let solutionLink
 
         if (!solutionData[0].link) {
           let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
@@ -2296,7 +2297,22 @@ module.exports = class SolutionsHelper {
           solutionLink = solutionData[0].link;
         }
         //generate the solution link
-        link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+        // link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+        // fetch tenant domain by calling  tenant details API
+				let tenantDetails = await userService.fetchTenantDetails(solutionData[0].tenantId, userToken)
+        
+        // Error handling if API failed or no domains found
+				if (
+					!tenantDetails.success ||
+					!tenantDetails.data ||
+					!Array.isArray(tenantDetails.data.domains) ||
+					tenantDetails.data.domains.length === 0
+				) {
+					throw {
+						status: httpStatusCode.bad_request.status,
+						message: messageConstants.apiResponses.DOMAIN_FETCH_FAILED,
+					}
+				}
         return resolve({
           success: true,
           message: messageConstants.apiResponses.LINK_GENERATED,

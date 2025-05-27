@@ -376,6 +376,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'config.json',
 	},
+  APP_PORTAL_DIRECTORY: {
+		message: 'App Portal base url required',
+		optional: false,
+		default: '/ml/',
+	},
 };
 
 let success = true;
