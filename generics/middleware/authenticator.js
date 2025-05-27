@@ -208,7 +208,8 @@ module.exports = async function (req, res, next) {
     "criteria/upload",
     "questions/bulkCreate",
     "frameworks/create",
-    "frameworks/uploadThemes"
+    "frameworks/uploadThemes",
+    'users/deleteUserPIIData'
   ];
 
   let performInternalAccessTokenCheck = false;
@@ -385,7 +386,10 @@ module.exports = async function (req, res, next) {
   }
 
   // Path to config.json
-  const configFilePath = path.resolve(__dirname, '../../', 'config.json');
+  let configFilePath
+  if (process.env.AUTH_CONFIG_FILE_PATH) {
+    configFilePath = path.resolve(ROOT_PATH, process.env.AUTH_CONFIG_FILE_PATH)
+  }
   // Initialize variables
   let configData = {};
   let defaultTokenExtraction = false;
