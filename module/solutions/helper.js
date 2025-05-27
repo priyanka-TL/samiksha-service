@@ -2277,35 +2277,31 @@ module.exports = class SolutionsHelper {
           ['link', 'type', 'author','tenantId']
         );
 
-        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+        if (!Array.isArray(solutionData) || solutionData.length === 0) {
           return resolve({
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
             result: {},
           });
         }
 
+        const solution = solutionData[0];
         let prefix = messageConstants.common.PREFIX_FOR_SOLUTION_LINK;
-        let solutionLink
+        let solutionLink = solution?.link;
 
-        if (!solutionData[0].link) {
-          let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
+        if (!solutionLink) {
+          solutionLink = await gen.utils.md5Hash(solution._id + '###' + solution.author);
           // update link to the solution documents
-          let updateSolution = await this.update(solutionId, { link: updateLink }, userId,false,{tenantId:tenantData.tenantId,orgId:[tenantData.orgId]});
-          solutionLink = updateLink;
-        } else {
-          solutionLink = solutionData[0].link;
+          let updateSolution = await this.update(solutionId, { link: solutionLink }, userId,false,{tenantId:tenantData.tenantId,orgId:[tenantData.orgId]});
         }
-        //generate the solution link
-        // link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+
         // fetch tenant domain by calling  tenant details API
-				let tenantDetails = await userService.fetchTenantDetails(solutionData[0].tenantId, userToken)
-        
+				let tenantDetailsResponse = await userService.fetchTenantDetails(solution.tenantId, userToken)
+        const domains = tenantDetailsResponse?.data?.domains || []
         // Error handling if API failed or no domains found
 				if (
-					!tenantDetails.success ||
-					!tenantDetails.data ||
-					!Array.isArray(tenantDetails.data.domains) ||
-					tenantDetails.data.domains.length === 0
+					!tenantDetailsResponse.success ||
+					!Array.isArray(domains) ||
+          domains.length === 0
 				) {
 					throw {
 						status: httpStatusCode.bad_request.status,
@@ -2314,7 +2310,7 @@ module.exports = class SolutionsHelper {
 				}
 
         // Collect all verified domains into an array
-				let allDomains = tenantDetails.data.domains
+				let allDomains = domains
 					.filter((domainObj) => domainObj.verified)
 					.map((domainObj) => domainObj.domain)
 
