@@ -549,33 +549,33 @@ module.exports = class SolutionsHelper {
           */
             // filterQuery['scope.entities'] = { $in: entities };
             let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type', 'tenantId', 'orgId']);
+            // comment to unblock FE
+            // let tenantDetails = await userService.tenantDetails(origin);
+            // if (!tenantDetails.data && !tenantDetails.data.meta) {
+            //   return resolve({
+            //     success: false,
+            //     message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            //   });
+            // }
+            let factors=[];
+            // if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
+            //   factors = tenantDetails.data.meta.factors;
+            //   let queryFilter = [];
 
-            let tenantDetails = await userService.tenantDetails(origin);
-            if (!tenantDetails.data && !tenantDetails.data.meta) {
-              return resolve({
-                success: false,
-                message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-              });
-            }
-            let factors;
-            if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-              factors = tenantDetails.data.meta.factors;
-              let queryFilter = [];
-
-              // Build query based on each key
-              factors.forEach((factor) => {
-                let scope = 'scope.' + factor;
-                let values = userRoleInfo[factor];
-                if (!Array.isArray(values)) {
-                  queryFilter.push({ [scope]: { $in: values.split(',') } });
-                } else {
-                  queryFilter.push({ [scope]: { $in: [...values] } });
-                }
-              });
-              // append query filter
-              filterQuery['$and'] = queryFilter;
-            }
-            let dataToOmit = ['filter', 'role', 'factors', 'type', 'tenantId', 'orgId'];
+            //   // Build query based on each key
+            //   factors.forEach((factor) => {
+            //     let scope = 'scope.' + factor;
+            //     let values = userRoleInfo[factor];
+            //     if (!Array.isArray(values)) {
+            //       queryFilter.push({ [scope]: { $in: values.split(',') } });
+            //     } else {
+            //       queryFilter.push({ [scope]: { $in: [...values] } });
+            //     }
+            //   });
+            //   // append query filter
+            //   filterQuery['$and'] = queryFilter;
+            // }
+            // let dataToOmit = ['filter', 'role', 'factors', 'type', 'tenantId', 'orgId'];
             // factors.append(dataToOmit)
 
             const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
