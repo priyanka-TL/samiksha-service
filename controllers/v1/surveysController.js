@@ -794,7 +794,6 @@ module.exports = class Surveys extends Abstract {
                 req.userDetails.userId,
                 req.userDetails.userToken,
                 req.userDetails.tenantData,
-                req.headers.origin
                 // appVersion,
                 // appName
             );

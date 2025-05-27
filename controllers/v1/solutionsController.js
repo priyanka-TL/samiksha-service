@@ -85,8 +85,7 @@ module.exports = class Solutions extends Abstract {
           req.query.filter,
           req.query.surveyReportPage ? req.query.surveyReportPage : '',
           req.query.currentScopeOnly ? req.query.currentScopeOnly : false,
-          req.userDetails.tenantData,
-          req.headers.origin
+          req.userDetails.tenantData
         );
 
         observations['result'] = observations.data;
@@ -2155,8 +2154,7 @@ module.exports = class Solutions extends Abstract {
         let solutionDetails = await solutionsHelper.detailsBasedOnRoleAndLocation(
           req.params._id,
           req.body,
-          req.query.type ? req.query.type : '',
-          req.headers.origin
+          req.query.type ? req.query.type : ''
         );
 
         solutionDetails.result = solutionDetails.data;

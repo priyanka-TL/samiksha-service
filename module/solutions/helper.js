@@ -3706,15 +3706,14 @@ module.exports = class SolutionsHelper {
    * @param {Object} bodyData - Requested body data.
    * @param {String} type -Type of solution
    * @param {Object} tenantData - tenant data.
-   * @param {String} orgin - origin of request.
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '',orgin) {
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '') {
     
     return new Promise(async (resolve, reject) => {
       try {
-        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, orgin);
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
         if (!queryData.success) {
           return resolve(queryData);
         }

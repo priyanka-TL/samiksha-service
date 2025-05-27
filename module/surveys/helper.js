@@ -1454,7 +1454,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '',origin = '') {
+  static findOrCreateSurvey(bodyData, surveyId = '', solutionId = '', userId = '', token = '') {
     return new Promise(async (resolve, reject) => {
       try {
         if (userId == '') {
@@ -1493,8 +1493,7 @@ module.exports = class SurveysHelper {
                 solutionId,
                 bodyData,
                 messageConstants.common.SURVEY,
-                tenantData,
-                origin
+                tenantData
               );
             if (!solutionData.success) {
               throw new Error(
