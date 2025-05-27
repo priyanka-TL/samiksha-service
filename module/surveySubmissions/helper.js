@@ -707,4 +707,30 @@ module.exports = class SurveySubmissionsHelper {
       }
     });
   }
+
+  /**
+   * Update survey Submission
+   * @method
+   * @name updateMany
+   * @param {Object} query 
+   * @param {Object} update 
+   * @param {Object} options 
+   * @returns {JSON} - update observations.
+  */
+  static updateMany(query, update) {
+      return new Promise(async (resolve, reject) => {
+          try {
+              let surveySubmissionUpdate = await surveySubmissionQueries.updateMany(
+                  query, 
+                  update
+              );
+
+              if( surveySubmissionUpdate) {
+                  return resolve(surveySubmissionUpdate);
+              }
+          } catch (error) {
+              return reject(error);
+          }
+      })
+  }
 };

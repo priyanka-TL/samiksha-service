@@ -451,4 +451,46 @@ module.exports = class Users {
       }
     });
   }
+
+   /**
+     * @api {post} /assessment/api/v1/users/deleteUserPIIData Delete user data
+     * @apiVersion 2.0.0
+     * @apiName Delete user data
+     * @apiGroup Users
+     * @apiHeader {String} internal-access-token Internal access token
+     * @apiSampleRequest /assessment/api/v1/users/deleteUserPIIData
+     * @apiUse successBody
+     * @apiUse errorBody
+     * @apiParamExample {json} Response:
+     * {
+            "message": "Data deleted successfully.",
+            "status": 200
+        }
+     */
+
+  /**
+   * Delete user data
+   * @method
+   * @name deleteUserPIIData
+   * @param {Object} req -request Data.
+   * @returns {JSON} - User data deletion response
+   */
+
+  async deleteUserPIIData(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let result = await usersHelper.deleteUserPIIData(
+          req.body,
+        );
+
+        return resolve(result);
+      } catch (error) {
+        return reject({
+          status: error.status || httpStatusCode.internal_server_error.status,
+          message: error.message || httpStatusCode.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
 };

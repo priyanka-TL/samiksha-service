@@ -197,7 +197,6 @@ module.exports = class SolutionsHelper {
    * @param {String} [ filter = ""] - filter text.
    * @param {String} currentScopeOnly - flag to return records only based on scope
    * @param {String} tenantFilter - tenant data
-   * @param {String} origin - origin header
    * @returns {Object} - Details of the solution.
    */
 
@@ -212,7 +211,6 @@ module.exports = class SolutionsHelper {
     surveyReportPage = '',
     currentScopeOnly = false,
     tenantFilter,
-    origin
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -311,7 +309,7 @@ module.exports = class SolutionsHelper {
         }
         // solutions based on role and location
         if (getTargetedSolution) {
-          targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search,origin);
+          targetedSolutions = await this.forUserRoleAndLocation(requestedData, solutionType, '', '', '', '', search);
         }
 
         
@@ -476,11 +474,10 @@ module.exports = class SolutionsHelper {
    * @name queryBasedOnRoleAndLocation
    * @param {String} data - Requested body data.
    * @param {String} type - type of solutions.
-   * @param {String} origin - origin header
    * @returns {JSON} - Auto targeted solutions query.
    */
 
-  static queryBasedOnRoleAndLocation(data, type = '',origin = '') {
+  static queryBasedOnRoleAndLocation(data, type = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
@@ -523,29 +520,19 @@ module.exports = class SolutionsHelper {
           // filterQuery['scope.entities'] = { $in: entities };
           let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
-          let tenantDetails = await userService.tenantDetails(origin);
-          if (!tenantDetails.data && !tenantDetails.data.meta) {
+          let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
+					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
             return resolve({
               success: false,
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             });
           }
+
+          // factors = [ 'professional_role', 'professional_subroles' ]
           let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-            factors = tenantDetails.data.meta.factors;
-            let queryFilter = [];
-
-            // Build query based on each key
-            factors.forEach((factor) => {
-              let scope = 'scope.' + factor;
-              let values = userRoleInfo[factor];
-              if (!Array.isArray(values)) {
-                queryFilter.push({ [scope]: { $in: values.split(',') } });
-              } else {
-                queryFilter.push({ [scope]: { $in: [...values] } });
-              }
-            });
-            // append query filter
+            factors = tenantDetails.data.meta.factors;            
+            let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
             filterQuery['$and'] = queryFilter;
           }
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
@@ -576,6 +563,7 @@ module.exports = class SolutionsHelper {
           let queryFilter = [];
 
           // if factors are passed or query has to be build based on the keys passed
+          // factors = [ 'professional_role', 'professional_subroles' ]
           if (data.hasOwnProperty('factors') && data.factors.length > 0) {
             let factors = data.factors;
             // Build query based on each key
@@ -653,6 +641,7 @@ module.exports = class SolutionsHelper {
         }
 
         delete filterQuery['scope.entityType'];
+        filterQuery.tenantId = data.tenantId
         return resolve({
           success: true,
           data: filterQuery,
@@ -679,15 +668,14 @@ module.exports = class SolutionsHelper {
    * @param {String} pageSize - Page size.
    * @param {String} pageNo - Page no.
    * @param {String} searchText - search text.
-   * @param {String} origin - origin header
    * @returns {JSON} - List of solutions based on role and location.
    */
 
-  static forUserRoleAndLocation(bodyData, type, subType = '', programId, pageSize, pageNo, searchText = '',origin) {
+  static forUserRoleAndLocation(bodyData, type, subType = '', programId, pageSize, pageNo, searchText = '') {
     return new Promise(async (resolve, reject) => {
       try {
         //Getting query based on roles and entity
-        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type,origin, subType, programId);
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, subType, programId);
         if (!queryData.success) {
           return resolve(queryData);
         }

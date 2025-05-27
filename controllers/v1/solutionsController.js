@@ -1686,6 +1686,7 @@ module.exports = class Solutions extends Abstract {
   async verifyLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let solutionData = await solutionsHelper.verifyLink(
           req.params._id,
           req.body,
