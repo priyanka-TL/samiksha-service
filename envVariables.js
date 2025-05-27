@@ -387,6 +387,7 @@ module.exports = function () {
     };
 
     let keyCheckPass = true;
+    let validRequiredIfOperators = ['EQUALS', 'NOT_EQUALS']
 
     if (
       enviromentVariables[eachEnvironmentVariable].optional === true &&
