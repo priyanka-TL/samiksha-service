@@ -2285,7 +2285,6 @@ module.exports = class SolutionsHelper {
         }
 
         let prefix = messageConstants.common.PREFIX_FOR_SOLUTION_LINK;
-
         let solutionLink
 
         if (!solutionData[0].link) {
@@ -2313,10 +2312,22 @@ module.exports = class SolutionsHelper {
 						message: messageConstants.apiResponses.DOMAIN_FETCH_FAILED,
 					}
 				}
+
+        // Collect all verified domains into an array
+				let allDomains = tenantDetails.data.domains
+					.filter((domainObj) => domainObj.verified)
+					.map((domainObj) => domainObj.domain)
+
+        // Generate link for each domain
+				let links = allDomains.map((domain) => {
+					const fullUrl = `https://${domain}${process.env.APP_PORTAL_DIRECTORY}`
+					return this._generateLink(fullUrl, prefix, solutionLink, solutionData[0].type)
+				})
+
         return resolve({
           success: true,
           message: messageConstants.apiResponses.LINK_GENERATED,
-          result: link,
+          result: links,
         });
       } catch (error) {
         return resolve({
