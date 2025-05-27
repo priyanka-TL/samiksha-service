@@ -1539,7 +1539,7 @@ module.exports = class EntitiesHelper {
                 }
                 let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
 
-                entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections,req.pageNo,req.pageSize);
+                entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections,req.pageNo,req.pageSize,req.searchText);
                 
                 if ( !entitiesDetails.success ) {
                   return resolve({
@@ -1592,7 +1592,7 @@ module.exports = class EntitiesHelper {
               "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
 
             }
-            let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections,req.pageNo,req.pageSize);
+            let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections,req.pageNo,req.pageSize,req.searchText);
             if ( !entitiesDetails.success ) {
                 return resolve({
                     "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
