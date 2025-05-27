@@ -101,8 +101,7 @@ module.exports = class ReportsHelper {
       let solutionDocument = await solutionsQueries.solutionDocuments(
         {
           _id: surveySubmissionsDocument.solutionId,
-          tenantId: req.userDetails.tenantData.tenantId,
-          orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] },
+          tenantId: req.userDetails.tenantData.tenantId
         },
         ['name', 'scoringSystem', 'description', 'questionSequenceByEcm']
       );
@@ -118,8 +117,7 @@ module.exports = class ReportsHelper {
         let programDocument = await programsHelper.list(
           {
             _id: surveySubmissionsDocument.programId,
-            tenantId: req.userDetails.tenantData.tenantId,
-            orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] },
+            tenantId: req.userDetails.tenantData.tenantId
           },
           ['name', 'description',"externalId"]
         );
@@ -215,8 +213,7 @@ module.exports = class ReportsHelper {
 
     let solutionDocument = await solutionsQueries.solutionDocuments({
       _id: submissionDocument.solutionId,
-      tenantId: req.userDetails.tenantData.tenantId,
-      orgIds: { $in: ['ALL', req.userDetails.tenantData.orgId] },
+      tenantId: req.userDetails.tenantData.tenantId
     });
 
     let programDocument = await programsHelper.details(submissionDocument.programId);
@@ -348,8 +345,7 @@ module.exports = class ReportsHelper {
     let solutionDocument = await solutionsQueries.solutionDocuments(
       {
         _id: submissionDocument.solutionId,
-        tenantId: req.userDetails.tenantData.tenantId,
-        orgIds:{"$in":['ALL',req.userDetails.tenantData.orgId]}
+        tenantId: req.userDetails.tenantData.tenantId
       }
     );
 

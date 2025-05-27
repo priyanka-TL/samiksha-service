@@ -159,8 +159,7 @@ module.exports = class SolutionDetails {
           .findOne(
             {
               externalId: req.params._id,
-              tenantId: tenantFilter.tenantId,
-              orgIds:{"$in":[...tenantFilter.orgId,'ALL']}
+              tenantId: tenantFilter.tenantId
             },
             { themes: 1 },
           )
@@ -172,8 +171,7 @@ module.exports = class SolutionDetails {
           .find(
             {
               _id: { $in: criteriaIds },
-              tenantId: tenantFilter.tenantId,
-              orgIds:{"$in":[...tenantFilter.orgId,'ALL']}
+              tenantId: tenantFilter.tenantId
             },
             { name: 1, externalId: 1, rubric: 1, _id: 1 },
           )

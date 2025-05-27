@@ -214,7 +214,9 @@ module.exports = class Forms extends Abstract {
 	async read(req) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let tenantData = req.userDetails.tenantAndOrgInfo
+				let tenantData = {tenantId:req.userDetails.tenantId,
+								orgId:req.userDetails.orgId,
+				}
 				if (!req.params._id && Object.keys(req.body).length === 0) {
 					const formData = await formsHelper.readAllFormsVersion()
 					return resolve(formData)

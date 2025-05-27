@@ -227,7 +227,7 @@ module.exports = class QuestionsHelper {
 
           allValues['entityFieldName'] = '';
           allValues['tenantId'] =tenantFilter.tenantId
-          allValues['orgIds'] =tenantFilter.orgId
+          allValues['orgId'] =tenantFilter.orgId[0]
           if (parsedQuestion.entityFieldName && profileFields.includes(parsedQuestion.entityFieldName)) {
             allValues['entityFieldName'] = parsedQuestion.entityFieldName;
           }
@@ -243,8 +243,7 @@ module.exports = class QuestionsHelper {
             if (parsedQuestion['parentQuestionId'] != '') {
               let queryParentQuestionObject = {
                 _id: questionCollection[parsedQuestion['parentQuestionId']]._id,
-                tenantId: tenantFilter.tenantId,
-                orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+                tenantId: tenantFilter.tenantId
               };
 
               let updateParentQuestionObject = {};
@@ -259,8 +258,7 @@ module.exports = class QuestionsHelper {
             if (parsedQuestion['instanceParentQuestionId'] != 'NA') {
               let queryInstanceParentQuestionObject = {
                 _id: questionCollection[parsedQuestion['instanceParentQuestionId']]._id,
-                tenantId: tenantFilter.tenantId,
-                orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+                tenantId: tenantFilter.tenantId
               };
 
               let updateInstanceParentQuestionObject = {};
@@ -278,8 +276,7 @@ module.exports = class QuestionsHelper {
             let newCriteria = await database.models.criteria.findOne(
               {
                 _id: criteriaObject[parsedQuestion['criteriaExternalId']]._id,
-                tenantId: tenantFilter.tenantId,
-                orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+                tenantId: tenantFilter.tenantId
               },
               {
                 evidences: 1,
@@ -315,8 +312,7 @@ module.exports = class QuestionsHelper {
 
             let queryCriteriaObject = {
               _id: newCriteria._id,
-              tenantId: tenantFilter.tenantId,
-              orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+              tenantId: tenantFilter.tenantId
             };
 
             let updateCriteriaObject = {};
@@ -813,8 +809,7 @@ module.exports = class QuestionsHelper {
 
         let criteriaDocuments = await database.models.criteria.find({
            _id: { $in: criteriaIds }, 
-           tenantId: tenantAndOrgInfo.tenantId,
-          orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]}
+           tenantId: tenantAndOrgInfo.tenantId
          }, ['evidences']);
 
         if (!criteriaDocuments.length) {
@@ -832,8 +827,7 @@ module.exports = class QuestionsHelper {
 
         let questionDocuments = await this.questionDocument({
            _id: { $in: questionIds }, 
-           tenantId: tenantAndOrgInfo.tenantId,
-          orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]} 
+           tenantId: tenantAndOrgInfo.tenantId
         });
 
         if (!questionDocuments.length) {
@@ -849,7 +843,7 @@ module.exports = class QuestionsHelper {
             question.externalId = newExternalId;
             question.createdFromQuestionId = question._id;
             question.tenantId=tenantAndOrgInfo.tenantId
-            question.orgIds = tenantAndOrgInfo.orgId
+            question.orgId = tenantAndOrgInfo.orgId[0]
             let newQuestion = await this.make(_.omit(question, ['_id']),tenantAndOrgInfo);
 
             if (newQuestion._id) {
