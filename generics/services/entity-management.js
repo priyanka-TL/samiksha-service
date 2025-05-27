@@ -22,11 +22,17 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  */
 
 // Function to find entity documents based on the given filter and projection
-const entityDocuments = function (filterData = 'all', projection = 'all',page = null,limit = null) {
+const entityDocuments = function (filterData = 'all', projection = 'all',page = null,limit = null,search = '') {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
-      const url = entityManagementServiceUrl+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS+`?page=${page}&limit=${limit}`;
+      const url = entityManagementServiceUrl+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS+`?page=${page}&limit=${limit}&search=${search}`;
+
+      if(filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0){
+        filterData['_id'] = {
+          '$in' : filterData._id
+        }
+      }
 
       let requestJSON = {
         query: filterData,
@@ -87,6 +93,13 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
     try {
       // Construct the URL for the entity management service
       const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_TYPE_DOCUMENTS;
+
+      if(filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0){
+        filterData['_id'] = {
+          '$in' : filterData._id
+        }
+      }
+
       // Set the options for the HTTP POST request
       const options = {
         headers: {
@@ -242,6 +255,12 @@ const userRoleExtension = function (filterData = 'all', projection = 'all') {
     try {
       // Define the URL for the user role extension API
       const url = entityManagementServiceUrl+messageConstants.endpoints.USER_ROLE_EXTENSION;
+
+      if(filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0){
+        filterData['_id'] = {
+          '$in' : filterData._id
+        }
+      }
 
       // Set the options for the HTTP POST request
       const options = {
