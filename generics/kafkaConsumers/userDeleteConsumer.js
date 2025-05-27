@@ -1,7 +1,7 @@
 /**
  * name : userDeleteConsumer.js
- * author : Ankit Shahu
- * created-date : 10-Nov-2023
+ * author : Priyanka Pradeep
+ * created-date : 27-May-2025
  * Description : User delete consumer.
  */
  const usersHelper = require(MODULES_BASE_PATH + "/users/helper");

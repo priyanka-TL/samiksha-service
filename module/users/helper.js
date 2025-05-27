@@ -20,7 +20,8 @@ const surveySubmissionsHelper = require(MODULES_BASE_PATH + '/surveySubmissions/
 const shikshalokamHelper = require(MODULES_BASE_PATH + '/shikshalokam/helper');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
-const userProfileConfig = require('@config/userProfileConfig')
+const defaultUserProfileConfig = require('@config/defaultUserProfileDeleteConfig')
+const configFilePath = process.env.AUTH_CONFIG_FILE_PATH
 
 /**
  * UserHelper
@@ -1033,6 +1034,27 @@ module.exports = class UserHelper {
 					}
 				}
 
+        //Set the default configuration from defaultUserProfileConfig 
+        let userProfileConfig = defaultUserProfileConfig
+        
+        // Attempt to load configuration from the config JSON file if path is provided
+				if (configFilePath) {
+					const absolutePath = path.resolve(ROOT_PATH, configFilePath)
+					if (fs.existsSync(absolutePath)) {
+						const fileContent = fs.readFileSync(absolutePath)
+						const parsed = JSON.parse(fileContent)
+
+						if (
+							parsed &&
+							typeof parsed === messageConstants.common.OBJECT &&
+							parsed.userProfileKeysForDelete &&
+							typeof parsed.userProfileKeysForDelete === messageConstants.common.OBJECT
+						) {
+							userProfileConfig = parsed.userProfileKeysForDelete
+						}
+					}
+				}
+
         const filter = { createdBy: userId }
 
         // Create update objects for each collection
@@ -1060,7 +1082,6 @@ module.exports = class UserHelper {
         });
 
       } catch (err) {
-        console.log(err,'err')
         return resolve({
           status: err.status ? err.status : httpStatusCode['internal_server_error'].status,
           message: err.message || err,

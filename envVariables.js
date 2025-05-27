@@ -359,7 +359,8 @@ let enviromentVariables = {
 	},
   USER_DELETE_ON_OFF: {
     message: 'Enable/Disable User data deletion',
-		optional: false,
+		optional: true,
+    default: 'ON'
   },
   USER_DELETE_TOPIC : {
     message: 'Required user data delete kafka topic',
@@ -369,7 +370,12 @@ let enviromentVariables = {
 			operator: 'EQUALS',
 			value: 'ON',
 		},
-  }
+  },
+  AUTH_CONFIG_FILE_PATH: {
+		message: 'Required auth config file',
+		optional: true,
+		default: 'config.json',
+	},
 };
 
 let success = true;
