@@ -269,13 +269,12 @@ module.exports = class Observations extends Abstract {
   create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let result = await observationsHelper.create(
           req.query.solutionId,
           req.body.data,
           req.userDetails.userId,
           req.userDetails.userToken,
-          tenantData,
+          req.userDetails.tenantData,
           req.query.programId,
           req.query.isExternalProgram ? gen.utils.convertStringToBoolean(req.query.isExternalProgram) : false
         );
