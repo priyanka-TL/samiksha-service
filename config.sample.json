@@ -1,0 +1,17 @@
+{
+	"authTokenUserInformation": {
+		"id": "data.id",
+		"name": "data.name",
+		"user_roles": "data.roles",
+		"organization_id": "data.organization_id",
+		"tenant_id": "data.tenant_id"
+	},
+	"userProfileKeysForDelete": {
+		"preserveAndMask": ["name"],
+		"fieldsToRemove": ["email", "phone"],
+		"defaultMaskedDataPlaceholder": "Deleted User",
+		"specificMaskedValues": {
+			"name": "User Deleted"
+		}
+	}
+}

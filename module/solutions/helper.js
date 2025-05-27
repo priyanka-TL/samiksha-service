@@ -22,6 +22,7 @@ const programUsersHelper = require(MODULES_BASE_PATH + '/programUsers/helper');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const userService = require(ROOT_PATH + '/generics/services/users');
 
 /**
  * SolutionsHelper
@@ -186,6 +187,7 @@ module.exports = class SolutionsHelper {
    * @param {String} search         - search text.
    * @param {String} [ filter = ""] - filter text.
    * @param {String} currentScopeOnly - flag to return records only based on scope
+   * @param {String} tenantFilter - tenant data
    * @returns {Object} - Details of the solution.
    */
 
@@ -199,7 +201,7 @@ module.exports = class SolutionsHelper {
     filter,
     surveyReportPage = '',
     currentScopeOnly = false,
-    tenantFilter
+    tenantFilter,
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -368,10 +370,15 @@ module.exports = class SolutionsHelper {
 								}
 							})
 
-							totalCount = mergedData.length
-						}
-					}
-				}
+              totalCount = mergedData.length;
+            }
+          }
+        } else {
+          return resolve({
+            ...targetedSolutions,
+            status: httpStatusCode.bad_request.status,
+          });
+        }
 
         if (mergedData.length > 0) {
           let startIndex = pageSize * (pageNo - 1);
@@ -503,8 +510,30 @@ module.exports = class SolutionsHelper {
           };
           */
           // filterQuery['scope.entities'] = { $in: entities };
+          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
+
+          let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
+					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+            return resolve({
+              success: false,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            });
+          }
+
+          // factors = [ 'professional_role', 'professional_subroles' ]
+          let factors
+          if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
+            factors = tenantDetails.data.meta.factors;            
+            let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
+            filterQuery['$and'] = queryFilter;
+          }
+          let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
+          // factors.append(dataToOmit)
+
+          const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
+
           filterQuery.$or = [];
-          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId'])).forEach((key) => {
+          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
             filterQuery.$or.push({
               [`scope.${key}`]: { $in: data[key] },
             });
@@ -525,6 +554,7 @@ module.exports = class SolutionsHelper {
           let queryFilter = [];
 
           // if factors are passed or query has to be build based on the keys passed
+          // factors = [ 'professional_role', 'professional_subroles' ]
           if (data.hasOwnProperty('factors') && data.factors.length > 0) {
             let factors = data.factors;
             // Build query based on each key
@@ -602,6 +632,7 @@ module.exports = class SolutionsHelper {
         }
 
         delete filterQuery['scope.entityType'];
+        filterQuery.tenantId = data.tenantId
         return resolve({
           success: true,
           data: filterQuery,

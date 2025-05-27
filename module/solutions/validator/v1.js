@@ -91,6 +91,9 @@ module.exports = (req) => {
     verifyLink: function () {
       req.checkParams('_id').exists().withMessage('required solution link');
     },
+    targetedSolutions: function () {
+			// req.checkBody('tenantId').exists().withMessage('Required tenantId')
+    },
   };
 
   if (solutionValidator[req.params.method]) solutionValidator[req.params.method]();

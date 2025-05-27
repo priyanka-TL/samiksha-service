@@ -86,7 +86,7 @@ module.exports = class Solutions extends Abstract {
           req.query.filter,
           req.query.surveyReportPage ? req.query.surveyReportPage : '',
           req.query.currentScopeOnly ? req.query.currentScopeOnly : false,
-          tenantFilter
+          tenantFilter,
         );
 
         observations['result'] = observations.data;
@@ -1694,6 +1694,7 @@ module.exports = class Solutions extends Abstract {
   async verifyLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let solutionData = await solutionsHelper.verifyLink(
           req.params._id,
           req.body,
