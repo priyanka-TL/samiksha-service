@@ -1,5 +1,5 @@
 /**
- * name : fixOrgIdsFromCollections.js
+ * name : fixScopeOfCollection.js
  * author : Saish R B
  * created-date : 27-May-2025
  * Description : Migration script to update orgIds to scope
