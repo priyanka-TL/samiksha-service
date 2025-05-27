@@ -23,8 +23,8 @@ const formSchema = new Schema({
   data: {
     type: Schema.Types.Mixed,
   },
-  orgIds: {
-    type: Array,
+  orgId: {
+    type: String,
     require: true,
     index: true,
   },
@@ -53,7 +53,7 @@ module.exports = {
   schema: formSchema,
   compoundIndex: [
     {
-      name: { type: 1, subType: 1, tenantId: 1, orgIds:1 },
+      name: { type: 1, subType: 1, tenantId: 1, orgId:1 },
       indexType: { unique: true },
     },
   ],

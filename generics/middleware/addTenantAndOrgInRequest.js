@@ -6,7 +6,7 @@
  */
 
 module.exports = async function (req, res, next) {
-  let paths = ['solutions/targetedSolutions', 'solutions/details', 'solutions/verifyLink', 'programs/targetedPrograms'];
+  let paths = ['solutions/targetedSolutions', 'solutions/details', 'solutions/verifyLink', 'programs/targetedPrograms','surveys/details','solutions/detailsBasedOnRoleAndLocation'];
 
   let performTenantAndOrgCheck = false;
 
@@ -21,7 +21,7 @@ module.exports = async function (req, res, next) {
   if (performTenantAndOrgCheck) {
     let tenantFilter = gen.utils.returnTenantDataFromToken(req.userDetails);
     req.body['tenantId'] = tenantFilter.tenantId;
-    req.body['orgId'] = tenantFilter.orgId;
+    req.body['organizations'] = [tenantFilter.orgId];
   }
 
   next();

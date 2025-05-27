@@ -47,8 +47,8 @@ module.exports = {
     isEditable: { type: Boolean, default: true },
     showQuestionInPreview: { type: Boolean, default: false },
     createdFromQuestionId: 'ObjectId',
-    orgIds: {
-      type: Array,
+    orgId: {
+      type: String,
       require: true,
       index: true,
     },
@@ -60,7 +60,7 @@ module.exports = {
   },
   compoundIndex: [
     {
-      name: { externalId: 1, tenantId: 1, orgIds: 1 },
+      name: { externalId: 1, tenantId: 1, orgId: 1 },
       indexType: { unique: true },
     },
   ],

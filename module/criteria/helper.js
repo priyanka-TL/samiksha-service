@@ -72,8 +72,7 @@ module.exports = class criteriaHelper {
 
         await database.models.criteria.findOneAndUpdate(
           { _id: criteriaId, 
-            tenantId: tenantData.tenantId,
-            orgIds:{"$in":[...tenantData.orgId,'ALL']}
+            tenantId: tenantData.tenantId
           },
           {
             rubric: rubric,
@@ -279,8 +278,7 @@ module.exports = class criteriaHelper {
               criteriaDocuments = await database.models.criteria.findOneAndUpdate(
                 {
                   _id: parsedCriteria._SYSTEM_ID,
-                  tenantId: tenantFilter.tenantId,
-            			orgIds:{"$in": ["ALL", ...tenantFilter.orgId]}
+                  tenantId: tenantFilter.tenantId
                 },
                 {
                   $set: criteriaStructure,
@@ -353,7 +351,7 @@ module.exports = class criteriaHelper {
               criteriaStructure['score'] = '';
               criteriaStructure['flag'] = '';
               criteriaStructure["tenantId"]=tenantFilter.tenantId
-              criteriaStructure["orgIds"]=tenantFilter.orgId
+              criteriaStructure["orgId"]=tenantFilter.orgId[0]
               criteriaDocuments = await database.models.criteria.create(criteriaStructure);
             }
 
@@ -393,8 +391,7 @@ module.exports = class criteriaHelper {
       try {
         let queryObject = {
           externalId: criteriaExternalId,
-          tenantId: tenantData.tenantId,
-          orgIds:{"$in": ["ALL", ...tenantData.orgId]}
+          tenantId: tenantData.tenantId
         };
 
         if (frameworkIdExists) {
@@ -452,8 +449,7 @@ module.exports = class criteriaHelper {
 
         let criteriaDocuments = await this.criteriaDocument({
           _id: { $in: criteriaIds },
-          tenantId: tenantData.tenantId,
-          orgIds:{ $in: ['ALL', ...tenantData.orgId] }
+          tenantId: tenantData.tenantId
         });
 
         if (!criteriaDocuments.length) {
@@ -531,8 +527,7 @@ module.exports = class criteriaHelper {
 
                 await database.models.criteria.updateOne(
                   { _id: newCriteriaId._id ,
-                    tenantId: tenantData.tenantId,
-                    orgIds:{ $in: ['ALL', ...tenantData.orgId] }
+                    tenantId: tenantData.tenantId
                   },
                   {
                     $set: {

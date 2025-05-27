@@ -3057,7 +3057,7 @@ module.exports = class Reports {
 submissionReport = async function (req) {
   return new Promise(async function (resolve, reject) {
     try {
-      req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+
       let generateSubmissionReport = await reportsHelper.surveySubmissionReport(req);
       resolve(generateSubmissionReport);
 
@@ -3135,7 +3135,6 @@ submissionReport = async function (req) {
 fetch = async function (req) {
   return new Promise(async function (resolve, reject) {
     try {
-      req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         //  submission observation report
         if (req.body.submissionId && req.body.observation == true ) {
 
