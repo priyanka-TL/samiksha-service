@@ -512,11 +512,9 @@ function returnTenantDataFromToken(userDetails) {
  * @returns {Object[]} An array of query filter objects for MongoDB.
  */
 function factorQuery(factors, userRoleInfo) {
-  console.log(factors,userRoleInfo,'<-- factors,userRoleInfo')
 	let queryFilter = []
 	for (let idx = 0; idx < factors.length; idx++) {
 		let factor = factors[idx]
-		console.log(factor)
 		let scope = 'scope.' + factor
 		let values = userRoleInfo[factor]
 		if (!values) continue

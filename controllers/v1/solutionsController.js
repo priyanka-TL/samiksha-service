@@ -75,7 +75,6 @@ module.exports = class Solutions extends Abstract {
   async targetedSolutions(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(req.headers.origin , "origin name logs");
         let observations = await solutionsHelper.targetedSolutions(
           req.body,
           req.query.type,
