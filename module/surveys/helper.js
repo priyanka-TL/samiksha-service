@@ -1561,16 +1561,15 @@ module.exports = class SurveysHelper {
    * @param {String} userId - logged in userId
    * @param {String} token - logged in user token'
    * @param {Object} tenantData - tenantData of user
-   * @param {String} origin - origin of the request
    * @returns {JSON} - returns survey solution, program and questions.
    */
 
-  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData,origin) {
+  static detailsV3(bodyData, surveyId = '', solutionId = '', userId = '', token = '',tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         bodyData.tenantId = tenantData.tenantId;
         bodyData.orgId = tenantData.orgId;
-        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token,origin);
+        let surveyData = await this.findOrCreateSurvey(bodyData, surveyId, solutionId, userId, token);
 
         if (!surveyData.success) {
           return resolve(surveyData);
