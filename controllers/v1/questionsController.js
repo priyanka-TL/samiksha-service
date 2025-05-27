@@ -96,8 +96,7 @@ module.exports = class Questions extends Abstract {
         let solutionDocument = await database.models.solutions
           .findOne(
             { externalId: questionData[0]['solutionId'] , 
-              tenantId: tenantFilter.tenantId,
-              orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+              tenantId: tenantFilter.tenantId
             },
             {
               evidenceMethods: 1,
@@ -181,8 +180,7 @@ module.exports = class Questions extends Abstract {
         let criteriaDocument = await database.models.criteria
           .find({
             externalId: { $in: criteriaIds },
-            tenantId: tenantFilter.tenantId,
-            orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+            tenantId: tenantFilter.tenantId
           })
           .lean();
 
@@ -199,8 +197,7 @@ module.exports = class Questions extends Abstract {
         let questionsFromDatabase = await database.models.questions
           .find({
             externalId: { $in: questionIds },
-            tenantId: tenantFilter.tenantId,
-            orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+            tenantId: tenantFilter.tenantId
           })
           .lean();
 

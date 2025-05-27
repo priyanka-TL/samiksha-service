@@ -147,7 +147,7 @@ module.exports = class SurveysHelper {
           },
         };
         newSolutionDocument.tenantId = tenantData.tenantId;
-        newSolutionDocument.orgIds = tenantData.orgId
+        newSolutionDocument.orgId = tenantData.orgId[0]
 
         let themes = [
           {
@@ -168,7 +168,7 @@ module.exports = class SurveysHelper {
           keywords: ['Keyword 1', 'Keyword 2'],
           frameworkCriteriaId: null,
           tenantId: tenantData.tenantId,
-          orgIds: tenantData.orgId
+          orgId: tenantData.orgId[0]
         };
         //Creating new criteria
         let newCriteria = await criteriaHelper.create(criteriaDocument);
@@ -238,8 +238,7 @@ module.exports = class SurveysHelper {
         //Getting the solution documents
         let solutionDocument = await solutionsQueries.solutionDocuments({
           _id: solutionId,
-          tenantId: tenantAndOrgInfo.tenantId,
-          orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]},
+          tenantId: tenantAndOrgInfo.tenantId
         });
         if (!solutionDocument.length) {
           throw messageConstants.apiResponses.SOLUTION_NOT_FOUND;
@@ -252,8 +251,7 @@ module.exports = class SurveysHelper {
 
         let solutionCriteria = await criteriaHelper.criteriaDocument({
           _id: criteriaId[0],
-          tenantId: tenantAndOrgInfo.tenantId,
-          orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]}
+          tenantId: tenantAndOrgInfo.tenantId
         });
         // Update the external ID of the criteria to reflect the new solution
         solutionCriteria[0].externalId = solutionExternalId + '-' + surveyAndFeedback;
@@ -298,7 +296,7 @@ module.exports = class SurveysHelper {
 
         solutionCriteria[0].parentCriteriaId = solutionCriteria[0]._id;
         solutionCriteria[0].tenantId= tenantAndOrgInfo.tenantId;
-        solutionCriteria[0].orgId= tenantAndOrgInfo.orgId;
+        solutionCriteria[0].orgId= tenantAndOrgInfo.orgId[0];
         
         let newCriteriaId = await criteriaHelper.create(_.omit(solutionCriteria[0], ['_id']));
 
@@ -416,8 +414,7 @@ module.exports = class SurveysHelper {
         //Updating solution Document with programDetails
         await solutionsQueries.updateSolutionDocument(
           { _id: solutionId,
-             tenantId: tenantAndOrgInfo.tenantId,
-             orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]},
+             tenantId: tenantAndOrgInfo.tenantId
            },
           {
             $set: updateSolutionData,
@@ -431,8 +428,7 @@ module.exports = class SurveysHelper {
         await programsHelper.updateProgramDocument(
           {
             _id: programDocument[0]._id,
-            tenantId: tenantAndOrgInfo.tenantId,
-            orgIds:{"$in":['ALL',...tenantAndOrgInfo.orgId]},
+            tenantId: tenantAndOrgInfo.tenantId
           },
           {
             $addToSet: { components: solutionId },
@@ -684,8 +680,7 @@ module.exports = class SurveysHelper {
         let solutionDocument = await solutionsQueries.solutionDocuments(
           {
             link: link,
-            tenantId: tenantData.tenantId,
-            orgIds:{"$in":['ALL',tenantData.orgId]},
+            tenantId: tenantData.tenantId
           },
           [
             'externalId',
@@ -832,8 +827,7 @@ module.exports = class SurveysHelper {
           _id: surveyDocument.solutionId,
           status: messageConstants.common.ACTIVE_STATUS,
           isDeleted: false,
-          tenantId:tenantData.tenantId,
-          orgIds:{"$in":['ALL',tenantData.orgId]},
+          tenantId:tenantData.tenantId
         };
         //getting the projectionFields for the solution
         let solutionDocumentProjectionFields = await this.solutionDocumentProjectionFieldsForDetailsAPI();

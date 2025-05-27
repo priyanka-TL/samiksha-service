@@ -94,7 +94,7 @@ module.exports = class SurveySubmissionsHelper {
         let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
           name: surveySubmissionsDocument[0].entityType,
           tenantId: surveySubmissionsDocument[0].tenantId,
-          orgId: {$in:['ALL',surveySubmissionsDocument[0].orgId]}
+          orgIds: {$in:['ALL',surveySubmissionsDocument[0].orgId]}
         });
 
         if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
@@ -765,5 +765,31 @@ module.exports = class SurveySubmissionsHelper {
         });
       }
     });
+  }
+
+  /**
+   * Update survey Submission
+   * @method
+   * @name updateMany
+   * @param {Object} query 
+   * @param {Object} update 
+   * @param {Object} options 
+   * @returns {JSON} - update observations.
+  */
+  static updateMany(query, update) {
+      return new Promise(async (resolve, reject) => {
+          try {
+              let surveySubmissionUpdate = await surveySubmissionQueries.updateMany(
+                  query, 
+                  update
+              );
+
+              if( surveySubmissionUpdate) {
+                  return resolve(surveySubmissionUpdate);
+              }
+          } catch (error) {
+              return reject(error);
+          }
+      })
   }
 };

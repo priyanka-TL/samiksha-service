@@ -130,7 +130,7 @@ module.exports = class ObservationSubmissionsHelper {
               let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
                 name: observationSubmissionsDocument.entityType,
                 tenantId: observationSubmissionsDocument.tenantId,
-                orgId: {$in:['ALL',observationSubmissionsDocument.orgId]}
+                orgIds: {$in:['ALL',observationSubmissionsDocument.orgId]}
               });
 
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
@@ -1382,5 +1382,30 @@ module.exports = class ObservationSubmissionsHelper {
           }
     
         })
-    } 
+    }
+    
+    /**
+    * Update observations submission
+     * @method
+     * @name updateMany
+     * @param {Object} query 
+     * @param {Object} update 
+     * @param {Object} options 
+     * @returns {JSON} - update observations submission.
+    */
+    static updateMany(query, update, options={}) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let observationSubmissionUpdate = await database.models.observationSubmissions.updateMany(
+                    query, 
+                    update,
+                    options
+                );
+                return resolve(observationSubmissionUpdate)
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
 };

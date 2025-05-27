@@ -504,6 +504,30 @@ function returnTenantDataFromToken(userDetails) {
 }
 
 
+/**
+ * Generates a MongoDB query filter based on factor scopes and user role information.
+ *
+ * @param {string[]} factors - An array of factor names used to construct scoped keys.
+ * @param {Object.<string, string|string[]>} userRoleInfo - An object where keys are factor names and values are either comma-separated strings or arrays of values.
+ * @returns {Object[]} An array of query filter objects for MongoDB.
+ */
+function factorQuery(factors, userRoleInfo) {
+	let queryFilter = []
+	for (let idx = 0; idx < factors.length; idx++) {
+		let factor = factors[idx]
+		let scope = 'scope.' + factor
+		let values = userRoleInfo[factor]
+		if (!values) continue
+		if (!Array.isArray(values)) {
+			queryFilter.push({ [scope]: { $in: values.split(',') } })
+		} else {
+			queryFilter.push({ [scope]: { $in: [...values] } })
+		}
+	}
+	return queryFilter
+}
+
+
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
   lowerCase: lowerCase,
@@ -538,5 +562,6 @@ module.exports = {
   arrayOfObjectToArrayOfObjectId:arrayOfObjectToArrayOfObjectId,
   convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId,
   getColorForLevel:getColorForLevel,
-  returnTenantDataFromToken:returnTenantDataFromToken
+  returnTenantDataFromToken:returnTenantDataFromToken,
+  factorQuery:factorQuery
 };

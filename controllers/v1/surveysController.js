@@ -560,7 +560,6 @@ module.exports = class Surveys extends Abstract {
   getDetailsByLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         let bodyData = req.body ? req.body : {};
 
         let surveyDetails = await surveysHelper.getDetailsByLink(
@@ -569,7 +568,7 @@ module.exports = class Surveys extends Abstract {
           req.userDetails.userToken,
           bodyData,
           '',
-          tenantData,
+          req.userDetails.tenantData,
         );
 
         return resolve({
@@ -780,7 +779,7 @@ module.exports = class Surveys extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+
         // Check valid mongodb id or not
         let validateSurveyId = gen.utils.isValidMongoId(req.params._id);
 
@@ -936,7 +935,7 @@ module.exports = class Surveys extends Abstract {
   async userAssigned(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
+
         let surveys = await surveysHelper.userAssigned(
           req.userDetails.userId,
           req.pageSize,
@@ -992,8 +991,7 @@ module.exports = class Surveys extends Abstract {
   async getLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
-        let surveySolutionDetails = await surveysHelper.getLink(req.params._id, req.query.appName,tenantData);
+        let surveySolutionDetails = await surveysHelper.getLink(req.params._id, req.query.appName,req.userDetails.tenantData);
 
         return resolve({
           message: surveySolutionDetails.message,

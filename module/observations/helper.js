@@ -1719,10 +1719,7 @@ module.exports = class ObservationsHelper {
           let solutionDocuments = await solutionsQueries.solutionDocuments(
             {
               _id: { $in: solutionIds },
-              tenantId:tenantFilter.tenantId,
-              orgIds: {
-                $in: ['ALL', tenantFilter.orgId],
-              },
+              tenantId:tenantFilter.tenantId
             },
             ['language', 'creator'],
           );
@@ -1902,8 +1899,7 @@ module.exports = class ObservationsHelper {
           } else {
             let solutionData = await solutionsQueries.solutionDocuments({
               _id: solutionId,
-              tenantId:tenantData.tenantId,
-              orgIds:{$in:['ALL',tenantData.orgId]}
+              tenantId:tenantData.tenantId
             });
 
             if (solutionData.length === 0) {
@@ -1925,8 +1921,7 @@ module.exports = class ObservationsHelper {
                 let filterData = {
                   _id:bodyData[solutionData.data.entityType],
                   entityType: solutionData.data.entityType,
-                  tenantId:tenantData.tenantId,
-                  orgIds: {$in:['ALL',tenantData.orgId]}
+                  tenantId:tenantData.tenantId
                 };
                 
                 let entitiesDocument = await entityManagementService.entityDocuments(
@@ -1979,8 +1974,7 @@ module.exports = class ObservationsHelper {
           solutionData = await solutionsQueries.solutionDocuments(
             {
               _id: observationData[0].solutionId,
-              tenantId:tenantData.tenantId,
-              orgIds:{$in:['ALL',tenantData.orgId]}
+              tenantId:tenantData.tenantId
             },
             ['allowMultipleAssessemts'],
           );
@@ -2962,4 +2956,30 @@ module.exports = class ObservationsHelper {
       
         return highestHierarchyValue;
     }
+
+  /**
+   * Update observations
+   * @method
+   * @name updateMany
+   * @param {Object} query 
+   * @param {Object} update 
+   * @param {Object} options 
+   * @returns {JSON} - updated response.
+  */
+
+  static updateMany(query, update, options={}) {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let observationUpdate = await database.models.observations.updateMany(
+                query, 
+                update,
+                options
+            );
+           return resolve(observationUpdate);
+        } catch (error) {
+            return reject(error);
+        }
+    })
+  }
 };

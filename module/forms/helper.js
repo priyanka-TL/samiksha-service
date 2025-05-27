@@ -51,7 +51,7 @@ module.exports = class FormsHelper {
 		return new Promise(async (resolve, reject) => {
 			try {
 				bodyData['tenantId'] = tenantData.tenantId,
-          		bodyData['orgIds'] = tenantData.orgId
+          		bodyData['orgId'] = tenantData.orgId[0]
 				const form = await formQueries.createForm(bodyData)
 				if (!form || !form._id) {
 					throw {
@@ -97,15 +97,13 @@ module.exports = class FormsHelper {
 				if (_id) {
 					filter = {
 						_id: new ObjectId(_id),
-						tenantId: tenantData.tenantId,
-            			orgIds:{"$in": ["ALL", tenantData.orgId]}
+						tenantId: tenantData.tenantId
 					}
 				} else {
 					filter = {
 						type: bodyData.type,
 						// subType: bodyData.subType,
-						tenantId: tenantData.tenantId,
-            			orgIds:{"$in": ["ALL", tenantData.orgId]}
+						tenantId: tenantData.tenantId
 					}
 				}
 				// create update object to pass to db query
@@ -151,14 +149,12 @@ module.exports = class FormsHelper {
 				if (_id) {
 					filter = { 
 						_id: new ObjectId(_id), 
-						tenantId: tenantData.tenantId,
-            			orgIds:{"$in": ["ALL", tenantData.orgId]} 
+						tenantId: tenantData.tenantId
 					}
 				} else {
 					filter = { 
 						...bodyData, 
-						tenantId: tenantData.tenantId,
-            			orgIds:{"$in": ["ALL", tenantData.orgId]} 
+						tenantId: tenantData.tenantId
 					}
 				}
 				const form = await formQueries.findOneForm(filter)
@@ -174,8 +170,8 @@ module.exports = class FormsHelper {
 						})
 					}
 					filter = _id
-						? { _id: new ObjectId(_id), orgIds: [defaultOrgId] }
-						: { ...bodyData, orgIds: [defaultOrgId] }
+						? { _id: new ObjectId(_id), orgId: [defaultOrgId] }
+						: { ...bodyData, orgId: [defaultOrgId] }
 					defaultOrgForm = await formQueries.findOneForm(filter)
 				}
 				if (!form && !defaultOrgForm) {

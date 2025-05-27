@@ -75,8 +75,6 @@ module.exports = class Solutions extends Abstract {
   async targetedSolutions(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(req.headers.origin , "origin name logs");
-        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let observations = await solutionsHelper.targetedSolutions(
           req.body,
           req.query.type,
@@ -87,8 +85,7 @@ module.exports = class Solutions extends Abstract {
           req.query.filter,
           req.query.surveyReportPage ? req.query.surveyReportPage : '',
           req.query.currentScopeOnly ? req.query.currentScopeOnly : false,
-          tenantFilter,
-          req.headers.origin
+          req.userDetails.tenantData
         );
 
         observations['result'] = observations.data;
@@ -207,8 +204,7 @@ module.exports = class Solutions extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
-        let solutionData = await solutionsHelper.details(req.params._id, req.body, req.userDetails.userId,tenantFilter);
+        let solutionData = await solutionsHelper.details(req.params._id, req.body, req.userDetails.userId,req.userDetails.tenantData);
 
         return resolve(solutionData);
       } catch (error) {
@@ -547,8 +543,7 @@ module.exports = class Solutions extends Abstract {
             {
               externalId: req.params._id,
               scoringSystem: 'pointsBasedScoring',
-              tenantId: tenantData.tenantId,
-              orgIds:{"$in":[...tenantData.orgId,'ALL']},
+              tenantId: tenantData.tenantId
             },
             { themes: 1, levelToScoreMapping: 1 },
           )
@@ -582,8 +577,7 @@ module.exports = class Solutions extends Abstract {
         if (themesWithRubricDetails.themes) {
           await database.models.solutions.findOneAndUpdate(
             { _id: solutionDocument._id,
-              tenantId: tenantData.tenantId,
-              orgIds:{"$in":[...tenantData.orgId,'ALL']},
+              tenantId: tenantData.tenantId
            },
             {
               themes: themesWithRubricDetails.themes,
@@ -784,8 +778,7 @@ module.exports = class Solutions extends Abstract {
           .findOne(
             {
               externalId: req.params._id,
-              tenantId: tenantData.tenantId,
-              orgIds:{"$in":[...tenantData.orgId,'ALL']},
+              tenantId: tenantData.tenantId
             },
             { themes: 1, levelToScoreMapping: 1, type: 1, subType: 1 },
           )
@@ -829,8 +822,7 @@ module.exports = class Solutions extends Abstract {
               _id: {
                 $in: allCriteriaIdInSolution,
               },
-              tenantId: tenantData.tenantId,
-              orgIds:{"$in":[...tenantData.orgId,'ALL']}
+              tenantId: tenantData.tenantId
             },
             {
               _id: 1,
@@ -913,8 +905,7 @@ module.exports = class Solutions extends Abstract {
             if (solutionThemes.success && solutionThemes.themes) {
               await database.models.solutions.findOneAndUpdate(
                 { _id: solutionDocument._id, 
-                  tenantId: tenantData.tenantId,
-                  orgIds:{"$in":[...tenantData.orgId,'ALL']}
+                  tenantId: tenantData.tenantId
                 },
                 {
                   themes: solutionThemes.themes,
@@ -932,8 +923,7 @@ module.exports = class Solutions extends Abstract {
         if (updateSubmissions) {
           let criteriaQuestionDocument = await database.models.criteriaQuestions.find({
             _id: { $in: allCriteriaIdInSolution }, 
-            tenantId: tenantData.tenantId,
-            orgIds:{"$in":[...tenantData.orgId,'ALL']},
+            tenantId: tenantData.tenantId
           });
 
           let submissionDocumentCriterias = new Array();
@@ -1350,8 +1340,7 @@ module.exports = class Solutions extends Abstract {
   async fetchLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solutionData = await solutionsHelper.fetchLink(req.params._id, req.userDetails.userId,tenantData);
+        let solutionData = await solutionsHelper.fetchLink(req.params._id, req.userDetails.userId,req.userDetails.tenantData);
 
         return resolve(solutionData);
       } catch (error) {
@@ -1394,8 +1383,7 @@ module.exports = class Solutions extends Abstract {
   async delete(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solution = await solutionsHelper.delete(req.params._id, req.userDetails.userId,tenantData);
+        let solution = await solutionsHelper.delete(req.params._id, req.userDetails.userId,req.userDetails.tenantData);
         return resolve(solution);
       } catch (error) {
         return reject({
@@ -1698,13 +1686,14 @@ module.exports = class Solutions extends Abstract {
   async verifyLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
         let solutionData = await solutionsHelper.verifyLink(
           req.params._id,
           req.body,
           req.userDetails.userId,
           req.userDetails.userToken,
           true, // createProject condition,
-          gen.utils.returnTenantDataFromToken(req.userDetails)
+          req.userDetails.tenantData
         );
 
         return resolve(solutionData);
@@ -1730,8 +1719,7 @@ module.exports = class Solutions extends Abstract {
   async isTargetedBasedOnUserProfile(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(req.params._id, req.body,tenantData);
+        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(req.params._id, req.body,req.userDetails.tenantData);
 
         return resolve(solutionData);
       } catch (error) {
@@ -1775,8 +1763,7 @@ module.exports = class Solutions extends Abstract {
   async addEntities(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solutionData = await solutionsHelper.addEntityToSolution(req.params._id, req.body.entities,tenantData);
+        let solutionData = await solutionsHelper.addEntityToSolution(req.params._id, req.body.entities,req.userDetails.tenantData);
 
         return resolve(solutionData);
       } catch (error) {
@@ -1931,8 +1918,7 @@ module.exports = class Solutions extends Abstract {
   async removeEntities(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solutionData = await solutionsHelper.removeEntities(req.params._id, req.body.entities,tenantData);
+        let solutionData = await solutionsHelper.removeEntities(req.params._id, req.body.entities,req.userDetails.tenantData);
 
         return resolve(solutionData);
       } catch (error) {
@@ -2038,9 +2024,8 @@ module.exports = class Solutions extends Abstract {
   async create(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        req.userDetails.tenantData = gen.utils.returnTenantDataFromToken(req.userDetails);
         //passing {true} for checkDate params in helper
-        let solutionData = await solutionsHelper.createSolution(req.body, true,req.userDetails.tenantData);
+        let solutionData = await solutionsHelper.createSolution(req.body, true,req.userDetails.tenantAndOrgInfo);
 
         solutionData['result'] = solutionData.data;
 
@@ -2099,9 +2084,8 @@ module.exports = class Solutions extends Abstract {
   async forUserRoleAndLocation(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        req.body.tenantId = tenantData.tenantId;
-        req.body.orgId = tenantData.orgId;
+        req.body.tenantId = req.userDetails.tenantData.tenantId;
+        req.body.orgId = req.userDetails.tenantData.orgId;
         let targetedSolutions = await solutionsHelper.forUserRoleAndLocation(
           req.body,
           req.query.type ? req.query.type : '',
@@ -2169,12 +2153,10 @@ module.exports = class Solutions extends Abstract {
   async detailsBasedOnRoleAndLocation(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
         let solutionDetails = await solutionsHelper.detailsBasedOnRoleAndLocation(
           req.params._id,
           req.body,
-          req.query.type ? req.query.type : '',
-          tenantData
+          req.query.type ? req.query.type : ''
         );
 
         solutionDetails.result = solutionDetails.data;
@@ -2222,8 +2204,7 @@ module.exports = class Solutions extends Abstract {
   async addRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solutionUpdated = await solutionsHelper.addRolesInScope(req.params._id, req.body.roles,tenantData);
+        let solutionUpdated = await solutionsHelper.addRolesInScope(req.params._id, req.body.roles,req.userDetails.tenantData);
 
         return resolve(solutionUpdated);
       } catch (error) {
@@ -2268,11 +2249,12 @@ module.exports = class Solutions extends Abstract {
   async addEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
+        let tenantFilter =  req.userDetails.tenantAndOrgInfo;
         let solutionUpdated = await solutionsHelper.addEntitiesInScope(
           req.params._id,
           req.body.entities,
           req.userDetails.userToken,
-          gen.utils.returnTenantDataFromToken(req.userDetails)
+          tenantFilter
         );
 
         return resolve(solutionUpdated);
@@ -2318,8 +2300,7 @@ module.exports = class Solutions extends Abstract {
   async removeRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solutionUpdated = await solutionsHelper.removeRolesInScope(req.params._id, req.body.roles,tenantData);
+        let solutionUpdated = await solutionsHelper.removeRolesInScope(req.params._id, req.body.roles,req.userDetails.tenantData);
 
         return resolve(solutionUpdated);
       } catch (error) {
@@ -2364,8 +2345,7 @@ module.exports = class Solutions extends Abstract {
   async removeEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
-        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(req.params._id, req.body.entities,tenantData);
+        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(req.params._id, req.body.entities,req.userDetails.tenantData);
 
         return resolve(solutionUpdated);
       } catch (error) {

@@ -1,5 +1,6 @@
 let authenticator = require(ROOT_PATH + '/generics/middleware/authenticator');
 let pagination = require(ROOT_PATH + '/generics/middleware/pagination');
+let addTenantAndOrgInRequest = require(ROOT_PATH + '/generics/middleware/addTenantAndOrgInRequest');
 let dataRangeFilter = require(ROOT_PATH + '/generics/middleware/dateRangeFilter');
 let userPrograms = require(ROOT_PATH + '/generics/middleware/userPrograms');
 let slackClient = require(ROOT_PATH + '/generics/helpers/slackCommunications');
@@ -12,6 +13,7 @@ module.exports = function (app) {
 
   app.use(applicationBaseUrl, authenticator);
   app.use(applicationBaseUrl, pagination);
+  app.use(applicationBaseUrl, addTenantAndOrgInRequest);
   app.use(applicationBaseUrl, dataRangeFilter);
   app.use(applicationBaseUrl, userPrograms);
 

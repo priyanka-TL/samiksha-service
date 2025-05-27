@@ -89,4 +89,25 @@ module.exports = class SurveySubmissions {
       }
     });
   }
+
+   /**
+   * Update survey Submission
+   * @method
+   * @name updateMany
+   * @param {Object} query 
+   * @param {Object} update 
+   * @param {Object} options 
+   * @returns {JSON} - update response
+  */
+
+  static updateMany(query, update) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let surveySubmissionDocuments = await database.models.surveySubmissions.updateMany(query, update);
+        return resolve(surveySubmissionDocuments);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
 };

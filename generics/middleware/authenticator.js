@@ -189,12 +189,16 @@ module.exports = async function (req, res, next) {
     'createGesture',
     'createEmoji',
     'solutionDetails',
+    'solutions/create',
+    'solutions/updateSolutions',
     'solutions/addEntities',
+    'programs/addEntities',
     'solutions/list',
     'frameworks/delete/',
     'questions/delete/',
     'observationSubmissions/disable/',
     'programs/create',
+    'programs/update',
     'observations/importFromFramework',
     'surveys/createSolutionTemplate',
     'solutions/getDetails',
@@ -207,7 +211,10 @@ module.exports = async function (req, res, next) {
     "criteria/upload",
     "questions/bulkCreate",
     "frameworks/create",
-    "frameworks/uploadThemes"
+    "frameworks/uploadThemes",
+    "forms/create",
+    "forms/update",
+    'users/deleteUserPIIData'
   ];
 
   let performInternalAccessTokenCheck = false;
@@ -384,7 +391,10 @@ module.exports = async function (req, res, next) {
   }
 
   // Path to config.json
-  const configFilePath = path.resolve(__dirname, '../../', 'config.json');
+  let configFilePath
+  if (process.env.AUTH_CONFIG_FILE_PATH) {
+    configFilePath = path.resolve(ROOT_PATH, process.env.AUTH_CONFIG_FILE_PATH)
+  }
   // Initialize variables
   let configData = {};
   let defaultTokenExtraction = false;
@@ -691,6 +701,9 @@ module.exports = async function (req, res, next) {
   }
 
   // Update user details object
+  userInformation.tenantData = {};
+  userInformation.tenantData.tenantId = userInformation.tenantId;
+  userInformation.tenantData.orgId = userInformation.organizationId;
   req.userDetails = userInformation;
 
   // Helper function to access nested properties

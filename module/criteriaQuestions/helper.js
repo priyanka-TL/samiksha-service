@@ -212,8 +212,7 @@ function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion,tenantFilter) {
         $match: {
           _id: new ObjectId(criteriaId),
           frameworkCriteriaId: { $exists: true },
-          tenantId: tenantFilter.tenantId,
-          orgIds:{"$in": ["ALL", ...tenantFilter.orgId]}
+          tenantId: tenantFilter.tenantId
         },
       };
 
@@ -297,7 +296,7 @@ function singleCriteriaCreateOrUpdate(criteriaId, updateQuestion,tenantFilter) {
         {
           _id: criteriaId,
           tenantId: tenantFilter.tenantId,
-          orgIds:{"$in": ["ALL", ...tenantFilter.orgId]}
+          orgId:tenantFilter.orgId[0]
         },
         {
           $set: criteriaData[0],
