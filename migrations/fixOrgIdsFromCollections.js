@@ -40,7 +40,7 @@ async function modifyCollection(collectionName) {
       //neeed to update the scope
       let currentScope = doc.scope || [];
 
-      currentScope['orgIds'] = orgIds;
+      currentScope['organizations'] = orgIds;
 
       console.log(`Updating document with _id: ${doc._id} with scope: ${currentScope}`);
       dataToBeUpdated = {
