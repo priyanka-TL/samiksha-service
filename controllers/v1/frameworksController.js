@@ -64,8 +64,7 @@ module.exports = class Frameworks extends Abstract {
           .findOne(
             {
               externalId: req.params._id,
-              tenantId: tenantFilter.tenantId,
-              orgIds: { $in: ['ALL', ...tenantFilter.orgId] }
+              tenantId: tenantFilter.tenantId
             },
             { _id: 1 }
           )
@@ -161,8 +160,7 @@ module.exports = class Frameworks extends Abstract {
           name: frameworkData.name,
           description: frameworkData.description,
           entityType: frameworkData.entityType,
-          tenantId: tenantFilter.tenantId,
-          orgIds: { $in: ['ALL', ...tenantFilter.orgId] },
+          tenantId: tenantFilter.tenantId
         };
 
         let frameworkMandatoryFields = frameworksHelper.mandatoryField();
@@ -182,7 +180,7 @@ module.exports = class Frameworks extends Abstract {
         frameworkData['createdBy'] = req.userDetails.id;
         frameworkData.isDeleted = false;
         frameworkData['tenantId'] = tenantFilter.tenantId;
-        frameworkData['orgIds'] = tenantFilter.orgId;
+        frameworkData['orgId'] = tenantFilter.orgId[0];
 
         frameworkDocument = await database.models.frameworks.create(frameworkData);
 

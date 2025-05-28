@@ -109,7 +109,7 @@ module.exports = class Criteria extends Abstract {
         const bodyData = {
           ...req.body,
           tenantId: tenantData.tenantId,
-          orgIds: tenantData.orgId,
+          orgId: tenantData.orgId[0],
         };
         let criteriaDocuments = await criteriaHelper.create(bodyData);
         return resolve({

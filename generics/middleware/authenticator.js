@@ -189,13 +189,16 @@ module.exports = async function (req, res, next) {
     'createGesture',
     'createEmoji',
     'solutionDetails',
+    'solutions/create',
     'solutions/updateSolutions',
     'solutions/addEntities',
+    'programs/addEntities',
     'solutions/list',
     'frameworks/delete/',
     'questions/delete/',
     'observationSubmissions/disable/',
     'programs/create',
+    'programs/update',
     'observations/importFromFramework',
     'surveys/createSolutionTemplate',
     'solutions/getDetails',
@@ -209,6 +212,8 @@ module.exports = async function (req, res, next) {
     "questions/bulkCreate",
     "frameworks/create",
     "frameworks/uploadThemes",
+    "forms/create",
+    "forms/update",
     'users/deleteUserPIIData'
   ];
 
@@ -696,6 +701,9 @@ module.exports = async function (req, res, next) {
   }
 
   // Update user details object
+  userInformation.tenantData = {};
+  userInformation.tenantData.tenantId = userInformation.tenantId;
+  userInformation.tenantData.orgId = userInformation.organizationId;
   req.userDetails = userInformation;
 
   // Helper function to access nested properties

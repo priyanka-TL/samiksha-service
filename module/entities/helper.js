@@ -1463,8 +1463,7 @@ module.exports = class EntitiesHelper {
           if ( req.query.solutionId ) {
               let findQuery = {
                   _id: ObjectId(req.query.solutionId),
-                  tenantId: req.userDetails.tenantData.tenantId,
-                  orgIds:{$in:['ALL',req.userDetails.tenantData.orgId]}
+                  tenantId: req.userDetails.tenantData.tenantId
               };
               projection.push(
                   "entityType"
