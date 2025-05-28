@@ -434,4 +434,5 @@ module.exports = {
 	USER_ID_MISSING: 'User ID is missing',
   FAILED_TO_FETCH_TENANT_DETAILS: 'Failed to fetch tenant details',
   DOMAIN_FETCH_FAILED: 'Tenants domain fetch failed',
+  LINK_GENERATED: 'Link generated successfully'
 };

@@ -968,7 +968,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON}              -solution updating data.
    */
 
-  static update(solutionId, solutionData, userId, checkDate = false,tenantData) {
+  static update(solutionId, solutionData, userId, checkDate = false, tenantData = {}) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
@@ -976,6 +976,7 @@ module.exports = class SolutionsHelper {
           tenantId: tenantData.tenantId,
           orgIds:{"$in": ["ALL", ...tenantData.orgId]}
         };
+
         // Getting solution document to update based on solution id
         let solutionDocument = await solutionsQueries.solutionDocuments(queryObject, ['_id', 'programId']);
         if (!(solutionDocument.length > 0)) {
@@ -986,7 +987,6 @@ module.exports = class SolutionsHelper {
         }
 
         // if solution document has program id and req body has start and end date update the date in both solution and program document as well
-
         if (
           solutionDocument[0].programId &&
           checkDate &&
@@ -2271,8 +2271,9 @@ module.exports = class SolutionsHelper {
             _id: solutionId,
             isReusable: false,
             isAPrivateProgram: false,
-            tenantId: tenantData.tenantId,
-            orgIds:{ $in: ['ALL', tenantData.orgId] }
+            // Only Super Admin can generate links for all tenant and org
+            // tenantId: tenantData.tenantId,
+            // orgIds:{ $in: ['ALL', tenantData.orgId] }
           },
           ['link', 'type', 'author','tenantId']
         );
@@ -2291,34 +2292,42 @@ module.exports = class SolutionsHelper {
         if (!solutionLink) {
           solutionLink = await gen.utils.md5Hash(solution._id + '###' + solution.author);
           // update link to the solution documents
-          let updateSolution = await this.update(solutionId, { link: solutionLink }, userId,false,{tenantId:tenantData.tenantId,orgId:[tenantData.orgId]});
+          let updateSolution = await this.update(
+            solutionId, 
+            { link: solutionLink }, 
+            userId, 
+            false,
+            //  Only Super Admin can generate links for all tenant and org hence replace tenantData is replcaed with solution tenantData
+            {
+              tenantId: solution?.tenantId,
+              orgId: [solution?.orgId],
+            }
+          );
         }
 
         // fetch tenant domain by calling  tenant details API
-				let tenantDetailsResponse = await userService.fetchTenantDetails(solution.tenantId, userToken)
-        const domains = tenantDetailsResponse?.data?.domains || []
+        let tenantDetailsResponse = await userService.fetchTenantDetails(solution.tenantId, userToken);
+        const domains = tenantDetailsResponse?.data?.domains || [];
         // Error handling if API failed or no domains found
-				if (
-					!tenantDetailsResponse.success ||
-					!Array.isArray(domains) ||
-          domains.length === 0
-				) {
-					throw {
-						status: httpStatusCode.bad_request.status,
-						message: messageConstants.apiResponses.DOMAIN_FETCH_FAILED,
-					}
-				}
+        if (!tenantDetailsResponse.success || !Array.isArray(domains) || domains.length === 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.DOMAIN_FETCH_FAILED,
+          };
+        }
 
         // Collect all verified domains into an array
-				let allDomains = domains
-					.filter((domainObj) => domainObj.verified)
-					.map((domainObj) => domainObj.domain)
-
+        let allDomains = domains.filter((domainObj) => domainObj.verified).map((domainObj) => domainObj.domain);
+        
         // Generate link for each domain
-				let links = allDomains.map((domain) => {
-					const fullUrl = `https://${domain}${process.env.APP_PORTAL_DIRECTORY}`
-					return this._generateLink(fullUrl, prefix, solutionLink, solutionData[0].type)
-				})
+        let links = allDomains.map((domain) => {
+          return _generateLink(
+            `https://${domain}${process.env.APP_PORTAL_DIRECTORY}`,
+            prefix,
+            solutionLink,
+            solutionData[0].type
+          );
+        });
 
         return resolve({
           success: true,
