@@ -2260,7 +2260,7 @@ module.exports = class SolutionsHelper {
    * @returns {Object} - Details of the solution.
    */
 
-  static fetchLink(solutionId, userId,tenantData, userToken) {
+  static fetchLink(solutionId, userId, tenantData, userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -2272,7 +2272,7 @@ module.exports = class SolutionsHelper {
             // tenantId: tenantData.tenantId,
             // orgIds:{ $in: ['ALL', tenantData.orgId] }
           },
-          ['link', 'type', 'author','tenantId']
+          ['link', 'type', 'author', 'tenantId']
         );
 
         if (!Array.isArray(solutionData) || solutionData.length === 0) {
@@ -2290,9 +2290,9 @@ module.exports = class SolutionsHelper {
           solutionLink = await gen.utils.md5Hash(solution._id + '###' + solution.author);
           // update link to the solution documents
           let updateSolution = await this.update(
-            solutionId, 
-            { link: solutionLink }, 
-            userId, 
+            solutionId,
+            { link: solutionLink },
+            userId,
             false,
             //  Only Super Admin can generate links for all tenant and org hence replace tenantData is replcaed with solution tenantData
             {
@@ -2315,7 +2315,7 @@ module.exports = class SolutionsHelper {
 
         // Collect all verified domains into an array
         let allDomains = domains.filter((domainObj) => domainObj.verified).map((domainObj) => domainObj.domain);
-        
+
         // Generate link for each domain
         let links = allDomains.map((domain) => {
           return _generateLink(
