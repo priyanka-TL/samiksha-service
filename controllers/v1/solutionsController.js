@@ -1338,11 +1338,9 @@ module.exports = class Solutions extends Abstract {
   async fetchLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = gen.utils.returnTenantDataFromToken(req.userDetails)
         let solutionData = await solutionsHelper.fetchLink(
           req.params._id,
           req.userDetails.userId,
-          tenantData,
           req.userDetails.userToken
         );
 

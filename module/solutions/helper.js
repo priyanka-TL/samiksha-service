@@ -2260,7 +2260,7 @@ module.exports = class SolutionsHelper {
    * @returns {Object} - Details of the solution.
    */
 
-  static fetchLink(solutionId, userId, tenantData, userToken) {
+  static fetchLink(solutionId, userId, userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -2276,13 +2276,21 @@ module.exports = class SolutionsHelper {
         );
 
         if (!Array.isArray(solutionData) || solutionData.length === 0) {
-          return resolve({
+          throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-            result: {},
-          });
+            status: httpStatusCode.bad_request.status,
+          };
         }
 
         const solution = solutionData[0];
+
+        if (!solution.tenantId) {
+          throw {
+            message: messageConstants.apiResponses.TENANTID_REQUIRED_IN_SOLUTION,
+            status: httpStatusCode.bad_request.status,
+          };
+        }
+
         let prefix = messageConstants.common.PREFIX_FOR_SOLUTION_LINK;
         let solutionLink = solution?.link;
 
@@ -2300,6 +2308,13 @@ module.exports = class SolutionsHelper {
               orgId: [solution?.orgId],
             }
           );
+
+          if (!updateSolution?.success) {
+            throw {
+              message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
+              status: httpStatusCode.bad_request.status,
+            };
+          }
         }
 
         // fetch tenant domain by calling  tenant details API
