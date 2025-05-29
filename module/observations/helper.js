@@ -2824,60 +2824,57 @@ module.exports = class ObservationsHelper {
 
 
           let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
-          if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
-            throw {
+          if (!tenantDetails.success || !tenantDetails?.data?.meta) {
+            throw { 
               status: httpStatusCode.bad_request.status,
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             };
           }
 
-          let observableEntityKeys = tenantDetails.data.meta.observableEntityKeys;
+          let observableEntityKeys = tenantDetails.data.meta?.observableEntityKeys || [];
 
-          if(observableEntityKeys === undefined || observableEntityKeys === null || observableEntityKeys.length === 0){
+          if (!observableEntityKeys || observableEntityKeys.length === 0) {
             throw {
               status: httpStatusCode.bad_request.status,
               message: messageConstants.apiResponses.OBSERVABLE_ENTITY_KEYS_NOT_FOUND,
             };
           }
-          
-          let KyetoValidate = [];
 
-          for(let i=0;i<observableEntityKeys.length;i++){
-              KyetoValidate.push(observableEntityKeys[i]);
+          let KeytoValidate = [];
+
+          for (let i = 0; i < observableEntityKeys.length; i++) {
+            KeytoValidate.push(observableEntityKeys[i]);
           }
 
-          let roles = [];
-          for(let i=0;i<KyetoValidate.length;i++){
-            if(bodyData[KyetoValidate[i]]){
-              let rolesFound = bodyData[KyetoValidate[i]]
-              let roleElements = rolesFound.split(',')
-
-              for(let j=0;j<roleElements.length;j++){
-                roles.push(roleElements[j]);
-              }
-            }
-          }
+          let roles = observableEntityKeys
+            .filter((key) => typeof bodyData[key] === 'string' && bodyData[key].trim() !== '')
+            .flatMap((key) => bodyData[key].split(',').map((role) => role.trim()));
 
           let entityTypeArr = [];
 
-          for(let roleIndex=0;roleIndex<roles.length;roleIndex++){
+          for (let roleIndex = 0; roleIndex < roles.length; roleIndex++) {
+            let rolesDocumentAPICall = await entityManagementService.entityDocuments(
+              {
+                _id: roles[roleIndex],
+                tenantId: solutionDocument[0].tenantId,
+                orgIds: { $in: ['ALL', solutionDocument[0].orgId] },
+              },
+              ['metaInformation.targetedEntityTypes']
+            );
 
-          let rolesDocumentAPICall = await entityManagementService.entityDocuments({
-            _id: roles[roleIndex],
-            tenantId:solutionDocument[0].tenantId,
-            orgIds:{$in:['ALL',solutionDocument[0].orgId]}
-          },["metaInformation.targetedEntityTypes"]);
-
-          if(rolesDocumentAPICall.success){
-            entityTypeArr.push(rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes[0].entityType);
-          }else{
-            throw {
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
-            };
+            if (
+              rolesDocumentAPICall?.success &&
+              Array.isArray(rolesDocumentAPICall.data) &&
+              rolesDocumentAPICall.data[0]?.metaInformation?.targetedEntityTypes?.[0]?.entityType
+            ) {
+              entityTypeArr.push(rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes[0].entityType);
+            } else {
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+              };
+            }
           }
-
-        }
 
           const uniqueEntityTypeArr = _.uniq(entityTypeArr);
           let filterData = {
