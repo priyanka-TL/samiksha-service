@@ -45,7 +45,7 @@ module.exports = class ProgramsHelper {
         let matchQuery = { status: messageConstants.common.ACTIVE_STATUS,
           tenantId:tenantFilter.tenantId,
           "scope.organizations": {
-            "$in": ["ALL", tenantFilter.orgId]
+            "$in": ["ALL", ...orgIdArr]
           },
          };
 
