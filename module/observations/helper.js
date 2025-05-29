@@ -158,8 +158,6 @@ module.exports = class ObservationsHelper {
           solutionData = solutionData[0];
         }
         if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
-          userRoleAndProfileInformation.role=userRoleAndProfileInformation.roles.join()
-
           //validate the user access to create observation
           let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
           if (!validateUserRole.success) {
