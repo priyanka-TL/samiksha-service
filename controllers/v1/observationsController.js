@@ -274,6 +274,7 @@ module.exports = class Observations extends Abstract {
           req.body.data,
           req.userDetails.userId,
           req.userDetails.userToken,
+          req.body.userRoleAndProfileInformation,
           req.userDetails.tenantData,
           req.query.programId,
           req.query.isExternalProgram ? gen.utils.convertStringToBoolean(req.query.isExternalProgram) : false

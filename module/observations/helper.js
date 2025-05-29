@@ -92,6 +92,7 @@ module.exports = class ObservationsHelper {
     data,
     userId,
     requestingUserAuthToken = '',
+    userRoleAndProfileInformation,
     tenantData,
     programId="",
     isExternalProgram
@@ -156,18 +157,18 @@ module.exports = class ObservationsHelper {
         } else {
           solutionData = solutionData[0];
         }
-        // if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
-        //   userRoleAndProfileInformation.role=userRoleAndProfileInformation.roles.join()
+        if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
+          userRoleAndProfileInformation.role=userRoleAndProfileInformation.roles.join()
 
-        //   //validate the user access to create observation
-        //   let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
-        //   if (!validateUserRole.success) {
-        //     throw {
-        //       status: httpStatusCode.bad_request.status,
-        //       message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
-        //     };
-        //   }
-        // }
+          //validate the user access to create observation
+          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
+          if (!validateUserRole.success) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+            };
+          }
+        }
 
         let userProfileData = await surveyService.profileRead(requestingUserAuthToken)
         userProfileData = (userProfileData.success && userProfileData.data) ? userProfileData.data : {};
