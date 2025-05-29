@@ -2834,10 +2834,10 @@ module.exports = class ObservationsHelper {
           let observableEntityKeys = tenantDetails.data.meta?.observableEntityKeys || [];
 
           if (!observableEntityKeys || observableEntityKeys.length === 0) {
-            throw {
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.OBSERVABLE_ENTITY_KEYS_NOT_FOUND,
-            };
+            // if observableEntityKeys is empty, then no validation is needed
+            resolve({
+              success: true
+            })
           }
 
           let KeytoValidate = [];
@@ -2877,56 +2877,16 @@ module.exports = class ObservationsHelper {
           }
 
           const uniqueEntityTypeArr = _.uniq(entityTypeArr);
-          let filterData = {
-            _id:topLevelEntityId,
-            entityType: topLevelEntityType,
-            deleted:false,
-            tenantId:solutionDocument[0].tenantId,
-            orgIds:{$in:['ALL',solutionDocument[0].orgId]}
-           };
-         
-          //Retrieving the entity from the Entity Management Service
-           let entitiesDocument = await entityManagementService.entityDocuments(
-             filterData
-           );
-
-           if (!entitiesDocument.success) {
-             throw {
-               status: httpStatusCode.bad_request.status,
-               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-             };
-           }
-
-          let childHierarchyPath = entitiesDocument.data[0].childHierarchyPath;
-          childHierarchyPath.unshift(topLevelEntityType)
-
-          const highestEntityType = this.findHighestHierarchy(uniqueEntityTypeArr,childHierarchyPath);
-          if(solutionEntityType === topLevelEntityType && solutionEntityType === highestEntityType) {
+          if (uniqueEntityTypeArr.includes(solutionEntityType)) {
             resolve({
-              success: true
-            })
-          }
-          const highestIndex = childHierarchyPath.indexOf(highestEntityType);
-          const solutionIndex = childHierarchyPath.indexOf(solutionEntityType);
-        
-          if (highestIndex === -1 || solutionIndex === -1) {
+              success: true,
+            });
+          } else {
             throw {
               status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.INVALID_ENTITY_TYPE
-          };   
+              message: messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+            };
           }
-        
-          if (highestIndex > solutionIndex) {
-            throw {
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER
-          };
-        
-        }
-
-        resolve({
-          success: true
-        })
 
         } catch (error) { 
           return resolve({
