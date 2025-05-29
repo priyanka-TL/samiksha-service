@@ -1492,6 +1492,7 @@ module.exports = class EntitiesHelper {
               };
                   
               let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
+              console.log(entitiesDetails,"<--entitiesDetails line 1495")
               if ( !entitiesDetails.success ) {
                   return resolve({
                       "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
@@ -1541,7 +1542,7 @@ module.exports = class EntitiesHelper {
                 let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
 
                 entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections,req.pageNo,req.pageSize,req.searchText);
-                
+                console.log(entitiesDetails,"<--entitiesDetails line 1545")
                 if ( !entitiesDetails.success ) {
                   return resolve({
                       "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
@@ -1594,6 +1595,7 @@ module.exports = class EntitiesHelper {
 
             }
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections,req.pageNo,req.pageSize,req.searchText);
+            console.log(entitiesDetails,"<--entitiesDetails line 1598")
             if ( !entitiesDetails.success ) {
                 return resolve({
                     "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
