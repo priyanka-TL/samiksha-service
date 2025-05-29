@@ -42,7 +42,6 @@ const profileRead = function (userToken) {
 					result.success = false
 				} else {
 					let response = JSON.parse(data.body)
-					console.log(response, 'response')
 					if (response.status === httpStatusCode['ok'].status) {
 						result['data'] = response.result
 					} else {

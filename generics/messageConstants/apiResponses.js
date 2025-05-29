@@ -436,4 +436,5 @@ module.exports = {
   DOMAIN_FETCH_FAILED: 'Tenants domain fetch failed',
   LINK_GENERATED: 'Link generated successfully',
   TENANTID_REQUIRED_IN_SOLUTION: 'TenantId required in solution',
+  OBSERVABLE_ENTITY_KEYS_NOT_FOUND: 'Observable entity keys not found in tenant data'
 };
