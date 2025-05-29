@@ -1533,7 +1533,7 @@ module.exports = class EntitiesHelper {
                 let groups = entitiesDetails.data[0].groups;
 
                 let targetedGroup = groups[result.entityType];
-    
+                console.log(targetedGroup,'targetedGroup line 1536')
                 let filterDataGroups = {
                   "_id":targetedGroup,
                   "tenantId":req.userDetails.tenantData.tenantId,
