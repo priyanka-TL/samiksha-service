@@ -312,70 +312,75 @@ let enviromentVariables = {
     default: false,
   },
   AUTH_METHOD: {
-		message: 'Required authentication method',
-		optional: true,
-		default: messageConstants.common.AUTH_METHOD.NATIVE,
-	},
-	KEYCLOAK_PUBLIC_KEY_PATH: {
-		message: 'Required Keycloak Public Key Path',
-		optional: true,
-		default: '../keycloakPublicKeys',
-	},
-  VALIDATE_ROLE: {
-		message: 'Required VALIDATE_ROLE to validate role heirarchy',
-		optional: true,
-		default: 'ON',
-	},
-  TOP_LEVEL_ENTITY_TYPE: {
-		message: 'Required TOP_LEVEL_ENTITY_TYPE to indentify top level entity type',
-		optional: true,
-    default: 'state'
-	},  
-	ELEVATE_SURVEY_SERVICE_URL: {
-		message: 'Elevate survey service url required',
-		optional: false,
-	},
-	SERVICE_NAME: {
-		message: 'survey service name required',
-		optional: false,
-		default: 'survey',
-	},
-  ADMIN_ACCESS_TOKEN:{
-    message: 'Required admin auth token',
-    optional: false
+    message: 'Required authentication method',
+    optional: true,
+    default: messageConstants.common.AUTH_METHOD.NATIVE,
   },
-  ADMIN_TOKEN_HEADER_NAME:{
+  KEYCLOAK_PUBLIC_KEY_PATH: {
+    message: 'Required Keycloak Public Key Path',
+    optional: true,
+    default: '../keycloakPublicKeys',
+  },
+  VALIDATE_ROLE: {
+    message: 'Required VALIDATE_ROLE to validate role heirarchy',
+    optional: true,
+    default: 'ON',
+  },
+  TOP_LEVEL_ENTITY_TYPE: {
+    message: 'Required TOP_LEVEL_ENTITY_TYPE to indentify top level entity type',
+    optional: true,
+    default: 'state',
+  },
+  ELEVATE_SURVEY_SERVICE_URL: {
+    message: 'Elevate survey service url required',
+    optional: false,
+  },
+  SERVICE_NAME: {
+    message: 'survey service name required',
+    optional: false,
+    default: 'survey',
+  },
+  ADMIN_ACCESS_TOKEN: {
+    message: 'Required admin auth token',
+    optional: false,
+  },
+  ADMIN_TOKEN_HEADER_NAME: {
     message: 'Required aadmin token header name',
-    optional: false
+    optional: false,
   },
   PROJECT_SERVICE_NAME: {
-		message: 'project service name required',
-		optional: false,
-		default: 'project',
-	},
+    message: 'project service name required',
+    optional: false,
+    default: 'project',
+  },
   INTERFACE_SERVICE_URL: {
-		message: 'interface service url required',
-		optional: false,
-	},
+    message: 'interface service url required',
+    optional: false,
+  },
   USER_DELETE_ON_OFF: {
     message: 'Enable/Disable User data deletion',
-		optional: true,
-    default: 'ON'
+    optional: true,
+    default: 'ON',
   },
-  USER_DELETE_TOPIC : {
+  USER_DELETE_TOPIC: {
     message: 'Required user data delete kafka topic',
-		optional: true,
-		requiredIf: {
-			key: 'USER_DELETE_ON_OFF',
-			operator: 'EQUALS',
-			value: 'ON',
-		},
+    optional: true,
+    requiredIf: {
+      key: 'USER_DELETE_ON_OFF',
+      operator: 'EQUALS',
+      value: 'ON',
+    },
   },
   AUTH_CONFIG_FILE_PATH: {
-		message: 'Required auth config file',
-		optional: true,
-		default: 'config.json',
-	},
+    message: 'Required auth config file',
+    optional: true,
+    default: 'config.json',
+  },
+  APP_PORTAL_DIRECTORY: {
+    message: 'App Portal base url required',
+    optional: false,
+    default: '/ml/',
+  },
 };
 
 let success = true;
