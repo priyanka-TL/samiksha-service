@@ -31,6 +31,7 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
 const validateRole = process.env.VALIDATE_ROLE;
 const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
 const surveyService = require(ROOT_PATH + "/generics/services/survey");
+const userService = require(ROOT_PATH + '/generics/services/users');
 /**
  * ObservationsHelper
  * @class
@@ -151,7 +152,7 @@ module.exports = class ObservationsHelper {
 
         if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
           //validate the user access to create observation
-          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
+          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId,tenantData);
           if (!validateUserRole.success) {
             throw {
               status: httpStatusCode.bad_request.status,
@@ -171,6 +172,7 @@ module.exports = class ObservationsHelper {
 
         return resolve(_.pick(observationData, ['_id', 'name', 'description']));
       } catch (error) {
+        console.log(error,'<--erorr in observation create helper-->');
         return reject(error);
       }
     });
@@ -1926,7 +1928,8 @@ module.exports = class ObservationsHelper {
               //validate the user access to create observation
               let validateUserRole = await this.validateUserRole(
                 bodyData,
-                solutionId
+                solutionId,
+                tenantData
               );
 
               if (!validateUserRole.success) {
@@ -2795,10 +2798,11 @@ module.exports = class ObservationsHelper {
    * @name validateUserRole
    * @param {Object} bodyData - user location request data
    * @param {String} solutionId - Solution id.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} return the eligibity of user
    */
 
-    static validateUserRole(bodyData, solutionId) {
+    static validateUserRole(bodyData, solutionId,tenantData) {
       return new Promise(async (resolve, reject) => {
         try {
           //validate solution
@@ -2806,7 +2810,7 @@ module.exports = class ObservationsHelper {
             {
               _id: solutionId,
             },
-            ["entityType",'tenantId','orgIds']
+            ["entityType",'tenantId','orgId']
           );
   
           if (!solutionDocument[0]) {
@@ -2819,80 +2823,70 @@ module.exports = class ObservationsHelper {
           let topLevelEntityId = bodyData[topLevelEntityType];
 
 
-          let roles = bodyData.role.split(",");
-
-          let entityTypeArr = [];
-          for(let roleIndex=0;roleIndex<roles.length;roleIndex++){
-
-          let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
-            code: roles[roleIndex],
-            tenantId:solutionDocument[0].tenantId,
-            orgIds:{$in:['ALL',...solutionDocument[0].orgIds]}
-          },
-          ["entityTypes.entityType"])
-
-          if(rolesDocumentAPICall.success){
-            entityTypeArr.push(rolesDocumentAPICall.data[0].entityTypes[0].entityType)
-          }else{
-            throw {
+          let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
+          if (!tenantDetails.success || !tenantDetails?.data?.meta) {
+            throw { 
               status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             };
           }
 
-        }
+          let observableEntityKeys = tenantDetails.data.meta?.observableEntityKeys || [];
 
-          const uniqueEntityTypeArr = _.uniq(entityTypeArr);
-          let filterData = {
-            _id:topLevelEntityId,
-            entityType: topLevelEntityType,
-            deleted:false,
-            tenantId:solutionDocument[0].tenantId,
-            orgIds:{$in:['ALL',...solutionDocument[0].orgIds]}
-           };
-         
-          //Retrieving the entity from the Entity Management Service
-           let entitiesDocument = await entityManagementService.entityDocuments(
-             filterData
-           );
-
-           if (!entitiesDocument.success) {
-             throw {
-               status: httpStatusCode.bad_request.status,
-               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-             };
-           }
-
-          let childHierarchyPath = entitiesDocument.data[0].childHierarchyPath;
-          childHierarchyPath.unshift(topLevelEntityType)
-
-          const highestEntityType = this.findHighestHierarchy(uniqueEntityTypeArr,childHierarchyPath);
-          if(solutionEntityType === topLevelEntityType && solutionEntityType === highestEntityType) {
+          if (!observableEntityKeys || observableEntityKeys.length === 0) {
+            // if observableEntityKeys is empty, then no validation is needed
             resolve({
               success: true
             })
           }
-          const highestIndex = childHierarchyPath.indexOf(highestEntityType);
-          const solutionIndex = childHierarchyPath.indexOf(solutionEntityType);
-        
-          if (highestIndex === -1 || solutionIndex === -1) {
-            throw {
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.INVALID_ENTITY_TYPE
-          };   
-          }
-        
-          if (highestIndex > solutionIndex) {
-            throw {
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER
-          };
-        
-        }
 
-        resolve({
-          success: true
-        })
+          let KeytoValidate = [];
+
+          for (let i = 0; i < observableEntityKeys.length; i++) {
+            KeytoValidate.push(observableEntityKeys[i]);
+          }
+
+          let roles = observableEntityKeys
+            .filter((key) => typeof bodyData[key] === 'string' && bodyData[key].trim() !== '')
+            .flatMap((key) => bodyData[key].split(',').map((role) => role.trim()));
+
+          let entityTypeArr = [];
+
+          for (let roleIndex = 0; roleIndex < roles.length; roleIndex++) {
+            let rolesDocumentAPICall = await entityManagementService.entityDocuments(
+              {
+                _id: roles[roleIndex],
+                tenantId: solutionDocument[0].tenantId,
+                orgIds: { $in: ['ALL', solutionDocument[0].orgId] },
+              },
+              ['metaInformation.targetedEntityTypes']
+            );
+
+            if (
+              rolesDocumentAPICall?.success &&
+              Array.isArray(rolesDocumentAPICall.data) &&
+              rolesDocumentAPICall.data[0]?.metaInformation?.targetedEntityTypes?.[0]?.entityType
+            ) {
+              entityTypeArr.push(rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes[0].entityType);
+            } else {
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
+              };
+            }
+          }
+
+          const uniqueEntityTypeArr = _.uniq(entityTypeArr);
+          if (uniqueEntityTypeArr.includes(solutionEntityType)) {
+            resolve({
+              success: true,
+            });
+          } else {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+            };
+          }
 
         } catch (error) { 
           return resolve({

@@ -272,7 +272,9 @@ module.exports = class Observations extends Abstract {
           req.query.solutionId,
           req.body.data,
           req.userDetails.userId,
-          req.userDetails.userToken
+          req.userDetails.userToken,
+          req.body.userRoleAndProfileInformation,
+          req.userDetails.tenantData,
           // req.query.programId
         );
 
