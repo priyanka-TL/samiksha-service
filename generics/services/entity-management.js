@@ -39,11 +39,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
         projection: projection,
       }
 
-     // Include pagination if pageNumber and pageLimit are explicitly provided
-      if (page !== null && limit !== null) {
-        requestJSON.query.page = page;
-        requestJSON.query.limit = limit;
-      }
 
       // Set the options for the HTTP POST request
       const options = {
