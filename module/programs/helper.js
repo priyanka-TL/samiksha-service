@@ -54,8 +54,7 @@ module.exports = class ProgramsHelper {
         }
 
         if (searchText !== '') {
-          matchQuery['$or'] = [];
-          matchQuery['$or'].push(
+          let searchData = [
             {
               externalId: new RegExp(searchText, 'i'),
             },
@@ -65,7 +64,14 @@ module.exports = class ProgramsHelper {
             {
               description: new RegExp(searchText, 'i'),
             }
-          );
+          ];
+
+          if(matchQuery['$and']){
+            matchQuery['$and'].push({ $or: searchData });
+          }else{
+            matchQuery['$or'] = searchData;
+          }
+
         }
 
         let sortQuery = {
@@ -1326,13 +1332,13 @@ module.exports = class ProgramsHelper {
 				let filterQuery = {
 					isDeleted: false,
 				}
-				Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type'])).forEach((key) => {
+				Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId','organizations'])).forEach((key) => {
 					data[key] = data[key].split(',')
 				})
 
 				// If validate entity set to ON . strict scoping should be applied
 				if (validateEntity !== messageConstants.common.OFF) {
-					Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type'])).forEach((requestedDataKey) => {
+					Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId','organizations'])).forEach((requestedDataKey) => {
 						registryIds.push(...data[requestedDataKey])
 						entityTypes.push(requestedDataKey)
 					})
@@ -1356,7 +1362,7 @@ module.exports = class ProgramsHelper {
           };
           */
           // filterQuery['scope.entities'] = { $in: entities };
-          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
+          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId','organizations']);
 
           let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
 					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
@@ -1378,12 +1384,24 @@ module.exports = class ProgramsHelper {
 
           const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
 
-          filterQuery.$or = [];
+          let locationData = []
+
           Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            filterQuery.$or.push({
+            locationData.push({
               [`scope.${key}`]: { $in: data[key] },
             })
           })
+
+          if(filterQuery['$and']){
+            filterQuery['$and'].push({
+              $or: locationData,
+            });
+          }else{
+            filterQuery['$or'].push({
+              $or: locationData,
+            });
+          }
+
           filterQuery['scope.entityType'] = { $in: entityTypes }
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
@@ -1418,7 +1436,13 @@ module.exports = class ProgramsHelper {
               }
             })
             // append query filter
-            filterQuery['$or'] = queryFilter;
+            if(filterQuery['$and']){
+              filterQuery['$and'].push({
+                $or: queryFilter,
+              });
+            }else{
+              filterQuery['$or'] = queryFilter;
+            }
           } else {
             userRoleKeys.forEach((key) => {
               let scope = 'scope.' + key
