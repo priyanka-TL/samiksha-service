@@ -38,6 +38,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
         query: filterData,
         projection: projection,
       }
+      console.log(requestJSON,'<--- requestJSON for entityDocuments');
 
      // Include pagination if pageNumber and pageLimit are explicitly provided
       if (page !== null && limit !== null) {
