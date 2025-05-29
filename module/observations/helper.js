@@ -31,6 +31,7 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
 const validateRole = process.env.VALIDATE_ROLE;
 const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
 const surveyService = require(ROOT_PATH + "/generics/services/survey");
+const userService = require(ROOT_PATH + '/generics/services/users');
 /**
  * ObservationsHelper
  * @class
@@ -151,7 +152,7 @@ module.exports = class ObservationsHelper {
 
         if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
           //validate the user access to create observation
-          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId);
+          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId,tenantData);
           if (!validateUserRole.success) {
             throw {
               status: httpStatusCode.bad_request.status,
@@ -171,6 +172,7 @@ module.exports = class ObservationsHelper {
 
         return resolve(_.pick(observationData, ['_id', 'name', 'description']));
       } catch (error) {
+        console.log(error,'<--erorr in observation create helper-->');
         return reject(error);
       }
     });
@@ -1926,7 +1928,8 @@ module.exports = class ObservationsHelper {
               //validate the user access to create observation
               let validateUserRole = await this.validateUserRole(
                 bodyData,
-                solutionId
+                solutionId,
+                tenantData
               );
 
               if (!validateUserRole.success) {
@@ -2795,10 +2798,11 @@ module.exports = class ObservationsHelper {
    * @name validateUserRole
    * @param {Object} bodyData - user location request data
    * @param {String} solutionId - Solution id.
+   * @param {Object} tenantData - tenant data.
    * @returns {Object} return the eligibity of user
    */
 
-    static validateUserRole(bodyData, solutionId) {
+    static validateUserRole(bodyData, solutionId,tenantData) {
       return new Promise(async (resolve, reject) => {
         try {
           //validate solution
@@ -2806,7 +2810,7 @@ module.exports = class ObservationsHelper {
             {
               _id: solutionId,
             },
-            ["entityType",'tenantId','orgIds']
+            ["entityType",'tenantId','orgId']
           );
   
           if (!solutionDocument[0]) {
@@ -2819,20 +2823,53 @@ module.exports = class ObservationsHelper {
           let topLevelEntityId = bodyData[topLevelEntityType];
 
 
-          let roles = bodyData.role.split(",");
+          let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
+          if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            };
+          }
+
+          let observableEntityKeys = tenantDetails.data.meta.observableEntityKeys;
+
+          if(observableEntityKeys === undefined || observableEntityKeys === null || observableEntityKeys.length === 0){
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.OBSERVABLE_ENTITY_KEYS_NOT_FOUND,
+            };
+          }
+          
+          let KyetoValidate = [];
+
+          for(let i=0;i<observableEntityKeys.length;i++){
+              KyetoValidate.push(observableEntityKeys[i]);
+          }
+
+          let roles = [];
+          for(let i=0;i<KyetoValidate.length;i++){
+            if(bodyData[KyetoValidate[i]]){
+              let rolesFound = bodyData[KyetoValidate[i]]
+              let roleElements = rolesFound.split(',')
+
+              for(let j=0;j<roleElements.length;j++){
+                roles.push(roleElements[j]);
+              }
+            }
+          }
 
           let entityTypeArr = [];
+
           for(let roleIndex=0;roleIndex<roles.length;roleIndex++){
 
-          let rolesDocumentAPICall = await entityManagementService.userRoleExtension({
-            code: roles[roleIndex],
+          let rolesDocumentAPICall = await entityManagementService.entityDocuments({
+            _id: roles[roleIndex],
             tenantId:solutionDocument[0].tenantId,
-            orgIds:{$in:['ALL',...solutionDocument[0].orgIds]}
-          },
-          ["entityTypes.entityType"])
+            orgIds:{$in:['ALL',solutionDocument[0].orgId]}
+          },["metaInformation.targetedEntityTypes"]);
 
           if(rolesDocumentAPICall.success){
-            entityTypeArr.push(rolesDocumentAPICall.data[0].entityTypes[0].entityType)
+            entityTypeArr.push(rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes[0].entityType);
           }else{
             throw {
               status: httpStatusCode.bad_request.status,
@@ -2848,7 +2885,7 @@ module.exports = class ObservationsHelper {
             entityType: topLevelEntityType,
             deleted:false,
             tenantId:solutionDocument[0].tenantId,
-            orgIds:{$in:['ALL',...solutionDocument[0].orgIds]}
+            orgIds:{$in:['ALL',solutionDocument[0].orgId]}
            };
          
           //Retrieving the entity from the Entity Management Service
