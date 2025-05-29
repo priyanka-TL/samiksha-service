@@ -319,7 +319,7 @@ module.exports = class SurveysHelper {
         newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
 
         //isExternalProgram true then calling projectService for programDetails
-        if(bodyData.project){
+        if(bodyData && bodyData?.project){
           newSolutionDocument.programExternalId = programId;
           newSolutionDocument['project'] = bodyData.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
@@ -552,7 +552,7 @@ module.exports = class SurveysHelper {
           if (solution.programExternalId) {
             survey["programExternalId"] = solution.programExternalId;
           }
-          if(solution.project && solution.referenceFrom){
+          if(solution?.project && solution?.referenceFrom){
             survey["project"] = solution.project;
             survey["referenceFrom"] =solution.referenceFrom
           }
