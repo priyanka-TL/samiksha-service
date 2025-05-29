@@ -214,7 +214,7 @@ module.exports = class ObservationsHelper {
           }
         }
 
-        if (data.project) {
+        if (data?.project) {
           data.project._id = new ObjectId(data.project._id);
           data.referenceFrom = messageConstants.common.PROJECT;
         }

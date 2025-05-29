@@ -2252,7 +2252,7 @@ module.exports = class SolutionsHelper {
         newSolutionDocument.isAPrivateProgram = false;
         newSolutionDocument.isReusable = false;
 
-        if (data.project) {
+        if ( data && data?.project) {
           newSolutionDocument['project'] = data.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
           newSolutionDocument['isExternalProgram'] = isExternalProgram;
