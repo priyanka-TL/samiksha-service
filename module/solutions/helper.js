@@ -994,7 +994,6 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
-          _id: solutionId,
           tenantId: tenantData.tenantId
         };
 
@@ -1005,6 +1004,7 @@ module.exports = class SolutionsHelper {
         } else {
           queryObject['externalId'] = solutionId;
         }
+
         // Getting solution document to update based on solution id
         let solutionDocument = await solutionsQueries.solutionDocuments(queryObject, ['_id', 'programId']);
         if (!(solutionDocument.length > 0)) {
@@ -1015,7 +1015,6 @@ module.exports = class SolutionsHelper {
         }
 
         // if solution document has program id and req body has start and end date update the date in both solution and program document as well
-
         if (
           solutionDocument[0].programId &&
           checkDate &&
@@ -2333,10 +2332,11 @@ module.exports = class SolutionsHelper {
    * @param {String} appName - app Name.
    * @param {String} userId - user Id.
    * @param {Object} tenantData - tenant data.
+   * @param {String} userToken - user token.
    * @returns {Object} - Details of the solution.
    */
 
-  static fetchLink(solutionId, userId, tenantData) {
+  static fetchLink(solutionId, userId, userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -2344,39 +2344,83 @@ module.exports = class SolutionsHelper {
             _id: solutionId,
             isReusable: false,
             isAPrivateProgram: false,
-            tenantId: tenantData.tenantId
+            // Only Super Admin can generate links for all tenant and org
+            // tenantId: tenantData.tenantId,
+            // orgIds:{ $in: ['ALL', tenantData.orgId] }
           },
-          ['link', 'type', 'author']
+          ['link', 'type', 'author', 'tenantId']
         );
 
-        if (!Array.isArray(solutionData) || solutionData.length < 1) {
-          return resolve({
+        if (!Array.isArray(solutionData) || solutionData.length === 0) {
+          throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
-            result: {},
-          });
+            status: httpStatusCode.bad_request.status,
+          };
+        }
+
+        const solution = solutionData[0];
+
+        if (!solution.tenantId) {
+          throw {
+            message: messageConstants.apiResponses.TENANTID_REQUIRED_IN_SOLUTION,
+            status: httpStatusCode.bad_request.status,
+          };
         }
 
         let prefix = messageConstants.common.PREFIX_FOR_SOLUTION_LINK;
+        let solutionLink = solution?.link;
 
-        let solutionLink, link;
-
-        if (!solutionData[0].link) {
-          let updateLink = await gen.utils.md5Hash(solutionData[0]._id + '###' + solutionData[0].author);
+        if (!solutionLink) {
+          solutionLink = await gen.utils.md5Hash(solution._id + '###' + solution.author);
           // update link to the solution documents
-          let updateSolution = await this.update(solutionId, { link: updateLink }, userId, false, {
-            tenantId: tenantData.tenantId,
-            orgId: [tenantData.orgId],
-          });
-          solutionLink = updateLink;
-        } else {
-          solutionLink = solutionData[0].link;
+          let updateSolution = await this.update(
+            solutionId,
+            { link: solutionLink },
+            userId,
+            false,
+            //  Only Super Admin can generate links for all tenant and org hence replace tenantData is replcaed with solution tenantData
+            {
+              tenantId: solution?.tenantId,
+              orgId: [solution?.orgId],
+            }
+          );
+
+          if (!updateSolution?.success) {
+            throw {
+              message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
+              status: httpStatusCode.bad_request.status,
+            };
+          }
         }
-        //generate the solution link
-        link = _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionData[0].type);
+
+        // fetch tenant domain by calling  tenant details API
+        let tenantDetailsResponse = await userService.fetchTenantDetails(solution.tenantId, userToken);
+        const domains = tenantDetailsResponse?.data?.domains || [];
+        // Error handling if API failed or no domains found
+        if (!tenantDetailsResponse.success || !Array.isArray(domains) || domains.length === 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.DOMAIN_FETCH_FAILED,
+          };
+        }
+
+        // Collect all verified domains into an array
+        let allDomains = domains.filter((domainObj) => domainObj.verified).map((domainObj) => domainObj.domain);
+
+        // Generate link for each domain
+        let links = allDomains.map((domain) => {
+          return _generateLink(
+            `https://${domain}${process.env.APP_PORTAL_DIRECTORY}`,
+            prefix,
+            solutionLink,
+            solutionData[0].type
+          );
+        });
+
         return resolve({
           success: true,
           message: messageConstants.apiResponses.LINK_GENERATED,
-          result: link,
+          result: links,
         });
       } catch (error) {
         return resolve({
