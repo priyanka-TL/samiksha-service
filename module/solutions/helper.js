@@ -532,12 +532,24 @@ module.exports = class SolutionsHelper {
 
           const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
 
-          filterQuery.$or = [];
+          let locationData = []
+
           Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            filterQuery.$or.push({
+            locationData.push({
               [`scope.${key}`]: { $in: data[key] },
             });
           });
+          
+          if(filterQuery['$and']){
+            filterQuery['$and'].push({
+              $or: locationData,
+            });
+          }else{
+            filterQuery['$or'].push({
+              $or: locationData,
+            });
+          }
+
           filterQuery['scope.entityType'] = { $in: entityTypes };
           
         } else {
@@ -573,7 +585,13 @@ module.exports = class SolutionsHelper {
               }
             });
             // append query filter
-            filterQuery['$or'] = queryFilter;
+            if(filterQuery['$and']){
+              filterQuery['$and'].push({
+                $or: queryFilter,
+              });
+            }else{
+              filterQuery['$or'] = queryFilter;
+            }
           } else {
             userRoleKeys.forEach((key) => {
               let scope = 'scope.' + key;
@@ -3529,12 +3547,12 @@ module.exports = class SolutionsHelper {
           },
         ];
 
-        if (searchText !== '') {
-          if (matchQuery['$or']) {
-            matchQuery['$and'] = [{ $or: matchQuery.$or }, { $or: searchData }];
 
-            delete matchQuery.$or;
-          } else {
+        if(searchText !== ''){
+
+          if(matchQuery['$and']){
+            matchQuery['$and'].push({ $or: searchData });
+          }else{
             matchQuery['$or'] = searchData;
           }
         }
