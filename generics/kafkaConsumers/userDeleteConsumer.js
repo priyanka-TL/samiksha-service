@@ -27,7 +27,7 @@ var messageReceived = function (message) {
       let parsedMessage = JSON.parse(message.value);
       if (
         parsedMessage.entity === messageConstants.common.DELETE_EVENT_ENTITY &&
-        parsedMessage.eventType === CONSTANTS.common.DELETE_EVENT_TYPE
+        parsedMessage.eventType === messageConstants.common.DELETE_EVENT_TYPE
       ) {
         let userDataUpdateSatus = await usersHelper.deleteUserPIIData(parsedMessage);
         if (userDataUpdateSatus.status === 200) {
