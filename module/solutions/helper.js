@@ -2290,7 +2290,7 @@ module.exports = class SolutionsHelper {
             // tenantId: tenantData.tenantId,
             // orgIds:{ $in: ['ALL', tenantData.orgId] }
           },
-          ['link', 'type', 'author', 'tenantId']
+          ['link', 'type', 'author', 'tenantId','orgId']
         );
 
         if (!Array.isArray(solutionData) || solutionData.length === 0) {
