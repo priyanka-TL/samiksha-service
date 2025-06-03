@@ -2865,9 +2865,19 @@ module.exports = class ObservationsHelper {
             if (
               rolesDocumentAPICall?.success &&
               Array.isArray(rolesDocumentAPICall.data) &&
-              rolesDocumentAPICall.data[0]?.metaInformation?.targetedEntityTypes?.[0]?.entityType
+              rolesDocumentAPICall.data[0]?.metaInformation?.targetedEntityTypes &&
+              rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes.length > 0
             ) {
-              entityTypeArr.push(rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes[0].entityType);
+              let targetedEntityTypes = rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes;
+              for (let entityTypeData of targetedEntityTypes) {
+                if (!entityTypeData.entityType) {
+                  throw {
+                    status: httpStatusCode.bad_request.status,
+                    message: messageConstants.apiResponses.INVALID_ENTITY_TYPE,
+                  };
+                }
+                entityTypeArr.push(entityTypeData.entityType);
+              }
             } else {
               throw {
                 status: httpStatusCode.bad_request.status,
