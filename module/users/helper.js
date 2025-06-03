@@ -22,6 +22,8 @@ const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const defaultUserProfileConfig = require('@config/defaultUserProfileDeleteConfig');
 const configFilePath = process.env.AUTH_CONFIG_FILE_PATH;
+const path = require('path');
+const fs = require('fs');
 
 /**
  * UserHelper
