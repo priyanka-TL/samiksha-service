@@ -2869,7 +2869,13 @@ module.exports = class ObservationsHelper {
               rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes.length > 0
             ) {
               let targetedEntityTypes = rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes;
-              for(let entityTypeData of targetedEntityTypes){
+              for (let entityTypeData of targetedEntityTypes) {
+                if (!entityTypeData.entityType) {
+                  throw {
+                    status: httpStatusCode.bad_request.status,
+                    message: messageConstants.apiResponses.INVALID_ENTITY_TYPE,
+                  };
+                }
                 entityTypeArr.push(entityTypeData.entityType);
               }
             } else {
