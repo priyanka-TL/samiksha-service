@@ -3,6 +3,7 @@ const kafka = require('kafka-node');
 const USER_DELETE_TOPIC = process.env.USER_DELETE_TOPIC;
 const USER_DELETE_ON_OFF = process.env.USER_DELETE_ON_OFF
 const SUBMISSION_RATING_QUEUE_TOPIC = process.env.SUBMISSION_RATING_QUEUE_TOPIC
+const userDeleteConsumer = require('../generics/kafkaConsumers/userDeleteConsumer')
 
 var connect = function (config) {
   Producer = kafka.Producer;
