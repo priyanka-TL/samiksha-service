@@ -130,7 +130,6 @@ const programUpdate = function (userToken, programId, reqBody) {
     try {
       // Construct the URL for the project service
       let url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.PROGRAM_UPDATE}/${programId}`;
-
       // Set the options for the HTTP GET request
       const options = {
         headers: {

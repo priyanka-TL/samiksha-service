@@ -122,7 +122,6 @@ module.exports = class Surveys extends Abstract {
           req.userDetails.tenantAndOrgInfo,
           req.query.programId,
           req.userDetails.userToken,
-          req.query.isExternalProgram ? gen.utils.convertStringToBoolean(req.query.isExternalProgram) : false,
           req.body.data
         );
         return resolve({

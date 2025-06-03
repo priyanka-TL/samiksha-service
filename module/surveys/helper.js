@@ -217,12 +217,11 @@ module.exports = class SurveysHelper {
    * @param {Object} tenantAndOrgInfo - tenant and org info
    * @param {string} programId -programId
    * @param {String} userToken -auth Token
-   * @param {Booleas} isExternalProgram - Check if its a externalProgram or Not
    * @param {Object} bodyData - Req body
    * @returns {JSON} - sharable link.
    */
 
-  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '',tenantAndOrgInfo, programId,userToken,isExternalProgram,bodyData) {
+  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '',tenantAndOrgInfo, programId,userToken,bodyData) {
     return new Promise(async (resolve, reject) => {
       try {
         if (solutionId == '') {
@@ -316,6 +315,7 @@ module.exports = class SurveysHelper {
         newSolutionDocument.isReusable = false;
         newSolutionDocument.parentSolutionId = solutionId;
         newSolutionDocument.createdAt = new Date();
+        // newSolutionDocument.isExternalProgram=isExternalProgram
         newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
 
         //isExternalProgram true then calling projectService for programDetails
@@ -323,12 +323,11 @@ module.exports = class SurveysHelper {
           newSolutionDocument.programExternalId = programId;
           newSolutionDocument['project'] = bodyData.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
-          newSolutionDocument['isExternalProgram']=true
         }
         
         const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 
-        let newSolution = await solutionsHelper.createSolution(newSolutionDocument,false,tenantAndOrgInfo,userToken,isExternalProgram);
+        let newSolution = await solutionsHelper.createSolution(newSolutionDocument,false,tenantAndOrgInfo,userToken);
         
       // If the new solution is created successfully, generate a link for the solution
         if (newSolution?.data?._id) {

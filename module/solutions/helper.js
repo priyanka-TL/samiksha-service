@@ -38,11 +38,10 @@ module.exports = class SolutionsHelper {
    * @param {Boolean} checkDate this is true for when its called via API calls
    * @param {Object} tenantData- Data of tenant and org Details
    * @param {Sting} userToken -auth token
-   * @param {Boolean} isExternalProgram - Check is it ExternalProgramOrNot
    * @returns {JSON} solution creation data.
    */
 
-  static createSolution(solutionData, checkDate = false, tenantData, userToken, isExternalProgram = false) {
+  static createSolution(solutionData, checkDate = false, tenantData, userToken) {
     return new Promise(async (resolve, reject) => {
       try {
         //Get the program details to update on the new solution document
@@ -172,7 +171,7 @@ module.exports = class SolutionsHelper {
         // adding solution id to the program components key
 
         if (solutionData.programExternalId) {
-          if (isExternalProgram) {
+          if (solutionData?.isExternalProgram) {
             programData[0].components.push(solutionCreation._id.toString());
             const updateProgram = await projectService.programUpdate(userToken, solutionData.programId, {
               components: programData[0].components,
@@ -2017,7 +2016,6 @@ module.exports = class SolutionsHelper {
     createdFor = [],
     requestingUserAuthToken,
     tenantData,
-    isExternalProgram = false
     // rootOrganisations = []
   ) {
     return new Promise(async (resolve, reject) => {
@@ -2049,7 +2047,6 @@ module.exports = class SolutionsHelper {
           createdFor,
           tenantData,
           requestingUserAuthToken,
-          isExternalProgram
           // rootOrganisations
         );
 
@@ -2090,7 +2087,6 @@ module.exports = class SolutionsHelper {
    * @param {String} createdFor - createdFor value.
    * @param {String} requestingUserAuthToken -authToken
    * @param {Object} tenantData =Tenant and orgData
-   * @param {Boolean} isExternalProgram - Is ecternal Program true or false
    * @returns {Object} New solution information
    */
 
@@ -2102,7 +2098,6 @@ module.exports = class SolutionsHelper {
     createdFor = '',
     tenantData,
     requestingUserAuthToken,
-    isExternalProgram = false
     // rootOrganisations = ""
   ) {
     return new Promise(async (resolve, reject) => {
@@ -2129,7 +2124,7 @@ module.exports = class SolutionsHelper {
         let programQuery = {};
         let programDocument;
         if (programId) {
-          if (isExternalProgram) {
+          if (newSolutionDocument.isExternalProgram) {
             programDocument = await projectService.programDetails(requestingUserAuthToken, programId);
             if (!programDocument?.result?._id) {
               throw {
@@ -2273,7 +2268,6 @@ module.exports = class SolutionsHelper {
         if ( data && data?.project) {
           newSolutionDocument['project'] = data.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
-          newSolutionDocument['isExternalProgram'] = isExternalProgram;
         }
 
         if (createdFor !== '') {
@@ -2308,7 +2302,7 @@ module.exports = class SolutionsHelper {
           }
 
           if (programDocument) {
-            if (isExternalProgram) {
+            if (newSolutionDocument.isExternalProgram) {
               programDocument.components.push(duplicateSolutionDocument._id.toString());
               let programUpdate = await projectService.programUpdate(requestingUserAuthToken, programId, {
                 components: programDocument.components,
@@ -3667,7 +3661,6 @@ module.exports = class SolutionsHelper {
             $arrayElemAt: ['$totalCount.count', 0],
           },
         };
-        
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {

@@ -84,7 +84,6 @@ module.exports = class ObservationsHelper {
    * @param {String} requestingUserAuthToken - Requesting user auth token.
    * @param {Object} tenantData - tenantData information
    * @param {String} [programId = ""] - program id
-   * @param {Boolean} isExternalProgram -Check external(ProjectServiceprogram) or not
    * @returns {Object} observation creation data.
    */
 
@@ -96,7 +95,6 @@ module.exports = class ObservationsHelper {
     userRoleAndProfileInformation,
     tenantData,
     programId="",
-    isExternalProgram
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -151,7 +149,6 @@ module.exports = class ObservationsHelper {
             userId,
             requestingUserAuthToken,
             tenantData,
-            isExternalProgram
             //   organisationAndRootOrganisation.,
             //   organisationAndRootOrganisation.rootOrganisations
           );
@@ -2889,7 +2886,7 @@ module.exports = class ObservationsHelper {
               },
               ['metaInformation.targetedEntityTypes']
             );
-
+            
             if (
               rolesDocumentAPICall?.success &&
               Array.isArray(rolesDocumentAPICall.data) &&
