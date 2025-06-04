@@ -221,7 +221,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - sharable link.
    */
 
-  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '',tenantAndOrgInfo, programId,userToken,bodyData) {
+  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '',tenantAndOrgInfo, programId,userToken,bodyData,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         if (solutionId == '') {
@@ -320,14 +320,16 @@ module.exports = class SurveysHelper {
 
         //isExternalProgram true then calling projectService for programDetails
         if(bodyData && bodyData?.project){
-          newSolutionDocument.programExternalId = programId;
           newSolutionDocument['project'] = bodyData.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
         }
-        
+
+        if(newSolutionDocument.isExternalProgram){
+          newSolutionDocument.programExternalId = programId;
+        }
         const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 
-        let newSolution = await solutionsHelper.createSolution(newSolutionDocument,false,tenantAndOrgInfo,userToken);
+        let newSolution = await solutionsHelper.createSolution(newSolutionDocument,false,tenantAndOrgInfo,userToken,userDetails);
         
       // If the new solution is created successfully, generate a link for the solution
         if (newSolution?.data?._id) {
@@ -1157,7 +1159,11 @@ module.exports = class SurveysHelper {
         'enableQuestionReadOut',
         'author',
         "endDate",
-        "isExternalProgram"
+        "isExternalProgram",
+        'type',
+        "entityType",
+        "minNoOfSubmissionsRequired",
+        "isReusable"
       ]);
     });
   }
@@ -1179,7 +1185,11 @@ module.exports = class SurveysHelper {
         'captureGpsLocationAtQuestionLevel',
         'enableQuestionReadOut',
         "project",
-        "referencFrom"
+        "referencFrom",
+        'type',
+        "entityType",
+        "minNoOfSubmissionsRequired",
+        "isReusable"
       ]);
     });
   }
@@ -1512,6 +1522,27 @@ module.exports = class SurveysHelper {
           _id: solutionId,
           // author: userId,
         });
+        if (solutionDocument[0].isReusable) {
+          let createChildSolution = await this.importSurveryTemplateToSolution(
+            solutionId,
+            userId,
+            "elevate",
+            bodyData,
+            bodyData.programExternalId,
+            token,
+            bodyData,
+            
+          );
+           if(!createChildSolution.success || !createChildSolution.data.solutionId){
+            throw {
+              message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
+            };
+           }
+          solutionDocument=await solutionsQueries.solutionDocuments({
+            _id: createChildSolution.data.solutionId,
+            // author: userId,
+          });
+        } 
         if (surveyId == '') {
           let surveyDocument = await this.surveyDocuments(
             {
@@ -1528,7 +1559,7 @@ module.exports = class SurveysHelper {
 
           let tenantData = {tenantId:bodyData.tenantId,orgId:bodyData.orgId} 
            let solutionData=await solutionsHelper.detailsBasedOnRoleAndLocation(
-                solutionId,
+                new ObjectId(solutionDocument[0]._id),
                 bodyData,
                 messageConstants.common.SURVEY,
                 tenantData,
@@ -1565,7 +1596,9 @@ module.exports = class SurveysHelper {
             //     messageConstants.apiResponses.ORGANISATION_DETAILS_NOT_FOUND_FOR_USER
             //   );
             // }
-
+            if(bodyData?.project){
+              solutionData.data.project=bodyData.project
+            }
             let createSurveyDocument = await this.createSurveyDocument(userId, solutionData.data, userId,{tenantId:bodyData.tenantId,orgId:bodyData.orgId});
 
             if (!createSurveyDocument.success) {

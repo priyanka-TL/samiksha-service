@@ -41,7 +41,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} solution creation data.
    */
 
-  static createSolution(solutionData, checkDate = false, tenantData, userToken) {
+  static createSolution(solutionData, checkDate = false, tenantData, userToken,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         //Get the program details to update on the new solution document
@@ -49,8 +49,7 @@ module.exports = class SolutionsHelper {
         if (solutionData.programExternalId) {
           //Condition for check solution falls under the program or not and same service Program or not
           if (solutionData?.isExternalProgram) {
-            const programResponse = await projectService.programDetails(userToken, solutionData.programExternalId);
-
+            const programResponse = await projectService.programDetails(userToken, solutionData.programExternalId,userDetails);
             if (!programResponse?.result?._id) {
               throw {
                 status: httpStatusCode.bad_request.status,
@@ -171,18 +170,7 @@ module.exports = class SolutionsHelper {
         // adding solution id to the program components key
 
         if (solutionData.programExternalId) {
-          if (solutionData?.isExternalProgram) {
-            programData[0].components.push(solutionCreation._id.toString());
-            const updateProgram = await projectService.programUpdate(userToken, solutionData.programId, {
-              components: programData[0].components,
-            });
-            if (!updateProgram.success) {
-              throw {
-                status: httpStatusCode.bad_request.status,
-                message: messageConstants.apiResponses.PROGRAM_UPDATED_FAILED,
-              };
-            }
-          } else {
+          if (!solutionData?.isExternalProgram) {       
             await programsQueries.findOneAndUpdate(
               { _id: solutionData.programId },
               { $addToSet: { components: solutionCreation._id } }
@@ -500,11 +488,11 @@ module.exports = class SolutionsHelper {
           isReusable: false,
           isDeleted: false,
         };
-
+        if(referenceFrom === ""){
         Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId','organizations'])).forEach((key) => {
           data[key] = data[key].split(',');
         });
-        if(referenceFrom === ""){
+       
         // If validate entity set to ON . strict scoping should be applied
         if (validateEntity !== messageConstants.common.OFF) {
           // Getting entities and entity types from request body
@@ -2067,6 +2055,10 @@ module.exports = class SolutionsHelper {
             'project',
             'referenceFrom',
             'isExternalProgram',
+            'type',
+            "minNoOfSubmissionsRequired",
+            "isReusable",
+            "name"
           ])
         );
       } catch (error) {
@@ -2098,6 +2090,7 @@ module.exports = class SolutionsHelper {
     createdFor = '',
     tenantData,
     requestingUserAuthToken,
+    userDetails
     // rootOrganisations = ""
   ) {
     return new Promise(async (resolve, reject) => {
@@ -2125,7 +2118,7 @@ module.exports = class SolutionsHelper {
         let programDocument;
         if (programId) {
           if (newSolutionDocument.isExternalProgram) {
-            programDocument = await projectService.programDetails(requestingUserAuthToken, programId);
+            programDocument = await projectService.programDetails(requestingUserAuthToken, programId,userDetails);
             if (!programDocument?.result?._id) {
               throw {
                 status: httpStatusCode.bad_request.status,
@@ -2154,7 +2147,6 @@ module.exports = class SolutionsHelper {
             });
           }
         }
-
         let duplicateCriteriasResponse = await criteriaHelper.duplicate(newSolutionDocument.themes, tenantData);
 
         let criteriaIdMap = {};
@@ -2302,18 +2294,7 @@ module.exports = class SolutionsHelper {
           }
 
           if (programDocument) {
-            if (newSolutionDocument.isExternalProgram) {
-              programDocument.components.push(duplicateSolutionDocument._id.toString());
-              let programUpdate = await projectService.programUpdate(requestingUserAuthToken, programId, {
-                components: programDocument.components,
-              });
-              if (!programUpdate.success) {
-                throw {
-                  status: httpStatusCode.bad_request.status,
-                  message: messageConstants.apiResponses.PROGRAM_UPDATED_FAILED,
-                };
-              }
-            } else {
+            if (!newSolutionDocument.isExternalProgram) {
               let programUpdate = await database.models.programs.updateOne(
                 { _id: programDocument._id },
                 { $addToSet: { components: duplicateSolutionDocument._id } }

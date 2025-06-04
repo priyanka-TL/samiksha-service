@@ -122,7 +122,8 @@ module.exports = class Surveys extends Abstract {
           req.userDetails.tenantAndOrgInfo,
           req.query.programId,
           req.userDetails.userToken,
-          req.body.data
+          req.body.data,
+          req.userDetails
         );
         return resolve({
           message: result.message,

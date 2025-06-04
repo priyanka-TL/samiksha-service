@@ -1295,6 +1295,7 @@ module.exports = class Solutions extends Abstract {
           '',
           tenantData,
           req.userDetails.userToken,
+          req.userDetails
         );
 
         return resolve({

@@ -71,7 +71,7 @@ const templateLists = function (userToken, externalId) {
  * @returns {Promise<Object>} A promise that resolves to an object indicating success and containing the fetched data if successful.
  */
 
-const programDetails = function (userToken, programId) {
+const programDetails = function (userToken, programId,userDetails) {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the project service
@@ -80,10 +80,16 @@ const programDetails = function (userToken, programId) {
       const options = {
         headers: {
           'content-type': 'application/json',
-          'X-auth-token': userToken,
+          'X-auth-token': userToken,         
         },
       };
-
+        //add  tenant and orgId in the header if role issuper admin 
+        if(userDetails?.roles && userDetails.roles.includes("admin")){
+          _.assign(options.headers, {
+            tenantidforadmin: userDetails.tenantAndOrgInfo.tenantId,
+            orgidforadmin: userDetails.tenantAndOrgInfo.orgId.join(','),
+            });
+        }
       request.get(url, options, projectServiceCallback);
       let result = {
         success: true,
@@ -116,6 +122,7 @@ const programDetails = function (userToken, programId) {
   });
 };
 
+
 /**
  * update the program  based on the given Id.
  * This functionality helps add survey and observation solutions to the components array of a program
@@ -125,7 +132,7 @@ const programDetails = function (userToken, programId) {
  * @param {object} reqBody - update query
  * @returns {Promise<Object>} update success message
  */
-const programUpdate = function (userToken, programId, reqBody) {
+const programUpdate = function (userToken, programId, reqBody,tenantData,userDetails) {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the project service
@@ -139,6 +146,14 @@ const programUpdate = function (userToken, programId, reqBody) {
         },
         json: reqBody,
       };
+      //add super admin details if role is not has orgadmin
+      if(userDetails?.roles && !userDetails.roles.includes("org_admin")){
+				_.assign(options.headers, {
+					'admin-auth-token': process.env.SURVEY_ADMIN_AUTH_TOKEN,
+					tenantId: tenantData.tenantId,
+					orgId: tenantData.orgId.join(','),
+				  });
+			}
       request.post(url, options, projectServiceCallback);
       let result = {
         success: true,

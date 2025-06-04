@@ -135,6 +135,7 @@ module.exports = class ObservationsHelper {
           };
         }
 
+        let solutionDetails ={}
         if (solutionData[0].isReusable) {
 
           const solutionHelper = require(MODULES_BASE_PATH +'/solutions/helper');
@@ -152,6 +153,15 @@ module.exports = class ObservationsHelper {
             //   organisationAndRootOrganisation.,
             //   organisationAndRootOrganisation.rootOrganisations
           );
+           solutionDetails ={
+            subType: solutionData.entityType,
+					  type: solutionData.type,
+					  _id: solutionData._id,
+					  externalId: solutionData.externalId,
+					  name: solutionData.name,
+					  isReusable: solutionData.isReusable,
+					  minNoOfSubmissionsRequired: solutionData.minNoOfSubmissionsRequired,
+          }
         } else {
           solutionData = solutionData[0];
         }
@@ -170,8 +180,12 @@ module.exports = class ObservationsHelper {
         userProfileData = (userProfileData.success && userProfileData.data) ? userProfileData.data : {};
 
         let observationData = await this.createObservation(data, userId, solutionData,userProfileData,tenantData);
-
-        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId","solutionExternalId"]));
+        // Add solutionDetails only if it's not empty
+        if (Object.keys(solutionDetails).length > 0) {
+           observationData.solutionDetails = solutionDetails;
+         }
+       
+        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId","solutionExternalId","solutionDetails"]));
       } catch (error) {
         console.log(error,'<--erorr in observation create helper-->');
         return reject(error);
@@ -2443,7 +2457,7 @@ module.exports = class ObservationsHelper {
   
       if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
         submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
-        submissionDocument['project'] = solutionDocument.project;
+        submissionDocument['project'] = observationDocument.project;
       }
   
       let criteriaId = new Array();
