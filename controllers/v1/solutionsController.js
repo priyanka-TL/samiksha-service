@@ -204,7 +204,12 @@ module.exports = class Solutions extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.details(req.params._id, req.body, req.userDetails.userId,req.userDetails.tenantData);
+        let solutionData = await solutionsHelper.details(
+          req.params._id,
+          req.body,
+          req.userDetails.userId,
+          req.userDetails.tenantData
+        );
 
         return resolve(solutionData);
       } catch (error) {
@@ -270,7 +275,7 @@ module.exports = class Solutions extends Abstract {
             {
               _id: 1,
               name: 1,
-            },
+            }
           )
           .lean();
 
@@ -291,7 +296,7 @@ module.exports = class Solutions extends Abstract {
             if (newCriteriaId._id) {
               solutionCriteriaToFrameworkCriteriaMap[criteria._id.toString()] = newCriteriaId._id;
             }
-          }),
+          })
         );
 
         let updateThemes = function (themes) {
@@ -448,7 +453,7 @@ module.exports = class Solutions extends Abstract {
           'solutions',
           solutionDocument._id,
           themes,
-          headerSequence,
+          headerSequence
         );
 
         for (let pointerToEditTheme = 0; pointerToEditTheme < solutionThemes.length; pointerToEditTheme++) {
@@ -512,7 +517,6 @@ module.exports = class Solutions extends Abstract {
     });
   }
 
-
   /**
    * @api {post} /samiksha/v1/solutions/uploadThemesRubricExpressions/{{solutionsExternalID}} Upload Rubric For Themes Of Solutions
    * @apiVersion 1.0.0
@@ -543,9 +547,9 @@ module.exports = class Solutions extends Abstract {
             {
               externalId: req.params._id,
               scoringSystem: 'pointsBasedScoring',
-              tenantId: tenantData.tenantId
+              tenantId: tenantData.tenantId,
             },
-            { themes: 1, levelToScoreMapping: 1 },
+            { themes: 1, levelToScoreMapping: 1 }
           )
           .lean();
 
@@ -571,18 +575,16 @@ module.exports = class Solutions extends Abstract {
         const themesWithRubricDetails = await solutionsHelper.setThemeRubricExpressions(
           solutionDocument.themes,
           themeData,
-          solutionLevelKeys,
+          solutionLevelKeys
         );
 
         if (themesWithRubricDetails.themes) {
           await database.models.solutions.findOneAndUpdate(
-            { _id: solutionDocument._id,
-              tenantId: tenantData.tenantId
-           },
+            { _id: solutionDocument._id, tenantId: tenantData.tenantId },
             {
               themes: themesWithRubricDetails.themes,
               flattenedThemes: themesWithRubricDetails.flattenedThemes,
-            },
+            }
           );
         }
 
@@ -735,7 +737,7 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let tenantData = req.userDetails.tenantAndOrgInfo;
-        let solutionData = await solutionsHelper.getDetails(req.params._id,tenantData);
+        let solutionData = await solutionsHelper.getDetails(req.params._id, tenantData);
 
         solutionData['result'] = solutionData.data;
 
@@ -778,9 +780,9 @@ module.exports = class Solutions extends Abstract {
           .findOne(
             {
               externalId: req.params._id,
-              tenantId: tenantData.tenantId
+              tenantId: tenantData.tenantId,
             },
-            { themes: 1, levelToScoreMapping: 1, type: 1, subType: 1 },
+            { themes: 1, levelToScoreMapping: 1, type: 1, subType: 1 }
           )
           .lean();
 
@@ -822,7 +824,7 @@ module.exports = class Solutions extends Abstract {
               _id: {
                 $in: allCriteriaIdInSolution,
               },
-              tenantId: tenantData.tenantId
+              tenantId: tenantData.tenantId,
             },
             {
               _id: 1,
@@ -831,7 +833,7 @@ module.exports = class Solutions extends Abstract {
               description: 1,
               criteriaType: 1,
               rubric: 1,
-            },
+            }
           )
           .lean();
 
@@ -890,7 +892,7 @@ module.exports = class Solutions extends Abstract {
               }
 
               return criteriaRow;
-            }),
+            })
           );
         }
 
@@ -899,19 +901,17 @@ module.exports = class Solutions extends Abstract {
           if (Object.keys(criteriaWeightageToUpdate).length > 0) {
             const solutionThemes = await solutionsHelper.updateCriteriaWeightageInThemes(
               solutionDocument.themes,
-              criteriaWeightageToUpdate,
+              criteriaWeightageToUpdate
             );
 
             if (solutionThemes.success && solutionThemes.themes) {
               await database.models.solutions.findOneAndUpdate(
-                { _id: solutionDocument._id, 
-                  tenantId: tenantData.tenantId
-                },
+                { _id: solutionDocument._id, tenantId: tenantData.tenantId },
                 {
                   themes: solutionThemes.themes,
                   flattenedThemes: solutionThemes.flattenedThemes,
                   isRubricDriven: true,
-                },
+                }
               );
               updateSubmissions = true;
             }
@@ -922,8 +922,8 @@ module.exports = class Solutions extends Abstract {
 
         if (updateSubmissions) {
           let criteriaQuestionDocument = await database.models.criteriaQuestions.find({
-            _id: { $in: allCriteriaIdInSolution }, 
-            tenantId: tenantData.tenantId
+            _id: { $in: allCriteriaIdInSolution },
+            tenantId: tenantData.tenantId,
           });
 
           let submissionDocumentCriterias = new Array();
@@ -931,7 +931,7 @@ module.exports = class Solutions extends Abstract {
           criteriaQuestionDocument.forEach((criteria) => {
             criteria.weightage = allCriteriaIdWithWeightageInSolution[criteria._id.toString()].weightage;
             submissionDocumentCriterias.push(
-              _.omit(criteria._doc, ['resourceType', 'language', 'keywords', 'concepts', 'createdFor', 'evidences']),
+              _.omit(criteria._doc, ['resourceType', 'language', 'keywords', 'concepts', 'createdFor', 'evidences'])
             );
           });
 
@@ -956,7 +956,7 @@ module.exports = class Solutions extends Abstract {
           if (submissionCollectionToUpdate != '') {
             await database.models[submissionCollectionToUpdate].updateMany(
               { solutionId: solutionDocument._id },
-              updatedCriteriasObject,
+              updatedCriteriasObject
             );
           }
         }
@@ -1188,7 +1188,7 @@ module.exports = class Solutions extends Abstract {
               matrixQuestion.instanceQuestions[pointerToInstanceQuestionsArray].toString();
             if (questionMapByInternalId[instanceChildQuestionId]) {
               matrixQuestion.instanceQuestions[pointerToInstanceQuestionsArray] = _.cloneDeep(
-                questionMapByInternalId[instanceChildQuestionId],
+                questionMapByInternalId[instanceChildQuestionId]
               );
               delete questionMapByInternalId[instanceChildQuestionId];
             }
@@ -1203,7 +1203,7 @@ module.exports = class Solutions extends Abstract {
             const ecmCode = activeECMs[pointerToActiveECMs];
             if (solutionDocument.questionSequenceByEcm[ecmCode]) {
               for (const [sectionCode, sectionQuestionIds] of Object.entries(
-                solutionDocument.questionSequenceByEcm[ecmCode],
+                solutionDocument.questionSequenceByEcm[ecmCode]
               )) {
                 for (
                   let pointerToSectionQuestions = 0;
@@ -1289,7 +1289,7 @@ module.exports = class Solutions extends Abstract {
         }
         let duplicateSolution = await solutionsHelper.importFromSolution(
           req.query.solutionId,
-          req.body.programExternalId ? req.body.programExternalId : "",
+          req.body.programExternalId ? req.body.programExternalId : '',
           req.userDetails.userId,
           req.body,
           '',
@@ -1300,7 +1300,7 @@ module.exports = class Solutions extends Abstract {
 
         return resolve({
           message: messageConstants.apiResponses.DUPLICATE_SOLUTION,
-          result: _.pick(duplicateSolution, ['_id',"externalId"]),
+          result: _.pick(duplicateSolution, ['_id', 'externalId']),
         });
       } catch (error) {
         return reject({
@@ -1387,7 +1387,7 @@ module.exports = class Solutions extends Abstract {
   async delete(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solution = await solutionsHelper.delete(req.params._id, req.userDetails.userId,req.userDetails.tenantData);
+        let solution = await solutionsHelper.delete(req.params._id, req.userDetails.userId, req.userDetails.tenantData);
         return resolve(solution);
       } catch (error) {
         return reject({
@@ -1690,7 +1690,7 @@ module.exports = class Solutions extends Abstract {
   async verifyLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantFilter =  gen.utils.returnTenantDataFromToken(req.userDetails);
+        let tenantFilter = gen.utils.returnTenantDataFromToken(req.userDetails);
         let solutionData = await solutionsHelper.verifyLink(
           req.params._id,
           req.body,
@@ -1723,7 +1723,11 @@ module.exports = class Solutions extends Abstract {
   async isTargetedBasedOnUserProfile(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(req.params._id, req.body,req.userDetails.tenantData);
+        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(
+          req.params._id,
+          req.body,
+          req.userDetails.tenantData
+        );
 
         return resolve(solutionData);
       } catch (error) {
@@ -1767,7 +1771,11 @@ module.exports = class Solutions extends Abstract {
   async addEntities(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.addEntityToSolution(req.params._id, req.body.entities,req.userDetails.tenantData);
+        let solutionData = await solutionsHelper.addEntityToSolution(
+          req.params._id,
+          req.body.entities,
+          req.userDetails.tenantData
+        );
 
         return resolve(solutionData);
       } catch (error) {
@@ -1867,7 +1875,7 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let tenantData = req.userDetails.tenantAndOrgInfo;
-        console.log(tenantData,"this is tenantData")
+        console.log(tenantData, 'this is tenantData');
         let solutionData = await solutionsHelper.list(
           req.query.type,
           req.query.subType ? req.query.subType : '',
@@ -1923,7 +1931,11 @@ module.exports = class Solutions extends Abstract {
   async removeEntities(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionData = await solutionsHelper.removeEntities(req.params._id, req.body.entities,req.userDetails.tenantData);
+        let solutionData = await solutionsHelper.removeEntities(
+          req.params._id,
+          req.body.entities,
+          req.userDetails.tenantData
+        );
 
         return resolve(solutionData);
       } catch (error) {
@@ -2030,7 +2042,7 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         //passing {true} for checkDate params in helper
-        let solutionData = await solutionsHelper.createSolution(req.body, true,req.userDetails.tenantAndOrgInfo);
+        let solutionData = await solutionsHelper.createSolution(req.body, true, req.userDetails.tenantAndOrgInfo);
 
         solutionData['result'] = solutionData.data;
 
@@ -2098,7 +2110,7 @@ module.exports = class Solutions extends Abstract {
           req.query.programId ? req.query.programId : '',
           req.pageSize,
           req.pageNo,
-          req.searchText,
+          req.searchText
         );
 
         targetedSolutions['result'] = targetedSolutions.data;
@@ -2209,7 +2221,11 @@ module.exports = class Solutions extends Abstract {
   async addRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionUpdated = await solutionsHelper.addRolesInScope(req.params._id, req.body.roles,req.userDetails.tenantData);
+        let solutionUpdated = await solutionsHelper.addRolesInScope(
+          req.params._id,
+          req.body.roles,
+          req.userDetails.tenantData
+        );
 
         return resolve(solutionUpdated);
       } catch (error) {
@@ -2254,7 +2270,7 @@ module.exports = class Solutions extends Abstract {
   async addEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantFilter =  req.userDetails.tenantAndOrgInfo;
+        let tenantFilter = req.userDetails.tenantAndOrgInfo;
         let solutionUpdated = await solutionsHelper.addEntitiesInScope(
           req.params._id,
           req.body.entities,
@@ -2305,7 +2321,11 @@ module.exports = class Solutions extends Abstract {
   async removeRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionUpdated = await solutionsHelper.removeRolesInScope(req.params._id, req.body.roles,req.userDetails.tenantData);
+        let solutionUpdated = await solutionsHelper.removeRolesInScope(
+          req.params._id,
+          req.body.roles,
+          req.userDetails.tenantData
+        );
 
         return resolve(solutionUpdated);
       } catch (error) {
@@ -2350,7 +2370,11 @@ module.exports = class Solutions extends Abstract {
   async removeEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(req.params._id, req.body.entities,req.userDetails.tenantData);
+        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(
+          req.params._id,
+          req.body.entities,
+          req.userDetails.tenantData
+        );
 
         return resolve(solutionUpdated);
       } catch (error) {

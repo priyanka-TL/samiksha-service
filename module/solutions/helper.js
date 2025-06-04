@@ -41,7 +41,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} solution creation data.
    */
 
-  static createSolution(solutionData, checkDate = false, tenantData, userToken,userDetails) {
+  static createSolution(solutionData, checkDate = false, tenantData, userToken, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         //Get the program details to update on the new solution document
@@ -49,7 +49,11 @@ module.exports = class SolutionsHelper {
         if (solutionData.programExternalId) {
           //Condition for check solution falls under the program or not and same service Program or not
           if (solutionData?.isExternalProgram) {
-            const programResponse = await projectService.programDetails(userToken, solutionData.programExternalId,userDetails);
+            const programResponse = await projectService.programDetails(
+              userToken,
+              solutionData.programExternalId,
+              userDetails
+            );
             if (!programResponse?.result?._id) {
               throw {
                 status: httpStatusCode.bad_request.status,
@@ -67,7 +71,10 @@ module.exports = class SolutionsHelper {
               'startDate',
             ]);
             if (!programData.length) {
-              throw { message: messageConstants.apiResponses.PROGRAM_NOT_FOUND };
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              };
             }
           }
           //adding program details to the solution document
@@ -90,7 +97,7 @@ module.exports = class SolutionsHelper {
             let bodyData = {
               _id: { $in: locationData.codes },
               tenantId: tenantData.tenantId,
-              orgIds:{$in:['ALL',tenantData.orgId]}
+              orgIds: { $in: ['ALL', tenantData.orgId] },
             };
             let entityData = await entityManagementService.entityDocuments(bodyData);
             if (entityData.success) {
@@ -153,10 +160,9 @@ module.exports = class SolutionsHelper {
         solutionData['tenantId'] = tenantData.tenantId;
         solutionData['orgId'] = tenantData.orgId[0];
 
-        if(solutionData['scope']){
+        if (solutionData['scope']) {
           solutionData['scope']['organization'] = tenantData.orgId;
         }
-
 
         // create new solution document
         let solutionCreation = await solutionsQueries.createSolution(_.omit(solutionData, ['scope']));
@@ -170,7 +176,7 @@ module.exports = class SolutionsHelper {
         // adding solution id to the program components key
 
         if (solutionData.programExternalId) {
-          if (!solutionData?.isExternalProgram) {       
+          if (!solutionData?.isExternalProgram) {
             await programsQueries.findOneAndUpdate(
               { _id: solutionData.programId },
               { $addToSet: { components: solutionCreation._id } }
@@ -223,7 +229,7 @@ module.exports = class SolutionsHelper {
     filter,
     surveyReportPage = '',
     currentScopeOnly = false,
-    tenantFilter,
+    tenantFilter
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -273,7 +279,7 @@ module.exports = class SolutionsHelper {
             let programsData = await programsQueries.programDocuments(
               {
                 _id: { $in: programIds },
-                tenantId: tenantFilter.tenantId
+                tenantId: tenantFilter.tenantId,
               },
               ['name']
             );
@@ -479,7 +485,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Auto targeted solutions query.
    */
 
-  static queryBasedOnRoleAndLocation(data, type = '', referenceFrom="" ) {
+  static queryBasedOnRoleAndLocation(data, type = '', referenceFrom = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
@@ -488,24 +494,28 @@ module.exports = class SolutionsHelper {
           isReusable: false,
           isDeleted: false,
         };
-        if(referenceFrom === ""){
-        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId','organizations'])).forEach((key) => {
-          data[key] = data[key].split(',');
-        });
-       
-        // If validate entity set to ON . strict scoping should be applied
-        if (validateEntity !== messageConstants.common.OFF) {
-          // Getting entities and entity types from request body
-          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId','organizations'])).forEach((requestedDataKey) => {
-             entities.push(...data[requestedDataKey]);
-            // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
-            entityTypes.push(requestedDataKey);
+        if (referenceFrom === '') {
+          Object.keys(
+            _.omit(data, ['role', 'filter', 'factors', 'type', 'tenantId', 'orgId', 'organizations'])
+          ).forEach((key) => {
+            data[key] = data[key].split(',');
           });
-          if (!(entities.length > 0)) {
-            throw {
-              message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
-            };
-          }
+
+          // If validate entity set to ON . strict scoping should be applied
+          if (validateEntity !== messageConstants.common.OFF) {
+            // Getting entities and entity types from request body
+            Object.keys(
+              _.omit(data, ['filter', 'role', 'factors', 'type', 'tenantId', 'orgId', 'organizations'])
+            ).forEach((requestedDataKey) => {
+              entities.push(...data[requestedDataKey]);
+              // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
+              entityTypes.push(requestedDataKey);
+            });
+            if (!(entities.length > 0)) {
+              throw {
+                message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
+              };
+            }
 
             /*
           if (!data.role) {
@@ -523,90 +533,89 @@ module.exports = class SolutionsHelper {
             // filterQuery['scope.entities'] = { $in: entities };
             let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type', 'tenantId', 'orgId']);
 
-          let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
-					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
-            return resolve({
-              success: false,
-              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-            });
-          }
+            let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
+            if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+              return resolve({
+                success: false,
+                message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+              });
+            }
 
-          // factors = [ 'professional_role', 'professional_subroles' ]
-          let factors
-          if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-            factors = tenantDetails.data.meta.factors;            
-            let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
-            filterQuery['$and'] = queryFilter;
-          }
-          let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
-          // factors.append(dataToOmit)
+            // factors = [ 'professional_role', 'professional_subroles' ]
+            let factors;
+            if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
+              factors = tenantDetails.data.meta.factors;
+              let queryFilter = gen.utils.factorQuery(factors, userRoleInfo);
+              filterQuery['$and'] = queryFilter;
+            }
+            let dataToOmit = ['filter', 'role', 'factors', 'type', 'tenantId', 'orgId'];
+            // factors.append(dataToOmit)
 
             const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
 
-          let locationData = []
+            let locationData = [];
 
-          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            locationData.push({
-              [`scope.${key}`]: { $in: data[key] },
+            Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
+              locationData.push({
+                [`scope.${key}`]: { $in: data[key] },
+              });
             });
-          });
-          
-          if(filterQuery['$and']){
-            filterQuery['$and'].push({
-              $or: locationData,
-            });
-          }else{
-            filterQuery['$or'].push({
-              $or: locationData,
-            });
-          }
 
-          filterQuery['scope.entityType'] = { $in: entityTypes };
-          
-        } else {
-          // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
-          // let userRoleKeys = Object.keys(userRoleInfo);
-          // userRoleKeys.forEach((entities) => {
-          //   filterQuery['scope.' + entities] = {
-          //     $in: userRoleInfo[entities].split(','),
-          //   };
-          // });
+            if (filterQuery['$and']) {
+              filterQuery['$and'].push({
+                $or: locationData,
+              });
+            } else {
+              filterQuery['$or'].push({
+                $or: locationData,
+              });
+            }
+
+            filterQuery['scope.entityType'] = { $in: entityTypes };
+          } else {
+            // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
+            // let userRoleKeys = Object.keys(userRoleInfo);
+            // userRoleKeys.forEach((entities) => {
+            //   filterQuery['scope.' + entities] = {
+            //     $in: userRoleInfo[entities].split(','),
+            //   };
+            // });
 
             // Obtain userInfo
             let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type', 'tenantId', 'orgId']);
             let userRoleKeys = Object.keys(userRoleInfo);
             let queryFilter = [];
 
-          // if factors are passed or query has to be build based on the keys passed
-          // factors = [ 'professional_role', 'professional_subroles' ]
-          if (data.hasOwnProperty('factors') && data.factors.length > 0) {
-            let factors = data.factors;
-            // Build query based on each key
-            factors.forEach((factor) => {
-              let scope = 'scope.' + factor;
-              let values = userRoleInfo[factor];
-              if (factor === 'role') {
-                queryFilter.push({
-                  ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
-                });
-              } else if (!Array.isArray(values)) {
-                queryFilter.push({ [scope]: { $in: values.split(',') } });
-              } else {
-                queryFilter.push({ [scope]: { $in: [...values] } });
-              }
-            });
-            // append query filter
-            if(filterQuery['$and']){
-              filterQuery['$and'].push({
-                $or: queryFilter,
+            // if factors are passed or query has to be build based on the keys passed
+            // factors = [ 'professional_role', 'professional_subroles' ]
+            if (data.hasOwnProperty('factors') && data.factors.length > 0) {
+              let factors = data.factors;
+              // Build query based on each key
+              factors.forEach((factor) => {
+                let scope = 'scope.' + factor;
+                let values = userRoleInfo[factor];
+                if (factor === 'role') {
+                  queryFilter.push({
+                    ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
+                  });
+                } else if (!Array.isArray(values)) {
+                  queryFilter.push({ [scope]: { $in: values.split(',') } });
+                } else {
+                  queryFilter.push({ [scope]: { $in: [...values] } });
+                }
               });
-            }else{
-              filterQuery['$or'] = queryFilter;
-            }
-          } else {
-            userRoleKeys.forEach((key) => {
-              let scope = 'scope.' + key;
-              let values = userRoleInfo[key];
+              // append query filter
+              if (filterQuery['$and']) {
+                filterQuery['$and'].push({
+                  $or: queryFilter,
+                });
+              } else {
+                filterQuery['$or'] = queryFilter;
+              }
+            } else {
+              userRoleKeys.forEach((key) => {
+                let scope = 'scope.' + key;
+                let values = userRoleInfo[key];
 
                 if (!Array.isArray(values)) {
                   queryFilter.push({ [scope]: { $in: values.split(',') } });
@@ -626,7 +635,7 @@ module.exports = class SolutionsHelper {
               }
             }
           }
-      }
+        }
         if (type === messageConstants.common.SURVEY) {
           filterQuery['status'] = {
             $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
@@ -659,7 +668,7 @@ module.exports = class SolutionsHelper {
         }
 
         delete filterQuery['scope.entityType'];
-        filterQuery.tenantId = data.tenantId
+        filterQuery.tenantId = data.tenantId;
         return resolve({
           success: true,
           data: filterQuery,
@@ -999,7 +1008,7 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
-          tenantId: tenantData.tenantId
+          tenantId: tenantData.tenantId,
         };
 
         let validateSolutionId = gen.utils.isValidMongoId(solutionId);
@@ -1029,7 +1038,7 @@ module.exports = class SolutionsHelper {
           let programData = await programsQueries.programDocuments(
             {
               _id: solutionDocument[0].programId,
-              tenantId: tenantData.tenantId
+              tenantId: tenantData.tenantId,
             },
             ['_id', 'endDate', 'startDate']
           );
@@ -1076,7 +1085,7 @@ module.exports = class SolutionsHelper {
         let solutionUpdatedData = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionDocument[0]._id,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           updateObject,
           { new: true }
@@ -1089,9 +1098,8 @@ module.exports = class SolutionsHelper {
 
         // If req body has scope to update for the solution document
         if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
-          
-          if(!solutionData.scope.organizations){
-            solutionData.scope.organizations = tenantData.orgId
+          if (!solutionData.scope.organizations) {
+            solutionData.scope.organizations = tenantData.orgId;
           }
 
           let solutionScope = await this.setScope(
@@ -1893,14 +1901,10 @@ module.exports = class SolutionsHelper {
   static details(solutionId, bodyData = {}, userId = '', tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
-
-        let solutionData = await solutionsQueries.solutionDocuments({ _id: solutionId, 
-          tenantId: tenantFilter.tenantId,
-        }, [
-          'type',
-          'projectTemplateId',
-          'programId',
-        ]);
+        let solutionData = await solutionsQueries.solutionDocuments(
+          { _id: solutionId, tenantId: tenantFilter.tenantId },
+          ['type', 'projectTemplateId', 'programId']
+        );
 
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
           return resolve({
@@ -1944,7 +1948,7 @@ module.exports = class SolutionsHelper {
           let programData = await programsQueries.programDocuments(
             {
               _id: solutionData.programId,
-              tenantId: tenantFilter.tenantId
+              tenantId: tenantFilter.tenantId,
             },
             ['rootOrganisations', 'requestForPIIConsent', 'name']
           );
@@ -2003,7 +2007,7 @@ module.exports = class SolutionsHelper {
     isAPrivateProgram = false,
     createdFor = [],
     requestingUserAuthToken,
-    tenantData,
+    tenantData
     // rootOrganisations = []
   ) {
     return new Promise(async (resolve, reject) => {
@@ -2034,7 +2038,7 @@ module.exports = class SolutionsHelper {
           solutionData,
           createdFor,
           tenantData,
-          requestingUserAuthToken,
+          requestingUserAuthToken
           // rootOrganisations
         );
 
@@ -2056,9 +2060,9 @@ module.exports = class SolutionsHelper {
             'referenceFrom',
             'isExternalProgram',
             'type',
-            "minNoOfSubmissionsRequired",
-            "isReusable",
-            "name"
+            'minNoOfSubmissionsRequired',
+            'isReusable',
+            'name',
           ])
         );
       } catch (error) {
@@ -2118,7 +2122,7 @@ module.exports = class SolutionsHelper {
         let programDocument;
         if (programId) {
           if (newSolutionDocument.isExternalProgram) {
-            programDocument = await projectService.programDetails(requestingUserAuthToken, programId,userDetails);
+            programDocument = await projectService.programDetails(requestingUserAuthToken, programId, userDetails);
             if (!programDocument?.result?._id) {
               throw {
                 status: httpStatusCode.bad_request.status,
@@ -2257,7 +2261,7 @@ module.exports = class SolutionsHelper {
         newSolutionDocument.isAPrivateProgram = false;
         newSolutionDocument.isReusable = false;
 
-        if ( data && data?.project) {
+        if (data && data?.project) {
           newSolutionDocument['project'] = data.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
         }
@@ -2274,7 +2278,7 @@ module.exports = class SolutionsHelper {
 
         if (duplicateSolutionDocument._id) {
           if (data.scope && Object.keys(data.scope).length > 0) {
-            data.scope.organizations = tenantData.orgId
+            data.scope.organizations = tenantData.orgId;
 
             await this.setScope(
               // newSolutionDocument.programId,
@@ -2341,7 +2345,7 @@ module.exports = class SolutionsHelper {
             // tenantId: tenantData.tenantId,
             // orgIds:{ $in: ['ALL', tenantData.orgId] }
           },
-          ['link', 'type', 'author', 'tenantId','orgId']
+          ['link', 'type', 'author', 'tenantId', 'orgId']
         );
 
         if (!Array.isArray(solutionData) || solutionData.length === 0) {
@@ -2609,7 +2613,7 @@ module.exports = class SolutionsHelper {
             status: {
               $ne: messageConstants.common.INACTIVE_STATUS,
             },
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           ['type', 'status', 'endDate']
         );
@@ -2680,7 +2684,7 @@ module.exports = class SolutionsHelper {
         let response = {
           isATargetedSolution: false,
           link: link,
-          tenantId: tenantData.tenantId
+          tenantId: tenantData.tenantId,
         };
         // find the solution document based on the link
         let solutionDetails = await solutionsQueries.solutionDocuments({ link: link }, [
@@ -3242,7 +3246,7 @@ module.exports = class SolutionsHelper {
             _id: solutionId,
             isAPrivateProgram: true,
             author: userId,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           {
             $set: { isDeleted: true },
@@ -3507,7 +3511,7 @@ module.exports = class SolutionsHelper {
           {
             _id: { $in: entityIds },
             entityType: solutionDocument[0].entityType,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           ['_id']
         );
@@ -3565,7 +3569,7 @@ module.exports = class SolutionsHelper {
           isDeleted: false,
         };
 
-        if(tenantData.hasOwnProperty('tenantId')) {
+        if (tenantData.hasOwnProperty('tenantId')) {
           matchQuery['tenantId'] = tenantData.tenantId;
         }
 
@@ -3598,12 +3602,10 @@ module.exports = class SolutionsHelper {
           },
         ];
 
-
-        if(searchText !== ''){
-
-          if(matchQuery['$and']){
+        if (searchText !== '') {
+          if (matchQuery['$and']) {
             matchQuery['$and'].push({ $or: searchData });
-          }else{
+          } else {
             matchQuery['$or'] = searchData;
           }
         }
@@ -3825,8 +3827,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '', referenceFrom="") {
-    
+  static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = '', referenceFrom = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type, referenceFrom);
@@ -3834,7 +3835,7 @@ module.exports = class SolutionsHelper {
           return resolve(queryData);
         }
         queryData.data['_id'] = solutionId;
-       
+
         let targetedSolutionDetails = await solutionsQueries.solutionDocuments(queryData.data, [
           'name',
           'externalId',
@@ -3854,7 +3855,7 @@ module.exports = class SolutionsHelper {
           'endDate',
           'project',
           'referenceFrom',
-          "isExternalProgram"
+          'isExternalProgram',
         ]);
         if (!(targetedSolutionDetails.length > 0)) {
           throw {
@@ -3899,7 +3900,7 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           ['_id']
         );
@@ -3938,7 +3939,7 @@ module.exports = class SolutionsHelper {
           await solutionsQueries.updateSolutionDocument(
             {
               _id: solutionId,
-              tenantId: tenantData.tenantId
+              tenantId: tenantData.tenantId,
             },
             {
               $pull: { 'scope.roles': { code: messageConstants.common.ALL_ROLES } },
@@ -3960,7 +3961,7 @@ module.exports = class SolutionsHelper {
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           updateQuery,
           { new: true }
@@ -4004,7 +4005,7 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           ['_id', 'programId', 'scope.entityType']
         );
@@ -4021,7 +4022,7 @@ module.exports = class SolutionsHelper {
           programData = await programsQueries.programDocuments(
             {
               _id: solutionData[0].programId,
-              tenantId: tenantData.tenantId
+              tenantId: tenantData.tenantId,
             },
             ['scope.entities', 'scope.entityType']
           );
@@ -4120,7 +4121,7 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           ['_id']
         );
@@ -4149,7 +4150,7 @@ module.exports = class SolutionsHelper {
           let updateSolution = await solutionsQueries.updateSolutionDocument(
             {
               _id: solutionId,
-              tenantId: tenantData.tenantId
+              tenantId: tenantData.tenantId,
             },
             {
               $pull: { 'scope.roles': { $in: roles } },
@@ -4201,7 +4202,7 @@ module.exports = class SolutionsHelper {
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           ['_id', 'scope.entities']
         );
@@ -4223,7 +4224,7 @@ module.exports = class SolutionsHelper {
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
-            tenantId: tenantData.tenantId
+            tenantId: tenantData.tenantId,
           },
           {
             $pull: { 'scope.entities': { $in: entities } },

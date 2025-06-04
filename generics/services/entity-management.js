@@ -164,7 +164,7 @@ const validateEntities = async function (entityIds, entityTypeId,tenantData) {
           };
           let entitiesDocumentsAPIData = await entityDocuments(bodyData);
         
-          if (!entitiesDocumentsAPIData.success || !entitiesDocumentsAPIData?.data.length >0) {
+          if (!entitiesDocumentsAPIData.success || !entitiesDocumentsAPIData?.data?.length >0) {
             throw {
               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
             };

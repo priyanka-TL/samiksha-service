@@ -1749,37 +1749,44 @@ module.exports = class SubmissionsHelper {
           _id: submissionDocument._id,
           status: submissionDocument.status,
         };
-
+  
         if (submissionDocument.completedDate) {
-          submissionData['submissionDate'] = submissionDocument.completedDate;
+          submissionData["submissionDate"] = submissionDocument.completedDate;
         }
-        let pushSubmissionToProject
-        if(process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" &&
-          process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC){
-
-            pushSubmissionToProject = await kafkaClient.pushSubmissionToProjectService(submissionData);
-
-        if (pushSubmissionToProject.status != 'success') {
-             throw new Error(
-            `Failed to push submission to project. Submission ID: ${submissionDocument._id.toString()}, Message: ${pushSubmissionToProject.message}`
-             );
+        let pushSubmissionToProject;
+        if (
+          process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" &&
+          process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
+        ) {
+          pushSubmissionToProject =
+            await kafkaClient.pushSubmissionToProjectService(submissionData);
+  
+          if (pushSubmissionToProject.status != "success") {
+            throw new Error(
+              `Failed to push submission to project. Submission ID: ${submissionDocument._id.toString()}, Message: ${pushSubmissionToProject.message}`,
+            );
+          }
+        } else {
+          pushSubmissionToProject = await projectService.pushSubmissionToTask(
+            submissionDocument.project._id,
+            submissionDocument.project.taskId,
+            submissionDocument,
+          );
+          if (!pushSubmissionToProject.success) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.PUSH_SUBMISSION_FAILED,
+            };
+          }
         }
-      }else{
-        pushSubmissionToProject = await projectService.pushSubmissionToTask(submissionDocument.project._id,submissionDocument.project.taskId,submissionDocument)
-        if (!pushSubmissionToProject.success) {
-          throw {
-            status: httpStatusCode.bad_request.status,
-            message : messageConstants.apiResponses.PUSH_SUBMISSION_FAILED
-          };
-        }
-      }
-
+  
         return resolve(pushSubmissionToProject);
       } catch (error) {
         return reject(error);
       }
     });
   }
+  
 
   /**
    * Add app information in submissions
