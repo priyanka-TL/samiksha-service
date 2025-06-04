@@ -512,20 +512,26 @@ function returnTenantDataFromToken(userDetails) {
  * @returns {Object[]} An array of query filter objects for MongoDB.
  */
 function factorQuery(factors, userRoleInfo) {
-	let queryFilter = []
-	for (let idx = 0; idx < factors.length; idx++) {
-		let factor = factors[idx]
-		let scope = 'scope.' + factor
-		let values = userRoleInfo[factor]
-		if (!values) continue
-		if (!Array.isArray(values)) {
-			queryFilter.push({ [scope]: { $in: values.split(',') } })
-		} else {
-			queryFilter.push({ [scope]: { $in: [...values] } })
-		}
-	}
-	return queryFilter
+  let queryFilter = [];
+
+  for (let idx = 0; idx < factors.length; idx++) {
+    let factor = factors[idx];
+    let scope = 'scope.' + factor;
+    let values = userRoleInfo[factor];
+    if (!values) continue;
+
+    let valueArray = Array.isArray(values) ? values : values.split(',');
+
+    if (scope === 'scope.organizations') {
+      queryFilter.push({ [scope]: { $in: [...valueArray, 'ALL'] } });
+    } else {
+      queryFilter.push({ [scope]: { $in: valueArray } });
+    }
+  }
+
+  return queryFilter;
 }
+
 
 
 module.exports = {
