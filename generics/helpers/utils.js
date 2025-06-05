@@ -517,16 +517,22 @@ function factorQuery(factors, userRoleInfo) {
   for (let idx = 0; idx < factors.length; idx++) {
     let factor = factors[idx];
     let scope = 'scope.' + factor;
-    let values = userRoleInfo[factor];
-    if (!values) continue;
+    let rawValues = userRoleInfo[factor];
+    let valueArray;
 
-    let valueArray = Array.isArray(values) ? values : values.split(',');
-
-    if (scope === 'scope.organizations') {
-      queryFilter.push({ [scope]: { $in: [...valueArray, 'ALL'] } });
-    } else {
-      queryFilter.push({ [scope]: { $in: valueArray } });
+    if (rawValues === undefined || rawValues === null) {
+      valueArray = ['ALL'];
+    } else if (Array.isArray(rawValues)) {
+      valueArray = [...rawValues, 'ALL'];
+    } else if (typeof rawValues === 'string') {
+      const splitValues = rawValues
+        .split(',')
+        .map(v => v.trim())
+        .filter(Boolean);
+      valueArray = [...splitValues, 'ALL'];
     }
+
+    queryFilter.push({ [scope]: { $in: valueArray } });
   }
 
   return queryFilter;
