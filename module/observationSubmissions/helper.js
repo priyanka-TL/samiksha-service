@@ -755,7 +755,7 @@ module.exports = class ObservationSubmissionsHelper {
    * Push observation submission to improvement service.
    * @method
    * @name pushSubmissionToProjectService
-   * @param {String} observationSubmissionDocument - observation submission document.
+   * @param {Object} observationSubmissionDocument - observation submission document.
    * @returns {JSON} consists of kafka message whether it is pushed for reporting
    * or not.
    */
@@ -779,6 +779,7 @@ module.exports = class ObservationSubmissionsHelper {
           process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" &&
           process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
         ) {
+
           pushSubmissionToProject = await kafkaClient.pushSubmissionToProjectService(
             observationSubmissionData
           );

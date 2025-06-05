@@ -40,11 +40,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
       }
       console.log(requestJSON,'<--- requestJSON for entityDocuments');
 
-     // Include pagination if pageNumber and pageLimit are explicitly provided
-      if (page !== null && limit !== null) {
-        requestJSON.query.page = page;
-        requestJSON.query.limit = limit;
-      }
 
       // Set the options for the HTTP POST request
       const options = {
@@ -170,7 +165,7 @@ const validateEntities = async function (entityIds, entityTypeId,tenantData) {
           };
           let entitiesDocumentsAPIData = await entityDocuments(bodyData);
         
-          if (!entitiesDocumentsAPIData.success || !entitiesDocumentsAPIData?.data.length >0) {
+          if (!entitiesDocumentsAPIData.success || !entitiesDocumentsAPIData?.data?.length >0) {
             throw {
               message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
             };

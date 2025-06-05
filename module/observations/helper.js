@@ -84,7 +84,6 @@ module.exports = class ObservationsHelper {
    * @param {String} requestingUserAuthToken - Requesting user auth token.
    * @param {Object} tenantData - tenantData information
    * @param {String} [programId = ""] - program id
-   * @param {Boolean} isExternalProgram -Check external(ProjectServiceprogram) or not
    * @returns {Object} observation creation data.
    */
 
@@ -92,11 +91,10 @@ module.exports = class ObservationsHelper {
     solutionId,
     data,
     userId,
-    requestingUserAuthToken = '',
+    requestingUserAuthToken = "",
     userRoleAndProfileInformation,
     tenantData,
-    programId="",
-    isExternalProgram
+    programId = ""
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -105,7 +103,7 @@ module.exports = class ObservationsHelper {
         //     messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN
         //   );
         // }
-
+  
         // let organisationAndRootOrganisation =
         //   await shikshalokamHelper.getOrganisationsAndRootOrganisations(
         //     requestingUserAuthToken,
@@ -116,19 +114,19 @@ module.exports = class ObservationsHelper {
             _id: solutionId,
           },
           [
-            'isReusable',
-            'externalId',
-            'programId',
-            'programExternalId',
-            'frameworkId',
-            'frameworkExternalId',
-            'entityType',
-            'entityTypeId',
-            'isAPrivateProgram',
+            "isReusable",
+            "externalId",
+            "programId",
+            "programExternalId",
+            "frameworkId",
+            "frameworkExternalId",
+            "entityType",
+            "entityTypeId",
+            "isAPrivateProgram",
             "project",
             "referenceFrom",
-            "isExternalProgram"
-          ],
+            "isExternalProgram",
+          ]
         );
         if (!solutionData.length > 0) {
           throw {
@@ -136,51 +134,96 @@ module.exports = class ObservationsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           };
         }
-
+  
+        let solutionDetails = {};
         if (solutionData[0].isReusable) {
-
-          const solutionHelper = require(MODULES_BASE_PATH +'/solutions/helper');
-          solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
-            solutionId,
+          const solutionHelper = require(MODULES_BASE_PATH + "/solutions/helper");
+          solutionData =
+            await solutionHelper.createProgramAndSolutionFromTemplate(
+              solutionId,
               {
                 _id: programId,
               },
-            userId,
-            _.omit(data, ['entities']),
-            true,
-            userId,
-            requestingUserAuthToken,
-            tenantData,
-            isExternalProgram
-            //   organisationAndRootOrganisation.,
-            //   organisationAndRootOrganisation.rootOrganisations
-          );
+              userId,
+              _.omit(data, ["entities"]),
+              true,
+              userId,
+              requestingUserAuthToken,
+              tenantData
+              //   organisationAndRootOrganisation.,
+              //   organisationAndRootOrganisation.rootOrganisations
+            );
+          solutionDetails = {
+            subType: solutionData.entityType,
+            type: solutionData.type,
+            _id: solutionData._id,
+            externalId: solutionData.externalId,
+            name: solutionData.name,
+            isReusable: solutionData.isReusable,
+            minNoOfSubmissionsRequired: solutionData.minNoOfSubmissionsRequired,
+          };
         } else {
           solutionData = solutionData[0];
         }
-        if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
+        if (
+          userRoleAndProfileInformation &&
+          Object.keys(userRoleAndProfileInformation).length > 0 &&
+          validateRole == "ON" &&
+          topLevelEntityType
+        ) {
           //validate the user access to create observation
-          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId,tenantData);
+          let validateUserRole = await this.validateUserRole(
+            userRoleAndProfileInformation,
+            solutionId,
+            tenantData
+          );
           if (!validateUserRole.success) {
             throw {
               status: httpStatusCode.bad_request.status,
-              message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+              message:
+                validateUserRole.message ||
+                messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
             };
           }
         }
-
-        let userProfileData = await surveyService.profileRead(requestingUserAuthToken)
-        userProfileData = (userProfileData.success && userProfileData.data) ? userProfileData.data : {};
-
-        let observationData = await this.createObservation(data, userId, solutionData,userProfileData,tenantData);
-
-        return resolve(_.pick(observationData, ['_id', 'name', 'description',"solutionId","solutionExternalId"]));
+  
+        let userProfileData = await surveyService.profileRead(
+          requestingUserAuthToken
+        );
+        userProfileData =
+          userProfileData.success && userProfileData.data
+            ? userProfileData.data
+            : {};
+  
+        let observationData = await this.createObservation(
+          data,
+          userId,
+          solutionData,
+          userProfileData,
+          tenantData
+        );
+        // Add solutionDetails only if it's not empty
+        if (Object.keys(solutionDetails).length > 0) {
+          observationData.solutionDetails = solutionDetails;
+        }
+  
+        return resolve(
+          _.pick(observationData, [
+            "_id",
+            "name",
+            "description",
+            "solutionId",
+            "solutionExternalId",
+            "solutionDetails",
+          ])
+        );
       } catch (error) {
-        console.log(error,'<--erorr in observation create helper-->');
         return reject(error);
       }
     });
   }
+  
+
 
   /**
    * Create observation.
@@ -214,7 +257,7 @@ module.exports = class ObservationsHelper {
           }
         }
 
-        if (data.project) {
+        if (data?.project) {
           data.project._id = new ObjectId(data.project._id);
           data.referenceFrom = messageConstants.common.PROJECT;
         }
@@ -1068,7 +1111,7 @@ module.exports = class ObservationsHelper {
         pageHeading: 1,
         criteriaLevelReport: 1,
         endDate: 1,
-        isExternalProgram:1
+        isExternalProgram: 1
       });
     });
   }
@@ -2357,39 +2400,43 @@ module.exports = class ObservationsHelper {
       lastSubmissionNumber = lastSubmissionForObservationEntity.result + 1;
   
       let programInformation = null;
+      
       if(solutionDocument.programId){
         let programDocument
         let programQueryObject = {
           _id: solutionDocument.programId,
           status: messageConstants.common.ACTIVE_STATUS
         };
-        if(solutionDocument.isExternalProgram){
-
-          programDocument = await projectService.programDetails(req.userDetails.userToken,solutionDocument.programId );
-          if(!programDocument?.result?._id){
+        if (solutionDocument.isExternalProgram) {
+          programDocument = await projectService.programDetails(
+            req.userDetails.userToken,
+            solutionDocument.programId
+          );
+          if (!programDocument?.result?._id) {
             throw {
               status: httpStatusCode.bad_request.status,
               message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
             };
           }
-          programDocument=[programDocument.result]
-
-        }else{   
-
-          programDocument = await programsHelper.list(programQueryObject, [
-         "externalId",
-         "name",
-         "description",
-         "imageCompression",
-         "isAPrivateProgram",
-       ],
-       '',
-       '',
-       '',
-       tenantData,
-           );
-           programDocument = programDocument.data.data
+          programDocument = [programDocument.result];
+        } else {
+          programDocument = await programsHelper.list(
+            programQueryObject,
+            [
+              "externalId",
+              "name",
+              "description",
+              "imageCompression",
+              "isAPrivateProgram",
+            ],
+            "",
+            "",
+            "",
+            tenantData
+          );
+          programDocument = programDocument.data.data;
         }
+        
        
        if (!programDocument[0]._id) {
          throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
@@ -2446,7 +2493,7 @@ module.exports = class ObservationsHelper {
   
       if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
         submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
-        submissionDocument['project'] = solutionDocument.project;
+        submissionDocument['project'] = observationDocument.project;
       }
   
       let criteriaId = new Array();
@@ -2889,13 +2936,23 @@ module.exports = class ObservationsHelper {
               },
               ['metaInformation.targetedEntityTypes']
             );
-
+            
             if (
               rolesDocumentAPICall?.success &&
               Array.isArray(rolesDocumentAPICall.data) &&
-              rolesDocumentAPICall.data[0]?.metaInformation?.targetedEntityTypes?.[0]?.entityType
+              rolesDocumentAPICall.data[0]?.metaInformation?.targetedEntityTypes &&
+              rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes.length > 0
             ) {
-              entityTypeArr.push(rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes[0].entityType);
+              let targetedEntityTypes = rolesDocumentAPICall.data[0].metaInformation.targetedEntityTypes;
+              for (let entityTypeData of targetedEntityTypes) {
+                if (!entityTypeData.entityType) {
+                  throw {
+                    status: httpStatusCode.bad_request.status,
+                    message: messageConstants.apiResponses.INVALID_ENTITY_TYPE,
+                  };
+                }
+                entityTypeArr.push(entityTypeData.entityType);
+              }
             } else {
               throw {
                 status: httpStatusCode.bad_request.status,

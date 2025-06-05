@@ -277,7 +277,6 @@ module.exports = class Observations extends Abstract {
           req.body.userRoleAndProfileInformation,
           req.userDetails.tenantData,
           req.query.programId,
-          req.query.isExternalProgram ? gen.utils.convertStringToBoolean(req.query.isExternalProgram) : false
         );
         return resolve({
           message: messageConstants.apiResponses.OBSERVATION_CREATED,
@@ -724,7 +723,7 @@ module.exports = class Observations extends Abstract {
           .findOne({
             _id: req.params._id,
             createdBy: req.userDetails.userId,
-            status: { $ne: 'inactive' },
+            status: { $ne:  messageConstants.common.INACTIVE_STATUS },
             entities: req.query.entityId,
             tenantId: req.userDetails.tenantData.tenantId,
             orgId: req.userDetails.tenantData.orgId,
@@ -783,7 +782,7 @@ module.exports = class Observations extends Abstract {
 
         let solutionQueryObject = {
           _id: observationDocument.solutionId,
-          status: 'active',
+          status:  messageConstants.common.ACTIVE_STATUS,
           tenantId: req.userDetails.tenantData.tenantId
         };
 
@@ -816,7 +815,7 @@ module.exports = class Observations extends Abstract {
         if (observationDocument.programId) {
           let programQueryObject = {
             _id: observationDocument.programId,
-            status: 'active',
+            status: messageConstants.common.ACTIVE_STATUS,
           };
           let programDocument;
           if (solutionDocument.isExternalProgram) {
