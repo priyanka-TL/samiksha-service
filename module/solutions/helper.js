@@ -3586,7 +3586,7 @@ module.exports = class SolutionsHelper {
             $arrayElemAt: ['$totalCount.count', 0],
           },
         };
-        
+
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {

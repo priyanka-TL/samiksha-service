@@ -512,20 +512,32 @@ function returnTenantDataFromToken(userDetails) {
  * @returns {Object[]} An array of query filter objects for MongoDB.
  */
 function factorQuery(factors, userRoleInfo) {
-	let queryFilter = []
-	for (let idx = 0; idx < factors.length; idx++) {
-		let factor = factors[idx]
-		let scope = 'scope.' + factor
-		let values = userRoleInfo[factor]
-		if (!values) continue
-		if (!Array.isArray(values)) {
-			queryFilter.push({ [scope]: { $in: values.split(',') } })
-		} else {
-			queryFilter.push({ [scope]: { $in: [...values] } })
-		}
-	}
-	return queryFilter
+  let queryFilter = [];
+
+  for (let idx = 0; idx < factors.length; idx++) {
+    let factor = factors[idx];
+    let scope = 'scope.' + factor;
+    let rawValues = userRoleInfo[factor];
+    let valueArray;
+
+    if (rawValues === undefined || rawValues === null) {
+      valueArray = [messageConstants.common.ALL_SCOPE_VALUE];
+    } else if (Array.isArray(rawValues)) {
+      valueArray = [...rawValues, messageConstants.common.ALL_SCOPE_VALUE];
+    } else if (typeof rawValues === 'string') {
+      const splitValues = rawValues
+        .split(',')
+        .map(v => v.trim())
+        .filter(Boolean);
+      valueArray = [...splitValues, messageConstants.common.ALL_SCOPE_VALUE];
+    }
+
+    queryFilter.push({ [scope]: { $in: valueArray } });
+  }
+
+  return queryFilter;
 }
+
 
 
 module.exports = {
