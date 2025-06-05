@@ -2812,7 +2812,7 @@ module.exports = class ObservationsHelper {
             },
             ["entityType",'tenantId','orgId']
           );
-  
+          console.log(JSON.stringify(solutionDocument,2, null),"solution--------------------------------")
           if (!solutionDocument[0]) {
             throw {
               message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
@@ -2830,7 +2830,7 @@ module.exports = class ObservationsHelper {
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             };
           }
-
+          console.log(JSON.stringify(tenantDetails,2, null),"tenantDetails--------------------------------")
           let observableEntityKeys = tenantDetails.data.meta?.observableEntityKeys || [];
 
           if (!observableEntityKeys || observableEntityKeys.length === 0) {
@@ -2845,13 +2845,14 @@ module.exports = class ObservationsHelper {
           for (let i = 0; i < observableEntityKeys.length; i++) {
             KeytoValidate.push(observableEntityKeys[i]);
           }
-
+          
+          console.log(JSON.stringify(KeytoValidate,2, null),"key to validate --------------------------------")
           let roles = observableEntityKeys
             .filter((key) => typeof bodyData[key] === 'string' && bodyData[key].trim() !== '')
             .flatMap((key) => bodyData[key].split(',').map((role) => role.trim()));
 
           let entityTypeArr = [];
-
+          console.log(JSON.stringify(roles,2, null),"Roles  --------------------------------")
           for (let roleIndex = 0; roleIndex < roles.length; roleIndex++) {
             let rolesDocumentAPICall = await entityManagementService.entityDocuments(
               {
@@ -2861,7 +2862,7 @@ module.exports = class ObservationsHelper {
               },
               ['metaInformation.targetedEntityTypes']
             );
-
+            console.log(JSON.stringify(rolesDocumentAPICall,2, null),"Role document API  --------------------------------")
             if (
               rolesDocumentAPICall?.success &&
               Array.isArray(rolesDocumentAPICall.data) &&
@@ -2885,7 +2886,7 @@ module.exports = class ObservationsHelper {
               };
             }
           }
-
+          console.log(JSON.stringify(entityTypeArr,2, null),"entity type array --------------------------------")
           const uniqueEntityTypeArr = _.uniq(entityTypeArr);
           if (uniqueEntityTypeArr.includes(solutionEntityType)) {
             resolve({
