@@ -3586,7 +3586,7 @@ module.exports = class SolutionsHelper {
             $arrayElemAt: ['$totalCount.count', 0],
           },
         };
-        
+        require('fs').writeFileSync('solutionListQuery.json', JSON.stringify(matchQuery, null, 2));
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {

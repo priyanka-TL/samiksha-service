@@ -1,0 +1,90 @@
+{
+  "isDeleted": false,
+  "status": "active",
+  "type": "observation",
+  "isReusable": false,
+  "$and": [
+    {
+      "scope.professional_role": {
+        "$in": [
+          "681b076ef21c88cef9517e0a",
+          "ALL"
+        ]
+      }
+    },
+    {
+      "scope.professional_subroles": {
+        "$in": [
+          "681b0894f21c88cef9517e12",
+          "681b0a369c57cdcf03c79ae7",
+          "681b0af29c57cdcf03c79aeb",
+          "6822fd5f4e2812081f342608",
+          "6822fdd94e2812081f34260f",
+          "6822fdf64e2812081f342613",
+          "6822fe0d4e2812081f342617",
+          "6822fe2a4e2812081f34261b",
+          "6822fe4d4e2812081f34261f",
+          "6822fe774e2812081f342623",
+          "ALL"
+        ]
+      }
+    },
+    {
+      "scope.organizations": {
+        "$in": [
+          "blr",
+          "ALL"
+        ]
+      }
+    },
+    {
+      "$or": [
+        {
+          "scope.state": {
+            "$in": [
+              "67c82d0c538125889163f197"
+            ]
+          }
+        },
+        {
+          "scope.district": {
+            "$in": [
+              "67c82d37bad58c889bc5a5de"
+            ]
+          }
+        },
+        {
+          "scope.block": {
+            "$in": [
+              "67c82d7abad58c889bc5a643"
+            ]
+          }
+        },
+        {
+          "scope.cluster": {
+            "$in": [
+              "67c82d53538125889163f3cd"
+            ]
+          }
+        },
+        {
+          "scope.school": {
+            "$in": [
+              "67c82d985381258891643d0b"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "tenantId": "shikshagraha",
+  "_id": {
+    "$nin": [
+      "683066fe874fa36f516d93fd",
+      "68306462874fa36f516d8d4c"
+    ]
+  },
+  "endDate": {
+    "$gte": "2025-06-05T06:46:51.890Z"
+  }
+}
