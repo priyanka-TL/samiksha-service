@@ -132,7 +132,9 @@ module.exports = class UserExtension extends Abstract {
           throw messageConstants.apiResponses.FILE_DATA_MISSING;
         }
 
-        let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(userRolesCSVData, req.userDetails);
+        let tenantAndOrgInfo = req.userDetails.tenantAndOrgInfo;
+
+        let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(userRolesCSVData, req.userDetails,tenantAndOrgInfo);
 
         if (newUserRoleData.length > 0) {
           const fileName = `UserRole-Upload`;
