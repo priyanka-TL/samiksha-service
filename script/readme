@@ -1,0 +1,72 @@
+# MongoDB Collection Deletion Script
+
+## Purpose
+
+The `cleanUpData.js` script deletes all documents from the following MongoDB collections in batches:
+
+-   programs
+-   solutions
+-   criteria,
+-   criteriaQuestions,
+-   frameworks,
+-   observations,
+-   observationSubmissions,
+-   userExtension,
+-   programUsers,
+-   questions,
+-   submissions,
+-   surveys,
+-   surveySubmissions,
+-   userRoles
+
+The script processes deletions in batches (default: 1000 documents) to manage memory efficiently and handles cases where collections do not exist, skipping them gracefully. It logs progress, including the number of documents deleted per batch and total deletions per collection.
+
+## Prerequisites
+
+-   **Node.js**: Available in the environment (pre-installed in the Docker container or local setup).
+-   **MongoDB**: A running MongoDB instance with a valid connection URL.
+-   **MongoDB URL**: Provided via command-line argument or `.env` file as `MONGODB_URL` in the project service directory.
+-   **Dependencies**: `mongodb` and `dotenv` packages must be pre-installed in the project environment.
+
+## Execution Instructions
+
+### Outside a Docker Container
+
+1. Copy the `cleanUpData.js` file into the `src/script` folder of your project service directory.
+2. Navigate to the `src/script` folder:
+    ```bash
+    cd /path/to/samiksha-service/scripts
+    ```
+3. Run the script, providing the MongoDB URL via command-line or `.env`:
+    ```bash
+    node cleanUpData.js mongodb://your_mongodb_url
+    ```
+4. The script will:
+    - Connect to MongoDB.
+    - Check for the existence of each specified collection.
+    - Delete documents in batches, logging progress.
+    - Skip non-existent collections.
+    - Close the MongoDB connection upon completion or error.
+
+### Inside a Docker Container
+
+1. Copy the `cleanUpData.js` file into the `src/script` folder of your project service directory.
+2. Access the container's shell:
+    ```bash
+    docker exec -it <container_name> bash
+    ```
+3. Navigate to the `src/script` folder inside the container:
+    ```bash
+    cd src/script
+    ```
+4. Run the script, providing the MongoDB URL via command-line or `.env`:
+    ```bash
+    node cleanUpData.js mongodb://your_mongodb_url
+    ```
+
+## Notes
+
+-   The script uses a batch size of 1000 documents, which can be adjusted by modifying the `batchSize` constant in the script.
+-   If a collection does not exist, the script logs a message and skips it.
+-   Errors (e.g., connection issues) are logged, and the script exits with a status code of 1.
+-   The MongoDB connection is closed automatically after execution or on error.
