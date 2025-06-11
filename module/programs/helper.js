@@ -258,6 +258,9 @@ module.exports = class ProgramsHelper {
         }
         // If the request body contains scope data, it will be updated as follows
         if (data.scope) {
+          if(!data.scope.organizations){
+            data.scope.organizations = tenantData.orgId
+          }
           let programScopeUpdated = await this.setScope(programId, data.scope);
 
           if (!programScopeUpdated.success) {
