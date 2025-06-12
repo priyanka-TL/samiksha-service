@@ -11,7 +11,6 @@ module.exports = {
       index: true,
       unique: true,
     },
-    roles: Array,
     createdBy: {
       type: String,
       required: true,
@@ -28,11 +27,6 @@ module.exports = {
     isDeleted: {
       type: Boolean,
       default: false,
-    },
-    removedFromHomeScreen: Array,
-    improvementProjects: {
-      type: Array,
-      default: [],
     },
     platformRoles: Array,
   },

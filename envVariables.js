@@ -381,6 +381,10 @@ let enviromentVariables = {
     optional: false,
     default: '/ml/',
   },
+  PROGRAM_OPERATION_TOPIC:{
+    message: 'Program Operation Event Topic required',
+    optional: false
+  }
 };
 
 let success = true;

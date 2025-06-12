@@ -12,7 +12,7 @@ const entitiesHelper = require(MODULES_BASE_PATH + '/entities/helper');
 const shikshalokamGenericHelper = require(ROOT_PATH + '/generics/helpers/shikshalokam');
 const elasticSearchData = require(ROOT_PATH + '/generics/helpers/elasticSearch');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
-
+const userService = require(ROOT_PATH + '/generics/services/users');
 /**
  * UserExtensionHelper
  * @class
@@ -218,67 +218,18 @@ module.exports = class UserExtensionHelper {
   static bulkCreateOrUpdate(userRolesCSVData, userDetails,tenantAndOrgInfo) {
     return new Promise(async (resolve, reject) => {
       try {
-        
-        let userDataInformation = {
-          "id": 206,
-          "name": "hh ddd",
-          "session_id": 5753,
-          "organization_ids": [
-            "8"
-          ],
-          "organization_codes": [
-            "blr"
-          ],
-          "tenant_code": "shikshagraha",
-          roles: [
-            {
-              "id": 14,
-              "title": "mentor",
-              "label": null,
-              "user_type": 0,
-              "status": "ACTIVE",
-              "organization_id": 7,
-              "visibility": "PUBLIC",
-              "tenant_code": "shikshagraha",
-              "translations": null
-            },
-            {
-              "id": 15,
-              "title": "mentee",
-              "label": null,
-              "user_type": 0,
-              "status": "ACTIVE",
-              "organization_id": 7,
-              "visibility": "PUBLIC",
-              "tenant_code": "shikshagraha",
-              "translations": null
-            },
-            {
-              "id": 33,
-              "title": "learner",
-              "label": "Learner",
-              "user_type": 0,
-              "status": "ACTIVE",
-              "organization_id": 7,
-              "visibility": "PUBLIC",
-              "tenant_code": "shikshagraha",
-              "translations": null
-            }
-          ]
-        }
+        let userRoleMap = {};
+
         let userRolesUploadedData = new Array();
       //validating user roles first 
 
       // iterating over the csv data 
+      outerloop:
       for (let csvRowNumber = 0; csvRowNumber < userRolesCSVData.length; csvRowNumber++) {
 
-        let userKeycloakId = '1'
-        let removeUserFromEntity = false;
-
         let userRole = gen.utils.valueParser(userRolesCSVData[csvRowNumber]);
-        console.log(userRole, 'userRole line 228');
         userRole['_SYSTEM_ID'] = '';
-       // aclData(userRole);
+
 
         try {
           if (userRole.role && !userRoleMap[userRole.role]) {
@@ -305,7 +256,6 @@ module.exports = class UserExtensionHelper {
           let programIds = [];
 
           if (userRole.programs && userRole.programs.length > 0) {
-            console.log('line 259')
             const programDocuments = await programsHelper.list(
               {
                 externalId: { $in: userRole.programs },
@@ -317,11 +267,7 @@ module.exports = class UserExtensionHelper {
               tenantAndOrgInfo
             );
 
-            console.log(programDocuments,' programDocuments line 267')
-
             let programDocumentsArray = programDocuments.data.data
-
-            console.log(programDocumentsArray,' programDocuments line 267')
 
             if (!programDocumentsArray.length > 0) {
               userRole['_SYSTEM_ID'] = '';
@@ -333,27 +279,53 @@ module.exports = class UserExtensionHelper {
             programIds = programDocumentsArray.map((program) => {
               return program._id;
             });
-            console.log(programIds,'<---programIds line 284')
+
           }
 
-          let existingUser = await this.userExtensionDocuments({ userId: userKeycloakId }, [
+          let userInfoCall = await userService.fetchProfileById(tenantAndOrgInfo.tenantId,null,userRole.user);
+
+          if(!userInfoCall.success){
+            userRole['_SYSTEM_ID'] = '';
+            userRole.status = messageConstants.apiResponses.USER_NOT_FOUND;
+            userRolesUploadedData.push(userRole);
+            continue outerloop;
+          }
+          let userDataInformation = userInfoCall.data;
+
+          const allRoles = userDataInformation.organizations.flatMap(org => org.roles || []);
+
+          const allRolesTitle = allRoles.map(role => role.title);
+          //validating if role is present or not
+
+          let platform_role = userRole.platform_role;
+
+          let platform_role_array = platform_role.split(',');
+
+          for(let roleFromCSV of platform_role_array) {
+
+            if(!allRolesTitle.includes(roleFromCSV)) {
+              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
+              userRolesUploadedData.push(userRole);
+              continue outerloop;
+            }
+
+          }
+
+          let existingUser = await this.userExtensionDocuments({ userId: userDataInformation.id }, [
             'roles',
             'platformRoles',
           ]);
-
-
-          console.log(existingUser,'<---existingUser')
 
           let user = '';
           existingUser = existingUser[0];
 
           if (!existingUser) {
             let userInformation = {
-              userId: userKeycloakId,
+              userId: userDataInformation.id,
               externalId: userRole.user,
               status: 'active',
-              updatedBy: userDetails.id,
-              createdBy: userDetails.id,
+              updatedBy: userDetails.userId,
+              createdBy: userDetails.userId,
             };
 
             if (userRole.programOperation) {
@@ -365,12 +337,10 @@ module.exports = class UserExtensionHelper {
               let platform_role_create_array = []
 
               for(let role of platform_role_array) {
-                console.log(role,'<--role 268')
-                console.log(userDataInformation.roles.filter( (role) => role.title == userRole.platform_role))
 
                 platform_role_create_array.push({
-                  roleId:userDataInformation.roles.filter( (role) => role.title == userRole.platform_role)[0].id,
-                  title: userDataInformation.roles.filter( (role) => role.title == userRole.platform_role)[0].title,
+                  roleId:allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].id,
+                  title: allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].title,
                   programs: programIds,
                 })
               }
@@ -400,38 +370,49 @@ module.exports = class UserExtensionHelper {
               for(let role of platform_role_array) {
 
                 if (existingUser.platformRoles && existingUser.platformRoles.length > 0) {
-                  userPlatformRoleToUpdate = _.findIndex(existingUser.platformRoles, { code: userRole.platform_role });
+                  userPlatformRoleToUpdate = _.findIndex(existingUser.platformRoles, { title: role });
                 }
 
                 if (!(userPlatformRoleToUpdate >= 0)) {
                   userPlatformRoleToUpdate = existingUser.platformRoles.length;
-                  userRoleMap[userRole.platform_role].programs = new Array();
-                  existingUser.platformRoles.push(userRoleMap[userRole.platform_role]);
+
+                  let newUserRole = {
+                    roleId: allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].id,
+                    title: allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].title
+                  }
+
+                  newUserRole.programs = new Array();
+                  existingUser.platformRoles.push(newUserRole);
                 }
 
                 existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
                   userPlatformRoleToUpdate
                 ].programs.map((program) => program.toString());
-  
-                if (userRole.programOperation == 'OVERRIDE') {
+
+                if (userRole.programOperation === 'OVERRIDE') {
                   existingUser.platformRoles[userPlatformRoleToUpdate].programs = programIds;
-                } else if (userRole.programOperation == 'APPEND' || userRole.programOperation == 'ADD') {
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs =
-                    existingUser.platformRoles[userPlatformRoleToUpdate].programs.concat(programIds);
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = _.uniq(
-                    existingUser.platformRoles[userPlatformRoleToUpdate].programs,
-                  );
-                } else if (userRole.programOperation == 'REMOVE') {
+                } else if (userRole.programOperation === 'APPEND' || userRole.programOperation === 'ADD') {
+                  const currentPrograms = existingUser.platformRoles[userPlatformRoleToUpdate].programs.map(p => p.toString());
+                  const newPrograms = programIds.map(p => p.toString());
+                
+                  // Merge without duplicates
+                  const mergedPrograms = _.uniq(currentPrograms.concat(newPrograms));
+                
+                  // Reassign, converting back to ObjectId if needed
+                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = mergedPrograms;
+                } else if (userRole.programOperation === 'REMOVE') {
                   if (programIds.length > 0) {
-                    programIds.forEach((programId) => {
-                      _.pull(existingUser.platformRoles[userPlatformRoleToUpdate].programs, programId.toString());
-                    });
+                    const toRemove = new Set(programIds.map(p => p.toString()));
+                    existingUser.platformRoles[userPlatformRoleToUpdate].programs = 
+                      existingUser.platformRoles[userPlatformRoleToUpdate].programs.filter(
+                        p => !toRemove.has(p.toString())
+                      );
                   }
                 }
   
                 existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
                   userPlatformRoleToUpdate
-                ].programs.map((eachProgram) => ObjectId(eachProgram));
+                ].programs.map((eachProgram) => new ObjectId(eachProgram));
   
                 updateQuery['platformRoles'] = existingUser.platformRoles;
 
@@ -453,628 +434,13 @@ module.exports = class UserExtensionHelper {
             userRole.status = 'Success';
           }
 
-          let entityObject = {};
-
-          if (removeUserFromEntity) {
-            entityObject.entityId = userRole.entity;
-            entityObject.role = userRole.role;
-          }
-
-          await this.pushUserToElasticSearch(user._doc, entityObject);
         } catch (error) {
-          console.log(error, '<---error');
           userRole.status = error && error.message ? error.message : error;
         }
 
         userRolesUploadedData.push(userRole);
+
       }
-      //perform operation and add data as per the csv 
-
-      //done
-
-
-
-
-
-
-
-
-
-      console.log(stoppppppppppppppppppp)
-
-      //  let userRolesUploadedData = new Array();
-
-        const userRolesArray = await userRolesHelper.list(
-          {
-            status: 'active',
-            isDeleted: false,
-          },
-          {
-            code: 1,
-            title: 1,
-            entityTypes: 1,
-            isAPlatformRole: 1,
-          },
-        );
-
-        let userRoleMap = {};
-        let userRoleAllowedEntityTypes = {};
-
-        userRolesArray.forEach((userRole) => {
-          userRoleMap[userRole.code] = {
-            roleId: userRole._id,
-            code: userRole.code,
-            entities: [],
-            isAPlatformRole: userRole.isAPlatformRole,
-          };
-          userRoleAllowedEntityTypes[userRole.code] = new Array();
-          if (userRole.entityTypes && userRole.entityTypes.length > 0) {
-            userRole.entityTypes.forEach((entityType) => {
-              userRoleAllowedEntityTypes[userRole.code].push(entityType.entityTypeId);
-            });
-          }
-        });
-
-        let userToKeycloakIdMap = {};
-        let userKeycloakId = '';
-        // let userRole;
-        // let existingEntity;
-        // let existingUserRole;
-        const keycloakUserIdIsMandatoryInFile =
-          process.env.DISABLE_LEARNER_SERVICE_ON_OFF && process.env.DISABLE_LEARNER_SERVICE_ON_OFF == 'ON'
-            ? 'true'
-            : false;
-
-        for (let csvRowNumber = 0; csvRowNumber < userRolesCSVData.length; csvRowNumber++) {
-          let removeUserFromEntity = false;
-
-          let userRole = gen.utils.valueParser(userRolesCSVData[csvRowNumber]);
-          userRole['_SYSTEM_ID'] = '';
-          aclData(userRole);
-
-          try {
-            if (userRole.role && !userRoleMap[userRole.role]) {
-              userRole['_SYSTEM_ID'] = '';
-              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
-              userRolesUploadedData.push(userRole);
-              continue;
-            }
-
-            if (
-              userRole.platform_role &&
-              (!userRoleMap[userRole.platform_role] || !userRoleMap[userRole.platform_role].isAPlatformRole)
-            ) {
-              userRole['_SYSTEM_ID'] = '';
-              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
-              delete userRoleMap[userRole.platform_role].isAPlatformRole;
-              userRolesUploadedData.push(userRole);
-              continue;
-            }
-
-            if (userToKeycloakIdMap[userRole.user]) {
-              userKeycloakId = userToKeycloakIdMap[userRole.user];
-            } else {
-              if (keycloakUserIdIsMandatoryInFile) {
-                if (!userRole['keycloak-userId'] || userRole['keycloak-userId'] == '') {
-                  throw messageConstants.apiResponses.KEYCLOAK_USER_ID;
-                }
-                userKeycloakId = userRole['keycloak-userId'];
-                userToKeycloakIdMap[userRole.user] = userRole['keycloak-userId'];
-              } else {
-                let keycloakUserId = await shikshalokamGenericHelper.getKeycloakUserIdByLoginId(
-                  userDetails.userToken,
-                  userRole.user,
-                );
-
-                if (keycloakUserId && keycloakUserId.length > 0 && keycloakUserId[0].userLoginId) {
-                  userKeycloakId = keycloakUserId[0].userLoginId;
-                  userToKeycloakIdMap[userRole.user] = keycloakUserId[0].userLoginId;
-                } else {
-                  throw messageConstants.apiResponses.USER_ENTITY_ID;
-                }
-              }
-            }
-
-            if (userRole.entity) {
-              let entityQueryObject = {
-                _id: userRole.entity,
-              };
-
-              if (userRoleAllowedEntityTypes[userRole.role] && userRoleAllowedEntityTypes[userRole.role].length > 0) {
-                entityQueryObject.entityTypeId = {
-                  $in: userRoleAllowedEntityTypes[userRole.role],
-                };
-              }
-
-              const entityDetails = await entitiesHelper.entityDocuments(entityQueryObject, ['_id']);
-
-              if (!entityDetails.length > 0) {
-                userRole['_SYSTEM_ID'] = '';
-                userRole.status = messageConstants.apiResponses.INVALID_ENTITY_ID;
-                userRolesUploadedData.push(userRole);
-                continue;
-              }
-            }
-
-            let programIds = [];
-
-            if (userRole.programs && userRole.programs.length > 0) {
-              const programDocuments = await programsHelper.list(
-                {
-                  externalId: { $in: userRole.programs },
-                },
-                ['_id'],
-              );
-
-              if (!programDocuments.length > 0) {
-                userRole['_SYSTEM_ID'] = '';
-                userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
-                userRolesUploadedData.push(userRole);
-                continue;
-              }
-
-              programIds = programDocuments.map((program) => {
-                return program._id;
-              });
-            }
-
-            let existingUser = await this.userExtensionDocuments({ userId: userKeycloakId }, [
-              'roles',
-              'platformRoles',
-            ]);
-
-            let user = '';
-            existingUser = existingUser[0];
-
-            if (!existingUser) {
-              let userInformation = {
-                userId: userKeycloakId,
-                externalId: userRole.user,
-                status: 'active',
-                updatedBy: userDetails.id,
-                createdBy: userDetails.id,
-              };
-
-              if (userRole.entityOperation) {
-                userInformation['roles'] = [
-                  {
-                    roleId: userRoleMap[userRole.role].roleId,
-                    code: userRoleMap[userRole.role].code,
-                    entities: [ObjectId(userRole.entity)],
-                    acl: userRole.acl,
-                  },
-                ];
-              }
-
-              if (userRole.programOperation) {
-                userInformation['platformRoles'] = [
-                  {
-                    roleId: userRoleMap[userRole.platform_role].roleId,
-                    code: userRoleMap[userRole.platform_role].code,
-                    programs: programIds,
-                  },
-                ];
-              }
-
-              user = await database.models.userExtension.create(userInformation);
-
-              if (user._id) {
-                userRole['_SYSTEM_ID'] = user._id;
-                userRole.status = 'Success';
-              } else {
-                userRole['_SYSTEM_ID'] = '';
-                userRole.status = 'Failed to create the user role.';
-              }
-            } else {
-              let updateQuery = {};
-
-              if (userRole.entityOperation) {
-                let userRoleToUpdate;
-
-                if (existingUser.roles && existingUser.roles.length > 0) {
-                  userRoleToUpdate = _.findIndex(existingUser.roles, {
-                    code: userRole.role,
-                  });
-                }
-
-                if (!(userRoleToUpdate >= 0)) {
-                  userRoleToUpdate = existingUser.roles.length;
-                  userRoleMap[userRole.role].entities = new Array();
-                  existingUser.roles.push(userRoleMap[userRole.role]);
-                }
-
-                existingUser.roles[userRoleToUpdate].entities = existingUser.roles[userRoleToUpdate].entities.map(
-                  (eachEntity) => eachEntity.toString(),
-                );
-
-                if (userRole.entityOperation == 'OVERRIDE') {
-                  existingUser.roles[userRoleToUpdate].entities = [userRole.entity];
-                  existingUser.roles[userRoleToUpdate].acl = userRole.acl;
-                } else if (userRole.entityOperation == 'APPEND' || userRole.entityOperation == 'ADD') {
-                  existingUser.roles[userRoleToUpdate].entities.push(userRole.entity);
-                  existingUser.roles[userRoleToUpdate].entities = _.uniq(existingUser.roles[userRoleToUpdate].entities);
-                } else if (userRole.entityOperation == 'REMOVE') {
-                  _.pull(existingUser.roles[userRoleToUpdate].entities, userRole.entity);
-                  removeUserFromEntity = true;
-                }
-
-                existingUser.roles[userRoleToUpdate].entities = existingUser.roles[userRoleToUpdate].entities.map(
-                  (eachEntity) => ObjectId(eachEntity),
-                );
-                updateQuery['roles'] = existingUser.roles;
-              }
-
-              if (userRole.programOperation) {
-                let userPlatformRoleToUpdate;
-
-                if (existingUser.platformRoles && existingUser.platformRoles.length > 0) {
-                  userPlatformRoleToUpdate = _.findIndex(existingUser.platformRoles, { code: userRole.platform_role });
-                }
-
-                if (!(userPlatformRoleToUpdate >= 0)) {
-                  userPlatformRoleToUpdate = existingUser.platformRoles.length;
-                  userRoleMap[userRole.platform_role].programs = new Array();
-                  existingUser.platformRoles.push(userRoleMap[userRole.platform_role]);
-                }
-
-                existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
-                  userPlatformRoleToUpdate
-                ].programs.map((program) => program.toString());
-
-                if (userRole.programOperation == 'OVERRIDE') {
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = programIds;
-                } else if (userRole.programOperation == 'APPEND' || userRole.programOperation == 'ADD') {
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs =
-                    existingUser.platformRoles[userPlatformRoleToUpdate].programs.concat(programIds);
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = _.uniq(
-                    existingUser.platformRoles[userPlatformRoleToUpdate].programs,
-                  );
-                } else if (userRole.programOperation == 'REMOVE') {
-                  if (programIds.length > 0) {
-                    programIds.forEach((programId) => {
-                      _.pull(existingUser.platformRoles[userPlatformRoleToUpdate].programs, programId.toString());
-                    });
-                  }
-                }
-
-                existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
-                  userPlatformRoleToUpdate
-                ].programs.map((eachProgram) => ObjectId(eachProgram));
-
-                updateQuery['platformRoles'] = existingUser.platformRoles;
-              }
-
-              user = await database.models.userExtension.findOneAndUpdate(
-                {
-                  _id: existingUser._id,
-                },
-                updateQuery,
-                {
-                  new: true,
-                  returnNewDocument: true,
-                },
-              );
-
-              userRole['_SYSTEM_ID'] = existingUser._id;
-              userRole.status = 'Success';
-            }
-
-            let entityObject = {};
-
-            if (removeUserFromEntity) {
-              entityObject.entityId = userRole.entity;
-              entityObject.role = userRole.role;
-            }
-
-            await this.pushUserToElasticSearch(user._doc, entityObject);
-          } catch (error) {
-            userRole.status = error && error.message ? error.message : error;
-          }
-
-          userRolesUploadedData.push(userRole);
-        }
-
-        return resolve(userRolesUploadedData);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
-
-  static bulkCreateOrUpdateBackup(userRolesCSVData, userDetails) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let userRolesUploadedData = new Array();
-
-        const userRolesArray = await userRolesHelper.list(
-          {
-            status: 'active',
-            isDeleted: false,
-          },
-          {
-            code: 1,
-            title: 1,
-            entityTypes: 1,
-            isAPlatformRole: 1,
-          },
-        );
-
-        let userRoleMap = {};
-        let userRoleAllowedEntityTypes = {};
-
-        userRolesArray.forEach((userRole) => {
-          userRoleMap[userRole.code] = {
-            roleId: userRole._id,
-            code: userRole.code,
-            entities: [],
-            isAPlatformRole: userRole.isAPlatformRole,
-          };
-          userRoleAllowedEntityTypes[userRole.code] = new Array();
-          if (userRole.entityTypes && userRole.entityTypes.length > 0) {
-            userRole.entityTypes.forEach((entityType) => {
-              userRoleAllowedEntityTypes[userRole.code].push(entityType.entityTypeId);
-            });
-          }
-        });
-
-        let userToKeycloakIdMap = {};
-        let userKeycloakId = '';
-        // let userRole;
-        // let existingEntity;
-        // let existingUserRole;
-        const keycloakUserIdIsMandatoryInFile =
-          process.env.DISABLE_LEARNER_SERVICE_ON_OFF && process.env.DISABLE_LEARNER_SERVICE_ON_OFF == 'ON'
-            ? 'true'
-            : false;
-
-        for (let csvRowNumber = 0; csvRowNumber < userRolesCSVData.length; csvRowNumber++) {
-          let removeUserFromEntity = false;
-
-          let userRole = gen.utils.valueParser(userRolesCSVData[csvRowNumber]);
-          userRole['_SYSTEM_ID'] = '';
-          aclData(userRole);
-
-          try {
-            if (userRole.role && !userRoleMap[userRole.role]) {
-              userRole['_SYSTEM_ID'] = '';
-              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
-              userRolesUploadedData.push(userRole);
-              continue;
-            }
-
-            if (
-              userRole.platform_role &&
-              (!userRoleMap[userRole.platform_role] || !userRoleMap[userRole.platform_role].isAPlatformRole)
-            ) {
-              userRole['_SYSTEM_ID'] = '';
-              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
-              delete userRoleMap[userRole.platform_role].isAPlatformRole;
-              userRolesUploadedData.push(userRole);
-              continue;
-            }
-
-            if (userToKeycloakIdMap[userRole.user]) {
-              userKeycloakId = userToKeycloakIdMap[userRole.user];
-            } else {
-              if (keycloakUserIdIsMandatoryInFile) {
-                if (!userRole['keycloak-userId'] || userRole['keycloak-userId'] == '') {
-                  throw messageConstants.apiResponses.KEYCLOAK_USER_ID;
-                }
-                userKeycloakId = userRole['keycloak-userId'];
-                userToKeycloakIdMap[userRole.user] = userRole['keycloak-userId'];
-              } else {
-                let keycloakUserId = await shikshalokamGenericHelper.getKeycloakUserIdByLoginId(
-                  userDetails.userToken,
-                  userRole.user,
-                );
-
-                if (keycloakUserId && keycloakUserId.length > 0 && keycloakUserId[0].userLoginId) {
-                  userKeycloakId = keycloakUserId[0].userLoginId;
-                  userToKeycloakIdMap[userRole.user] = keycloakUserId[0].userLoginId;
-                } else {
-                  throw messageConstants.apiResponses.USER_ENTITY_ID;
-                }
-              }
-            }
-
-            if (userRole.entity) {
-              let entityQueryObject = {
-                _id: userRole.entity,
-              };
-
-              if (userRoleAllowedEntityTypes[userRole.role] && userRoleAllowedEntityTypes[userRole.role].length > 0) {
-                entityQueryObject.entityTypeId = {
-                  $in: userRoleAllowedEntityTypes[userRole.role],
-                };
-              }
-
-              const entityDetails = await entitiesHelper.entityDocuments(entityQueryObject, ['_id']);
-
-              if (!entityDetails.length > 0) {
-                userRole['_SYSTEM_ID'] = '';
-                userRole.status = messageConstants.apiResponses.INVALID_ENTITY_ID;
-                userRolesUploadedData.push(userRole);
-                continue;
-              }
-            }
-
-            let programIds = [];
-
-            if (userRole.programs && userRole.programs.length > 0) {
-              const programDocuments = await programsHelper.list(
-                {
-                  externalId: { $in: userRole.programs },
-                },
-                ['_id'],
-              );
-
-              if (!programDocuments.length > 0) {
-                userRole['_SYSTEM_ID'] = '';
-                userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
-                userRolesUploadedData.push(userRole);
-                continue;
-              }
-
-              programIds = programDocuments.map((program) => {
-                return program._id;
-              });
-            }
-
-            let existingUser = await this.userExtensionDocuments({ userId: userKeycloakId }, [
-              'roles',
-              'platformRoles',
-            ]);
-
-            let user = '';
-            existingUser = existingUser[0];
-
-            if (!existingUser) {
-              let userInformation = {
-                userId: userKeycloakId,
-                externalId: userRole.user,
-                status: 'active',
-                updatedBy: userDetails.id,
-                createdBy: userDetails.id,
-              };
-
-              if (userRole.entityOperation) {
-                userInformation['roles'] = [
-                  {
-                    roleId: userRoleMap[userRole.role].roleId,
-                    code: userRoleMap[userRole.role].code,
-                    entities: [ObjectId(userRole.entity)],
-                    acl: userRole.acl,
-                  },
-                ];
-              }
-
-              if (userRole.programOperation) {
-                userInformation['platformRoles'] = [
-                  {
-                    roleId: userRoleMap[userRole.platform_role].roleId,
-                    code: userRoleMap[userRole.platform_role].code,
-                    programs: programIds,
-                  },
-                ];
-              }
-
-              user = await database.models.userExtension.create(userInformation);
-
-              if (user._id) {
-                userRole['_SYSTEM_ID'] = user._id;
-                userRole.status = 'Success';
-              } else {
-                userRole['_SYSTEM_ID'] = '';
-                userRole.status = 'Failed to create the user role.';
-              }
-            } else {
-              let updateQuery = {};
-
-              if (userRole.entityOperation) {
-                let userRoleToUpdate;
-
-                if (existingUser.roles && existingUser.roles.length > 0) {
-                  userRoleToUpdate = _.findIndex(existingUser.roles, {
-                    code: userRole.role,
-                  });
-                }
-
-                if (!(userRoleToUpdate >= 0)) {
-                  userRoleToUpdate = existingUser.roles.length;
-                  userRoleMap[userRole.role].entities = new Array();
-                  existingUser.roles.push(userRoleMap[userRole.role]);
-                }
-
-                existingUser.roles[userRoleToUpdate].entities = existingUser.roles[userRoleToUpdate].entities.map(
-                  (eachEntity) => eachEntity.toString(),
-                );
-
-                if (userRole.entityOperation == 'OVERRIDE') {
-                  existingUser.roles[userRoleToUpdate].entities = [userRole.entity];
-                  existingUser.roles[userRoleToUpdate].acl = userRole.acl;
-                } else if (userRole.entityOperation == 'APPEND' || userRole.entityOperation == 'ADD') {
-                  existingUser.roles[userRoleToUpdate].entities.push(userRole.entity);
-                  existingUser.roles[userRoleToUpdate].entities = _.uniq(existingUser.roles[userRoleToUpdate].entities);
-                } else if (userRole.entityOperation == 'REMOVE') {
-                  _.pull(existingUser.roles[userRoleToUpdate].entities, userRole.entity);
-                  removeUserFromEntity = true;
-                }
-
-                existingUser.roles[userRoleToUpdate].entities = existingUser.roles[userRoleToUpdate].entities.map(
-                  (eachEntity) => ObjectId(eachEntity),
-                );
-                updateQuery['roles'] = existingUser.roles;
-              }
-
-              if (userRole.programOperation) {
-                let userPlatformRoleToUpdate;
-
-                if (existingUser.platformRoles && existingUser.platformRoles.length > 0) {
-                  userPlatformRoleToUpdate = _.findIndex(existingUser.platformRoles, { code: userRole.platform_role });
-                }
-
-                if (!(userPlatformRoleToUpdate >= 0)) {
-                  userPlatformRoleToUpdate = existingUser.platformRoles.length;
-                  userRoleMap[userRole.platform_role].programs = new Array();
-                  existingUser.platformRoles.push(userRoleMap[userRole.platform_role]);
-                }
-
-                existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
-                  userPlatformRoleToUpdate
-                ].programs.map((program) => program.toString());
-
-                if (userRole.programOperation == 'OVERRIDE') {
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = programIds;
-                } else if (userRole.programOperation == 'APPEND' || userRole.programOperation == 'ADD') {
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs =
-                    existingUser.platformRoles[userPlatformRoleToUpdate].programs.concat(programIds);
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = _.uniq(
-                    existingUser.platformRoles[userPlatformRoleToUpdate].programs,
-                  );
-                } else if (userRole.programOperation == 'REMOVE') {
-                  if (programIds.length > 0) {
-                    programIds.forEach((programId) => {
-                      _.pull(existingUser.platformRoles[userPlatformRoleToUpdate].programs, programId.toString());
-                    });
-                  }
-                }
-
-                existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
-                  userPlatformRoleToUpdate
-                ].programs.map((eachProgram) => ObjectId(eachProgram));
-
-                updateQuery['platformRoles'] = existingUser.platformRoles;
-              }
-
-              user = await database.models.userExtension.findOneAndUpdate(
-                {
-                  _id: existingUser._id,
-                },
-                updateQuery,
-                {
-                  new: true,
-                  returnNewDocument: true,
-                },
-              );
-
-              userRole['_SYSTEM_ID'] = existingUser._id;
-              userRole.status = 'Success';
-            }
-
-            let entityObject = {};
-
-            if (removeUserFromEntity) {
-              entityObject.entityId = userRole.entity;
-              entityObject.role = userRole.role;
-            }
-
-            await this.pushUserToElasticSearch(user._doc, entityObject);
-          } catch (error) {
-            userRole.status = error && error.message ? error.message : error;
-          }
-
-          userRolesUploadedData.push(userRole);
-        }
 
         return resolve(userRolesUploadedData);
       } catch (error) {

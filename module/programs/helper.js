@@ -12,7 +12,7 @@ const userService = require(ROOT_PATH + '/generics/services/users');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
-
+const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
 /**
  * ProgramsHelper
  * @class
@@ -141,7 +141,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - create program.
    */
 
-  static create(data, checkDate = false) {
+  static create(data, checkDate = false,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = {
@@ -201,6 +201,29 @@ module.exports = class ProgramsHelper {
               message: messageConstants.apiResponses.SCOPE_NOT_UPDATED_IN_PROGRAM,
             };
           }
+        }
+
+        let userInfoCall = await userService.fetchProfileById(userDetails.tenantId,userDetails.userId);
+
+        if(userInfoCall.success){
+
+          let eventObj = {
+            "entity": "program",
+            "eventType": "create",
+            "username": userInfoCall.data.username,
+            "userId": userInfoCall.data.id,
+            "meta": {
+              "programInformation": {
+                "name": data.name,
+                "externalId": data.externalId,
+                "id":program._id
+              }
+            }
+          }
+          
+          let event = await kafkaClient.pushProgramOperationEvent(eventObj);
+  
+
         }
 
         return resolve(program);

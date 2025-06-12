@@ -2426,7 +2426,6 @@ module.exports = class SolutionsHelper {
             let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
               solutionData, //solution data
               userId, //User Id
-              userToken,
               tenantData
             );
             if (!privateProgramAndSolutionDetails.success) {
@@ -2495,7 +2494,8 @@ module.exports = class SolutionsHelper {
 
             let privateProgramAndSolutionDetails = await this.privateProgramAndSolutionDetails(
               solutionData,
-              userId
+              userId,
+              tenantData
             );
             if (!privateProgramAndSolutionDetails.success) {
               throw {
@@ -2826,7 +2826,15 @@ module.exports = class SolutionsHelper {
             if (checkforProgramExist[0].hasOwnProperty('requestForPIIConsent')) {
               duplicateProgram.requestForPIIConsent = checkforProgramExist[0].requestForPIIConsent;
             }
-            userPrivateProgram = await programsHelper.create(_.omit(duplicateProgram, ['_id', 'components', 'scope']));
+
+            duplicateProgram.tenantData = {}
+            duplicateProgram.tenantData.tenantId = tenantData.tenantId;
+            duplicateProgram.tenantData.orgId = tenantData.orgId;
+
+            userPrivateProgram = await programsHelper.create(_.omit(duplicateProgram, ['_id', 'components', 'scope']),false,{
+              tenantId: tenantData.tenantId,
+              userId: userId,
+            });
           } else {
             userPrivateProgram = checkforProgramExist[0];
           }
