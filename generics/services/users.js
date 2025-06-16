@@ -243,7 +243,7 @@ const fetchPublicTenantDetails = function (tenantId) {
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const fetchProfileById = function (tenantId,userId=null,username) {
+const fetchProfileBasedOnUserIdOrName = function (tenantId,userId=null,username) {
 	return new Promise(async (resolve, reject) => {
 		try {
 
@@ -256,11 +256,12 @@ const fetchProfileById = function (tenantId,userId=null,username) {
 
 			let url =
             userServiceUrl +
-            messageConstants.endpoints.PROFILE_BY_ID + params
+            messageConstants.endpoints.FETCH_USER_PROFILE_INFO + params
 			const options = {
 				headers: {
                     "content-type": "application/json",
 					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+					'x-auth-token': `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJuYW1lIjoiTmV2aWwiLCJzZXNzaW9uX2lkIjo2MzY0LCJvcmdhbml6YXRpb25faWRzIjpbIjEiXSwib3JnYW5pemF0aW9uX2NvZGVzIjpbImRlZmF1bHRfY29kZSJdLCJ0ZW5hbnRfY29kZSI6ImRlZmF1bHQiLCJvcmdhbml6YXRpb25zIjpbeyJpZCI6MSwibmFtZSI6IkRlZmF1bHQgT3JnYW5pemF0aW9uIiwiY29kZSI6ImRlZmF1bHRfY29kZSIsImRlc2NyaXB0aW9uIjoiRGVmYXVsdCAgU0wgT3JnYW5pc2F0aW9uIiwic3RhdHVzIjoiQUNUSVZFIiwicmVsYXRlZF9vcmdzIjpudWxsLCJ0ZW5hbnRfY29kZSI6ImRlZmF1bHQiLCJtZXRhIjpudWxsLCJjcmVhdGVkX2J5IjpudWxsLCJ1cGRhdGVkX2J5IjpudWxsLCJyb2xlcyI6W3siaWQiOjUsInRpdGxlIjoibWVudGVlIiwibGFiZWwiOm51bGwsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoxLCJ2aXNpYmlsaXR5IjoiUFVCTElDIiwidGVuYW50X2NvZGUiOiJkZWZhdWx0IiwidHJhbnNsYXRpb25zIjpudWxsfSx7ImlkIjo2LCJ0aXRsZSI6ImFkbWluIiwibGFiZWwiOm51bGwsInVzZXJfdHlwZSI6MSwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoxLCJ2aXNpYmlsaXR5IjoiUFVCTElDIiwidGVuYW50X2NvZGUiOiJkZWZhdWx0IiwidHJhbnNsYXRpb25zIjpudWxsfSx7ImlkIjoyNSwidGl0bGUiOiJsZWFybmVyIiwibGFiZWwiOiJMZWFybmVyIiwidXNlcl90eXBlIjowLCJzdGF0dXMiOiJBQ1RJVkUiLCJvcmdhbml6YXRpb25faWQiOjEsInZpc2liaWxpdHkiOiJQVUJMSUMiLCJ0ZW5hbnRfY29kZSI6ImRlZmF1bHQiLCJ0cmFuc2xhdGlvbnMiOm51bGx9XX1dfSwiaWF0IjoxNzUwMDY4MDIyLCJleHAiOjE3NTAxNTQ0MjJ9.AF-iwKy_Ri_jmdLUV338DnsaGdlkANCu5wRotYChg4E`
 
 			}
 		}
@@ -303,5 +304,5 @@ module.exports = {
   fetchDefaultOrgDetails,
   fetchTenantDetails,
   fetchPublicTenantDetails,
-  fetchProfileById
+  fetchProfileBasedOnUserIdOrName
 };

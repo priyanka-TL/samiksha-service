@@ -29,5 +29,5 @@ module.exports = {
   PROFILE_READ:'/v1/profile/read',
   PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
   AUTO_DOWNLOAD: '/v1/files/download',
-  PROFILE_BY_ID: '/v1/user/profileById'
+  FETCH_USER_PROFILE_INFO: '/v1/user/profileById'
 };

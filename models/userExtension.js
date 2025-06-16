@@ -28,6 +28,6 @@ module.exports = {
       type: Boolean,
       default: false,
     },
-    platformRoles: Array,
+    programRoleMapping: Array,
   },
 };

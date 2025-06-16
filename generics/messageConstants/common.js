@@ -106,6 +106,12 @@ module.exports = {
   USER_PROFILE_KEY_OBS: 'observationInformation.userProfile.',
   DELETE_EVENT_ENTITY: 'user',
 	DELETE_EVENT_TYPE: 'delete',
+  CREATE_EVENT_TYPE:'create',
   OBJECT: 'object',
-  ALL_SCOPE_VALUE:'ALL'
+  ALL_SCOPE_VALUE:'ALL',
+  ADD_OPERATION:"ADD",
+  APPEND_OPERATION:'APPEND',
+  REMOVE_OPERATION:"REMOVE",
+  OVERRIDE_OPERATION:"OVERRIDE",
+  PROMISE_FULFILLED: 'fulfilled',
 };
