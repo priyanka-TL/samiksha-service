@@ -272,6 +272,13 @@ module.exports = class UserExtensionHelper {
           }
         }
 
+        if(Object.keys(userProfileMap).length === 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.USER_NOT_FOUND,
+          };
+        }
+
         // Fetch user extensions
         const userExtensionDocs = await database.models.userExtension
           .find({ userId: { $in: Object.values(userProfileMap).map((u) => u.id) } }, [
