@@ -33,8 +33,8 @@ const inCompleteSurveySubmissionKafkaTopic =
     ? process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC
     : 'elevate_incomplete_surveys_raw';
 const programOperationKafkaTopic=
-    process.env.PROGRAM_OPERATION_TOPIC && process.env.PROGRAM_OPERATION_TOPIC != 'OFF'
-      ? process.env.PROGRAM_OPERATION_TOPIC
+    process.env.PROGRAM_USER_MAPPING_TOPIC && process.env.PROGRAM_USER_MAPPING_TOPIC != 'OFF'
+      ? process.env.PROGRAM_USER_MAPPING_TOPIC
       : 'elevate_program_operation_dev';
 
 // const improvementProjectSubmissionTopic =
@@ -243,6 +243,13 @@ const pushMessageToKafka = function (payload) {
     });
 };
 
+/**
+ * Push program operation event to Kafka.
+ * @function
+ * @name pushProgramOperationEvent
+ * @param {Object} message - The message payload to be pushed to Kafka.
+ * @returns {Promise<Object>} Kafka push status response.
+ */
 const pushProgramOperationEvent = function (message) {
   return new Promise(async (resolve, reject) => {
     try {
