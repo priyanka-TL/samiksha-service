@@ -420,9 +420,7 @@ module.exports = class UserExtensionHelper {
                 }
               }
 
-             // user = await database.models.userExtension.create(userInformation);
               user = await userExtensionsQueries.createUserExtensionDocument(userInformation);
-              console.log(user,'<--new user')
               userExtensionMap[user.userId.toString()] = user;
 
               userRole['_SYSTEM_ID'] = user?._id || '';
@@ -580,7 +578,6 @@ module.exports = class UserExtensionHelper {
             }
 
           } catch (error) {
-            console.log(error, 'error in user role creation');
             userRole.status = error && error.message ? error.message : error;
           }
 
