@@ -302,15 +302,13 @@ module.exports = class UserExtensionHelper {
 
 
         const userExtensionDocs = await userExtensionsQueries.userExtensionDocuments(
-          { userId: { $in: Object.values(userProfileMap).map((u) => u.id) } },
-          [
-            'userId',
-            'roles',
-            'programRoleMapping',
-          ]
-        )
+          { userId: { $in: Object.values(userProfileMap).map((u) => u.id) }, 
+            tenantId: tenantAndOrgInfo.tenantId 
+          },
+          ['userId', 'roles', 'programRoleMapping']
+        );
 
-
+ 
         const userExtensionMap = {};
         for (const doc of userExtensionDocs) {
           userExtensionMap[doc.userId] = doc;
@@ -379,6 +377,8 @@ module.exports = class UserExtensionHelper {
                 updatedBy: userDetails.userId,
                 createdBy: userDetails.userId,
                 programRoleMapping: [],
+                tenantId:tenantAndOrgInfo.tenantId,
+                orgId:tenantAndOrgInfo.orgId[0]
               };
 
               //if both programOperation and programs are present, we will process the roles for each program
@@ -564,10 +564,14 @@ module.exports = class UserExtensionHelper {
 
               // Update user extension document
               const updateQuery = { programRoleMapping: existingUserProgramRoleMapping };
-              user = await userExtensionsQueries.updateUserExtensionDocument({ _id: existingUser._id }, updateQuery, {
-                new: true,
-                returnNewDocument: true,
-              });
+              user = await userExtensionsQueries.updateUserExtensionDocument(
+                { _id: existingUser._id, tenantId: tenantAndOrgInfo.tenantId },
+                updateQuery,
+                {
+                  new: true,
+                  returnNewDocument: true,
+                }
+              );
               userExtensionMap[user.userId.toString()] = user;
 
               userRole['_SYSTEM_ID'] = existingUser._id;

@@ -29,5 +29,21 @@ module.exports = {
       default: false,
     },
     programRoleMapping: Array,
+    orgId:{
+      type: String,
+      require: true,
+      index:true
+    },
+    tenantId: {
+      type: String,
+      require: true,
+      index:true
+    }
   },
+  compoundIndex: [
+		{
+			name: { userId: 1, tenantId: 1  },
+			indexType: { unique: true },
+		},
+	],
 };

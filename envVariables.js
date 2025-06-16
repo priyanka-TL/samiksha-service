@@ -381,9 +381,10 @@ let enviromentVariables = {
     optional: false,
     default: '/ml/',
   },
-  PROGRAM_OPERATION_TOPIC:{
+  PROGRAM_USER_MAPPING_TOPIC:{
     message: 'Program Operation Event Topic required',
-    optional: false
+    optional: true,
+    default: messageConstants.common.DEFAULT_PROGRAM_USER_MAPPING_TOPIC,
   }
 };
 
