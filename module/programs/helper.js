@@ -258,9 +258,6 @@ module.exports = class ProgramsHelper {
         }
         // If the request body contains scope data, it will be updated as follows
         if (data.scope) {
-          if(!data.scope.organizations){
-            data.scope.organizations = tenantData.orgId
-          }
           let programScopeUpdated = await this.setScope(programId, data.scope);
 
           if (!programScopeUpdated.success) {
@@ -1375,6 +1372,7 @@ module.exports = class ProgramsHelper {
             });
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
+          let optional_factors = [];
           let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
             factors = tenantDetails.data.meta.factors;
@@ -1382,6 +1380,11 @@ module.exports = class ProgramsHelper {
             // append query filter
             filterQuery['$and'] = queryFilter;
           }
+
+          if(tenantDetails.data.meta.hasOwnProperty('optional_factors') && tenantDetails.data.meta.optional_factors.length > 0){
+            optional_factors = tenantDetails.data.meta.optional_factors;
+          }
+
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
           // factors.append(dataToOmit)
 
@@ -1389,17 +1392,15 @@ module.exports = class ProgramsHelper {
 
           let locationData = []
 
-          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            locationData.push({
-              [`scope.${key}`]: { $in: data[key] },
-            })
-          })
+          if(optional_factors && optional_factors.length > 0){
+            locationData = gen.utils.factorQuery(optional_factors,data);
+          }
 
-          if(filterQuery['$and']){
+          if(filterQuery['$and'] && locationData.length > 0){
             filterQuery['$and'].push({
               $or: locationData,
             });
-          }else{
+          }else if(locationData.length > 0){
             filterQuery['$or'].push({
               $or: locationData,
             });
