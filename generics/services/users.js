@@ -239,6 +239,7 @@ const fetchPublicTenantDetails = function (tenantId) {
  * Fetches user profile by userId/username and tenantId.
  * @param {String} tenantId - tenantId details
  * @param {String} userId - userId details
+ * @param {String} username - username details
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
