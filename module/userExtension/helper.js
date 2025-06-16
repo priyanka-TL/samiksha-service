@@ -13,6 +13,7 @@ const shikshalokamGenericHelper = require(ROOT_PATH + '/generics/helpers/shiksha
 const elasticSearchData = require(ROOT_PATH + '/generics/helpers/elasticSearch');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
 const userService = require(ROOT_PATH + '/generics/services/users');
+const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
 /**
  * UserExtensionHelper
  * @class
@@ -35,7 +36,7 @@ module.exports = class UserExtensionHelper {
           {
             name: 1,
             immediateChildrenEntityType: 1,
-          },
+          }
         );
 
         let enityTypeToImmediateChildrenEntityMap = {};
@@ -110,7 +111,7 @@ module.exports = class UserExtensionHelper {
               userExtensionData[0].entityDocuments[0]._id,
               userExtensionData[0].entityDocuments[0].entityTypeId,
               userExtensionData[0].entityDocuments[0].entityType,
-              projection,
+              projection
             );
           }
 
@@ -192,8 +193,8 @@ module.exports = class UserExtensionHelper {
               ]),
               { roles: _.isEmpty(roleMap) ? [] : Object.values(roleMap) },
               { relatedEntities: relatedEntities },
-              { acl: aclInformation },
-            ),
+              { acl: aclInformation }
+            )
           );
         } else {
           return resolve({});
@@ -215,232 +216,361 @@ module.exports = class UserExtensionHelper {
    * @returns {Array}
    */
 
-  static bulkCreateOrUpdate(userRolesCSVData, userDetails,tenantAndOrgInfo) {
+  static bulkCreateOrUpdate(userRolesCSVData, userDetails, tenantAndOrgInfo) {
     return new Promise(async (resolve, reject) => {
       try {
         let userRoleMap = {};
-
         let userRolesUploadedData = new Array();
-      //validating user roles first 
+        let aggregateKafkaEventPayloads = [];
+        // Pre-fetch all required data
+        const allProgramIds = new Set();
+        const allUserIds = new Set();
 
-      // iterating over the csv data 
-      outerloop:
-      for (let csvRowNumber = 0; csvRowNumber < userRolesCSVData.length; csvRowNumber++) {
-
-        let userRole = gen.utils.valueParser(userRolesCSVData[csvRowNumber]);
-        userRole['_SYSTEM_ID'] = '';
-
-
-        try {
-          if (userRole.role && !userRoleMap[userRole.role]) {
-            userRole['_SYSTEM_ID'] = '';
-            userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
-            userRolesUploadedData.push(userRole);
-            continue;
-          }
-
-          /*
-          if (
-            userRole.platform_role &&
-            (!userRoleMap[userRole.platform_role] || !userRoleMap[userRole.platform_role].isAPlatformRole)
-          ) {
-            userRole['_SYSTEM_ID'] = '';
-            userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
-            delete userRoleMap[userRole.platform_role].isAPlatformRole;
-            userRolesUploadedData.push(userRole);
-            continue;
-          }
-
-          */
-
-          let programIds = [];
+        for (const csvRow of userRolesCSVData) {
+          const userRole = gen.utils.valueParser(csvRow);
 
           if (userRole.programs && userRole.programs.length > 0) {
-            const programDocuments = await programsHelper.list(
-              {
-                externalId: { $in: userRole.programs },
-              },
-              ['_id'],
-              '',
-              '',
-              '',
-              tenantAndOrgInfo
-            );
+            userRole.programs.forEach((programId) => allProgramIds.add(programId));
+          }
 
-            let programDocumentsArray = programDocuments.data.data
+          if (userRole.user) {
+            allUserIds.add(userRole.user);
+          }
+        }
 
-            if (!programDocumentsArray.length > 0) {
+        // Fetch program data
+        const allProgramsData = await programsHelper.list(
+          { externalId: { $in: Array.from(allProgramIds) } },
+          ['_id', 'externalId'],
+          '',
+          '',
+          '',
+          tenantAndOrgInfo
+        );
+
+        const programIdMap = {};
+        const programInfoMap = {}
+        for (const program of allProgramsData.data.data) {
+          programIdMap[program.externalId] = program._id;
+          programInfoMap[program._id.toString()] = program;
+        }
+
+        // Fetch user profiles
+        const userProfileMap = {};
+        const userProfileResults = await Promise.allSettled(
+          Array.from(allUserIds).map((userId) =>
+            userService
+              .fetchProfileById(tenantAndOrgInfo.tenantId, null, userId)
+              .then((result) => ({ userId, success: true, data: result.data }))
+              .catch((err) => ({ userId, success: false, error: err }))
+          )
+        );
+
+        for (const result of userProfileResults) {
+          if (result.status === 'fulfilled' && result.value.success) {
+            userProfileMap[result.value.userId] = result.value.data;
+          }
+        }
+
+        // Fetch user extensions
+        const userExtensionDocs = await database.models.userExtension
+          .find({ userId: { $in: Object.values(userProfileMap).map((u) => u.id) } }, [
+            'userId',
+            'roles',
+            'platformRoles',
+          ])
+          .lean();
+
+        const userExtensionMap = {};
+        for (const doc of userExtensionDocs) {
+          userExtensionMap[doc.userId] = doc;
+        }
+
+        // Process each CSV row
+        outerloop: for (const csvRow of userRolesCSVData) {
+          let userRole = gen.utils.valueParser(csvRow);
+          userRole['_SYSTEM_ID'] = '';
+
+          try {
+            // Validate role exists
+            if (userRole.role && !userRoleMap[userRole.role]) {
               userRole['_SYSTEM_ID'] = '';
-              userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
               userRolesUploadedData.push(userRole);
               continue;
             }
 
-            programIds = programDocumentsArray.map((program) => {
-              return program._id;
-            });
+            // Validate programs exist
+            if (userRole.programs && userRole.programs.length > 0) {
+              const programDocumentsArray = userRole.programs.map((p) => programIdMap[p]).filter(Boolean);
 
-          }
+              if (programDocumentsArray.length === 0) {
+                userRole['_SYSTEM_ID'] = '';
+                userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+                userRolesUploadedData.push(userRole);
+                continue;
+              }
+            }
 
-          let userInfoCall = await userService.fetchProfileById(tenantAndOrgInfo.tenantId,null,userRole.user);
-
-          if(!userInfoCall.success){
-            userRole['_SYSTEM_ID'] = '';
-            userRole.status = messageConstants.apiResponses.USER_NOT_FOUND;
-            userRolesUploadedData.push(userRole);
-            continue outerloop;
-          }
-          let userDataInformation = userInfoCall.data;
-
-          const allRoles = userDataInformation.organizations.flatMap(org => org.roles || []);
-
-          const allRolesTitle = allRoles.map(role => role.title);
-          //validating if role is present or not
-
-          let platform_role = userRole.platform_role;
-
-          let platform_role_array = platform_role.split(',');
-
-          for(let roleFromCSV of platform_role_array) {
-
-            if(!allRolesTitle.includes(roleFromCSV)) {
-              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
+            // Validate user exists
+            const userProfile = userProfileMap[userRole.user];
+            if (!userProfile) {
+              userRole['_SYSTEM_ID'] = '';
+              userRole.status = messageConstants.apiResponses.USER_NOT_FOUND;
               userRolesUploadedData.push(userRole);
               continue outerloop;
             }
 
-          }
+            const allRoles = userProfile.organizations.flatMap((org) => org.roles || []);
+            const allRolesTitle = allRoles.map((role) => role.title);
 
-          let existingUser = await this.userExtensionDocuments({ userId: userDataInformation.id }, [
-            'roles',
-            'platformRoles',
-          ]);
-
-          let user = '';
-          existingUser = existingUser[0];
-
-          if (!existingUser) {
-            let userInformation = {
-              userId: userDataInformation.id,
-              externalId: userRole.user,
-              status: 'active',
-              updatedBy: userDetails.userId,
-              createdBy: userDetails.userId,
-            };
-
-            if (userRole.programOperation) {
-
-              let platform_role = userRole.platform_role;
-
-              let platform_role_array = platform_role.split(',');
-
-              let platform_role_create_array = []
-
-              for(let role of platform_role_array) {
-
-                platform_role_create_array.push({
-                  roleId:allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].id,
-                  title: allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].title,
-                  programs: programIds,
-                })
+            // Validate platform roles
+            let platform_role_array = userRole.platform_role.split(',').map((r) => r.trim());
+            for (let roleFromCSV of platform_role_array) {
+              if (!allRolesTitle.includes(roleFromCSV)) {
+                userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
+                userRolesUploadedData.push(userRole);
+                continue outerloop;
               }
-
             }
 
-            user = await database.models.userExtension.create(userInformation);
+            let existingUser = userExtensionMap[userProfile.id.toString()];
+            let user = '';
+            const kafkaEventPayloads = [];
 
-            if (user._id) {
-              userRole['_SYSTEM_ID'] = user._id;
-              userRole.status = 'Success';
+            if (!existingUser) {
+              // Create new user extension
+              const userInformation = {
+                userId: userProfile.id,
+                externalId: userRole.user,
+                status: 'active',
+                updatedBy: userDetails.userId,
+                createdBy: userDetails.userId,
+                platformRoles: [],
+              };
+
+              if (userRole.programOperation && userRole.programs) {
+                for (const program of userRole.programs) {
+                  const programObjectId = programIdMap[program];
+
+                  if (!programObjectId) {
+                    userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+                    userRolesUploadedData.push(userRole);
+                    continue outerloop;
+                  }
+
+                  const roles = platform_role_array;
+                  let entry = userInformation.platformRoles.find(
+                    (pr) => pr.programId.toString() === programObjectId.toString()
+                  );
+
+                  if (!entry) {
+                    entry = { programId: programObjectId, roles: [] };
+                    userInformation.platformRoles.push(entry);
+                  }
+
+                  for (const role of roles) {
+                    if (!entry.roles.includes(role)) {
+                      entry.roles.push(role);
+                      // Emit create event for new role
+                      kafkaEventPayloads.push({
+                        userId: userProfile.id,
+                        username: userProfile.username,
+                        programId: programObjectId,
+                        role,
+                        eventType: 'create',
+                      });
+                    }
+                  }
+                }
+              }
+
+              user = await database.models.userExtension.create(userInformation);
+              userExtensionMap[user.userId.toString()] = user;
+
+              userRole['_SYSTEM_ID'] = user?._id || '';
+              userRole.status = user ? 'Success' : 'Failed to create the user role.';
+              userRole._kafkaEventPayloads = kafkaEventPayloads;
             } else {
-              userRole['_SYSTEM_ID'] = '';
-              userRole.status = 'Failed to create the user role.';
-            }
-          } else {
-            let updateQuery = {};
+              // Update existing user
+              let existingUserPlatformRoles = [...(existingUser.platformRoles || [])];
 
-            if (userRole.programOperation) {
-              let userPlatformRoleToUpdate;
+              if (userRole.programOperation && userRole.programs) {
+                for (const program of userRole.programs) {
+                  const programObjectId = programIdMap[program];
 
-
-              let platform_role = userRole.platform_role;
-
-              let platform_role_array = platform_role.split(',');
-
-              for(let role of platform_role_array) {
-
-                if (existingUser.platformRoles && existingUser.platformRoles.length > 0) {
-                  userPlatformRoleToUpdate = _.findIndex(existingUser.platformRoles, { title: role });
-                }
-
-                if (!(userPlatformRoleToUpdate >= 0)) {
-                  userPlatformRoleToUpdate = existingUser.platformRoles.length;
-
-                  let newUserRole = {
-                    roleId: allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].id,
-                    title: allRoles.filter( (roleFromAPI) => roleFromAPI.title == role)[0].title
+                  if (!programObjectId) {
+                    userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
+                    userRolesUploadedData.push(userRole);
+                    continue outerloop;
                   }
 
-                  newUserRole.programs = new Array();
-                  existingUser.platformRoles.push(newUserRole);
-                }
+                  const currentRoleInfoIndex = existingUserPlatformRoles.findIndex(
+                    (pr) => pr.programId.toString() === programObjectId.toString()
+                  );
 
-                existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
-                  userPlatformRoleToUpdate
-                ].programs.map((program) => program.toString());
+                  const newRoles = platform_role_array;
 
-                if (userRole.programOperation === 'OVERRIDE') {
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = programIds;
-                } else if (userRole.programOperation === 'APPEND' || userRole.programOperation === 'ADD') {
-                  const currentPrograms = existingUser.platformRoles[userPlatformRoleToUpdate].programs.map(p => p.toString());
-                  const newPrograms = programIds.map(p => p.toString());
-                
-                  // Merge without duplicates
-                  const mergedPrograms = _.uniq(currentPrograms.concat(newPrograms));
-                
-                  // Reassign, converting back to ObjectId if needed
-                  existingUser.platformRoles[userPlatformRoleToUpdate].programs = mergedPrograms;
-                } else if (userRole.programOperation === 'REMOVE') {
-                  if (programIds.length > 0) {
-                    const toRemove = new Set(programIds.map(p => p.toString()));
-                    existingUser.platformRoles[userPlatformRoleToUpdate].programs = 
-                      existingUser.platformRoles[userPlatformRoleToUpdate].programs.filter(
-                        p => !toRemove.has(p.toString())
-                      );
+                  if (userRole.programOperation === 'OVERRIDE') {
+                    if (currentRoleInfoIndex !== -1) {
+                      const currentRoles = existingUserPlatformRoles[currentRoleInfoIndex].roles;
+
+                      // Find roles to remove (exist in current but not in new)
+                      const rolesToRemove = currentRoles.filter((role) => !newRoles.includes(role));
+                      for (const role of rolesToRemove) {
+                        kafkaEventPayloads.push({
+                          userId: userProfile.id,
+                          username: userProfile.username,
+                          programId: programObjectId,
+                          role,
+                          eventType: 'delete',
+                        });
+                      }
+
+                      // Find roles to add (exist in new but not in current)
+                      const rolesToAdd = newRoles.filter((role) => !currentRoles.includes(role));
+                      for (const role of rolesToAdd) {
+                        kafkaEventPayloads.push({
+                          userId: userProfile.id,
+                          username: userProfile.username,
+                          programId: programObjectId,
+                          role,
+                          eventType: 'create',
+                        });
+                      }
+
+                      // Override the roles
+                      existingUserPlatformRoles[currentRoleInfoIndex].roles = [...newRoles];
+                    } else {
+                      // Create new program entry
+                      existingUserPlatformRoles.push({
+                        programId: programObjectId,
+                        roles: [...newRoles],
+                      });
+
+                      // All roles are new, emit create events
+                      for (const role of newRoles) {
+                        kafkaEventPayloads.push({
+                          userId: userProfile.id,
+                          username: userProfile.username,
+                          programId: programObjectId,
+                          role,
+                          eventType: 'create',
+                        });
+                      }
+                    }
+                  } else if (userRole.programOperation === 'ADD' || userRole.programOperation === 'APPEND') {
+                    if (currentRoleInfoIndex !== -1) {
+                      // Add roles to existing program entry
+                      const currentRoles = existingUserPlatformRoles[currentRoleInfoIndex].roles;
+
+                      for (const role of newRoles) {
+                        if (!currentRoles.includes(role)) {
+                          existingUserPlatformRoles[currentRoleInfoIndex].roles.push(role);
+                          kafkaEventPayloads.push({
+                            userId: userProfile.id,
+                            username: userProfile.username,
+                            programId: programObjectId,
+                            role,
+                            eventType: 'create',
+                          });
+                        }
+                      }
+                    } else {
+                      // Create new program entry
+                      existingUserPlatformRoles.push({
+                        programId: programObjectId,
+                        roles: [...newRoles],
+                      });
+
+                      // All roles are new, emit create events
+                      for (const role of newRoles) {
+                        kafkaEventPayloads.push({
+                          userId: userProfile.id,
+                          username: userProfile.username,
+                          programId: programObjectId,
+                          role,
+                          eventType: 'create',
+                        });
+                      }
+                    }
+                  } else if (userRole.programOperation === 'REMOVE') {
+                    if (currentRoleInfoIndex !== -1) {
+                      const currentRoles = existingUserPlatformRoles[currentRoleInfoIndex].roles;
+
+                      // Remove specified roles
+                      const rolesToKeep = currentRoles.filter((role) => !newRoles.includes(role));
+
+                      // Emit delete events for removed roles
+                      const rolesToRemove = currentRoles.filter((role) => newRoles.includes(role));
+                      for (const role of rolesToRemove) {
+                        kafkaEventPayloads.push({
+                          userId: userProfile.id,
+                          username: userProfile.username,
+                          programId: programObjectId,
+                          role,
+                          eventType: 'delete',
+                        });
+                      }
+
+                      if (rolesToKeep.length === 0) {
+                        // Remove entire program entry if no roles left
+                        existingUserPlatformRoles.splice(currentRoleInfoIndex, 1);
+                      } else {
+                        // Update with remaining roles
+                        existingUserPlatformRoles[currentRoleInfoIndex].roles = rolesToKeep;
+                      }
+                    }
+                    // If program doesn't exist, nothing to remove - no error needed
                   }
                 }
-  
-                existingUser.platformRoles[userPlatformRoleToUpdate].programs = existingUser.platformRoles[
-                  userPlatformRoleToUpdate
-                ].programs.map((eachProgram) => new ObjectId(eachProgram));
-  
-                updateQuery['platformRoles'] = existingUser.platformRoles;
-
               }
-            }
 
-            user = await database.models.userExtension.findOneAndUpdate(
-              {
-                _id: existingUser._id,
-              },
-              updateQuery,
-              {
+              // Update user extension document
+              const updateQuery = { platformRoles: existingUserPlatformRoles };
+
+              user = await database.models.userExtension.findOneAndUpdate({ _id: existingUser._id }, updateQuery, {
                 new: true,
                 returnNewDocument: true,
-              },
-            );
+              });
 
-            userRole['_SYSTEM_ID'] = existingUser._id;
-            userRole.status = 'Success';
+              userExtensionMap[user.userId.toString()] = user;
+
+              userRole['_SYSTEM_ID'] = existingUser._id;
+              userRole.status = 'Success';
+
+              userRole._kafkaEventPayloads = kafkaEventPayloads;
+              aggregateKafkaEventPayloads.push(...kafkaEventPayloads);
+            }
+
+          } catch (error) {
+            console.log(error, 'error in user role creation');
+            userRole.status = error && error.message ? error.message : error;
           }
 
-        } catch (error) {
-          userRole.status = error && error.message ? error.message : error;
+          userRolesUploadedData.push(userRole);
         }
 
-        userRolesUploadedData.push(userRole);
+        for(let kafkaEventPayload of aggregateKafkaEventPayloads) {
 
-      }
+          let eventObj = {
+            "entity": "program",
+            "eventType": kafkaEventPayload.eventType,
+            "username": kafkaEventPayload.username,
+            "userId": kafkaEventPayload.userId,
+            "role": kafkaEventPayload.role,
+            "meta": {
+              "programInformation": {
+                "name": programInfoMap[kafkaEventPayload.programId].externalId,
+                "externalId": programInfoMap[kafkaEventPayload.programId].externalId,
+                "id":kafkaEventPayload.programId
+              }
+            }
+          }
+
+          let event = await kafkaClient.pushProgramOperationEvent(eventObj);
+        }
+
 
         return resolve(userRolesUploadedData);
       } catch (error) {
@@ -470,7 +600,7 @@ module.exports = class UserExtensionHelper {
             {
               userId: userId,
             },
-            { roles: 1 },
+            { roles: 1 }
           )
           .lean();
 
@@ -551,7 +681,7 @@ module.exports = class UserExtensionHelper {
             {
               userId: userId,
             },
-            { 'roles.acl': 1 },
+            { 'roles.acl': 1 }
           )
           .lean();
 
@@ -632,7 +762,7 @@ module.exports = class UserExtensionHelper {
             _id: { $in: allEntities },
             entityType: entityType,
           },
-          [entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_OBJECT_ID],
+          [entitiesHelper.entitiesSchemaData().SCHEMA_ENTITY_OBJECT_ID]
         );
 
         if (entitiesFound.length > 0) {
@@ -693,7 +823,7 @@ module.exports = class UserExtensionHelper {
             _id: { $in: entities },
             entityType: entityType,
           },
-          ['_id'],
+          ['_id']
         );
 
         let allEntities = [];
@@ -848,7 +978,7 @@ module.exports = class UserExtensionHelper {
           await entitiesHelper.deleteUserRoleFromEntitiesElasticSearch(
             removeUserFromEntity.entityId,
             removeUserFromEntity.role,
-            userInformation.userId,
+            userInformation.userId
           );
         }
 

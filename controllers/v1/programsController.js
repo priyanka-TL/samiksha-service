@@ -163,7 +163,6 @@ module.exports = class Programs extends Abstract {
         let programCreationData = await programsHelper.create(
           req.body,
           true, // checkDate
-          req.userDetails
         );
 
         return resolve({

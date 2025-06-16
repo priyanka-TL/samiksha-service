@@ -114,6 +114,9 @@ module.exports = class ProgramsHelper {
             $arrayElemAt: ['$totalCount.count', 0],
           },
         };
+
+        require('fs').writeFileSync('programDocument.json', JSON.stringify(matchQuery, null, 2));
+
         programDocument.push({ $match: matchQuery }, sortQuery, { $project: projection1 }, facetQuery, projection2);
 
         let programDocuments = await programsQueries.getAggregate(programDocument);
@@ -201,29 +204,6 @@ module.exports = class ProgramsHelper {
               message: messageConstants.apiResponses.SCOPE_NOT_UPDATED_IN_PROGRAM,
             };
           }
-        }
-
-        let userInfoCall = await userService.fetchProfileById(userDetails.tenantId,userDetails.userId);
-
-        if(userInfoCall.success){
-
-          let eventObj = {
-            "entity": "program",
-            "eventType": "create",
-            "username": userInfoCall.data.username,
-            "userId": userInfoCall.data.id,
-            "meta": {
-              "programInformation": {
-                "name": data.name,
-                "externalId": data.externalId,
-                "id":program._id
-              }
-            }
-          }
-          
-          let event = await kafkaClient.pushProgramOperationEvent(eventObj);
-  
-
         }
 
         return resolve(program);
@@ -1395,6 +1375,7 @@ module.exports = class ProgramsHelper {
             });
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
+          let optional_factors = [];
           let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
             factors = tenantDetails.data.meta.factors;
@@ -1402,6 +1383,12 @@ module.exports = class ProgramsHelper {
             // append query filter
             filterQuery['$and'] = queryFilter;
           }
+
+          if(tenantDetails.data.meta.hasOwnProperty('optional_factors') && tenantDetails.data.meta.optional_factors.length > 0){
+            optional_factors = tenantDetails.data.meta.optional_factors;
+          }
+          optional_factors = ['state','district','block','cluster','school']
+
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
           // factors.append(dataToOmit)
 
@@ -1409,17 +1396,15 @@ module.exports = class ProgramsHelper {
 
           let locationData = []
 
-          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            locationData.push({
-              [`scope.${key}`]: { $in: data[key] },
-            })
-          })
+          if(optional_factors && optional_factors.length > 0){
+            locationData = gen.utils.factorQuery(optional_factors,data);
+          }
 
-          if(filterQuery['$and']){
+          if(filterQuery['$and'] && locationData.length > 0){
             filterQuery['$and'].push({
               $or: locationData,
             });
-          }else{
+          }else if(locationData.length > 0){
             filterQuery['$or'].push({
               $or: locationData,
             });

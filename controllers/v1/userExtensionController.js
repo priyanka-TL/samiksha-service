@@ -134,7 +134,11 @@ module.exports = class UserExtension extends Abstract {
 
         let tenantAndOrgInfo = req.userDetails.tenantAndOrgInfo;
 
-        let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(userRolesCSVData, req.userDetails,tenantAndOrgInfo);
+        let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(
+          userRolesCSVData,
+          req.userDetails,
+          tenantAndOrgInfo
+        );
 
         if (newUserRoleData.length > 0) {
           const fileName = `UserRole-Upload`;

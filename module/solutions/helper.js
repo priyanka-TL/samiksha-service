@@ -519,7 +519,7 @@ module.exports = class SolutionsHelper {
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             });
           }
-
+          let optional_factors = [];
           // factors = [ 'professional_role', 'professional_subroles' ]
           let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
@@ -527,6 +527,11 @@ module.exports = class SolutionsHelper {
             let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
             filterQuery['$and'] = queryFilter;
           }
+
+          if(tenantDetails.data.meta.hasOwnProperty('optional_factors') && tenantDetails.data.meta.optional_factors.length > 0){
+            optional_factors = tenantDetails.data.meta.optional_factors;
+          }
+
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
           // factors.append(dataToOmit)
 
@@ -534,17 +539,15 @@ module.exports = class SolutionsHelper {
 
           let locationData = []
 
-          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            locationData.push({
-              [`scope.${key}`]: { $in: data[key] },
-            });
-          });
-          
-          if(filterQuery['$and']){
+          if(optional_factors && optional_factors.length > 0){
+            locationData = gen.utils.factorQuery(optional_factors,data);
+          }
+
+          if(filterQuery['$and'] && locationData.length > 0){
             filterQuery['$and'].push({
               $or: locationData,
             });
-          }else{
+          }else if(locationData.length > 0){
             filterQuery['$or'].push({
               $or: locationData,
             });
@@ -2831,10 +2834,7 @@ module.exports = class SolutionsHelper {
             duplicateProgram.tenantData.tenantId = tenantData.tenantId;
             duplicateProgram.tenantData.orgId = tenantData.orgId;
 
-            userPrivateProgram = await programsHelper.create(_.omit(duplicateProgram, ['_id', 'components', 'scope']),false,{
-              tenantId: tenantData.tenantId,
-              userId: userId,
-            });
+            userPrivateProgram = await programsHelper.create(_.omit(duplicateProgram, ['_id', 'components', 'scope']));
           } else {
             userPrivateProgram = checkforProgramExist[0];
           }
