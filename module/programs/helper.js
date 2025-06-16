@@ -12,7 +12,7 @@ const userService = require(ROOT_PATH + '/generics/services/users');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
-const kafkaClient = require(ROOT_PATH + '/generics/helpers/kafkaCommunications');
+
 /**
  * ProgramsHelper
  * @class
@@ -114,9 +114,6 @@ module.exports = class ProgramsHelper {
             $arrayElemAt: ['$totalCount.count', 0],
           },
         };
-
-        require('fs').writeFileSync('programDocument.json', JSON.stringify(matchQuery, null, 2));
-
         programDocument.push({ $match: matchQuery }, sortQuery, { $project: projection1 }, facetQuery, projection2);
 
         let programDocuments = await programsQueries.getAggregate(programDocument);
@@ -144,7 +141,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - create program.
    */
 
-  static create(data, checkDate = false,userDetails) {
+  static create(data, checkDate = false) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = {
@@ -1378,7 +1375,6 @@ module.exports = class ProgramsHelper {
             });
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
-          let optional_factors = [];
           let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
             factors = tenantDetails.data.meta.factors;
@@ -1386,12 +1382,6 @@ module.exports = class ProgramsHelper {
             // append query filter
             filterQuery['$and'] = queryFilter;
           }
-
-          if(tenantDetails.data.meta.hasOwnProperty('optional_factors') && tenantDetails.data.meta.optional_factors.length > 0){
-            optional_factors = tenantDetails.data.meta.optional_factors;
-          }
-          optional_factors = ['state','district','block','cluster','school']
-
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
           // factors.append(dataToOmit)
 
@@ -1399,15 +1389,17 @@ module.exports = class ProgramsHelper {
 
           let locationData = []
 
-          if(optional_factors && optional_factors.length > 0){
-            locationData = gen.utils.factorQuery(optional_factors,data);
-          }
+          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
+            locationData.push({
+              [`scope.${key}`]: { $in: data[key] },
+            })
+          })
 
-          if(filterQuery['$and'] && locationData.length > 0){
+          if(filterQuery['$and']){
             filterQuery['$and'].push({
               $or: locationData,
             });
-          }else if(locationData.length > 0){
+          }else{
             filterQuery['$or'].push({
               $or: locationData,
             });
