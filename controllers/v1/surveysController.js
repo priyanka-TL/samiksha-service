@@ -83,12 +83,12 @@ module.exports = class Surveys extends Abstract {
   }
 
   /**
-     * @api {get} /assessment/api/v1/surveys/importSurveryTemplateToSolution/:solutionId?appName=:appName Import template survey solution to solution.
+     * @api {get} /assessment/api/v1/surveys/importSurveyTemplateToSolution/:solutionId?appName=:appName Import template survey solution to solution.
      * @apiVersion 1.0.0
      * @apiName Import survey template to solution.
      * @apiGroup Surveys
      * @apiHeader {String} X-authenticated-user-token Authenticity token
-     * @apiSampleRequest /assessment/api/v1/surveys/importSurveryTemplateToSolution/5f58b0b8894a0928fc8aa9b3?appName=samiksha
+     * @apiSampleRequest /assessment/api/v1/surveys/importSurveyTemplateToSolution/5f58b0b8894a0928fc8aa9b3?appName=samiksha
      * @apiParamExample {json} Response:
      * {
          "status": 200,
@@ -105,19 +105,30 @@ module.exports = class Surveys extends Abstract {
   /**
    * Import survey template to solution.
    * @method
-   * @name importSurveryTemplateToSolution
+   * @name importSurveyTemplateToSolution
    * @param {Object} req -request Data.
    * @param {String} req.params._id - survey template solution id.
    * @param {String} req.query.appName - Name of the app
    * @returns {JSON} - sharable link
    */
 
-  async importSurveryTemplateToSolution(req) {
+  async importSurveyTemplateToSolution(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await surveysHelper.importSurveryTemplateToSolution(
+          // check req.userDetails is available or not if not get tenantAndorg Info from req body
+          if (!req.userDetails && !req.body) {
+            let responseMessage = messageConstants.apiResponses.BODY_NOT_EMPTY;
+            return resolve({
+              status: httpStatusCode.bad_request.status,
+              message: responseMessage,
+            });
+          } else if ((!req?.userDetails && req?.body?.tenantData)){
+            req.userDetails={
+              tenantAndOrgInfo : req.body.tenantData}
+          }
+        let result = await surveysHelper.importSurveyTemplateToSolution(
           req.params._id,
-          req.userDetails.userId,
+          req.userDetails.userId?req.userDetails.userId:req.body.userId,
           req.query.appName,
           req.userDetails.tenantAndOrgInfo,
           req.query.programId,

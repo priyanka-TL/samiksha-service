@@ -743,7 +743,7 @@
       "service": "survey"
     },
     {
-      "sourceRoute": "/survey/v1/surveys/importSurveryTemplateToSolution/:id",
+      "sourceRoute": "/survey/v1/surveys/importSurveyTemplateToSolution/:id",
       "type": "POST",
       "priority": "MUST_HAVE",
       "inSequence": false,
@@ -757,7 +757,7 @@
       "service": "survey"
     },
     {
-      "sourceRoute": "/survey/v1/surveys/importSurveryTemplateToSolution",
+      "sourceRoute": "/survey/v1/surveys/importSurveyTemplateToSolution",
       "type": "POST",
       "priority": "MUST_HAVE",
       "inSequence": false,

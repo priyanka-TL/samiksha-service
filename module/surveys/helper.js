@@ -210,7 +210,7 @@ module.exports = class SurveysHelper {
   /**
    * Import survey template to solution.
    * @method
-   * @name importSurveryTemplateToSolution
+   * @name importSurveyTemplateToSolution
    * @param {String} solutionId - survey template solution id
    * @param {String} userId - logged in userId
    * @param {String} appName - name of the app
@@ -221,7 +221,7 @@ module.exports = class SurveysHelper {
    * @returns {JSON} - sharable link.
    */
 
-  static importSurveryTemplateToSolution(solutionId = '', userId = '', appName = '',tenantAndOrgInfo, programId,userToken,bodyData,userDetails) {
+  static importSurveyTemplateToSolution(solutionId = '', userId = '', appName = '',tenantAndOrgInfo, programId,userToken,bodyData,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         if (solutionId == '') {
@@ -1523,7 +1523,7 @@ module.exports = class SurveysHelper {
           // author: userId,
         });
         if (solutionDocument[0].isReusable) {
-          let createChildSolution = await this.importSurveryTemplateToSolution(
+          let createChildSolution = await this.importSurveyTemplateToSolution(
             solutionId,
             userId,
             "elevate",

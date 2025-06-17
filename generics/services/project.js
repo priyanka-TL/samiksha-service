@@ -68,26 +68,42 @@ const templateLists = function (userToken, externalId) {
  * Fetches the program Details based on the given Id.
  * @param {string} userToken - The user's authentication token.
  * @param {string[]|string} programId - ProgramId
+ * @param {Object} userDetails -userInfo
+ * @param {Object} payload - tenant and org info on reqbody
  * @returns {Promise<Object>} A promise that resolves to an object indicating success and containing the fetched data if successful.
  */
 
-const programDetails = function (userToken, programId, userDetails) {
+const programDetails = function (userToken, programId, userDetails,payload={}) {
   return new Promise(async (resolve, reject) => {
     try {
+      let url
       // Construct the URL for the project service
-      let url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.EXTERNAL_PROGRAM_DETAILS}/${programId}`;
+      if((userDetails && userDetails?.roles?.includes(messageConstants.common.ADMIN)) || !userToken){
+       url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.EXTERNAL_PROGRAM_DETAILS_SUPERADMIN}/${programId}`;
+      }else {
+        url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.EXTERNAL_PROGRAM_DETAILS}/${programId}`;
+      }
       // Set the options for the HTTP GET request
       const options = {
         headers: {
           'content-type': 'application/json',
-          'X-auth-token': userToken,
+          'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
         },
+        json:{tenantData:payload}
       };
-      //add  tenant and orgId in the header if role issuper admin
-      if (userDetails?.roles && userDetails.roles.includes('admin')) {
+
+      if(userToken){
         _.assign(options.headers, {
-          tenantidforadmin: userDetails.tenantAndOrgInfo.tenantId,
-          orgidforadmin: userDetails.tenantAndOrgInfo.orgId.join(','),
+          'X-auth-token': userToken
+         });
+
+      }
+      //add  tenant and orgId in the header if role issuper admin
+      if (userDetails?.roles && userDetails.roles.includes(messageConstants.common.ADMIN)) {
+        _.assign(options.headers, {
+         'admin-auth-token': process.env.ADMIN_AUTH_TOKEN,
+          tenantId: userDetails.tenantAndOrgInfo.tenantId,
+          orgId: userDetails.tenantAndOrgInfo.orgId.join(','),
         });
       }
       request.get(url, options, projectServiceCallback);
@@ -100,7 +116,13 @@ const programDetails = function (userToken, programId, userDetails) {
           result.success = false;
         } else {
           let response = data.body;
-          let result = JSON.parse(response);
+          let result
+          if (typeof(response)===messageConstants.common.OBJECT){
+            result = response
+          }else{
+            result = JSON.parse(response)
+          }
+          ;
           if (result.status === httpStatusCode['ok'].status) {
             return resolve(result);
           } else {
@@ -148,7 +170,7 @@ const programUpdate = function (userToken, programId, reqBody, tenantData, userD
       //add super admin details if role is not has orgadmin
       if (userDetails?.roles && !userDetails.roles.includes( messageConstants.common.ORG_ADMIN)) {
         _.assign(options.headers, {
-          'admin-auth-token': process.env.SURVEY_ADMIN_AUTH_TOKEN,
+          'admin-auth-token': process.env.ADMIN_AUTH_TOKEN,
           tenantId: tenantData.tenantId,
           orgId: tenantData.orgId.join(','),
         });

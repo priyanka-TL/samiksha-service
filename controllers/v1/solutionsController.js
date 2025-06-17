@@ -1279,9 +1279,25 @@ module.exports = class Solutions extends Abstract {
   async importFromSolution(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData = req.userDetails.tenantAndOrgInfo;
+        let tenantData;
         if (!req.body) {
           let responseMessage = messageConstants.apiResponses.BODY_NOT_EMPTY;
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: responseMessage,
+          });
+        }
+        // If `userDetails` exists, get tenant info from there
+        if (req?.userDetails?.tenantAndOrgInfo) {
+          tenantData = req.userDetails.tenantAndOrgInfo;
+        }
+        // If not, get it from body.tenantData
+        else if (req?.body?.tenantData) {
+          tenantData = req.body.tenantData;
+        }
+        // If both missing, send error
+        else {
+          const responseMessage = messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS;
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: responseMessage,
@@ -1290,11 +1306,11 @@ module.exports = class Solutions extends Abstract {
         let duplicateSolution = await solutionsHelper.importFromSolution(
           req.query.solutionId,
           req.body.programExternalId ? req.body.programExternalId : '',
-          req.userDetails.userId,
+          req?.userDetails?.userId ? req.userDetails.userId : req.body.userId,
           req.body,
           '',
           tenantData,
-          req.userDetails.userToken,
+          req?.userDetails?.userToken,
           req.userDetails
         );
 

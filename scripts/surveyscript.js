@@ -383,7 +383,7 @@ function createChildSolution(solutionId, userAuthToken) {
 
       console.log(solutionId);
       request.get(
-        `http://localhost:4301/assessment/api/v1/surveys/importSurveryTemplateToSolution/${solutionId}?appName=mentored`,
+        `http://localhost:4301/assessment/api/v1/surveys/importSurveyTemplateToSolution/${solutionId}?appName=mentored`,
         {
           headers: {
             'Content-Type': 'application/json',

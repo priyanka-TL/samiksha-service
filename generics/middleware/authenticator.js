@@ -206,7 +206,7 @@ module.exports = async function (req, res, next) {
     'solutions/uploadThemesRubricExpressions',
     'solutions/uploadCriteriaRubricExpressions',
     'solutions/importFromSolution',
-    'surveys/importSurveryTemplateToSolution',
+    'surveys/importSurveyTemplateToSolution',
     'surveys/mapSurverySolutionToProgram',
     "criteria/upload",
     "questions/bulkCreate",
@@ -238,6 +238,10 @@ module.exports = async function (req, res, next) {
       rspObj.responseCode = responseCode.unauthorized.status;
       return res.status(401).send(respUtil(rspObj));
     }
+    if (!token) {
+			next()
+			return
+		}
   }
 
   // Check if a Bearer token is required for authentication

@@ -52,7 +52,8 @@ module.exports = class SolutionsHelper {
             const programResponse = await projectService.programDetails(
               userToken,
               solutionData.programExternalId,
-              userDetails
+              userDetails,
+              tenantData
             );
             if (!programResponse?.result?._id) {
               throw {
@@ -2122,7 +2123,7 @@ module.exports = class SolutionsHelper {
         let programDocument;
         if (programId) {
           if (newSolutionDocument.isExternalProgram) {
-            programDocument = await projectService.programDetails(requestingUserAuthToken, programId, userDetails);
+            programDocument = await projectService.programDetails(requestingUserAuthToken, programId, userDetails,tenantData);
             if (!programDocument?.result?._id) {
               throw {
                 status: httpStatusCode.bad_request.status,
