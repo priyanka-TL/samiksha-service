@@ -1279,7 +1279,6 @@ module.exports = class Solutions extends Abstract {
   async importFromSolution(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let tenantData;
         if (!req.body) {
           let responseMessage = messageConstants.apiResponses.BODY_NOT_EMPTY;
           return resolve({
@@ -1287,16 +1286,9 @@ module.exports = class Solutions extends Abstract {
             message: responseMessage,
           });
         }
-        // If `userDetails` exists, get tenant info from there
-        if (req?.userDetails?.tenantAndOrgInfo) {
-          tenantData = req.userDetails.tenantAndOrgInfo;
-        }
-        // If not, get it from body.tenantData
-        else if (req?.body?.tenantData) {
-          tenantData = req.body.tenantData;
-        }
-        // If both missing, send error
-        else {
+        // If `userDetails` exists, get tenant info from there If not, get it from body.tenantData
+        let tenantData = req?.userDetails?.tenantAndOrgInfo ?? req?.body?.tenantData
+        if (!tenantData) {
           const responseMessage = messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS;
           return resolve({
             status: httpStatusCode.bad_request.status,

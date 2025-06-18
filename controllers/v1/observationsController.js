@@ -474,14 +474,14 @@ module.exports = class Observations extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let response = {};
-        if (req.method === 'POST') {
+        if (req.method === messageConstants.common.POST) {
           response = await observationsHelper.addEntityToObservation(
             req.params._id,
             req.body.data,
             req.userDetails.userId,
             req.userDetails.tenantData
           );
-        } else if (req.method === 'DELETE') {
+        } else if (req.method === messageConstants.common.DELETE) {
           response = await observationsHelper.removeEntityFromObservation(
             req.params._id,
             req.body.data ? req.body.data : req.query.entityId ? req.query.entityId.split(',') : [],
@@ -829,7 +829,7 @@ module.exports = class Observations extends Abstract {
                 message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
               };
             }
-            programDocument = [programDocument.result];
+            programDocument = programDocument.result;
           } else {
             programDocument = await programsHelper.list(
               programQueryObject,
@@ -840,17 +840,17 @@ module.exports = class Observations extends Abstract {
               req.userDetails.tenantData
             );
 
-            programDocument = programDocument.data.data;
+            programDocument = programDocument?.data?.data[0];
           }
-          if (!programDocument[0]._id) {
+          if (!programDocument?._id) {
             throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
           }
 
           (programInformation = {
-            ..._.omit(programDocument[0], ['_id', 'components', 'isAPrivateProgram']),
+            ..._.omit(programDocument, ['_id', 'components', 'isAPrivateProgram']),
           }),
-            (programId = programDocument[0]._id);
-          programExternalId = programDocument[0].externalId;
+            (programId = programDocument._id);
+          programExternalId = programDocument.externalId;
         }
 
         /*

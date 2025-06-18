@@ -41,7 +41,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all', page =
         query: filterData,
         projection: projection,
       };
-      console.log(requestJSON, '<--- requestJSON for entityDocuments');
 
       // Set the options for the HTTP POST request
       const options = {

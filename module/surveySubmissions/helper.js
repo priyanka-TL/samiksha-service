@@ -235,7 +235,7 @@ module.exports = class SurveySubmissionsHelper {
         ) {
           pushSubmissionToProject = await kafkaClient.pushSubmissionToProjectService(surveySubmissionData);
 
-          if ((pushSubmissionToProject.status != messageConstants.common, SUCCESS)) {
+          if ((pushSubmissionToProject.status != messageConstants.common.SUCCESS)) {
             throw new Error(
               `Failed to push submission to project. Submission ID: ${surveySubmissionDocument._id.toString()}, Message: ${
                 pushSubmissionToProject.message
