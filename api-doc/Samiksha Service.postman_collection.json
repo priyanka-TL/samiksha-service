@@ -5379,6 +5379,69 @@
 							]
 						}
 					]
+				},
+				{
+					"name": "userExtension",
+					"item": [
+						{
+							"name": "Bulkupload",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "<string>",
+										"description": "Every request to the API requires an x-auth-token in the header for authentication. This token is generated when a user logs in and must be included in each subsequent request to verify the user’s session and permissions."
+									},
+									{
+										"key": "internal-access-token",
+										"value": "<string>",
+										"description": "Requires Internal-access-token to access this api"
+									},
+									{
+										"key": "tenantId",
+										"value": "<string>",
+										"description": "requires tenantId for which the mapping is done for",
+										"type": "text"
+									},
+									{
+										"key": "orgid",
+										"value": "<string>",
+										"description": "requires orgId as this is internal api",
+										"type": "text"
+									},
+									{
+										"key": "admin-auth-token",
+										"value": "<string>",
+										"description": "mandatory for super admin, optional for tenant admin and org admin",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "userRoles",
+											"type": "file",
+											"src": "/home/user1/Downloads/elevate-latest-pldt/mapping.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/v1/userExtension/bulkUpload",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"userExtension",
+										"bulkUpload"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		}

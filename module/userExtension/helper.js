@@ -267,7 +267,8 @@ module.exports = class UserExtensionHelper {
         //this is made to avoid multiple database calls for each program
         const programIdMap = {};
         const programInfoMap = {}
-        for (const program of allProgramsData.data.data) {
+        const programs = allProgramsData?.data?.data || []
+        for (const program of programs) {
           programIdMap[program.externalId] = program._id;
           programInfoMap[program._id.toString()] = program;
         }
@@ -276,10 +277,8 @@ module.exports = class UserExtensionHelper {
         const userProfileMap = {};
         const userProfileResults = await Promise.allSettled(
           Array.from(allUserIds).map((userId) =>
-            userService
-              .fetchProfileBasedOnUserIdOrName(tenantAndOrgInfo.tenantId, null, userId)
-              .then((result) => ({ userId, success: true, data: result.data }))
-              .catch((err) => ({ userId, success: false, error: err }))
+            userService.fetchProfileBasedOnUserIdOrName(tenantAndOrgInfo.tenantId, null, userId)
+              .then(result => ({ userId, ...result }))
           )
         );
 
@@ -305,7 +304,7 @@ module.exports = class UserExtensionHelper {
           { userId: { $in: Object.values(userProfileMap).map((u) => u.id) }, 
             tenantId: tenantAndOrgInfo.tenantId 
           },
-          ['userId', 'roles', 'programRoleMapping']
+          ['userId','programRoleMapping']
         );
 
  
@@ -350,18 +349,13 @@ module.exports = class UserExtensionHelper {
               continue outerloop;
             }
 
-            const allRoles = userProfile.organizations.flatMap((org) => org.roles || []);
-            const allRolesTitle = allRoles.map((role) => role.title);
-
-            // Validate platform roles
-            let platform_role_array = userRole.platform_role.split(',').map((r) => r.trim());
-            //checking if all roles from CSV are valid
-            for (let roleFromCSV of platform_role_array) {
-              if (!allRolesTitle.includes(roleFromCSV)) {
+            // Validate platform roles            
+            const platform_role_array = userRole.platform_role?.split(',').map(r => r.trim()) || [];
+            const orgRoles = userProfile.organizations.flatMap(org => org.roles?.map(r => r.title) || []);
+            if (platform_role_array.some(role => !orgRoles.includes(role))) {
                 userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
                 userRolesUploadedData.push(userRole);
                 continue outerloop;
-              }
             }
 
             let existingUser = userExtensionMap[userProfile.id.toString()];
@@ -378,7 +372,11 @@ module.exports = class UserExtensionHelper {
                 createdBy: userDetails.userId,
                 programRoleMapping: [],
                 tenantId:tenantAndOrgInfo.tenantId,
-                orgId:tenantAndOrgInfo.orgId[0]
+                orgIds:Array.isArray(userProfile.organizations)
+                ? userProfile.organizations
+                    .filter((org) => org && typeof org.code === 'string')
+                    .map((org) => org.code)
+                : []
               };
 
               //if both programOperation and programs are present, we will process the roles for each program
@@ -386,9 +384,9 @@ module.exports = class UserExtensionHelper {
                 
                 // Check if programs exist in the programIdMap
                 for (const program of userRole.programs) {
-                  const programObjectId = programIdMap[program];
+                  const programId = programIdMap[program];
 
-                  if (!programObjectId) {
+                  if (!programId) {
                     userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
                     userRolesUploadedData.push(userRole);
                     continue outerloop;
@@ -396,11 +394,11 @@ module.exports = class UserExtensionHelper {
 
                   const roles = platform_role_array;
                   let entry = userInformation.programRoleMapping.find(
-                    (pr) => pr.programId.toString() === programObjectId.toString()
+                    (pr) => pr.programId.toString() === programId.toString()
                   );
 
                   if (!entry) {
-                    entry = { programId: programObjectId, roles: [] };
+                    entry = { programId: programId, roles: [] };
                     userInformation.programRoleMapping.push(entry);
                   }
 
@@ -411,7 +409,7 @@ module.exports = class UserExtensionHelper {
                       kafkaEventPayloads.push({
                         userId: userProfile.id,
                         username: userProfile.username,
-                        programId: programObjectId,
+                        programId: programId,
                         role,
                         eventType: messageConstants.common.CREATE_EVENT_TYPE,
                       });
@@ -433,16 +431,16 @@ module.exports = class UserExtensionHelper {
 
               if (userRole.programOperation && userRole.programs) {
                 for (const program of userRole.programs) {
-                  const programObjectId = programIdMap[program];
+                  const programId = programIdMap[program];
 
-                  if (!programObjectId) {
+                  if (!programId) {
                     userRole.status = messageConstants.apiResponses.PROGRAM_NOT_FOUND;
                     userRolesUploadedData.push(userRole);
                     continue outerloop;
                   }
 
                   const currentRoleInfoIndex = existingUserProgramRoleMapping.findIndex(
-                    (pr) => pr.programId.toString() === programObjectId.toString()
+                    (pr) => pr.programId.toString() === programId.toString()
                   );
 
                   const newRoles = platform_role_array;
@@ -457,7 +455,7 @@ module.exports = class UserExtensionHelper {
                         kafkaEventPayloads.push({
                           userId: userProfile.id,
                           username: userProfile.username,
-                          programId: programObjectId,
+                          programId: programId,
                           role,
                           eventType: messageConstants.common.DELETE_EVENT_TYPE,
                         });
@@ -469,7 +467,7 @@ module.exports = class UserExtensionHelper {
                         kafkaEventPayloads.push({
                           userId: userProfile.id,
                           username: userProfile.username,
-                          programId: programObjectId,
+                          programId: programId,
                           role,
                           eventType: messageConstants.common.CREATE_EVENT_TYPE,
                         });
@@ -480,7 +478,7 @@ module.exports = class UserExtensionHelper {
                     } else {
                       // Create new program entry
                       existingUserProgramRoleMapping.push({
-                        programId: programObjectId,
+                        programId: programId,
                         roles: [...newRoles],
                       });
 
@@ -489,7 +487,7 @@ module.exports = class UserExtensionHelper {
                         kafkaEventPayloads.push({
                           userId: userProfile.id,
                           username: userProfile.username,
-                          programId: programObjectId,
+                          programId: programId,
                           role,
                           eventType: messageConstants.common.CREATE_EVENT_TYPE,
                         });
@@ -506,7 +504,7 @@ module.exports = class UserExtensionHelper {
                           kafkaEventPayloads.push({
                             userId: userProfile.id,
                             username: userProfile.username,
-                            programId: programObjectId,
+                            programId: programId,
                             role,
                             eventType: messageConstants.common.CREATE_EVENT_TYPE,
                           });
@@ -515,7 +513,7 @@ module.exports = class UserExtensionHelper {
                     } else {
                       // Create new program entry
                       existingUserProgramRoleMapping.push({
-                        programId: programObjectId,
+                        programId: programId,
                         roles: [...newRoles],
                       });
 
@@ -524,7 +522,7 @@ module.exports = class UserExtensionHelper {
                         kafkaEventPayloads.push({
                           userId: userProfile.id,
                           username: userProfile.username,
-                          programId: programObjectId,
+                          programId: programId,
                           role,
                           eventType: messageConstants.common.CREATE_EVENT_TYPE,
                         });
@@ -543,7 +541,7 @@ module.exports = class UserExtensionHelper {
                         kafkaEventPayloads.push({
                           userId: userProfile.id,
                           username: userProfile.username,
-                          programId: programObjectId,
+                          programId: programId,
                           role,
                           eventType: messageConstants.common.DELETE_EVENT_TYPE,
                         });

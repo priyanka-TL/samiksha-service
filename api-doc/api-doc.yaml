@@ -5337,5 +5337,69 @@ paths:
                         - location
                         - param
                         - msg
+  /v1/userExtension/bulkUpload:
+    post:
+      tags: *ref_3
+      summary: >-
+        Bulk processes CSV data to assign/update user roles across programs with
+        validation and event notifications.
+      description: >-
+        Bulk user role management API that processes CSV data to create or
+        update user-program role assignments with support for multiple
+        operations (add, remove, override) and real-time event notifications via
+        Kafka.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                userRoles:
+                  type: string
+                  format: binary
+              required: []
+      parameters:
+        - *ref_4
+        - in: header
+          name: tenantId
+          description: ''
+          schema: &ref_5
+            type: string
+        - in: header
+          name: orgId
+          description: ''
+          schema: *ref_5
+        - in: header
+          name: admin-auth-token
+          description: ''
+          schema: *ref_5
+        - in: header
+          name: internal-access-token
+          description: ''
+          schema: *ref_5
+      responses:
+        '200':
+          description: Success response
+          content:
+            text/html:
+              schema: *ref_6
+              examples:
+                SuccessResponse:
+                  value: >-
+                    "user","role","entity","entityOperation","keycloak-userId","acl_school","acl_cluster","programOperation","platform_role","programs","_arrayFields","_SYSTEM_ID","status","_kafkaEventPayloads"
+
+                    "adithya_akq63rteo5zkj2","","","","creatorKeyCloakId","","","REMOVE","mentee","[""Survey_Program_new_june_9_1320""]","programs","68526449222bc77fcc83a3c6","Success","[{""userId"":50,""username"":""adithya_akq63rteo5zkj2"",""programId"":""684691a4c61cd7ec8710fce3"",""role"":""mentee"",""eventType"":""create""}]"
+
+                    "adithya_akq63rteo5zkj2","","","","1","","","ADD","learner","[""Survey_Program_new_june_9_1320""]","programs","68526449222bc77fcc83a3c6","Success","[{""userId"":50,""username"":""adithya_akq63rteo5zkj2"",""programId"":""684691a4c61cd7ec8710fce3"",""role"":""learner"",""eventType"":""create""}]"
+
+                    "adithya_akq63rteo5zkj2","","","","1","","","REMOVE","mentee","[""Survey_Program_newmay_26_1825""]","programs","68526449222bc77fcc83a3c6","Success","[]"
+
+                    "adithya_akq63rteo5zkj2","","","","1","","","REMOVE","learner","[""Survey_Program_newmay_26_1825""]","programs","68526449222bc77fcc83a3c6","Success","[]"
+                example1:
+                  value: ''
+                example2:
+                  value: ''
+        '400': *ref_7
+
 components:
   securitySchemes: {}

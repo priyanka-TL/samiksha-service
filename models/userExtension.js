@@ -29,8 +29,8 @@ module.exports = {
       default: false,
     },
     programRoleMapping: Array,
-    orgId:{
-      type: String,
+    orgIds:{
+      type: Array,
       require: true,
       index:true
     },

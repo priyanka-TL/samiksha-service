@@ -243,59 +243,55 @@ const fetchPublicTenantDetails = function (tenantId) {
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const fetchProfileBasedOnUserIdOrName = function (tenantId,userId=null,username) {
-	return new Promise(async (resolve, reject) => {
-		try {
+const fetchProfileBasedOnUserIdOrName = function (tenantId, userId = null, username) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let params;
+      if (userId) {
+        params = `/${userId}?tenant_code=${tenantId}`;
+      } else {
+        params = `?tenant_code=${tenantId}&username=${username}`;
+      }
 
-			let params;
-			if(userId){
-				params =`/${userId}?tenant_code=${tenantId}`
-			}else {
-				params =`?tenant_code=${tenantId}&username=${username}`
-			}
+      let url = userServiceUrl + messageConstants.endpoints.FETCH_USER_PROFILE_INFO + params;
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          internal_access_token: process.env.INTERNAL_ACCESS_TOKEN
+        },
+      };
 
-			let url =
-            userServiceUrl +
-            messageConstants.endpoints.FETCH_USER_PROFILE_INFO + params
-			const options = {
-				headers: {
-                    "content-type": "application/json",
-					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN
+      request.get(url, options, apiCallBackFunction);
+      let result = {
+        success: true,
+      };
+      function apiCallBackFunction(err, data) {
+        if (err) {
+          result.success = false;
+        } else {
+          let response = JSON.parse(data.body);
 
-			}
-		}
+          if (response.responseCode === httpStatusCode['ok_userService'].message) {
+            result['data'] = response.result;
+          } else {
+            result.success = false;
+          }
+        }
 
-			request.get(url, options, apiCallBackFunction)
-			let result = {
-				success: true,
-			}
-			function apiCallBackFunction(err, data) {
-				if (err) {
-					result.success = false
-				} else {
-					let response = JSON.parse(data.body)
-
-					if (response.responseCode === httpStatusCode['ok_userService'].message) {
-						result['data'] = response.result
-					} else {
-						result.success = false
-					}
-				}
-
-				return resolve(result)
-			}
-			setTimeout(function () {
-				return resolve(
-					(result = {
-						success: false,
-					})
-				)
-			}, messageConstants.common.SERVER_TIME_OUT)
-		} catch (error) {
-			return reject(error)
-		}
-	})
-}
+        return resolve(result);
+      }
+      setTimeout(function () {
+        return resolve(
+          (result = {
+            success: false,
+          })
+        );
+      }, messageConstants.common.SERVER_TIME_OUT);
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
 
 
 module.exports = {
