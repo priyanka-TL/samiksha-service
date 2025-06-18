@@ -120,13 +120,7 @@ module.exports = class Surveys extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         // check req.userDetails is available or not if not get tenantAndorg Info from req body
-        if (!req.userDetails && !req.body) {
-          let responseMessage = messageConstants.apiResponses.BODY_NOT_EMPTY;
-          return resolve({
-            status: httpStatusCode.bad_request.status,
-            message: responseMessage,
-          });
-        } else if (!req?.userDetails && req?.body?.tenantData) {
+        if (!req.userDetails && req?.body?.tenantData) {
           req.userDetails = {
             tenantAndOrgInfo: req.body.tenantData,
           };
