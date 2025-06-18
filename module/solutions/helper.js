@@ -55,7 +55,7 @@ module.exports = class SolutionsHelper {
               userDetails,
               tenantData
             );
-            if (!programResponse?.result?._id) {
+            if (programResponse.status != httpStatusCode.ok.status || !programResponse?.result?._id) {
               throw {
                 status: httpStatusCode.bad_request.status,
                 message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
@@ -2124,7 +2124,7 @@ module.exports = class SolutionsHelper {
         if (programId) {
           if (newSolutionDocument.isExternalProgram) {
             programDocument = await projectService.programDetails(requestingUserAuthToken, programId, userDetails,tenantData);
-            if (!programDocument?.result?._id) {
+            if (programDocument.status != httpStatusCode.ok.status || !programDocument?.result?._id) {
               throw {
                 status: httpStatusCode.bad_request.status,
                 message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
@@ -2262,7 +2262,7 @@ module.exports = class SolutionsHelper {
         newSolutionDocument.isAPrivateProgram = false;
         newSolutionDocument.isReusable = false;
 
-        if (data && data?.project) {
+        if (data?.project) {
           newSolutionDocument['project'] = data.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
         }

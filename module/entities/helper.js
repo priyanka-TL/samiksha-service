@@ -1492,7 +1492,6 @@ module.exports = class EntitiesHelper {
               };
                   
               let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
-              console.log(entitiesDetails,"<--entitiesDetails line 1495")
               if ( !entitiesDetails.success ) {
                   return resolve({
                       "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
@@ -1533,7 +1532,6 @@ module.exports = class EntitiesHelper {
                 let groups = entitiesDetails.data[0].groups;
 
                 let targetedGroup = groups[result.entityType];
-                console.log(targetedGroup,'targetedGroup line 1536')
                 let filterDataGroups = {
                   "_id":targetedGroup,
                   "tenantId":req.userDetails.tenantData.tenantId,
@@ -1542,7 +1540,6 @@ module.exports = class EntitiesHelper {
                 let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
 
                 entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections,req.pageNo,req.pageSize,req.searchText);
-                console.log(entitiesDetails,"<--entitiesDetails line 1545")
                 if ( !entitiesDetails.success ) {
                   return resolve({
                       "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,

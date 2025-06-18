@@ -135,7 +135,6 @@ module.exports = class ObservationsHelper {
           };
         }
   
-        let solutionDetails = {};
         if (solutionData[0].isReusable) {
           const solutionHelper = require(MODULES_BASE_PATH + "/solutions/helper");
           solutionData =
@@ -153,15 +152,6 @@ module.exports = class ObservationsHelper {
               //   organisationAndRootOrganisation.,
               //   organisationAndRootOrganisation.rootOrganisations
             );
-          solutionDetails = {
-            subType: solutionData.entityType,
-            type: solutionData.type,
-            _id: solutionData._id,
-            externalId: solutionData.externalId,
-            name: solutionData.name,
-            isReusable: solutionData.isReusable,
-            minNoOfSubmissionsRequired: solutionData.minNoOfSubmissionsRequired,
-          };
         } else {
           solutionData = solutionData[0];
         }
@@ -202,10 +192,6 @@ module.exports = class ObservationsHelper {
           userProfileData,
           tenantData
         );
-        // Add solutionDetails only if it's not empty
-        if (Object.keys(solutionDetails).length > 0) {
-          observationData.solutionDetails = solutionDetails;
-        }
   
         return resolve(
           _.pick(observationData, [
@@ -214,7 +200,6 @@ module.exports = class ObservationsHelper {
             "description",
             "solutionId",
             "solutionExternalId",
-            "solutionDetails",
           ])
         );
       } catch (error) {
@@ -2412,7 +2397,7 @@ module.exports = class ObservationsHelper {
             req.userDetails.userToken,
             solutionDocument.programId
           );
-          if (!programDocument?.result?._id) {
+          if (programDocument.status != httpStatusCode.ok.status || !programDocument?.result?._id) {
             throw {
               status: httpStatusCode.bad_request.status,
               message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,

@@ -784,7 +784,7 @@ module.exports = class ObservationSubmissionsHelper {
             observationSubmissionData
           );
   
-          if (pushSubmissionToProject.status != "success") {
+          if (pushSubmissionToProject.status != messageConstants.common,SUCCESS) {
             throw new Error(
               `Failed to push submission to project. Submission ID: ${observationSubmissionDocument._id.toString()}, Message: ${pushSubmissionToProject.message}`
             );

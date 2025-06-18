@@ -1891,7 +1891,6 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let tenantData = req.userDetails.tenantAndOrgInfo;
-        console.log(tenantData, 'this is tenantData');
         let solutionData = await solutionsHelper.list(
           req.query.type,
           req.query.subType ? req.query.subType : '',

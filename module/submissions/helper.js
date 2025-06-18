@@ -1761,7 +1761,7 @@ module.exports = class SubmissionsHelper {
           pushSubmissionToProject =
             await kafkaClient.pushSubmissionToProjectService(submissionData);
   
-          if (pushSubmissionToProject.status != "success") {
+          if (pushSubmissionToProject.status != messageConstants.common,SUCCESS) {
             throw new Error(
               `Failed to push submission to project. Submission ID: ${submissionDocument._id.toString()}, Message: ${pushSubmissionToProject.message}`,
             );

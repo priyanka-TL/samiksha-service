@@ -823,7 +823,7 @@ module.exports = class Observations extends Abstract {
               req.userDetails.userToken,
               observationDocument.programId
             );
-            if(!programDocument?.result?._id){            
+            if(programDocument.status != httpStatusCode.ok.status || !programDocument?.result?._id){            
               throw {
                 status: httpStatusCode.bad_request.status,
                 message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,

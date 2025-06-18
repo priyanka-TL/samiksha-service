@@ -66,7 +66,11 @@ module.exports = class Surveys extends Abstract {
   async createSolutionTemplate(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let createSolutionTemplate = await surveysHelper.createSolutionTemplate(req.body, req.userDetails.userId,req.userDetails.tenantAndOrgInfo);
+        let createSolutionTemplate = await surveysHelper.createSolutionTemplate(
+          req.body,
+          req.userDetails.userId,
+          req.userDetails.tenantAndOrgInfo
+        );
 
         return resolve({
           message: createSolutionTemplate.message,
@@ -115,20 +119,21 @@ module.exports = class Surveys extends Abstract {
   async importSurveyTemplateToSolution(req) {
     return new Promise(async (resolve, reject) => {
       try {
-          // check req.userDetails is available or not if not get tenantAndorg Info from req body
-          if (!req.userDetails && !req.body) {
-            let responseMessage = messageConstants.apiResponses.BODY_NOT_EMPTY;
-            return resolve({
-              status: httpStatusCode.bad_request.status,
-              message: responseMessage,
-            });
-          } else if ((!req?.userDetails && req?.body?.tenantData)){
-            req.userDetails={
-              tenantAndOrgInfo : req.body.tenantData}
-          }
+        // check req.userDetails is available or not if not get tenantAndorg Info from req body
+        if (!req.userDetails && !req.body) {
+          let responseMessage = messageConstants.apiResponses.BODY_NOT_EMPTY;
+          return resolve({
+            status: httpStatusCode.bad_request.status,
+            message: responseMessage,
+          });
+        } else if (!req?.userDetails && req?.body?.tenantData) {
+          req.userDetails = {
+            tenantAndOrgInfo: req.body.tenantData,
+          };
+        }
         let result = await surveysHelper.importSurveyTemplateToSolution(
           req.params._id,
-          req.userDetails.userId?req.userDetails.userId:req.body.userId,
+          req.userDetails.userId ? req.userDetails.userId : req.body.userId,
           req.query.appName,
           req.userDetails.tenantAndOrgInfo,
           req.query.programId,
@@ -179,7 +184,11 @@ module.exports = class Surveys extends Abstract {
   async mapSurverySolutionToProgram(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await surveysHelper.mapSurverySolutionToProgram(req.params._id, req.query.programId,req.userDetails.tenantAndOrgInfo);
+        let result = await surveysHelper.mapSurverySolutionToProgram(
+          req.params._id,
+          req.query.programId,
+          req.userDetails.tenantAndOrgInfo
+        );
 
         return resolve({
           message: result.message,
@@ -266,7 +275,7 @@ module.exports = class Surveys extends Abstract {
         if (Object.keys(usersKeycloakIdMap).length > 0) {
           let userOrganisationDetails = await surveysHelper.getUserOrganisationDetails(
             Object.keys(usersKeycloakIdMap),
-            req.rspObj.userToken,
+            req.rspObj.userToken
           );
 
           usersKeycloakIdMap = userOrganisationDetails.data;
@@ -579,7 +588,7 @@ module.exports = class Surveys extends Abstract {
           req.userDetails.userToken,
           bodyData,
           '',
-          req.userDetails.tenantData,
+          req.userDetails.tenantData
         );
 
         return resolve({
@@ -790,42 +799,37 @@ module.exports = class Surveys extends Abstract {
   async details(req) {
     return new Promise(async (resolve, reject) => {
       try {
-
         // Check valid mongodb id or not
         let validateSurveyId = gen.utils.isValidMongoId(req.params._id);
 
         let surveyDetails = {};
-         //getting survey details by id or link
-        if( validateSurveyId || req.query.solutionId ) {
-            
-            let surveyId = req.params._id ? req.params._id : "";
-   
-            surveyDetails = await surveysHelper.detailsV3
-            (   
-                req.body,
-                surveyId,
-                req.query.solutionId,
-                req.userDetails.userId,
-                req.userDetails.userToken,
-                req.userDetails.tenantData,
-                // appVersion,
-                // appName
-            );
-            
+        //getting survey details by id or link
+        if (validateSurveyId || req.query.solutionId) {
+          let surveyId = req.params._id ? req.params._id : '';
+
+          surveyDetails = await surveysHelper.detailsV3(
+            req.body,
+            surveyId,
+            req.query.solutionId,
+            req.userDetails.userId,
+            req.userDetails.userToken,
+            req.userDetails.tenantData
+            // appVersion,
+            // appName
+          );
         } else {
+          let bodyData = req.body ? req.body : {};
 
-            let bodyData = req.body ? req.body : {};
-
-            surveyDetails = await surveysHelper.getDetailsByLink(
-                req.params._id,
-                req.userDetails.userId,
-                req.userDetails.userToken,
-                bodyData,
-                "",                //version
-                req.userDetails.tenantData
-                // appVersion,
-                // appName
-            );
+          surveyDetails = await surveysHelper.getDetailsByLink(
+            req.params._id,
+            req.userDetails.userId,
+            req.userDetails.userToken,
+            bodyData,
+            '', //version
+            req.userDetails.tenantData
+            // appVersion,
+            // appName
+          );
         }
 
         return resolve({
@@ -892,7 +896,7 @@ module.exports = class Surveys extends Abstract {
           req.userDetails.userToken,
           req.pageSize,
           req.pageNo,
-          req.searchText,
+          req.searchText
         );
 
         return resolve({
@@ -946,7 +950,6 @@ module.exports = class Surveys extends Abstract {
   async userAssigned(req) {
     return new Promise(async (resolve, reject) => {
       try {
-
         let surveys = await surveysHelper.userAssigned(
           req.userDetails.userId,
           req.pageSize,
@@ -1002,7 +1005,11 @@ module.exports = class Surveys extends Abstract {
   async getLink(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let surveySolutionDetails = await surveysHelper.getLink(req.params._id, req.query.appName,req.userDetails.tenantData);
+        let surveySolutionDetails = await surveysHelper.getLink(
+          req.params._id,
+          req.query.appName,
+          req.userDetails.tenantData
+        );
 
         return resolve({
           message: surveySolutionDetails.message,

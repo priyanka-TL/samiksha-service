@@ -315,11 +315,10 @@ module.exports = class SurveysHelper {
         newSolutionDocument.isReusable = false;
         newSolutionDocument.parentSolutionId = solutionId;
         newSolutionDocument.createdAt = new Date();
-        // newSolutionDocument.isExternalProgram=isExternalProgram
         newSolutionDocument = _.omit(newSolutionDocument, ['_id']);
 
         //isExternalProgram true then calling projectService for programDetails
-        if(bodyData && bodyData?.project){
+        if(bodyData?.project){
           newSolutionDocument['project'] = bodyData.project;
           newSolutionDocument['referenceFrom'] = messageConstants.common.PROJECT;
         }
@@ -860,7 +859,7 @@ module.exports = class SurveysHelper {
                 userToken,
                 surveyDocument.programId
               );
-              if(!programDocument?.result?._id){
+              if(programDocument.status != httpStatusCode.ok.status || !programDocument?.result?._id){
                 throw {
                   status: httpStatusCode.bad_request.status,
                   message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
@@ -1522,27 +1521,6 @@ module.exports = class SurveysHelper {
           _id: solutionId,
           // author: userId,
         });
-        if (solutionDocument[0].isReusable) {
-          let createChildSolution = await this.importSurveyTemplateToSolution(
-            solutionId,
-            userId,
-            "elevate",
-            bodyData,
-            bodyData.programExternalId,
-            token,
-            bodyData,
-            
-          );
-           if(!createChildSolution.success || !createChildSolution.data.solutionId){
-            throw {
-              message: messageConstants.apiResponses.SOLUTION_NOT_CREATED,
-            };
-           }
-          solutionDocument=await solutionsQueries.solutionDocuments({
-            _id: createChildSolution.data.solutionId,
-            // author: userId,
-          });
-        } 
         if (surveyId == '') {
           let surveyDocument = await this.surveyDocuments(
             {
@@ -1596,6 +1574,7 @@ module.exports = class SurveysHelper {
             //     messageConstants.apiResponses.ORGANISATION_DETAILS_NOT_FOUND_FOR_USER
             //   );
             // }
+            // updating project key with project id and task data prevoiusly it will contain templateId and taskId
             if(bodyData?.project){
               solutionData.data.project=bodyData.project
             }
