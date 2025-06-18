@@ -819,7 +819,11 @@ module.exports = class Observations extends Abstract {
 
         let programQueryObject = {
           _id: observationDocument.programId,
-          status: "active"
+          status: "active",
+          tenantId: req.userDetails.tenantData.tenantId,
+          'scope.organizations':{
+            $in: ['ALL', req.userDetails.tenantData.orgId]
+          }
         };
 
         let programDocument = await programsHelper.list(programQueryObject, [
@@ -831,8 +835,7 @@ module.exports = class Observations extends Abstract {
          ],
          '',
          '',
-         '',
-         req.userDetails.tenantData
+         ''
         );
 
          programDocument = programDocument.data.data

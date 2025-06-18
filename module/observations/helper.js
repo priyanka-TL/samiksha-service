@@ -981,7 +981,7 @@ module.exports = class ObservationsHelper {
           filterQuery.solutionId = ObjectId(solutionId);
           filterQuery.createdBy = userId;
         }
-        
+        filterQuery.tenantId = tenantData.tenantId;
         //find the Obserations documents from the observation collections
         let observationDocument = await this.observationDocuments(filterQuery);
 
@@ -2346,7 +2346,9 @@ module.exports = class ObservationsHelper {
 
       let programQueryObject = {
         _id: solutionDocument.programId,
-        status: messageConstants.common.ACTIVE_STATUS
+        status: messageConstants.common.ACTIVE_STATUS,
+        tenantId: tenantData.tenantId,
+        "scope.organizations":{"$in":['ALL',tenantData.orgId]}
       };
 
       let programDocument = await programsHelper.list(programQueryObject, [
@@ -2358,8 +2360,7 @@ module.exports = class ObservationsHelper {
        ],
        '',
        '',
-       '',
-       tenantData,
+       ''
       );
 
        programDocument = programDocument.data.data

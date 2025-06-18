@@ -31,22 +31,13 @@ module.exports = class ProgramsHelper {
    * @returns {Object} - Programs list.
    */
 
-  static list(filter = {}, projection, pageNo = '', pageSize = '', searchText,tenantFilter) {
+  static list(filter = {}, projection, pageNo = '', pageSize = '', searchText) {
     return new Promise(async (resolve, reject) => {
       try {
         let programDocument = [];
-        let orgIdArr = [];
-        if (tenantFilter.orgId) {
-          orgIdArr = Array.isArray(tenantFilter.orgId)
-            ? tenantFilter.orgId
-            : [tenantFilter.orgId];
-        }
-
-        let matchQuery = { status: messageConstants.common.ACTIVE_STATUS,
-          tenantId:tenantFilter.tenantId,
-          "scope.organizations": {
-            "$in": ["ALL", ...orgIdArr]
-          },
+        
+        let matchQuery = {
+           status: messageConstants.common.ACTIVE_STATUS
          };
 
         if (Object.keys(filter).length > 0) {
@@ -1365,7 +1356,7 @@ module.exports = class ProgramsHelper {
           };
           */
           // filterQuery['scope.entities'] = { $in: entities };
-          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId','organizations']);
+          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
           let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
 					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
@@ -1375,6 +1366,7 @@ module.exports = class ProgramsHelper {
             });
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
+          let optional_factors = [];
           let factors
           if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
             factors = tenantDetails.data.meta.factors;
@@ -1382,6 +1374,11 @@ module.exports = class ProgramsHelper {
             // append query filter
             filterQuery['$and'] = queryFilter;
           }
+
+          if(tenantDetails.data.meta.hasOwnProperty('optional_factors') && tenantDetails.data.meta.optional_factors.length > 0){
+            optional_factors = tenantDetails.data.meta.optional_factors;
+          }
+
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
           // factors.append(dataToOmit)
 
@@ -1389,17 +1386,15 @@ module.exports = class ProgramsHelper {
 
           let locationData = []
 
-          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            locationData.push({
-              [`scope.${key}`]: { $in: data[key] },
-            })
-          })
+          if(optional_factors && optional_factors.length > 0){
+            locationData = gen.utils.factorQuery(optional_factors,data);
+          }
 
-          if(filterQuery['$and']){
+          if(filterQuery['$and'] && locationData.length > 0){
             filterQuery['$and'].push({
               $or: locationData,
             });
-          }else{
+          }else if(locationData.length > 0){
             filterQuery['$or'].push({
               $or: locationData,
             });

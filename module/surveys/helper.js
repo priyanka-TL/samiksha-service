@@ -382,12 +382,13 @@ module.exports = class SurveysHelper {
         let programDocument = await programsHelper.list(
           {
             externalId: programId,
+            tenantId: tenantAndOrgInfo.tenantId,
+            "scope.organizations": { $in: ['ALL',...tenantAndOrgInfo.orgId] },
           },
           ['externalId', 'name', 'description'],
           '',
           '',
-          '',
-          tenantAndOrgInfo
+          ''
         );
         programDocument = programDocument.data.data
         if (!programDocument.length) {
@@ -835,6 +836,8 @@ module.exports = class SurveysHelper {
               _id: surveyDocument.programId,
               status: messageConstants.common.ACTIVE_STATUS,
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
+              tenantId:tenantData.tenantId,
+              "scope.organizations": { $in: ['ALL', tenantData.orgId] },
             };
 
            programDocument = await programsHelper.list(programQueryObject, [
@@ -846,8 +849,7 @@ module.exports = class SurveysHelper {
            ],
            '',
            '',
-           '',
-           tenantData
+           ''
           );
            programDocument = programDocument.data.data
 

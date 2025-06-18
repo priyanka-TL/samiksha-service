@@ -69,12 +69,14 @@ module.exports = class Programs extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         let listOfPrograms = await programsHelper.list(
-          "",          //filter
+          {
+            tenantId: req.userDetails.tenantData.tenantId,
+            "scope.organizations":{"$in":['ALL', req.userDetails.tenantData.orgId]},
+          },          //filter
           "",          // projection
           req.pageNo, //middleware convert req.params.page as req.PageNo
           req.pageSize, //middleware convert req.params.linit as req.PageSize
-          req.query.searchText,
-          req.userDetails.tenantData
+          req.query.searchText
         );
 
         listOfPrograms['result'] = listOfPrograms.data;
