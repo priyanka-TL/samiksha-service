@@ -220,7 +220,6 @@ module.exports = class UserExtensionHelper {
   static bulkCreateOrUpdate(userRolesCSVData, userDetails, tenantAndOrgInfo) {
     return new Promise(async (resolve, reject) => {
       try {
-        let userRoleMap = {};
         let userRolesUploadedData = new Array();
         let aggregateKafkaEventPayloads = [];
         // Pre-fetch all required data
@@ -320,14 +319,6 @@ module.exports = class UserExtensionHelper {
           userRole['_SYSTEM_ID'] = '';
 
           try {
-            // Validate role exists
-            if (userRole.role && !userRoleMap[userRole.role]) {
-              userRole['_SYSTEM_ID'] = '';
-              userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
-              userRolesUploadedData.push(userRole);
-              continue;
-            }
-
             // Validate programs exist
             if (userRole.programs && userRole.programs.length > 0) {
               const programDocumentsArray = userRole.programs.map((p) => programIdMap[p]).filter(Boolean);
