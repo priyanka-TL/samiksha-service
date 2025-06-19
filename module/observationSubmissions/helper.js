@@ -135,6 +135,12 @@ module.exports = class ObservationSubmissionsHelper {
                 observationSubmissionsDocument['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
               }
 
+              if(observationSubmissionsDocument.entityInformation.externalId){
+                let entityInfoCall = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
+                if(entityInfoCall?.success && entityInfoCall.data?.length > 0){
+                  observationSubmissionsDocument.entityInformation.parentInformation = entityInfoCall.data[0].parentInformation
+                }
+              }
               return resolve(observationSubmissionsDocument);
 
           } catch (error) {
@@ -243,6 +249,13 @@ module.exports = class ObservationSubmissionsHelper {
             ...observationSubmissionsDocument.programInformation,
             _id: observationSubmissionsDocument.programId
           };
+        }
+
+        if(observationSubmissionsDocument.entityInformation.externalId){
+          let entityInfoCall = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
+          if(entityInfoCall?.success && entityInfoCall.data?.length > 0){
+            observationSubmissionsDocument.entityInformation.parentInformation = entityInfoCall.data[0].parentInformation
+          }
         }
 
         const kafkaMessage =
