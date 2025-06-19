@@ -340,7 +340,9 @@ module.exports = class Programs extends Abstract {
    * @name addEntitiesInScope
    * @param {Object} req - requested data.
    * @param {String} req.params._id - program id.
-   * @param {Array} req.body.entities - Entities to be added.
+	 * @param {Object} req.body - data to be added.
+	 * @param {Object} req.userDetails - User details
+	 * @param {Boolean} req.query.organizations - True if we want to update organizations details.
    * @returns {Array} Program scope roles.
    */
 
@@ -350,8 +352,9 @@ module.exports = class Programs extends Abstract {
         let tenantFilter =  req.userDetails.tenantAndOrgInfo;
         let programDetails = await programsHelper.addEntitiesInScope(
           req.params._id,
-          req.body.entities,
-          tenantFilter
+          req.body,
+          req.userDetails,
+          req.query.organizations ? req.query.organizations : false
         );
 
         return resolve(programDetails);
@@ -437,14 +440,16 @@ module.exports = class Programs extends Abstract {
    * @name removeEntitiesInScope
    * @param {Object} req - requested data.
    * @param {String} req.params._id - program id.
-   * @param {Array} req.body.entities - Entities to be added.
+	 * @param {Object} req.body - data to be removed.
+	 * @param {Object} req.userDetails - User details
+	 * @param {Boolean} req.query.organizations - True if we want to update organizations details.
    * @returns {Array} Program scope roles.
    */
 
   async removeEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities,req.userDetails.tenantData);
+        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body,req.userDetails,req.query.organizations ? req.query.organizations : false);
 
         return resolve(programDetails);
       } catch (error) {

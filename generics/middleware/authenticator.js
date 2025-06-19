@@ -214,7 +214,15 @@ module.exports = async function (req, res, next) {
     "frameworks/uploadThemes",
     "forms/create",
     "forms/update",
-    'users/deleteUserPIIData'
+    'users/deleteUserPIIData',
+    'programs/addEntitiesInScope',
+    'programs/removeEntitiesInScope',
+    'programs/addRolesInScope',
+    'programs/removeRolesInScope',
+    'solutions/addEntitiesInScope',
+    'solutions/removeEntitiesInScope',
+    'solutions/addRolesInScope',
+    'solutions/removeRolesInScope'
   ];
 
   let performInternalAccessTokenCheck = false;

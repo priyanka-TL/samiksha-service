@@ -107,5 +107,6 @@ module.exports = {
   DELETE_EVENT_ENTITY: 'user',
 	DELETE_EVENT_TYPE: 'delete',
   OBJECT: 'object',
-  ALL_SCOPE_VALUE:'ALL'
+  ALL_SCOPE_VALUE:'ALL',
+  ADMIN_ROLE: 'admin',
 };
