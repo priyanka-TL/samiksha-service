@@ -71,9 +71,9 @@ module.exports = class Programs extends Abstract {
         let listOfPrograms = await programsHelper.list(
           {
             tenantId: req.userDetails.tenantData.tenantId,
-            "scope.organizations":{"$in":['ALL', req.userDetails.tenantData.orgId]},
-          },          //filter
-          "",          // projection
+            'scope.organizations': { $in: [messageConstants.common.ALL_SCOPE_VALUE, req.userDetails.tenantData.orgId] },
+          }, //filter
+          '', // projection
           req.pageNo, //middleware convert req.params.page as req.PageNo
           req.pageSize, //middleware convert req.params.linit as req.PageSize
           req.query.searchText

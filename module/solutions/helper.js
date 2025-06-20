@@ -519,17 +519,19 @@ module.exports = class SolutionsHelper {
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             });
           }
+          let tenantPublicDetailsMetaField = tenantDetails.data.meta; 
           let optional_factors = [];
           // factors = [ 'professional_role', 'professional_subroles' ]
           let factors
-          if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-            factors = tenantDetails.data.meta.factors;            
+          if (tenantPublicDetailsMetaField.hasOwnProperty('factors') && tenantPublicDetailsMetaField.factors.length > 0) {
+            factors = tenantPublicDetailsMetaField.factors;            
             let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
             filterQuery['$and'] = queryFilter;
           }
 
-          if(tenantDetails.data.meta.hasOwnProperty('optional_factors') && tenantDetails.data.meta.optional_factors.length > 0){
-            optional_factors = tenantDetails.data.meta.optional_factors;
+          let optional_scope_fields = messageConstants.common.OPTIONAL_SCOPE_FIELD
+          if(tenantPublicDetailsMetaField.hasOwnProperty(optional_scope_fields) && tenantPublicDetailsMetaField[optional_scope_fields].length > 0){
+            optional_factors = tenantPublicDetailsMetaField[optional_scope_fields];
           }
 
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
@@ -2091,7 +2093,16 @@ module.exports = class SolutionsHelper {
       if (programId) {
           programQuery[gen.utils.isValidMongoId(programId) ? "_id" : "externalId"] = programId;   
           programQuery['tenantId'] = tenantData.tenantId;
-          programQuery['scope.organizations'] = {"$in":['ALL',...tenantData.orgId]} 
+          programQuery['scope.organizations'] = {"$in":[messageConstants.common.ALL_SCOPE_VALUE,...tenantData.orgId]} 
+
+           /*
+          arguments passed to programsHelper.list() are:
+          - filter: { externalId: { $in: Array.from(allProgramIds) } }
+          - projection: ['_id', 'externalId']
+          - sort: ''
+          - skip: ''
+          - limit: ''
+          */
           programDocument = await programsHelper.list(programQuery, [
             "externalId",
             "name",
@@ -3599,6 +3610,8 @@ module.exports = class SolutionsHelper {
           },
         };
 
+        require('fs').writeFileSync('matchquery.json',JSON.stringify(matchQuery));
+        console.log(matchQuery,'matchq')
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {

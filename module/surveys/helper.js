@@ -379,11 +379,19 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.PROGRAM_ID_REQUIRED);
         }
 
+        /*
+        arguments passed to programsHelper.list() are:
+        - filter: { externalId: { $in: Array.from(allProgramIds) } }
+        - projection: ['_id', 'externalId']
+        - sort: ''
+        - skip: ''
+        - limit: ''
+        */
         let programDocument = await programsHelper.list(
           {
             externalId: programId,
             tenantId: tenantAndOrgInfo.tenantId,
-            "scope.organizations": { $in: ['ALL',...tenantAndOrgInfo.orgId] },
+            "scope.organizations": { $in: [messageConstants.common.ALL_SCOPE_VALUE,...tenantAndOrgInfo.orgId] },
           },
           ['externalId', 'name', 'description'],
           '',
@@ -837,9 +845,17 @@ module.exports = class SurveysHelper {
               status: messageConstants.common.ACTIVE_STATUS,
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
               tenantId:tenantData.tenantId,
-              "scope.organizations": { $in: ['ALL', tenantData.orgId] },
+              "scope.organizations": { $in: [messageConstants.common.ALL_SCOPE_VALUE, tenantData.orgId] },
             };
 
+          /*
+          arguments passed to programsHelper.list() are:
+          - filter: { externalId: { $in: Array.from(allProgramIds) } }
+          - projection: ['_id', 'externalId']
+          - sort: ''
+          - skip: ''
+          - limit: ''
+          */
            programDocument = await programsHelper.list(programQueryObject, [
              'externalId',
              'name',

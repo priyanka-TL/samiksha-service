@@ -2348,9 +2348,17 @@ module.exports = class ObservationsHelper {
         _id: solutionDocument.programId,
         status: messageConstants.common.ACTIVE_STATUS,
         tenantId: tenantData.tenantId,
-        "scope.organizations":{"$in":['ALL',tenantData.orgId]}
+        'scope.organizations': { $in: [messageConstants.common.ALL_SCOPE_VALUE, tenantData.orgId] },
       };
 
+        /*
+        arguments passed to programsHelper.list() are:
+        - filter: { externalId: { $in: Array.from(allProgramIds) } }
+        - projection: ['_id', 'externalId']
+        - sort: ''
+        - skip: ''
+        - limit: ''
+        */
       let programDocument = await programsHelper.list(programQueryObject, [
          "externalId",
          "name",

@@ -22,12 +22,11 @@ module.exports = class ProgramsHelper {
    * List program
    * @method
    * @name list
+   * @param {Object} filter - filter.
+   * @param {Array} projection - projection.
    * @param {Number} pageNo - page no.
    * @param {Number} pageSize - page size.
    * @param {String} searchText - text to search.
-   *  @param {Object} filter - filter.
-   *  @param {Array} projection - projection.
-   * @param {Object} tenantFilter - tenant filter.
    * @returns {Object} - Programs list.
    */
 
@@ -1366,17 +1365,19 @@ module.exports = class ProgramsHelper {
             });
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
+          let tenantPublicDetailsMetaField = tenantDetails.data.meta;
           let optional_factors = [];
           let factors
-          if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-            factors = tenantDetails.data.meta.factors;
+          if (tenantPublicDetailsMetaField.hasOwnProperty('factors') && tenantPublicDetailsMetaField.factors.length > 0) {
+            factors = tenantPublicDetailsMetaField.factors;
             let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
             // append query filter
             filterQuery['$and'] = queryFilter;
           }
 
-          if(tenantDetails.data.meta.hasOwnProperty('optional_factors') && tenantDetails.data.meta.optional_factors.length > 0){
-            optional_factors = tenantDetails.data.meta.optional_factors;
+          let optional_scope_fields = messageConstants.common.OPTIONAL_SCOPE_FIELD
+          if(tenantPublicDetailsMetaField.hasOwnProperty(optional_scope_fields) && tenantPublicDetailsMetaField[optional_scope_fields].length > 0){
+            optional_factors = tenantPublicDetailsMetaField[optional_scope_fields];
           }
 
           let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
