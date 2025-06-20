@@ -347,18 +347,18 @@ async function getSubEntitiesBasedOnEntityType(parentIds, entityType, result) {
 }
 /**
  * @method
- * @name entityIdentifier
+ * @name findEntityDetails
  * @param {String} tenantId - tenantId
- * @param {String} entityName - entity name
+ * @param {String} entityIdentifier - entityIdentifier
  * @returns {Object} - entity details
  */
 // Function to find the details of a given entity ant the tenant it belongs under
-const entityIdentifier = function (tenantId,entityName) {
+const findEntityDetails = function (tenantId,entityIdentifier) {
   
   return new Promise(async (resolve, reject) => {
     try {
       // Define the URL for the user role extension API
-      const url = entityManagementServiceUrl+messageConstants.endpoints.FIND_ENTITY_DETAILS + '/'+entityName;
+      const url = entityManagementServiceUrl+messageConstants.endpoints.FIND_ENTITY_DETAILS + '/'+entityIdentifier;
 
       // Set the options for the HTTP POST request
       const options = {
@@ -405,5 +405,5 @@ module.exports = {
   listByEntityType:listByEntityType,
   userRoleExtension:userRoleExtension,
   getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType,
-  entityIdentifier:entityIdentifier
+  findEntityDetails:findEntityDetails
 };

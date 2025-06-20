@@ -136,7 +136,7 @@ module.exports = class ObservationSubmissionsHelper {
               }
 
               if(observationSubmissionsDocument.entityInformation.externalId){
-                let entityInfoCall = await entityManagementService.entityIdentifier(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
+                let entityInfoCall = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
                 if(entityInfoCall?.success && entityInfoCall.data?.length > 0){
                   observationSubmissionsDocument.entityInformation.parentInformation = entityInfoCall.data[0].parentInformation
                 }
@@ -252,7 +252,7 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         if(observationSubmissionsDocument.entityInformation.externalId){
-          let entityInfoCall = await entityManagementService.entityIdentifier(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
+          let entityInfoCall = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
           if(entityInfoCall?.success && entityInfoCall.data?.length > 0){
             observationSubmissionsDocument.entityInformation.parentInformation = entityInfoCall.data[0].parentInformation
           }
