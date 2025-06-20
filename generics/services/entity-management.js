@@ -347,13 +347,13 @@ async function getSubEntitiesBasedOnEntityType(parentIds, entityType, result) {
 }
 /**
  * @method
- * @name findEntityDetails
+ * @name entityIdentifier
  * @param {String} tenantId - tenantId
  * @param {String} entityName - entity name
  * @returns {Object} - entity details
  */
 // Function to find the details of a given entity ant the tenant it belongs under
-const findEntityDetails = function (tenantId,entityName) {
+const entityIdentifier = function (tenantId,entityName) {
   
   return new Promise(async (resolve, reject) => {
     try {
@@ -405,5 +405,5 @@ module.exports = {
   listByEntityType:listByEntityType,
   userRoleExtension:userRoleExtension,
   getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType,
-  findEntityDetails:findEntityDetails
+  entityIdentifier:entityIdentifier
 };
