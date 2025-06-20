@@ -3610,8 +3610,6 @@ module.exports = class SolutionsHelper {
           },
         };
 
-        require('fs').writeFileSync('matchquery.json',JSON.stringify(matchQuery));
-        console.log(matchQuery,'matchq')
         let solutionDocuments = await solutionsQueries.getAggregate([
           { $match: matchQuery },
           {
