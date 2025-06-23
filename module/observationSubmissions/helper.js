@@ -136,9 +136,9 @@ module.exports = class ObservationSubmissionsHelper {
               }
 
               if(observationSubmissionsDocument.entityInformation.externalId){
-                let entityInfoCall = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
-                if(entityInfoCall?.success && entityInfoCall.data?.length > 0){
-                  observationSubmissionsDocument.entityInformation.parentInformation = entityInfoCall.data[0].parentInformation
+                let entityDetailResponse = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
+                if(entityDetailResponse?.success && entityDetailResponse.data?.length > 0){
+                  observationSubmissionsDocument.entityInformation.parentInformation = entityDetailResponse.data[0].parentInformation
                 }
               }
               return resolve(observationSubmissionsDocument);
@@ -252,9 +252,9 @@ module.exports = class ObservationSubmissionsHelper {
         }
 
         if(observationSubmissionsDocument.entityInformation.externalId){
-          let entityInfoCall = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
-          if(entityInfoCall?.success && entityInfoCall.data?.length > 0){
-            observationSubmissionsDocument.entityInformation.parentInformation = entityInfoCall.data[0].parentInformation
+          let entityDetailResponse = await entityManagementService.findEntityDetails(observationSubmissionsDocument.tenantId,observationSubmissionsDocument.entityInformation.externalId)
+          if(entityDetailResponse?.success && entityDetailResponse.data?.length > 0){
+            observationSubmissionsDocument.entityInformation.parentInformation = entityDetailResponse.data[0].parentInformation
           }
         }
 
