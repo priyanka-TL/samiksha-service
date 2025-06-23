@@ -3975,42 +3975,50 @@ module.exports = class SolutionsHelper {
             ['scope']
           );
         }
-        // Build the $addToSet updateObject
-				let updateObject = { $addToSet: {} }
-				let validationExcludedEntitiesKeys = []
-				if (
-					userDetails.roles.includes(messageConstants.common.ADMIN_ROLE) ||
-					userDetails.roles.includes(messageConstants.common.TENANT_ADMIN)
-				) {
-					// Fetch tenant details to validate organization codes
-					let tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken)
-					if (tenantDetails.success !== true || !tenantDetails.data || !tenantDetails.data.meta) {
-						return resolve({
-							success: false,
-							message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-						})
-					}
-					if (
-						tenantDetails.data.meta.validationExcludedScopeKeys &&
-						Array.isArray(tenantDetails.data.meta.validationExcludedScopeKeys) &&
-						tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
-					) {
-						// Fetch tenant details (will include valid org codes & validationExcludedScopeKeys)
-						validationExcludedEntitiesKeys.push(...tenantDetails.data.meta.validationExcludedScopeKeys)
-					}
 
-					if (gen.utils.convertStringToBoolean(organizations)) {
-						// Extract all valid organization codes from the tenant's config
-						const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code)
-
-						// Check if all provided organization codes are valid
-						const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode))
-						// If valid, include them in the update object under scope.organizations
-						if (isValid) {
-							updateObject.$addToSet[`scope.organizations`] = { $each: bodyData.organizations }
-						}
-					}
+        if (!programData.length > 0) {
+					return resolve({
+						status: HTTP_STATUS_CODE.bad_request.status,
+						message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND,
+					})
 				}
+
+        // Build the $addToSet updateObject
+        let updateObject = { $addToSet: {} };
+        let validationExcludedEntitiesKeys = [];
+        if (
+          userDetails.roles.includes(messageConstants.common.ADMIN_ROLE) ||
+          userDetails.roles.includes(messageConstants.common.TENANT_ADMIN)
+        ) {
+          // Fetch tenant details to validate organization codes
+          let tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
+          if (tenantDetails.success !== true || !tenantDetails.data || !tenantDetails.data.meta) {
+            return resolve({
+              success: false,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            });
+          }
+          if (
+            tenantDetails.data.meta.validationExcludedScopeKeys &&
+            Array.isArray(tenantDetails.data.meta.validationExcludedScopeKeys) &&
+            tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
+          ) {
+            // Fetch tenant details (will include valid org codes & validationExcludedScopeKeys)
+            validationExcludedEntitiesKeys.push(...tenantDetails.data.meta.validationExcludedScopeKeys);
+          }
+
+          if (gen.utils.convertStringToBoolean(organizations)) {
+            // Extract all valid organization codes from the tenant's config
+            const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
+
+            // Check if all provided organization codes are valid
+            const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
+            // If valid, include them in the update object under scope.organizations
+            if (isValid) {
+              updateObject.$addToSet[`scope.organizations`] = { $each: bodyData.organizations };
+            }
+          }
+        }
 
 				// This logic we need to re-look --------------------------------------------
 				// if (solutionData[0].scope !== programData[0].scope) {
@@ -4028,74 +4036,82 @@ module.exports = class SolutionsHelper {
 				// 	}
 				// }
 
-				// Extract entities from the request body
-				let entities = bodyData.entities
-				// This will store final grouped entity IDs by type (e.g., school, district)
-				let groupedEntities = {}
-				// Get all entity keys provided in the request
-				let entitiesKeys = Object.keys(entities)
-				// Separate keys that need validation from those that should be excluded
-				let keysForValidation = []
-				let keysExcluded = []
+        // Extract entities from the request body
+        let entities = bodyData.entities
+        let groupedEntities = {}
+        let keysForValidation = []
+        let keysExcluded = []
 
-				if (validationExcludedEntitiesKeys && validationExcludedEntitiesKeys.length > 0) {
-					// Classify keys based on whether they are in the validationExcludedEntitiesKeys list
-					entitiesKeys.forEach((key) => {
-						if (validationExcludedEntitiesKeys.includes(key)) {
-							keysExcluded.push(key)
-						} else {
-							keysForValidation.push(key)
-						}
-					})
-				} else {
-					keysForValidation.push(entitiesKeys)
-				}
-				// Flatten entity IDs to validate (only the ones that need validation)
-				const entitiesToValidate = keysForValidation.flatMap((key) => entities[key])
+        // Classify keys based on ALL presence or validationExcludedEntitiesKeys
+        for (const [entityType, values] of Object.entries(entities)) {
+          if (Array.isArray(values) && values.includes(messageConstants.common.ALL_SCOPE_VALUE)) {
+            // If "ALL" present, skip validation and directly assign
+            groupedEntities[entityType] = [messageConstants.common.ALL_SCOPE_VALUE];
+          } else if (validationExcludedEntitiesKeys.includes(entityType)) {
+            // Excluded from validation
+            groupedEntities[entityType] = values
+          } else {
+            // Needs validation
+            keysForValidation.push(entityType)
+          }
+        }
 
-				// Fetch valid entity documents from the database
-				let entitiesData = await entityManagementService.entityDocuments(
-					{
-						_id: { $in: entitiesToValidate },
-						tenantId: tenantId,
-						orgId: orgId,
-					},
-					['_id', 'entityType']
-				)
+        // Validate only if needed
+        let entitiesToValidate = keysForValidation.flatMap((key) => entities[key])
+        if (entitiesToValidate.length > 0) {
+          let entitiesData = await entityManagementService.entityDocuments(
+            {
+              _id: { $in: entitiesToValidate },
+              tenantId,
+              orgId,
+            },
+            ['_id', 'entityType']
+          )
 
-				if (!entitiesData.success || !entitiesData.data.length > 0) {
-					throw {
-						message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-					}
-				}
+          if (!entitiesData.success || !entitiesData.data.length > 0) {
+            throw {
+              message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+            }
+          }
 
-				// Extract actual entity documents
-				entitiesData = entitiesData.data
-				// Group validated entity IDs by their entity type (e.g., school, district)
-				for (const entity of entitiesData) {
-					if (!groupedEntities[entity.entityType]) {
-						groupedEntities[entity.entityType] = []
-					}
-					groupedEntities[entity.entityType].push(entity._id)
-				}
+          entitiesData = entitiesData.data
+          for (const entity of entitiesData) {
+            if (!groupedEntities[entity.entityType]) {
+              groupedEntities[entity.entityType] = [];
+            }
+            groupedEntities[entity.entityType].push(entity._id);
+          }
+        }
 
-				// Directly add excluded keys and their IDs (no validation required)
-				for (const excludedKey of keysExcluded) {
-					groupedEntities[excludedKey] = entities[excludedKey]
-				}
-
-				// Construct the $addToSet object with all grouped entity types and their IDs
-				for (const [type, ids] of Object.entries(groupedEntities)) {
-					updateObject.$addToSet[`scope.${type}`] = { $each: ids }
-				}
+        // Construct $addToSet object
+        for (const [type, ids] of Object.entries(groupedEntities)) {
+          updateObject.$addToSet[`scope.${type}`] = { $each: ids }
+        }
+        // Handle organizations
+        if (Array.isArray(bodyData.organizations)) {
+          if (bodyData.organizations.includes(messageConstants.common.ALL_SCOPE_VALUE)) {
+            updateObject.$addToSet[`scope.organizations`] = { $each: [messageConstants.common.ALL_SCOPE_VALUE] }
+          } else if (gen.utils.convertStringToBoolean(organizations)) {
+            const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
+            const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
+            if (isValid) {
+              updateObject.$addToSet[`scope.organizations`] = { $each: bodyData.organizations };
+            } else {
+              return resolve({
+                success: false,
+                message: messageConstants.apiResponses.INVALID_ORGANIZATION,
+              });
+            }
+          }
+        }
 
         let updateSolution = await solutionsQueries.updateSolutionDocument(
-					{
-						_id: solutionId,
-					},
-					updateObject,
-					{ new: true }
-				)
+          {
+            _id: solutionId,
+          },
+          updateObject,
+          { new: true }
+        )
         if (!updateSolution || !updateSolution._id) {
           throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
@@ -4231,116 +4247,139 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
-				// This object will hold the update instruction
-				let updateObject = { $pull: {} }
+        let updateObject = { $pull: {} }
+        let validationExcludedEntitiesKeys = []
 
-				// Hold any keys that should skip validation
-				let validationExcludedEntitiesKeys = []
+        if (
+          userDetails.roles.includes(messageConstants.common.ADMIN_ROLE) ||
+          userDetails.roles.includes(messageConstants.common.TENANT_ADMIN)
+        ) {
+          let tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken)
+          if (tenantDetails.success !== true || !tenantDetails.data || !tenantDetails.data.meta) {
+            return resolve({
+              success: false,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            })
+          }
 
-				// If user is admin and "organizations" param is passed
-				if (
-					userDetails.roles.includes(messageConstants.common.ADMIN_ROLE) ||
-					userDetails.roles.includes(messageConstants.common.TENANT_ADMIN)
-				) {
-					// Fetch tenant details (will include valid org codes & validationExcludedScopeKeys)
-					let tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken)
-					if (tenantDetails.success !== true || !tenantDetails.data || !tenantDetails.data.meta) {
-						return resolve({
-							success: false,
-							message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-						})
-					}
+          if (
+            tenantDetails.data.meta.validationExcludedScopeKeys &&
+            Array.isArray(tenantDetails.data.meta.validationExcludedScopeKeys) &&
+            tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
+          ) {
+            validationExcludedEntitiesKeys.push(...tenantDetails.data.meta.validationExcludedScopeKeys)
+          }
+          if (Array.isArray(bodyData.organizations)) {
+            if (bodyData.organizations.includes(messageConstants.common.ALL_SCOPE_VALUE)) {
+              updateObject.$pull[`scope.organizations`] = { $in: [messageConstants.common.ALL_SCOPE_VALUE] }
+            } else if (gen.utils.convertStringToBoolean(organizations)) {
+              const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code)
+              const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode))
+              if (isValid) {
+                updateObject.$pull[`scope.organizations`] = { $in: bodyData.organizations }
+              } else {
+                return resolve({
+                  success: false,
+                  message: messageConstants.apiResponses.INVALID_ORGANIZATION,
+                });
+              }
+            }
+          }
+        }
 
-					// Fetch excluded scope keys from config (e.g., gender, language etc.)
-					if (
-						tenantDetails.data.meta.validationExcludedScopeKeys &&
-						Array.isArray(tenantDetails.data.meta.validationExcludedScopeKeys) &&
-						tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
-					) {
-						validationExcludedEntitiesKeys.push(...tenantDetails.data.meta.validationExcludedScopeKeys)
-					}
-
-					if (gen.utils.convertStringToBoolean(organizations)) {
-						// Fetch all valid organization codes for this tenant
-						const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code)
-
-						// Check if all incoming org codes are valid
-						const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode))
-
-						// If valid, add them to $pull updateObject
-						if (isValid) {
-							updateObject.$pull[`scope.organizations`] = { $in: bodyData.organizations }
-						}
-					}
-				}
-
-				// Extract incoming entities object from body
-				let entities = bodyData.entities || {}
-
-				// Separate entity keys based on whether they need validation
-				let groupedEntities = {}
-				let keysForValidation = []
-				let keysExcluded = []
-
-				for (const key of Object.keys(entities)) {
-					if (validationExcludedEntitiesKeys && validationExcludedEntitiesKeys.length > 0) {
-						if (validationExcludedEntitiesKeys.includes(key)) {
-							keysExcluded.push(key) // These will skip DB validation
-						} else {
-							keysForValidation.push(key) // These need validation via entityDocuments
-						}
-					} else {
-						keysForValidation.push(key)
-					}
-				}
-
-				// Process only validated entities
-				if (keysForValidation.length > 0) {
-					// Flatten all IDs from entities that need validation
-					const entityIdsToValidate = keysForValidation.flatMap((key) => entities[key])
-
-					// Call DB to validate existence of entity IDs
-					let entitiesData = await entityManagementService.entityDocuments(
-						{
-							_id: { $in: entityIdsToValidate },
-							tenantId: tenantId,
-							orgId: orgId,
-						},
-						['_id', 'entityType']
-					)
-
-					// Throw error if no matching entities found
-					if (!entitiesData.success || !entitiesData.data.length > 0) {
-						throw {
-							message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-						}
-					}
-
-					// Group the validated entities by their type (e.g., school, district)
-					for (const entity of entitiesData.data) {
-						if (!groupedEntities[entity.entityType]) {
-							groupedEntities[entity.entityType] = []
-						}
-						groupedEntities[entity.entityType].push(entity._id)
-					}
-				}
-
-				// Directly add excluded keys into groupedEntities without validation
-				for (const key of keysExcluded) {
-					groupedEntities[key] = entities[key]
-				}
-
-				// Build the final $pull query using grouped entity types
-				for (const [type, ids] of Object.entries(groupedEntities)) {
-					updateObject.$pull[`scope.${type}`] = { $in: ids }
-				}
-
+        let entities = bodyData.entities || {};
+        let groupedEntities = {}
+        let keysForValidation = []
+        let keysExcluded = []
+        let allEntitiesMap = {}; // Tracks which keys have "ALL" for final pull inclusion
+        
+        // Separate keys that need validation vs. can skip it
+        for (const key of Object.keys(entities)) {
+          const values = entities[key];
+          if (Array.isArray(values) && values.includes(messageConstants.common.ALL_SCOPE_VALUE)) {
+            allEntitiesMap[key] = true; // Mark this to include "ALL" in final pull
+          }
+        
+          if (
+            validationExcludedEntitiesKeys &&
+            validationExcludedEntitiesKeys.includes(key)
+          ) {
+            keysExcluded.push(key); // Skip validation for these
+          } else {
+            keysForValidation.push(key);
+          }
+        }
+        
+        // Collect IDs to validate (excluding "ALL")
+        let idsToValidate = keysForValidation.flatMap((key) =>
+          entities[key].filter((id) => id !== messageConstants.common.ALL_SCOPE_VALUE)
+        );
+        
+        // Validate only if needed
+        if (idsToValidate.length > 0) {
+          let entitiesData = await entityManagementService.entityDocuments(
+            {
+              _id: { $in: idsToValidate },
+              tenantId,
+              orgId,
+            },
+            ['_id', 'entityType']
+          );
+        
+          if (!entitiesData.success || !entitiesData.data.length > 0) {
+            throw {
+              message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
+            };
+          }
+        
+          for (const entity of entitiesData.data) {
+            if (!groupedEntities[entity.entityType]) {
+              groupedEntities[entity.entityType] = [];
+            }
+            groupedEntities[entity.entityType].push(entity._id);
+          }
+        }
+        
+        // Add excluded keys directly
+        for (const key of keysExcluded) {
+          groupedEntities[key] = entities[key];
+        }
+        
+        // Add back "ALL" where it was originally requested
+        for (const key of Object.keys(allEntitiesMap)) {
+          if (!groupedEntities[key]) groupedEntities[key] = [];
+          if (!groupedEntities[key].includes(messageConstants.common.ALL_SCOPE_VALUE)) {
+            groupedEntities[key].unshift(messageConstants.common.ALL_SCOPE_VALUE);
+          }
+        }
+        
+        // Build the $pull object
+        for (const [type, ids] of Object.entries(groupedEntities)) {
+          updateObject.$pull[`scope.${type}`] = { $in: ids };
+        }
+        
+        // Handle organizations
+        if (Array.isArray(bodyData.organizations)) {
+          if (bodyData.organizations.includes(messageConstants.common.ALL_SCOPE_VALUE)) {
+            updateObject.$pull[`scope.organizations`] = { $in: [messageConstants.common.ALL_SCOPE_VALUE] };
+          } else if (gen.utils.convertStringToBoolean(organizations)) {
+            const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
+            const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
+            if (isValid) {
+              updateObject.$pull[`scope.organizations`] = { $in: bodyData.organizations };
+            } else {
+              return resolve({
+                success: false,
+                message: messageConstants.apiResponses.INVALID_ORGANIZATIONS,
+              });
+            }
+          }
+        }
+        
         let updateSolution = await solutionsQueries.updateSolutionDocument(
-          {
-            _id: solutionId,
-          },
+          { _id: solutionId },
           updateObject,
-					{ new: true }
+          { new: true }
         );
         if (!updateSolution || !updateSolution._id) {
           throw {
