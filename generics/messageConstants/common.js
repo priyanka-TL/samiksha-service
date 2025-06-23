@@ -107,6 +107,6 @@ module.exports = {
   DELETE_EVENT_ENTITY: 'user',
 	DELETE_EVENT_TYPE: 'delete',
   OBJECT: 'object',
-  ALL_SCOPE_VALUE:'ALL',
-  OPTIONAL_SCOPE_FIELD:"optional_factors"
+  ALL_SCOPE_VALUE: 'ALL',
+  OPTIONAL_SCOPE_FIELD: 'optional_factors'
 };
