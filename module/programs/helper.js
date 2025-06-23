@@ -1368,28 +1368,24 @@ module.exports = class ProgramsHelper {
           let tenantPublicDetailsMetaField = tenantDetails.data.meta;
           let optional_factors = [];
           let factors
-          let mandatory_scope_fields = messageConstants.common.MANDATORY_SCOPE_FIELD
-          if (tenantPublicDetailsMetaField.hasOwnProperty(mandatory_scope_fields) && tenantPublicDetailsMetaField[mandatory_scope_fields].length > 0) {
-            factors = tenantPublicDetailsMetaField[mandatory_scope_fields];
-            let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
+          let mandatory_scope_fields = messageConstants.common.MANDATORY_SCOPE_FIELD;
+          let optional_scope_fields = messageConstants.common.OPTIONAL_SCOPE_FIELD;
+
+          let getFieldsForQuery = gen.utils.extractScopeFactors(
+            tenantPublicDetailsMetaField,
+            mandatory_scope_fields,
+            optional_scope_fields
+          );
+          if (getFieldsForQuery.mandatoryFactors.length > 0) {
+            let queryFilter = gen.utils.factorQuery(getFieldsForQuery.mandatoryFactors, userRoleInfo);
             // append query filter
             filterQuery['$and'] = queryFilter;
           }
 
-          let optional_scope_fields = messageConstants.common.OPTIONAL_SCOPE_FIELD
-          if(tenantPublicDetailsMetaField.hasOwnProperty(optional_scope_fields) && tenantPublicDetailsMetaField[optional_scope_fields].length > 0){
-            optional_factors = tenantPublicDetailsMetaField[optional_scope_fields];
-          }
-
-          let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
-          // factors.append(dataToOmit)
-
-          const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
-
           let locationData = []
 
-          if(optional_factors && optional_factors.length > 0){
-            locationData = gen.utils.factorQuery(optional_factors,data);
+          if(getFieldsForQuery.optionalFactors.length > 0){
+            locationData = gen.utils.factorQuery(getFieldsForQuery.optionalFactors,data);
           }
 
           if(filterQuery['$and'] && locationData.length > 0){

@@ -538,7 +538,40 @@ function factorQuery(factors, userRoleInfo) {
   return queryFilter;
 }
 
+/**
+ * Extracts mandatory and optional scope factors from tenant metadata.
+ *
+ * @param {Object} tenantMeta - Metadata object containing scope configuration fields.
+ * @param {string} mandatoryKey - Key name in tenantMeta for mandatory scope fields.
+ * @param {string} optionalKey - Key name in tenantMeta for optional scope fields.
+ * @returns {{ mandatoryFactors: string[], optionalFactors: string[] }} 
+ *          An object containing arrays of mandatory and optional factors.
+ */
+function extractScopeFactors(tenantMeta, mandatoryKey, optionalKey) {
+  const factors = [];
+  const optionalFactors = [];
 
+  if (
+    tenantMeta.hasOwnProperty(mandatoryKey) &&
+    Array.isArray(tenantMeta[mandatoryKey]) &&
+    tenantMeta[mandatoryKey].length > 0
+  ) {
+    factors.push(...tenantMeta[mandatoryKey]);
+  }
+
+  if (
+    tenantMeta.hasOwnProperty(optionalKey) &&
+    Array.isArray(tenantMeta[optionalKey]) &&
+    tenantMeta[optionalKey].length > 0
+  ) {
+    optionalFactors.push(...tenantMeta[optionalKey]);
+  }
+
+  return {
+    mandatoryFactors: factors,
+    optionalFactors: optionalFactors
+  };
+}
 
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
@@ -575,5 +608,6 @@ module.exports = {
   convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId,
   getColorForLevel:getColorForLevel,
   returnTenantDataFromToken:returnTenantDataFromToken,
-  factorQuery:factorQuery
+  factorQuery:factorQuery,
+  extractScopeFactors:extractScopeFactors
 };
