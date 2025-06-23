@@ -254,7 +254,8 @@ module.exports = class SolutionsHelper {
           _.remove(assignedSolutions.data.data, function (solution) {
             return (
               solution.referenceFrom == messageConstants.common.PROJECT &&
-              solution.type == messageConstants.common.OBSERVATION
+              solution.type == messageConstants.common.OBSERVATION && 
+              solution.type == messageConstants.common.SURVEY
             );
           });
 
