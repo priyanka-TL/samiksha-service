@@ -115,4 +115,5 @@ module.exports = {
   OVERRIDE_OPERATION:"OVERRIDE",
   PROMISE_FULFILLED: 'fulfilled',
   DEFAULT_PROGRAM_USER_MAPPING_TOPIC:'elevate_program_operation',
+  PROGRAM_EVENT_ENTITY: 'program',
 };

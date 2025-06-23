@@ -8,8 +8,7 @@ module.exports = {
     userId: {
       type: String,
       required: true,
-      index: true,
-      unique: true,
+      index: true
     },
     createdBy: {
       type: String,
@@ -21,8 +20,7 @@ module.exports = {
     },
     status: {
       type: String,
-      default: 'active',
-      index: true,
+      default: 'active'
     },
     isDeleted: {
       type: Boolean,

@@ -310,6 +310,15 @@ module.exports = class UserExtensionHelper {
         const programIdMap = {};
         const programInfoMap = {}
         const programs = allProgramsData?.data?.data || []
+
+        if(programs.length === 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+          };
+        }
+
+
         for (const program of programs) {
           programIdMap[program.externalId] = program._id;
           programInfoMap[program._id.toString()] = program;
@@ -317,6 +326,14 @@ module.exports = class UserExtensionHelper {
 
         // Fetch user profiles
         const userProfileMap = {};
+
+        if(Array.from(allUserIds).length === 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.USER_NOT_FOUND,
+          };
+        }
+
         const userProfileResults = await Promise.allSettled(
           Array.from(allUserIds).map((userId) =>
             userService.fetchProfileBasedOnUserIdOrName(tenantAndOrgInfo.tenantId, null, userId)
@@ -351,8 +368,8 @@ module.exports = class UserExtensionHelper {
 
  
         const userExtensionMap = {};
-        for (const doc of userExtensionDocs) {
-          userExtensionMap[doc.userId] = doc;
+        for (const userExtension of userExtensionDocs) {
+          userExtensionMap[userExtension.userId] = userExtension;
         }
 
         // Process each CSV row
@@ -509,7 +526,7 @@ module.exports = class UserExtensionHelper {
                       }
                     } else {
                       // Create new program entry
-                      this.addNewProgramEntry(userProfile, programId, newRoles, kafkaEventPayloads);
+                      this.addNewProgramEntry(userProfile, programId, newRoles,existingUserProgramRoleMapping, kafkaEventPayloads);
                     }
                   } else if (userRole.programOperation === messageConstants.common.REMOVE_OPERATION) {
                     if (currentRoleInfoIndex !== -1) {
@@ -566,7 +583,7 @@ module.exports = class UserExtensionHelper {
         for(let kafkaEventPayload of aggregateKafkaEventPayloads) {
 
           let eventObj = {
-            "entity": "program",
+            "entity": messageConstants.common.PROGRAM_EVENT_ENTITY,
             "eventType": kafkaEventPayload.eventType,
             "username": kafkaEventPayload.username,
             "userId": kafkaEventPayload.userId,
