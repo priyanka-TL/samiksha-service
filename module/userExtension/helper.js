@@ -25,14 +25,14 @@ module.exports = class UserExtensionHelper {
 /**
  * Create a Kafka event payload for a user-program-role mapping operation.
  * @method
- * @name createKafkaEvent
+ * @name createKafkaPayload
  * @param {Object} userProfile - The user profile object containing `id` and `username`.
  * @param {String} programId - The ID of the program being mapped.
  * @param {String} role - The role being assigned or removed.
  * @param {String} eventType - The type of event ('create' or 'delete').
  * @returns {Object} - Kafka event payload.
  */
-  static createKafkaEvent (userProfile, programId, role, eventType){
+  static createKafkaPayload (userProfile, programId, role, eventType){
 
     return {
       userId: userProfile.id,
@@ -61,7 +61,7 @@ module.exports = class UserExtensionHelper {
     });
     // All roles are new, emit create events
     for (const role of newRoles) {
-      kafkaEventPayloads.push(this.createKafkaEvent(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
+      kafkaEventPayloads.push(this.createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
     }
   };
   /**
@@ -441,7 +441,7 @@ module.exports = class UserExtensionHelper {
                     if (!entry.roles.includes(role)) {
                       entry.roles.push(role);
                       // Emit create event for new role
-                      kafkaEventPayloads.push(this.createKafkaEvent(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));               
+                      kafkaEventPayloads.push(this.createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));               
                     }
                   }
                 }
@@ -482,13 +482,13 @@ module.exports = class UserExtensionHelper {
                       // Find roles to remove (exist in current but not in new)
                       const rolesToRemove = currentRoles.filter((role) => !newRoles.includes(role));
                       for (const role of rolesToRemove) {
-                        kafkaEventPayloads.push(this.createKafkaEvent(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE));
+                        kafkaEventPayloads.push(this.createKafkaPayload(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE));
                       }
 
                       // Find roles to add (exist in new but not in current)
                       const rolesToAdd = newRoles.filter((role) => !currentRoles.includes(role));
                       for (const role of rolesToAdd) {
-                        kafkaEventPayloads.push(this.createKafkaEvent(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
+                        kafkaEventPayloads.push(this.createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
                       }
 
                       // Override the roles
@@ -504,7 +504,7 @@ module.exports = class UserExtensionHelper {
                       for (const role of newRoles) {
                         if (!currentRoles.includes(role)) {
                           existingUserProgramRoleMapping[currentRoleInfoIndex].roles.push(role);
-                          kafkaEventPayloads.push(this.createKafkaEvent(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
+                          kafkaEventPayloads.push(this.createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
                         }
                       }
                     } else {
@@ -521,7 +521,7 @@ module.exports = class UserExtensionHelper {
                       // Emit delete events for removed roles
                       const rolesToRemove = currentRoles.filter((role) => newRoles.includes(role));
                       for (const role of rolesToRemove) {
-                        kafkaEventPayloads.push(this.createKafkaEvent(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE));
+                        kafkaEventPayloads.push(this.createKafkaPayload(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE));
                       }
 
                       if (rolesToKeep.length === 0) {
