@@ -343,7 +343,7 @@ module.exports = class UserExtensionHelper {
 
 
         const userExtensionDocs = await userExtensionsQueries.userExtensionDocuments(
-          { userId: { $in: Object.values(userProfileMap).map((u) => u.id) }, 
+          { userId: { $in: Object.values(userProfileMap).map((user) => user.id) }, 
             tenantId: tenantAndOrgInfo.tenantId 
           },
           ['userId','programRoleMapping']
