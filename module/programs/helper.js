@@ -1368,8 +1368,9 @@ module.exports = class ProgramsHelper {
           let tenantPublicDetailsMetaField = tenantDetails.data.meta;
           let optional_factors = [];
           let factors
-          if (tenantPublicDetailsMetaField.hasOwnProperty('factors') && tenantPublicDetailsMetaField.factors.length > 0) {
-            factors = tenantPublicDetailsMetaField.factors;
+          let mandatory_scope_fields = messageConstants.common.MANDATORY_SCOPE_FIELD
+          if (tenantPublicDetailsMetaField.hasOwnProperty(mandatory_scope_fields) && tenantPublicDetailsMetaField[mandatory_scope_fields].length > 0) {
+            factors = tenantPublicDetailsMetaField[mandatory_scope_fields];
             let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
             // append query filter
             filterQuery['$and'] = queryFilter;

@@ -108,5 +108,6 @@ module.exports = {
 	DELETE_EVENT_TYPE: 'delete',
   OBJECT: 'object',
   ALL_SCOPE_VALUE: 'ALL',
-  OPTIONAL_SCOPE_FIELD: 'optional_factors'
+  OPTIONAL_SCOPE_FIELD: 'optional_factors',
+  MANDATORY_SCOPE_FIELD: 'factors',
 };
