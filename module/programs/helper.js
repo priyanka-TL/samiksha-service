@@ -1366,15 +1366,11 @@ module.exports = class ProgramsHelper {
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
           let tenantPublicDetailsMetaField = tenantDetails.data.meta;
-          let optional_factors = [];
-          let factors
-          let mandatory_scope_fields = messageConstants.common.MANDATORY_SCOPE_FIELD;
-          let optional_scope_fields = messageConstants.common.OPTIONAL_SCOPE_FIELD;
 
           let getFieldsForQuery = gen.utils.extractScopeFactors(
             tenantPublicDetailsMetaField,
-            mandatory_scope_fields,
-            optional_scope_fields
+            messageConstants.common.MANDATORY_SCOPE_FIELD,
+            messageConstants.common.OPTIONAL_SCOPE_FIELD
           );
           if (getFieldsForQuery.mandatoryFactors.length > 0) {
             let queryFilter = gen.utils.factorQuery(getFieldsForQuery.mandatoryFactors, userRoleInfo);
