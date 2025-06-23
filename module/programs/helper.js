@@ -497,8 +497,8 @@ module.exports = class ProgramsHelper {
            let entitiesData = await entityManagementService.entityDocuments(
              {
                _id: { $in: entitiesToValidate },
-               tenantId,
-               orgId,
+               tenantId:tenantId,
+               orgId:orgId,
              },
              ['_id', 'entityType']
            )
@@ -739,8 +739,8 @@ module.exports = class ProgramsHelper {
           let entitiesData = await entityManagementService.entityDocuments(
             {
               _id: { $in: idsToValidate },
-              tenantId,
-              orgId,
+              tenantId:tenantId,
+              orgId:orgId,
             },
             ['_id', 'entityType']
           );
