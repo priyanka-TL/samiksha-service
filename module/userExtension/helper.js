@@ -561,7 +561,7 @@ module.exports = class UserExtensionHelper {
               }
             }
           }
-          console.log(eventObj,'eventObj')
+
           kafkaClient.pushProgramOperationEvent(eventObj);
         }
 
