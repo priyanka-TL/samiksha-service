@@ -283,6 +283,13 @@ module.exports = class UserExtensionHelper {
           };
         }
 
+        if(Array.from(allUserIds).length === 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.USER_NOT_FOUND,
+          };
+        }
+
 
         for (const program of programs) {
           programIdMap[program.externalId] = program._id;
@@ -291,14 +298,6 @@ module.exports = class UserExtensionHelper {
 
         // Fetch user profiles
         const userProfileMap = {};
-
-        if(Array.from(allUserIds).length === 0) {
-          throw {
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.USER_NOT_FOUND,
-          };
-        }
-
         const userProfileResults = await Promise.allSettled(
           Array.from(allUserIds).map((userId) =>
             userService.fetchProfileBasedOnUserIdOrName(tenantAndOrgInfo.tenantId, null, userId)
@@ -548,7 +547,7 @@ module.exports = class UserExtensionHelper {
         for(let kafkaEventPayload of aggregateKafkaEventPayloads) {
 
           let eventObj = {
-            "entity": messageConstants.common.PROGRAM_EVENT_ENTITY,
+            "entity": messageConstants.common.PROGRAM,
             "eventType": kafkaEventPayload.eventType,
             "username": kafkaEventPayload.username,
             "userId": kafkaEventPayload.userId,
