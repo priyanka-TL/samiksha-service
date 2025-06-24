@@ -37,10 +37,6 @@ const programOperationTopic=
       ? process.env.PROGRAM_USER_MAPPING_TOPIC
       : 'elevate_program_operation_dev';
 
-// const improvementProjectSubmissionTopic =
-//   process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC && process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC != 'OFF'
-//     ? process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
-//     : 'sl-improvement-project-submission-dev';
 const improvementProjectSubmissionTopic = process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC 
 
 const pushCompletedObservationSubmissionToKafka = function (message) {
@@ -288,7 +284,6 @@ module.exports = {
   pushInCompleteObservationSubmissionToKafka: pushInCompleteObservationSubmissionToKafka,
   pushCompletedSurveySubmissionToKafka: pushCompletedSurveySubmissionToKafka,
   pushInCompleteSurveySubmissionToKafka: pushInCompleteSurveySubmissionToKafka,
-  // pushSubmissionToImprovementService: pushSubmissionToImprovementService,
   pushProgramOperationEvent:pushProgramOperationEvent,
   pushSubmissionToProjectService: pushSubmissionToProjectService,
 };
