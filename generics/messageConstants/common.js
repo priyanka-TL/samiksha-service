@@ -114,5 +114,7 @@ module.exports = {
   REMOVE_OPERATION:"REMOVE",
   OVERRIDE_OPERATION:"OVERRIDE",
   PROMISE_FULFILLED: 'fulfilled',
-  DEFAULT_PROGRAM_USER_MAPPING_TOPIC:'elevate_program_operation'
+  DEFAULT_PROGRAM_USER_MAPPING_TOPIC:'elevate_program_operation',
+  DELETE:"DELETE",
+  POST:"POST"
 };

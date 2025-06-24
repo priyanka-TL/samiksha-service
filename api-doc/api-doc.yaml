@@ -4152,7 +4152,7 @@ paths:
                   value:
                     status: 500
                     message: Oops! Something Went Wrong.
-  /v1/surveys/importSurveryTemplateToSolution/:solutionId:
+  /v1/surveys/importSurveyTemplateToSolution/:solutionId:
     post:
       tags:
         - Survey Creation Flow
