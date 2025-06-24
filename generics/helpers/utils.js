@@ -572,6 +572,47 @@ function extractScopeFactors(tenantMeta, mandatoryKey, optionalKey) {
     optionalFactors: optionalFactors
   };
 }
+/**
+ * Generates a MongoDB filter query with optional conditions ($or) always nested inside $and.
+ *
+ * @param {Object} bodyData - The data to evaluate against factors.
+ * @param {Object} tenantMeta - Metadata containing scope definitions.
+ * @param {Array<string>} mandatoryField - List of mandatory scope fields.
+ * @param {Array<string>} optionalField - List of optional scope fields.
+ * @returns {Object} MongoDB filter query.
+ */
+function targetingQuery(bodyData, tenantMeta, mandatoryField, optionalField) {
+
+  let { mandatoryFactors, optionalFactors } = extractScopeFactors(
+    tenantMeta,
+    mandatoryField,
+    optionalField
+  );
+
+  const andClauses = [];
+
+  // Add mandatory conditions if any
+  if (Array.isArray(mandatoryFactors) && mandatoryFactors.length > 0) {
+    const mandatoryQuery = gen.utils.factorQuery(mandatoryFactors, bodyData);
+    if (Array.isArray(mandatoryQuery) && mandatoryQuery.length > 0) {
+      andClauses.push(...mandatoryQuery);
+    }
+  }
+
+  // Add optional conditions as $or inside $and
+  if (Array.isArray(optionalFactors) && optionalFactors.length > 0) {
+    const optionalQuery = gen.utils.factorQuery(optionalFactors, bodyData);
+    if (Array.isArray(optionalQuery) && optionalQuery.length > 0) {
+      andClauses.push({ $or: optionalQuery });
+    }
+  }
+
+  let filterQuery = andClauses.length > 0 ? { $and: andClauses } : {};
+
+  return filterQuery;
+}
+
+
 
 module.exports = {
   camelCaseToTitleCase: camelCaseToTitleCase,
@@ -609,5 +650,6 @@ module.exports = {
   getColorForLevel:getColorForLevel,
   returnTenantDataFromToken:returnTenantDataFromToken,
   factorQuery:factorQuery,
-  extractScopeFactors:extractScopeFactors
+  extractScopeFactors:extractScopeFactors,
+  targetingQuery:targetingQuery
 };

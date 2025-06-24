@@ -1367,33 +1367,13 @@ module.exports = class ProgramsHelper {
           // factors = [ 'professional_role', 'professional_subroles' ]
           let tenantPublicDetailsMetaField = tenantDetails.data.meta;
 
-          let getFieldsForQuery = gen.utils.extractScopeFactors(
+          filterQuery = {...filterQuery,...gen.utils.targetingQuery(
+            userRoleInfo,
             tenantPublicDetailsMetaField,
             messageConstants.common.MANDATORY_SCOPE_FIELD,
             messageConstants.common.OPTIONAL_SCOPE_FIELD
-          );
-          if (getFieldsForQuery.mandatoryFactors.length > 0) {
-            let queryFilter = gen.utils.factorQuery(getFieldsForQuery.mandatoryFactors, userRoleInfo);
-            // append query filter
-            filterQuery['$and'] = queryFilter;
-          }
-
-          let locationData = []
-
-          if(getFieldsForQuery.optionalFactors.length > 0){
-            locationData = gen.utils.factorQuery(getFieldsForQuery.optionalFactors,data);
-          }
-
-          if(filterQuery['$and'] && locationData.length > 0){
-            filterQuery['$and'].push({
-              $or: locationData,
-            });
-          }else if(locationData.length > 0){
-            filterQuery['$or'].push({
-              $or: locationData,
-            });
-          }
-
+          )}
+          
           filterQuery['scope.entityType'] = { $in: entityTypes }
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);

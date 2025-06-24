@@ -820,10 +820,7 @@ module.exports = class Observations extends Abstract {
         let programQueryObject = {
           _id: observationDocument.programId,
           status: messageConstants.common.ACTIVE_STATUS,
-          tenantId: req.userDetails.tenantData.tenantId,
-          'scope.organizations': {
-            $in: [messageConstants.common.ALL_SCOPE_VALUE, req.userDetails.tenantData.orgId],
-          },
+          tenantId: req.userDetails.tenantData.tenantId
         };
 
         let programDocument = await programsHelper.list(programQueryObject, [

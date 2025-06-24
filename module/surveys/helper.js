@@ -390,8 +390,7 @@ module.exports = class SurveysHelper {
         let programDocument = await programsHelper.list(
           {
             externalId: programId,
-            tenantId: tenantAndOrgInfo.tenantId,
-            "scope.organizations": { $in: [messageConstants.common.ALL_SCOPE_VALUE,...tenantAndOrgInfo.orgId] },
+            tenantId: tenantAndOrgInfo.tenantId
           },
           ['externalId', 'name', 'description'],
           '',
@@ -844,8 +843,7 @@ module.exports = class SurveysHelper {
               _id: surveyDocument.programId,
               status: messageConstants.common.ACTIVE_STATUS,
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
-              tenantId:tenantData.tenantId,
-              "scope.organizations": { $in: [messageConstants.common.ALL_SCOPE_VALUE, tenantData.orgId] },
+              tenantId:tenantData.tenantId
             };
 
           /*

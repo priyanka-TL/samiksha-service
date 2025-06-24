@@ -2342,14 +2342,27 @@ module.exports = class ObservationsHelper {
   
       let programInformation = null;
 
-      if(solutionDocument.programId){
+      if (solutionDocument.programId) {
+        let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
+        if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+          return resolve({
+            success: false,
+            message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+          });
+        }
+        let tenantPublicDetailsMetaField = tenantDetails.data.meta;
 
-      let programQueryObject = {
-        _id: solutionDocument.programId,
-        status: messageConstants.common.ACTIVE_STATUS,
-        tenantId: tenantData.tenantId,
-        'scope.organizations': { $in: [messageConstants.common.ALL_SCOPE_VALUE, tenantData.orgId] },
-      };
+        let programQueryObject = {
+          _id: solutionDocument.programId,
+          status: messageConstants.common.ACTIVE_STATUS,
+          tenantId: tenantData.tenantId,
+          ...gen.utils.targetingQuery(
+            req.body,
+            tenantPublicDetailsMetaField,
+            messageConstants.common.MANDATORY_SCOPE_FIELD,
+            messageConstants.common.OPTIONAL_SCOPE_FIELD
+          ),
+        };
 
         /*
         arguments passed to programsHelper.list() are:

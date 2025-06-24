@@ -10,7 +10,7 @@ const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const insightsHelper = require(MODULES_BASE_PATH + '/insights/helper');
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
-
+const userService = require(ROOT_PATH + '/generics/services/users');
 /**
  * Programs
  * @class
@@ -68,10 +68,25 @@ module.exports = class Programs extends Abstract {
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        let tenantDetails = await userService.fetchPublicTenantDetails(req.userDetails.tenantData.tenantId);
+        if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+          return resolve({
+            success: false,
+            message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+          });
+        }
+        let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+
         let listOfPrograms = await programsHelper.list(
           {
             tenantId: req.userDetails.tenantData.tenantId,
-            'scope.organizations': { $in: [messageConstants.common.ALL_SCOPE_VALUE, req.userDetails.tenantData.orgId] },
+            ...gen.utils.targetingQuery(
+              req.body,
+              tenantPublicDetailsMetaField,
+              messageConstants.common.MANDATORY_SCOPE_FIELD,
+              messageConstants.common.OPTIONAL_SCOPE_FIELD
+            ), // targetingQuery
           }, //filter
           '', // projection
           req.pageNo, //middleware convert req.params.page as req.PageNo
