@@ -247,6 +247,13 @@ module.exports = class UserExtensionHelper {
           };
         }
 
+        if(Array.from(allUserIds).length === 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.USER_NOT_FOUND,
+          };
+        }
+
         // Fetch program data
         /*
         arguments passed to programsHelper.list() are:
@@ -282,14 +289,6 @@ module.exports = class UserExtensionHelper {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
           };
         }
-
-        if(Array.from(allUserIds).length === 0) {
-          throw {
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.USER_NOT_FOUND,
-          };
-        }
-
 
         for (const program of programs) {
           programIdMap[program.externalId] = program._id;
