@@ -22,22 +22,25 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  */
 
 // Function to find entity documents based on the given filter and projection
-const entityDocuments = function (filterData = 'all', projection = 'all',page = null,limit = null,search = '') {
+const entityDocuments = function (filterData = 'all', projection = 'all', page = null, limit = null, search = '') {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
-      const url = entityManagementServiceUrl+ messageConstants.endpoints.FIND_ENTITY_DOCUMENTS+`?page=${page}&limit=${limit}&search=${search}`;
+      const url =
+        entityManagementServiceUrl +
+        messageConstants.endpoints.FIND_ENTITY_DOCUMENTS +
+        `?page=${page}&limit=${limit}&search=${search}`;
 
-      if(filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0){
+      if (filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0) {
         filterData['_id'] = {
-          '$in' : filterData._id
-        }
+          $in: filterData._id,
+        };
       }
 
       let requestJSON = {
         query: filterData,
         projection: projection,
-      }
+      };
 
       // Set the options for the HTTP POST request
       const options = {
@@ -45,7 +48,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
           'content-type': 'application/json',
           'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
         },
-        json: requestJSON
+        json: requestJSON,
       };
 
       // Make the HTTP POST request to the entity management service
@@ -53,7 +56,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
 
       // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
       function requestCallBack(err, data) {
-		
         let result = {
           success: true,
         };
@@ -88,16 +90,16 @@ const entityDocuments = function (filterData = 'all', projection = 'all',page = 
  */
 
 // Function to find entity type documents based on the given filter, projection
-const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) {
+const entityTypeDocuments = function (filterData = 'all', projection = 'all') {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the entity management service
       const url = entityManagementServiceUrl + messageConstants.endpoints.FIND_ENTITY_TYPE_DOCUMENTS;
 
-      if(filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0){
+      if (filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0) {
         filterData['_id'] = {
-          '$in' : filterData._id
-        }
+          $in: filterData._id,
+        };
       }
 
       // Set the options for the HTTP POST request
@@ -132,7 +134,7 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
             result.success = false;
           }
         }
-        
+
         return resolve(result);
       }
     } catch (error) {
@@ -148,41 +150,45 @@ const entityTypeDocuments = function (filterData = 'all', projection = 'all', ) 
  * @returns {Promise<{entityIds: string[]}>} A promise that resolves to an object containing validated entity IDs.
  * @throws {Error} If there's an error during validation.
  */
-const validateEntities = async function (entityIds, entityTypeId,tenantData) {
-
-    return new Promise(async (resolve, reject) => {
-      try {
-        let ids = [];
-        let isObjectIdArray = entityIds.every(gen.utils.isValidMongoId);
-
-      if(validateEntity == 'ON' && entityIds.length >0){
+const validateEntities = async function (entityIds, entityTypeId, tenantData) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let ids = [];
+      let isObjectIdArray = entityIds.every(gen.utils.isValidMongoId);
+      if (validateEntity == 'ON' && entityIds.length > 0) {
         let bodyData = {
-          _id : isObjectIdArray ? {$in: gen.utils.arrayIdsTobjectIdsNew(entityIds)} : { $in: entityIds },
+          _id: isObjectIdArray ? { $in: gen.utils.arrayIdsTobjectIdsNew(entityIds) } : { $in: entityIds },
           entityTypeId: entityTypeId,
           tenantId: tenantData.tenantId,
-          orgIds: {$in:['ALL',tenantData.orgId]}
+          orgIds: { $in: ['ALL', tenantData.orgId] },
+        };
+        let entitiesDocumentsAPIData = await entityDocuments(bodyData);
+
+        if (!entitiesDocumentsAPIData.success || !entitiesDocumentsAPIData?.data?.length > 0) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
           };
-          let entitiesDocumentsAPIData = await this.entityDocuments(bodyData);
-          let entitiesDocuments = entitiesDocumentsAPIData.data;
-            if (entitiesDocuments.length > 0) {
-              ids = entitiesDocuments.map((entityId) => entityId._id);
-            }
-    
-            return resolve({
-              entityIds: ids,
-            });
-      }else {
-            return resolve({
-             entityIds: entityIds,
-            });
+        }
 
-      }
+        let entitiesDocuments = entitiesDocumentsAPIData.data;
+        if (entitiesDocuments.length > 0) {
+          ids = entitiesDocuments.map((entityId) => entityId._id);
+        }
 
-      } catch (error) {
-        return reject(error);
+        return resolve({
+          entityIds: ids,
+        });
+      } else {
+        return resolve({
+          entityIds: entityIds,
+        });
       }
-    });
-  }
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
 /**
  * Lists entities by entity type with pagination.
  * @param {string} entityTypeId - The ID of the entity type to list.
@@ -192,51 +198,55 @@ const validateEntities = async function (entityIds, entityTypeId,tenantData) {
  * @returns {Promise<{success: boolean, data?: any}>} A promise that resolves to an object containing the success status and, if successful, the retrieved data.
  * @throws {Error} If there's an error during the request.
  */
-const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Function to find entity documents based on the given filter and projection
-        const url = entityManagementServiceUrl + messageConstants.endpoints.LIST_BY_ENTITY_TYPE+'/'+entityTypeId + `?page=${pageNo}&limit=${pageSize}`;
-        // Set the options for the HTTP POST request
-        const options = {
-          headers: {
-            'content-type': 'application/json',
-            'x-auth-token':userToken
-          },
-          json: {
-            type:entityTypeId
-          },
+const listByEntityType = async function (entityTypeId, userToken, pageSize, pageNo) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Function to find entity documents based on the given filter and projection
+      const url =
+        entityManagementServiceUrl +
+        messageConstants.endpoints.LIST_BY_ENTITY_TYPE +
+        '/' +
+        entityTypeId +
+        `?page=${pageNo}&limit=${pageSize}`;
+      // Set the options for the HTTP POST request
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          'x-auth-token': userToken,
+        },
+        json: {
+          type: entityTypeId,
+        },
+      };
+
+      // Make the HTTP POST request to the entity management service
+      request.post(url, options, requestCallBack);
+
+      // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
+      function requestCallBack(err, data) {
+        let result = {
+          success: true,
         };
-      
-        // Make the HTTP POST request to the entity management service
-        request.post(url, options, requestCallBack);
-  
-        // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
-        function requestCallBack(err, data) {
-      
-          let result = {
-            success: true,
-          };
-  
-          if (err) {
-            result.success = false;
+
+        if (err) {
+          result.success = false;
+        } else {
+          let response = data.body;
+          // Check if the response status is OK (HTTP 200)
+          if (response.status === httpStatusCode['ok'].status) {
+            result['data'] = response.result;
           } else {
-            let response = data.body;
-            // Check if the response status is OK (HTTP 200)
-            if (response.status === httpStatusCode['ok'].status) {
-              result['data'] = response.result;
-            } else {
-              result.success = false;
-            }
+            result.success = false;
           }
-  
-          return resolve(result);
         }
-      } catch (error) {
-        return reject(error);
+
+        return resolve(result);
       }
-    });
-  }
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
 
 /**
  * List of user role extension data.
@@ -250,16 +260,15 @@ const listByEntityType = async function (entityTypeId,userToken,pageSize,pageNo)
 
 // Function to find user role extension documents based on the given filter and projection
 const userRoleExtension = function (filterData = 'all', projection = 'all') {
-  
   return new Promise(async (resolve, reject) => {
     try {
       // Define the URL for the user role extension API
-      const url = entityManagementServiceUrl+messageConstants.endpoints.USER_ROLE_EXTENSION;
+      const url = entityManagementServiceUrl + messageConstants.endpoints.USER_ROLE_EXTENSION;
 
-      if(filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0){
+      if (filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0) {
         filterData['_id'] = {
-          '$in' : filterData._id
-        }
+          $in: filterData._id,
+        };
       }
 
       // Set the options for the HTTP POST request
@@ -286,10 +295,8 @@ const userRoleExtension = function (filterData = 'all', projection = 'all') {
         if (err) {
           result.success = false;
         } else {
-
           let response = data.body;
 
-          
           // Check if the response status is OK (HTTP 200)
           if (response.status === httpStatusCode['ok'].status) {
             result['data'] = response.result;
@@ -349,8 +356,8 @@ async function getSubEntitiesBasedOnEntityType(parentIds, entityType, result) {
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
-  validateEntities:validateEntities,
-  listByEntityType:listByEntityType,
-  userRoleExtension:userRoleExtension,
-  getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType
+  validateEntities: validateEntities,
+  listByEntityType: listByEntityType,
+  userRoleExtension: userRoleExtension,
+  getSubEntitiesBasedOnEntityType: getSubEntitiesBasedOnEntityType,
 };

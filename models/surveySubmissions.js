@@ -57,6 +57,12 @@ module.exports = {
       require: true,
       index: true,
     },
+    project: Object,
+    referenceFrom: String,
+    isExternalProgram:{
+      default : false,
+      type : Boolean
+    }
   },
   compoundIndex: [
     {

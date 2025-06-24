@@ -27,6 +27,11 @@ module.exports = {
   PUBLIC_BRANDING : '/v1/public/branding',
   USER_ROLE_EXTENSION:'/v1/userRoleExtension/find',
   PROFILE_READ:'/v1/profile/read',
+  EXTERNAL_PROGRAM_DETAILS: '/v1/programs/details',
+  EXTERNAL_PROGRAM_READ: '/v1/programs/read',
+  EXTERNAL_PROGRAM_UPDATE: '/v1/programs/update',
   PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
   AUTO_DOWNLOAD: '/v1/files/download',
+  PUSH_SUBMISSION_TO_TASK: '/v1/userProjects/pushSubmissionToTask',
+
 };

@@ -1,7 +1,7 @@
 let improvementProjectService = require(ROOT_PATH + '/generics/services/improvement-project');
 let criteriaQuestionsHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper');
 const questionsHelper = require(MODULES_BASE_PATH + '/questions/helper');
-let projectService = require(ROOT_PATH + '/generics/services/project')
+const projectService = require(ROOT_PATH + '/generics/services/project')
 
 module.exports = class criteriaHelper {
   static setCriteriaRubricExpressions(criteriaId, existingCriteria, criteriaRubricData, solutionLevelKeys,tenantData) {

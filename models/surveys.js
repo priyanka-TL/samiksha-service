@@ -48,6 +48,15 @@ module.exports = {
       type: String,
       require: true,
       index:true
+    },
+    project: Object,
+    referenceFrom: {
+      type: String,
+      index: true,
+    },
+    isExternalProgram:{
+      default : false,
+      type : Boolean
     }
   },
   compoundIndex: [
