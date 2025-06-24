@@ -79,7 +79,7 @@ const programDetails = function (userToken, programId, userDetails, payload = {}
       let url;
       // Construct the URL for the project service
       if ((userDetails && userDetails?.roles?.includes(messageConstants.common.ADMIN)) || !userToken) {
-        url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.PROGRAM_DETAILS_WITH_INTERNAL_TOKEN}/${programId}`;
+        url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.EXTERNAL_PROGRAM_READ}/${programId}`;
       } else {
         url = `${projectServiceUrl}${process.env.PROJECT_SERVICE_NAME}${messageConstants.endpoints.EXTERNAL_PROGRAM_DETAILS}/${programId}`;
       }
