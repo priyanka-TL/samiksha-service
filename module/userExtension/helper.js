@@ -299,7 +299,7 @@ module.exports = class UserExtensionHelper {
         const userProfileMap = {};
         const userProfileResults = await Promise.allSettled(
           Array.from(allUserIds).map((userId) =>
-            userService.fetchProfileBasedOnUserIdOrName(tenantAndOrgInfo.tenantId, null, userId)
+            userService.getUserProfileByIdentifier(tenantAndOrgInfo.tenantId, null, userId)
               .then(result => ({ userId, ...result }))
           )
         );
@@ -364,7 +364,7 @@ module.exports = class UserExtensionHelper {
             }
 
             // Validate platform roles            
-            const platform_role_array = userRole.platform_role?.split(',').map(r => r.trim()) || [];
+            const platform_role_array = userRole.platform_role?.split(',').map(role => role.trim()) || [];
             const orgRoles = userProfile.organizations.flatMap(org => org.roles?.map(r => r.title) || []);
             if (platform_role_array.some(role => !orgRoles.includes(role))) {
                 userRole.status = messageConstants.apiResponses.INVALID_ROLE_CODE;
@@ -421,7 +421,7 @@ module.exports = class UserExtensionHelper {
                     if (!entry.roles.includes(role)) {
                       entry.roles.push(role);
                       // Emit create event for new role
-                      kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));               
+                      kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE,programInfoMap));               
                     }
                   }
                 }
@@ -462,19 +462,19 @@ module.exports = class UserExtensionHelper {
                       // Find roles to remove (exist in current but not in new)
                       const rolesToRemove = currentRoles.filter((role) => !newRoles.includes(role));
                       for (const role of rolesToRemove) {
-                        kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE));
+                        kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE,programInfoMap));
                       }
 
                       // Find roles to add (exist in new but not in current)
                       const rolesToAdd = newRoles.filter((role) => !currentRoles.includes(role));
                       for (const role of rolesToAdd) {
-                        kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
+                        kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE,programInfoMap));
                       }
 
                       // Override the roles
                       existingUserProgramRoleMapping[currentRoleInfoIndex].roles = [...newRoles];
                     } else {
-                      addNewProgramEntry(userProfile, programId, newRoles,existingUserProgramRoleMapping, kafkaEventPayloads);
+                      addNewProgramEntry(userProfile, programId, newRoles,existingUserProgramRoleMapping, kafkaEventPayloads,programInfoMap);
                     }
                   } else if (userRole.programOperation === messageConstants.common.ADD_OPERATION || userRole.programOperation === messageConstants.common.APPEND_OPERATION) {
                     if (currentRoleInfoIndex !== -1) {
@@ -484,12 +484,12 @@ module.exports = class UserExtensionHelper {
                       for (const role of newRoles) {
                         if (!currentRoles.includes(role)) {
                           existingUserProgramRoleMapping[currentRoleInfoIndex].roles.push(role);
-                          kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
+                          kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE,programInfoMap));
                         }
                       }
                     } else {
                       // Create new program entry
-                      addNewProgramEntry(userProfile, programId, newRoles,existingUserProgramRoleMapping, kafkaEventPayloads);
+                      addNewProgramEntry(userProfile, programId, newRoles,existingUserProgramRoleMapping, kafkaEventPayloads,programInfoMap);
                     }
                   } else if (userRole.programOperation === messageConstants.common.REMOVE_OPERATION) {
                     if (currentRoleInfoIndex !== -1) {
@@ -501,7 +501,7 @@ module.exports = class UserExtensionHelper {
                       // Emit delete events for removed roles
                       const rolesToRemove = currentRoles.filter((role) => newRoles.includes(role));
                       for (const role of rolesToRemove) {
-                        kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE));
+                        kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.DELETE_EVENT_TYPE,programInfoMap));
                       }
 
                       if (rolesToKeep.length === 0) {
@@ -544,23 +544,7 @@ module.exports = class UserExtensionHelper {
         }
 
         for(let kafkaEventPayload of aggregateKafkaEventPayloads) {
-
-          let eventObj = {
-            "entity": messageConstants.common.PROGRAM,
-            "eventType": kafkaEventPayload.eventType,
-            "username": kafkaEventPayload.username,
-            "userId": kafkaEventPayload.userId,
-            "role": kafkaEventPayload.role,
-            "meta": {
-              "programInformation": {
-                "name": programInfoMap[kafkaEventPayload.programId].externalId,
-                "externalId": programInfoMap[kafkaEventPayload.programId].externalId,
-                "id":kafkaEventPayload.programId.toString()
-              }
-            }
-          }
-
-          kafkaClient.pushProgramOperationEvent(eventObj);
+          kafkaClient.pushProgramOperationEvent(kafkaEventPayload);
         }
 
 
@@ -1100,16 +1084,23 @@ function aclData(userRole) {
  * @param {String} programId - The ID of the program being mapped.
  * @param {String} role - The role being assigned or removed.
  * @param {String} eventType - The type of event ('create' or 'delete').
+ * @param {Object} programInfoMap - Map containing program information keyed by program ID.
  * @returns {Object} - Kafka event payload.
  */
-function createKafkaPayload (userProfile, programId, role, eventType){
-
+function createKafkaPayload (userProfile, programId, role, eventType,programInfoMap){
   return {
     userId: userProfile.id,
     username: userProfile.username,
-    programId: programId,
     role,
     eventType,
+    entity:messageConstants.common.PROGRAM,
+    meta: {
+			programInformation: {
+				name: programInfoMap[programId].externalId,
+				externalId: programInfoMap[programId].externalId,
+				id: programId.toString(),
+			},
+		},
   }
 
 }
@@ -1124,13 +1115,13 @@ function createKafkaPayload (userProfile, programId, role, eventType){
 * @param {Array<Object>} kafkaEventPayloads - Array to which Kafka event payloads will be pushed.
 * @returns {void}
 */
-function addNewProgramEntry(userProfile, programId, newRoles,existingUserProgramRoleMapping, kafkaEventPayloads){
+function addNewProgramEntry(userProfile, programId, newRoles,existingUserProgramRoleMapping, kafkaEventPayloads,programInfoMap) {
   existingUserProgramRoleMapping.push({
     programId: programId,
     roles: [...newRoles],
   });
   // All roles are new, emit create events
   for (const role of newRoles) {
-    kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE));
+    kafkaEventPayloads.push(createKafkaPayload(userProfile, programId, role, messageConstants.common.CREATE_EVENT_TYPE,programInfoMap));
   }
 };

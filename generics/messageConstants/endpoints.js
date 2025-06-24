@@ -30,5 +30,5 @@ module.exports = {
   PROFILE_READ:'/v1/profile/read',
   PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
   AUTO_DOWNLOAD: '/v1/files/download',
-  FETCH_USER_PROFILE_INFO: '/v1/user/profileById'
+  PROFILE_READ_BY_ID: '/v1/user/profileById'
 };

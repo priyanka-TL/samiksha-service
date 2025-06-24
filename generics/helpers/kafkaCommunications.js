@@ -32,7 +32,7 @@ const inCompleteSurveySubmissionKafkaTopic =
   process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC && process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC != 'OFF'
     ? process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC
     : 'elevate_incomplete_surveys_raw';
-const programOperationKafkaTopic=
+const programOperationTopic=
     process.env.PROGRAM_USER_MAPPING_TOPIC && process.env.PROGRAM_USER_MAPPING_TOPIC != 'OFF'
       ? process.env.PROGRAM_USER_MAPPING_TOPIC
       : 'elevate_program_operation_dev';
@@ -255,7 +255,7 @@ const pushProgramOperationEvent = function (message) {
     try {
       let kafkaPushStatus = await pushMessageToKafka([
         {
-          topic: programOperationKafkaTopic,
+          topic: programOperationTopic,
           messages: JSON.stringify(message),
         },
       ]);

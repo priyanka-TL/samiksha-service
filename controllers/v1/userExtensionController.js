@@ -135,7 +135,7 @@ module.exports = class UserExtension extends Abstract {
           }
         }
 
-        let tenantAndOrgInfo = req.userDetails.tenantAndOrgInfo;
+        const { tenantAndOrgInfo } = req.userDetails;
 
         let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(
           userRolesCSVData,
@@ -143,7 +143,13 @@ module.exports = class UserExtension extends Abstract {
           tenantAndOrgInfo
         );
 
-        if (newUserRoleData.length > 0) {
+        if(!newUserRoleData?.length) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.USER_ROLES_PROCESSING_FAILED,
+          }
+        }
+
           const fileName = `UserRole-Upload`;
           let fileStream = new FileStream(fileName);
           let input = fileStream.initStream();
@@ -163,12 +169,7 @@ module.exports = class UserExtension extends Abstract {
           );
 
           input.push(null);
-        } else {
-          throw {
-            status: httpStatusCode.bad_request.status,
-            message: messageConstants.apiResponses.USER_ROLES_PROCESSING_FAILED,
-          }
-        }
+        
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,

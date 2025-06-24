@@ -349,7 +349,7 @@ async function getSubEntitiesBasedOnEntityType(parentIds, entityType, result) {
  * @method
  * @name findEntityDetails
  * @param {String} tenantId - tenantId
- * @param {String} entityIdentifier - entityIdentifier
+ * @param {String} entityIdentifier - entityIdentifier can be a mongoId or entity externalId
  * @returns {Object} - entity details
  */
 // Function to find the details of a given entity ant the tenant it belongs under
@@ -358,7 +358,7 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
   return new Promise(async (resolve, reject) => {
     try {
       // Define the URL for the user role extension API
-      const url = entityManagementServiceUrl+messageConstants.endpoints.FIND_ENTITY_DETAILS + '/'+entityIdentifier;
+      const url = `${entityManagementServiceUrl}${messageConstants.endpoints.FIND_ENTITY_DETAILS}/${entityIdentifier}`;
 
       // Set the options for the HTTP POST request
       const options = {
