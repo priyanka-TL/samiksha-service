@@ -214,7 +214,8 @@ module.exports = async function (req, res, next) {
     "frameworks/uploadThemes",
     "forms/create",
     "forms/update",
-    'users/deleteUserPIIData'
+    'users/deleteUserPIIData',
+    'userExtension/bulkUpload'
   ];
 
   let performInternalAccessTokenCheck = false;

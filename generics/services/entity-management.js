@@ -352,12 +352,65 @@ async function getSubEntitiesBasedOnEntityType(parentIds, entityType, result) {
   let uniqueEntities = _.uniq(result);
   return uniqueEntities;
 }
+/**
+ * @method
+ * @name findEntityDetails
+ * @param {String} tenantId - tenantId
+ * @param {String} entityIdentifier - entityIdentifier can be a mongoId or entity externalId
+ * @returns {Object} - entity details
+ */
+// Function to find the details of a given entity ant the tenant it belongs under
+const findEntityDetails = function (tenantId,entityIdentifier) {
+  
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Define the URL for the user role extension API
+      const url = `${entityManagementServiceUrl}${messageConstants.endpoints.FIND_ENTITY_DETAILS}/${entityIdentifier}`;
+
+      // Set the options for the HTTP POST request
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          "tenantId":tenantId
+        }
+      };
+
+      // Make the HTTP POST request to the user role extension API
+      request.post(url, options, requestCallBack);
+
+      // Callback function to handle the response from the HTTP POST request
+      function requestCallBack(err, data) {
+        let result = {
+          success: true,
+        };
+
+        if (err) {
+          result.success = false;
+        } else {
+
+          let response = JSON.parse(data.body)
+          // Check if the response status is OK (HTTP 200)
+          if (response.status === httpStatusCode['ok'].status) {
+            result['data'] = response.result;
+          } else {
+            result.success = false;
+          }
+        }
+
+        return resolve(result);
+      }
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
 
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
-  validateEntities: validateEntities,
-  listByEntityType: listByEntityType,
-  userRoleExtension: userRoleExtension,
-  getSubEntitiesBasedOnEntityType: getSubEntitiesBasedOnEntityType,
+  validateEntities:validateEntities,
+  listByEntityType:listByEntityType,
+  userRoleExtension:userRoleExtension,
+  getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType,
+  findEntityDetails:findEntityDetails
 };
