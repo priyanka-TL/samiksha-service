@@ -381,6 +381,11 @@ let enviromentVariables = {
     optional: false,
     default: '/ml/',
   },
+  IMPROVEMENT_PROJECT_SUBMISSION_TOPIC: {
+    message: 'Required IMPROVEMENT_PROJECT_SUBMISSION_TOPIC',
+    optional: true,
+    default: 'elevate-improvement-project-submission-dev',
+  },
 };
 
 let success = true;
@@ -392,7 +397,7 @@ module.exports = function () {
     };
 
     let keyCheckPass = true;
-    let validRequiredIfOperators = ['EQUALS', 'NOT_EQUALS']
+    let validRequiredIfOperators = ['EQUALS', 'NOT_EQUALS'];
 
     if (
       enviromentVariables[eachEnvironmentVariable].optional === true &&

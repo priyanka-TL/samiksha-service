@@ -206,7 +206,7 @@ module.exports = async function (req, res, next) {
     'solutions/uploadThemesRubricExpressions',
     'solutions/uploadCriteriaRubricExpressions',
     'solutions/importFromSolution',
-    'surveys/importSurveryTemplateToSolution',
+    'surveys/importSurveyTemplateToSolution',
     'surveys/mapSurverySolutionToProgram',
     "criteria/upload",
     "questions/bulkCreate",
@@ -238,6 +238,10 @@ module.exports = async function (req, res, next) {
       rspObj.responseCode = responseCode.unauthorized.status;
       return res.status(401).send(respUtil(rspObj));
     }
+    if (!token) {
+			next()
+			return
+		}
   }
 
   // Check if a Bearer token is required for authentication
@@ -626,10 +630,9 @@ module.exports = async function (req, res, next) {
     if (req.headers['tenantid'] && req.headers['orgid']) {
       return { success: true, tenantId: req.headers['tenantid'], orgId: req.headers['orgid'] };
     }
-
     // Step 4: Check in user token (already decoded) if still not found
-    if (decodedTokenData && decodedTokenData.tenantId && decodedTokenData.orgId) {
-      return { success: true, tenantId: decodedTokenData.tenantId, orgId: decodedTokenData.orgId };
+    if (decodedTokenData && decodedTokenData.tenant_id && decodedTokenData.organization_id) {
+      return { success: true, tenantId: decodedTokenData.tenant_id, orgId: decodedTokenData.organization_id };
     }
 
     return { sucess: false };
@@ -659,7 +662,6 @@ module.exports = async function (req, res, next) {
 
       req.headers['tenantid'] = result.tenantId;
       req.headers['orgid'] = result.orgId;
-
       let validateOrgsResult = await validateIfOrgsBelongsToTenant(req.headers['tenantid'], req.headers['orgid'],token);
       if (!validateOrgsResult.success) {
         return res.status(responseCode['unauthorized'].status).send(respUtil(validateOrgsResult.errorObj));

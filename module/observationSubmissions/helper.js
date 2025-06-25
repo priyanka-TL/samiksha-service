@@ -20,6 +20,8 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const validateEntities = process.env.VALIDATE_ENTITIES ? process.env.VALIDATE_ENTITIES : 'OFF';
 const criteriaQuestionHelper = require(MODULES_BASE_PATH + '/criteriaQuestions/helper')
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
+const projectService = require(ROOT_PATH + '/generics/services/project')
+
 /**
  * ObservationSubmissionsHelper
  * @class
@@ -134,7 +136,6 @@ module.exports = class ObservationSubmissionsHelper {
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
                 observationSubmissionsDocument['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
               }
-
               return resolve(observationSubmissionsDocument);
 
           } catch (error) {
@@ -175,11 +176,11 @@ module.exports = class ObservationSubmissionsHelper {
           );
         }
 
-        // if (observationSubmissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
-        //   await this.pushSubmissionToImprovementService(
-        //     _.pick(observationSubmissionsDocument, ['project', 'status', '_id', 'completedDate']),
-        //   );
-        // }
+        if (observationSubmissionsDocument.referenceFrom === messageConstants.common.PROJECT) {
+          await this.pushSubmissionToProjectService(
+            _.pick(observationSubmissionsDocument, ['project', 'status', '_id', 'completedDate']),
+          );
+        }
 
         const kafkaMessage =
           await kafkaClient.pushCompletedObservationSubmissionToKafka(observationSubmissionsDocument);
@@ -753,44 +754,62 @@ module.exports = class ObservationSubmissionsHelper {
   /**
    * Push observation submission to improvement service.
    * @method
-   * @name pushSubmissionToImprovementService
-   * @param {String} observationSubmissionDocument - observation submission document.
+   * @name pushSubmissionToProjectService
+   * @param {Object} observationSubmissionDocument - observation submission document.
    * @returns {JSON} consists of kafka message whether it is pushed for reporting
    * or not.
    */
 
-  // static pushSubmissionToImprovementService(observationSubmissionDocument) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let observationSubmissionData = {
-  //         taskId: observationSubmissionDocument.project.taskId,
-  //         projectId: observationSubmissionDocument.project._id,
-  //         _id: observationSubmissionDocument._id,
-  //         status: observationSubmissionDocument.status,
-  //       };
+  static pushSubmissionToProjectService(observationSubmissionDocument) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let observationSubmissionData = {
+          taskId: observationSubmissionDocument.project.taskId,
+          projectId: observationSubmissionDocument.project._id,
+          _id: observationSubmissionDocument._id,
+          status: observationSubmissionDocument.status,
+        };
+  
+        if (observationSubmissionDocument.completedDate) {
+          observationSubmissionData["submissionDate"] =
+            observationSubmissionDocument.completedDate;
+        }
+        let pushSubmissionToProject;
+        if (
+          process.env.SUBMISSION_UPDATE_KAFKA_PUSH_ON_OFF === "ON" &&
+          process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC
+        ) {
 
-  //       if (observationSubmissionDocument.completedDate) {
-  //         observationSubmissionData['submissionDate'] = observationSubmissionDocument.completedDate;
-  //       }
-
-  //       const kafkaMessage = await kafkaClient.pushSubmissionToImprovementService(observationSubmissionData);
-
-  //       if (kafkaMessage.status != 'success') {
-  //         let errorObject = {
-  //           formData: {
-  //             submissionId: observationSubmissionDocument._id.toString(),
-  //             message: kafkaMessage.message,
-  //           },
-  //         };
-  //         slackClient.kafkaErrorAlert(errorObject);
-  //       }
-
-  //       return resolve(kafkaMessage);
-  //     } catch (error) {
-  //       return reject(error);
-  //     }
-  //   });
-  // }
+          pushSubmissionToProject = await kafkaClient.pushSubmissionToProjectService(
+            observationSubmissionData
+          );
+  
+          if (pushSubmissionToProject.status != messageConstants.common.SUCCESS) {
+            throw new Error(
+              `Failed to push submission to project. Submission ID: ${observationSubmissionDocument._id.toString()}, Message: ${pushSubmissionToProject.message}`
+            );
+          }
+        } else {
+          pushSubmissionToProject = await projectService.pushSubmissionToTask(
+            observationSubmissionDocument.project._id,
+            observationSubmissionDocument.project.taskId,
+            observationSubmissionData
+          );
+          if (!pushSubmissionToProject.success) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message : messageConstants.apiResponses.PUSH_SUBMISSION_FAILED
+            };
+          }
+        }
+  
+        return resolve(pushSubmissionToProject);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+  
 
   /**
    * Disable Observation Submission Based on Solution Id

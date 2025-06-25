@@ -32,6 +32,8 @@ const validateRole = process.env.VALIDATE_ROLE;
 const topLevelEntityType = process.env.TOP_LEVEL_ENTITY_TYPE;
 const surveyService = require(ROOT_PATH + "/generics/services/survey");
 const userService = require(ROOT_PATH + '/generics/services/users');
+const projectService = require(ROOT_PATH + '/generics/services/project')
+
 /**
  * ObservationsHelper
  * @class
@@ -89,9 +91,10 @@ module.exports = class ObservationsHelper {
     solutionId,
     data,
     userId,
-    requestingUserAuthToken = '',
+    requestingUserAuthToken = "",
     userRoleAndProfileInformation,
-    tenantData
+    tenantData,
+    programId = ""
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -100,83 +103,112 @@ module.exports = class ObservationsHelper {
         //     messageConstants.apiResponses.REQUIRED_USER_AUTH_TOKEN
         //   );
         // }
-
+  
         // let organisationAndRootOrganisation =
         //   await shikshalokamHelper.getOrganisationsAndRootOrganisations(
         //     requestingUserAuthToken,
         //     userId
         //   );
-
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
           },
           [
-            'isReusable',
-            'externalId',
-            'programId',
-            'programExternalId',
-            'frameworkId',
-            'frameworkExternalId',
-            'entityType',
-            'entityTypeId',
-            'isAPrivateProgram',
-          ],
+            "isReusable",
+            "externalId",
+            "programId",
+            "programExternalId",
+            "frameworkId",
+            "frameworkExternalId",
+            "entityType",
+            "entityTypeId",
+            "isAPrivateProgram",
+            "project",
+            "referenceFrom",
+            "isExternalProgram",
+          ]
         );
-
         if (!solutionData.length > 0) {
           throw {
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           };
         }
-
+  
         if (solutionData[0].isReusable) {
-
-
-          solutionData = await solutionHelper.createProgramAndSolutionFromTemplate(
-            solutionId,
-            //   {
-            //     _id: programId,
-            //   },
-            userId,
-            _.omit(data, ['entities']),
-            true,
-            userId,
-            //   organisationAndRootOrganisation.,
-            //   organisationAndRootOrganisation.rootOrganisations
-          );
+          const solutionHelper = require(MODULES_BASE_PATH + "/solutions/helper");
+          solutionData =
+            await solutionHelper.createProgramAndSolutionFromTemplate(
+              solutionId,
+              {
+                _id: programId,
+              },
+              userId,
+              _.omit(data, ["entities"]),
+              true,
+              userId,
+              requestingUserAuthToken,
+              tenantData
+              //   organisationAndRootOrganisation.,
+              //   organisationAndRootOrganisation.rootOrganisations
+            );
         } else {
           solutionData = solutionData[0];
         }
-
-        if (userRoleAndProfileInformation && Object.keys(userRoleAndProfileInformation).length > 0 && validateRole == "ON" && topLevelEntityType) {
+        if (
+          userRoleAndProfileInformation &&
+          Object.keys(userRoleAndProfileInformation).length > 0 &&
+          validateRole == "ON" &&
+          topLevelEntityType
+        ) {
           //validate the user access to create observation
-          let validateUserRole = await this.validateUserRole(userRoleAndProfileInformation,solutionId,tenantData);
+          let validateUserRole = await this.validateUserRole(
+            userRoleAndProfileInformation,
+            solutionId,
+            tenantData
+          );
           if (!validateUserRole.success) {
             throw {
               status: httpStatusCode.bad_request.status,
-              message: validateUserRole.message || messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
+              message:
+                validateUserRole.message ||
+                messageConstants.apiResponses.OBSERVATION_NOT_RELEVENT_FOR_USER,
             };
           }
         }
-
-        let userProfileData = await surveyService.profileRead(requestingUserAuthToken)
-        if (userProfileData.success && userProfileData.data) {
-          userProfileData = userProfileData.data;
-        }else{
-          userProfileData = {}
-        }
-
-        let observationData = await this.createObservation(data, userId, solutionData,userProfileData,tenantData);
-
-        return resolve(_.pick(observationData, ['_id', 'name', 'description']));
+  
+        let userProfileData = await surveyService.profileRead(
+          requestingUserAuthToken
+        );
+        userProfileData =
+          userProfileData.success && userProfileData.data
+            ? userProfileData.data
+            : {};
+  
+        let observationData = await this.createObservation(
+          data,
+          userId,
+          solutionData,
+          userProfileData,
+          tenantData
+        );
+  
+        return resolve(
+          _.pick(observationData, [
+            "_id",
+            "name",
+            "description",
+            "solutionId",
+            "solutionExternalId",
+          ])
+        );
       } catch (error) {
-        console.log(error,'<--erorr in observation create helper-->');
         return reject(error);
       }
     });
   }
+  
+
 
   /**
    * Create observation.
@@ -194,13 +226,23 @@ module.exports = class ObservationsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         if (validateEntities == 'ON') {
-          if (data.entities) {
+          if (data.entities ) {
+            if(!solution.entityTypeId){
+              let entityTypeDocumentsAPICall = await entityManagementService.entityTypeDocuments({
+                name: solution.entityType,
+                tenantId: tenantData.tenantId,
+                orgIds: {$in:['ALL',tenantData.orgId]}
+              });
+              if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
+                solution['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
+              }
+            }
             let entitiesToAdd = await entityManagementService.validateEntities(data.entities, solution.entityTypeId,tenantData);
             data.entities = entitiesToAdd.entityIds;
           }
         }
 
-        if (data.project) {
+        if (data?.project) {
           data.project._id = new ObjectId(data.project._id);
           data.referenceFrom = messageConstants.common.PROJECT;
         }
@@ -218,11 +260,13 @@ module.exports = class ObservationsHelper {
           createdBy: userId,
           createdFor: userId,
           isAPrivateProgram: solution.isAPrivateProgram,
+          startDate:solution.startDate,
+          endDate:solution.endDate,
           "userProfile" : userProfileInformation ? userProfileInformation : {},
           tenantId: tenantData.tenantId,
           orgId: tenantData.orgId,
+          isExternalProgram:solution.isExternalProgram
         });
-
         let observationDataEntry = await database.models.observations.create(
           observationData
         );
@@ -507,7 +551,7 @@ module.exports = class ObservationsHelper {
           submissionDocument = await database.models.observationSubmissions.create(document);
 
           if (submissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-            await submissionsHelper.pushSubmissionToImprovementService(submissionDocument);
+            await submissionsHelper.pushSubmissionToProjectService(submissionDocument);
           }
 
           // Push new observation submission to kafka for reporting/tracking.
@@ -961,6 +1005,7 @@ module.exports = class ObservationsHelper {
    * @returns {Object}              observation details.
    */
   static details(observationId = "", solutionId = "", userId = "",tenantData) {
+    console.log({ observationId, solutionId, userId, tenantData }, '<--observationId, solutionId, userId, tenantData')
     return new Promise(async (resolve, reject) => {
       try {
         //Check for observation or soultion ID
@@ -978,11 +1023,13 @@ module.exports = class ObservationsHelper {
         }
 
         if (solutionId && solutionId != "" && userId && userId != "") {
-          filterQuery.solutionId = ObjectId(solutionId);
+          filterQuery.solutionId = new ObjectId(solutionId);
           filterQuery.createdBy = userId;
         }
+        console.log(tenantData,'tenantData')
         filterQuery.tenantId = tenantData.tenantId;
         //find the Obserations documents from the observation collections
+        console.log(filterQuery,'<--filterQuery')
         let observationDocument = await this.observationDocuments(filterQuery);
 
         if (!observationDocument[0]) {
@@ -1012,6 +1059,7 @@ module.exports = class ObservationsHelper {
 
         return resolve(observationDocument[0]);
       } catch (error) {
+        console.log(error, '<--error in details');
         return reject(error);
       }
     });
@@ -1051,7 +1099,8 @@ module.exports = class ObservationsHelper {
         referenceFrom: 1,
         pageHeading: 1,
         criteriaLevelReport: 1,
-        endDate: 1
+        endDate: 1,
+        isExternalProgram: 1
       });
     });
   }
@@ -2240,11 +2289,9 @@ module.exports = class ObservationsHelper {
           tenantId: req.userDetails.tenantData.tenantId,
           orgIds: {$in:['ALL',req.userDetails.tenantData.orgId]}
          };
-  
          let entitiesDocument = await entityManagementService.entityDocuments(
            filterData
          );
-
          if(!entitiesDocument.success){
           throw new Error({
             message:messageConstants.apiResponses.ENTITIES_NOT_FOUND
@@ -2287,6 +2334,7 @@ module.exports = class ObservationsHelper {
           'project',
           'referenceFrom',
           'criteriaLevelReport',
+          'isExternalProgram'
         ],
       );
   
@@ -2341,50 +2389,53 @@ module.exports = class ObservationsHelper {
       lastSubmissionNumber = lastSubmissionForObservationEntity.result + 1;
   
       let programInformation = null;
-
-      if (solutionDocument.programId) {
-        let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
-        if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
-          return resolve({
-            success: false,
-            message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-          });
-        }
-        let tenantPublicDetailsMetaField = tenantDetails.data.meta;
-
+      
+      if(solutionDocument.programId){
+        let programDocument
         let programQueryObject = {
           _id: solutionDocument.programId,
-          status: messageConstants.common.ACTIVE_STATUS,
-          tenantId: tenantData.tenantId,
-          ...gen.utils.targetingQuery(
-            req.body,
-            tenantPublicDetailsMetaField,
-            messageConstants.common.MANDATORY_SCOPE_FIELD,
-            messageConstants.common.OPTIONAL_SCOPE_FIELD
-          ),
+          status: messageConstants.common.ACTIVE_STATUS
         };
+        if (solutionDocument.isExternalProgram) {
+          programDocument = await projectService.programDetails(req.userDetails.userToken, solutionDocument.programId);
+          if (programDocument.status != httpStatusCode.ok.status || !programDocument?.result?._id) {
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            };
+          }
+          programDocument = [programDocument.result];
+        } else {
+          let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
+          if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+            return resolve({
+              success: false,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            });
+          }
+          let tenantPublicDetailsMetaField = tenantDetails.data.meta;
 
-        /*
-        arguments passed to programsHelper.list() are:
-        - filter: { externalId: { $in: Array.from(allProgramIds) } }
-        - projection: ['_id', 'externalId']
-        - sort: ''
-        - skip: ''
-        - limit: ''
-        */
-      let programDocument = await programsHelper.list(programQueryObject, [
-         "externalId",
-         "name",
-         "description",
-         "imageCompression",
-         "isAPrivateProgram",
-       ],
-       '',
-       '',
-       ''
-      );
-
-       programDocument = programDocument.data.data
+          programQueryObject = {
+            ...programQueryObject,
+            ...gen.utils.targetingQuery(
+              req.body,
+              tenantPublicDetailsMetaField,
+              messageConstants.common.MANDATORY_SCOPE_FIELD,
+              messageConstants.common.OPTIONAL_SCOPE_FIELD
+            ),
+          };
+          console.log(programQueryObject,'programQueryObject')
+          programDocument = await programsHelper.list(
+            programQueryObject,
+            ['externalId', 'name', 'description', 'imageCompression', 'isAPrivateProgram'],
+            '',
+            '',
+            '',
+            tenantData
+          );
+          programDocument = programDocument.data.data;
+        }
+        
        
        if (!programDocument[0]._id) {
          throw messageConstants.apiResponses.PROGRAM_NOT_FOUND;
@@ -2427,7 +2478,8 @@ module.exports = class ObservationsHelper {
         themes: solutionDocument.themes,
         programInformation:programInformation,
         tenantId: observationDocument.tenantId,
-        orgId: observationDocument.orgId
+        orgId: observationDocument.orgId,
+        isExternalProgram:solutionDocument.isExternalProgram
       };
   
       if (solutionDocument.hasOwnProperty('criteriaLevelReport')) {
@@ -2440,7 +2492,7 @@ module.exports = class ObservationsHelper {
   
       if (solutionDocument.referenceFrom === messageConstants.common.PROJECT) {
         submissionDocument['referenceFrom'] = messageConstants.common.PROJECT;
-        submissionDocument['project'] = solutionDocument.project;
+        submissionDocument['project'] = observationDocument.project;
       }
   
       let criteriaId = new Array();
@@ -2520,11 +2572,11 @@ module.exports = class ObservationsHelper {
   
       let newObservationSubmissionDocument = await database.models.observationSubmissions.create(submissionDocument);
   
-      // if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
-      //   await observationSubmissionsHelper.pushSubmissionToImprovementService(
-      //     _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
-      //   );
-      // }
+      if (newObservationSubmissionDocument.referenceFrom === messageConstants.common.PROJECT) {
+        await observationSubmissionsHelper.pushSubmissionToProjectService(
+          _.pick(newObservationSubmissionDocument, ['project', 'status', '_id']),
+        );
+      }
   
       // Push new observation submission to kafka for reporting/tracking.
       observationSubmissionsHelper.pushInCompleteObservationSubmissionForReporting(
@@ -2883,7 +2935,7 @@ module.exports = class ObservationsHelper {
               },
               ['metaInformation.targetedEntityTypes']
             );
-
+            
             if (
               rolesDocumentAPICall?.success &&
               Array.isArray(rolesDocumentAPICall.data) &&

@@ -1903,13 +1903,13 @@
 							]
 						},
 						{
-							"name": "importSurveryTemplateToSolution",
+							"name": "importSurveyTemplateToSolution",
 							"item": [
 								{
 									"name": ":solutionId",
 									"item": [
 										{
-											"name": "importSurveryTemplateToSolution Copy 2",
+											"name": "importSurveyTemplateToSolution Copy 2",
 											"request": {
 												"method": "POST",
 												"header": [
@@ -1932,14 +1932,14 @@
 													"raw": "<string>"
 												},
 												"url": {
-													"raw": "{{baseUrl}}/v1/surveys/importSurveryTemplateToSolution/:solutionId?appName=<string>",
+													"raw": "{{baseUrl}}/v1/surveys/importSurveyTemplateToSolution/:solutionId?appName=<string>",
 													"host": [
 														"{{baseUrl}}"
 													],
 													"path": [
 														"v1",
 														"surveys",
-														"importSurveryTemplateToSolution",
+														"importSurveyTemplateToSolution",
 														":solutionId"
 													],
 													"query": [
@@ -1981,14 +1981,14 @@
 															"raw": "<string>"
 														},
 														"url": {
-															"raw": "{{baseUrl}}/v1/surveys/importSurveryTemplateToSolution/:solutionId?appName=<string>",
+															"raw": "{{baseUrl}}/v1/surveys/importSurveyTemplateToSolution/:solutionId?appName=<string>",
 															"host": [
 																"{{baseUrl}}"
 															],
 															"path": [
 																"v1",
 																"surveys",
-																"importSurveryTemplateToSolution",
+																"importSurveyTemplateToSolution",
 																":solutionId"
 															],
 															"query": [
