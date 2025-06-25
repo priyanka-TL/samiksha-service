@@ -543,9 +543,9 @@ function factorQuery(factors, userRoleInfo) {
  * @param {string[]} userDetails.roles - Array of user role strings.
  * @returns {boolean} True if user has ADMIN or TENANT_ADMIN role, else false.
  */
-function validateRoles(userDetails){
+function validateRoles(userDetails,roleToCheck){
   return userDetails.roles.some((role) =>
-    [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN].includes(role)
+    roleToCheck.includes(role)
   )
 }
 

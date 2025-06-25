@@ -3988,7 +3988,8 @@ module.exports = class SolutionsHelper {
         let updateObject = { $addToSet: {} };
         let validationExcludedEntitiesKeys = [];
         let tenantDetails
-        if (gen.utils.validateRoles(userDetails)){
+        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN]
+        if (gen.utils.validateRoles(userDetails,adminTenantAdminRole)){
           // Fetch tenant details to validate organization codes
           tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
           if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
@@ -4254,46 +4255,12 @@ module.exports = class SolutionsHelper {
         }
         const currentScope = solutionData[0].scope || {};
         let updateObject = { $pull: {} }
-        let validationExcludedEntitiesKeys = []
         // Check roles to fetch tenantDetails for validationExcludedScopeKeys
-        if (gen.utils.validateRoles(userDetails)) {
-          const tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
-          if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
-            return resolve({
-              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-              status: httpStatusCode.bad_request.status,
-            })
-          }
-
-          if (
-            Array.isArray(tenantDetails.data.meta.validationExcludedScopeKeys) &&
-            tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
-          ) {
-            validationExcludedEntitiesKeys.push(...tenantDetails.data.meta.validationExcludedScopeKeys)
-          }
-          // Handle organizations
-          if (Array.isArray(bodyData.organizations)) {
-            const orgScope = currentScope.organizations || [];
-            if (orgScope.length === 0) {
-              throw {
-                message: messageConstants.apiResponses.ORGANIZATION_NOT_IN_SCOPE,
-                status: httpStatusCode.bad_request.status,
-              };
-            }
-            if (bodyData.organizations.includes(ALL_SCOPE_VALUE)) {
-              updateObject.$pull[`scope.organizations`] = { $in: [ALL_SCOPE_VALUE] };
-            } else if (gen.utils.convertStringToBoolean(organizations)) {
-              const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
-              const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
-              if (!isValid) {
-                throw {
-                  message: messageConstants.apiResponses.INVALID_ORGANIZATION,
-                  status: httpStatusCode.bad_request.status,
-                };
-              }
+        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN]
+        if (gen.utils.convertStringToBoolean(organizations)) {
+          if (gen.utils.validateRoles(userDetails, adminTenantAdminRole)) {
               updateObject.$pull[`scope.organizations`] = { $in: bodyData.organizations };
             }
-          }
         }
   
         // Handle entity removal
