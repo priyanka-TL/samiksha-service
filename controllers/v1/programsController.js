@@ -76,16 +76,17 @@ module.exports = class Programs extends Abstract {
           });
         }
         let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+        let queryResult = gen.utils.targetingQuery(
+          req.body,
+          tenantPublicDetailsMetaField,
+          messageConstants.common.MANDATORY_SCOPE_FIELD,
+          messageConstants.common.OPTIONAL_SCOPE_FIELD
+        )
 
         let listOfPrograms = await programsHelper.list(
           {
             tenantId: req.userDetails.tenantData.tenantId,
-            ...gen.utils.targetingQuery(
-              req.body,
-              tenantPublicDetailsMetaField,
-              messageConstants.common.MANDATORY_SCOPE_FIELD,
-              messageConstants.common.OPTIONAL_SCOPE_FIELD
-            ), // targetingQuery
+            ...queryResult, // targetingQuery
           }, //filter
           '', // projection
           req.pageNo, //middleware convert req.params.page as req.PageNo

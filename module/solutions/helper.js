@@ -538,14 +538,13 @@ module.exports = class SolutionsHelper {
             });
           }
           let tenantPublicDetailsMetaField = tenantDetails.data.meta; 
-
-          filterQuery = {...filterQuery,...gen.utils.targetingQuery(
+          let builtQuery = gen.utils.targetingQuery(
             data,
             tenantPublicDetailsMetaField,
             messageConstants.common.MANDATORY_SCOPE_FIELD,
             messageConstants.common.OPTIONAL_SCOPE_FIELD
-          )}
-
+          )
+          filterQuery = {...filterQuery,...builtQuery}
           filterQuery['scope.entityType'] = { $in: entityTypes };
           
         } else {

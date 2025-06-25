@@ -1366,14 +1366,14 @@ module.exports = class ProgramsHelper {
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
           let tenantPublicDetailsMetaField = tenantDetails.data.meta;
-
-          filterQuery = {...filterQuery,...gen.utils.targetingQuery(
+          let builtQuery = gen.utils.targetingQuery(
             userRoleInfo,
             tenantPublicDetailsMetaField,
             messageConstants.common.MANDATORY_SCOPE_FIELD,
             messageConstants.common.OPTIONAL_SCOPE_FIELD
-          )}
-          
+          )
+
+          filterQuery = {...filterQuery,...builtQuery}
           filterQuery['scope.entityType'] = { $in: entityTypes }
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
