@@ -71,8 +71,7 @@ module.exports = class Programs extends Abstract {
 
         let tenantDetails = await userService.fetchPublicTenantDetails(req.userDetails.tenantData.tenantId);
         if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
-          return resolve({
-            success: false,
+          throw ({
             message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
           });
         }

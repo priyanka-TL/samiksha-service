@@ -2403,25 +2403,6 @@ module.exports = class ObservationsHelper {
           }
           programDocument = [programDocument.result];
         } else {
-          let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
-          if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
-            return resolve({
-              success: false,
-              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-            });
-          }
-          let tenantPublicDetailsMetaField = tenantDetails.data.meta;
-
-          programQueryObject = {
-            ...programQueryObject,
-            ...gen.utils.targetingQuery(
-              req.body,
-              tenantPublicDetailsMetaField,
-              messageConstants.common.MANDATORY_SCOPE_FIELD,
-              messageConstants.common.OPTIONAL_SCOPE_FIELD
-            ),
-          };
-          console.log(programQueryObject,'programQueryObject')
           programDocument = await programsHelper.list(
             programQueryObject,
             ['externalId', 'name', 'description', 'imageCompression', 'isAPrivateProgram'],
