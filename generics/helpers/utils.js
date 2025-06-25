@@ -537,6 +537,17 @@ function factorQuery(factors, userRoleInfo) {
 
   return queryFilter;
 }
+/**
+ * Checks if the user has admin-level roles.
+ * @param {Object} userDetails - The user details object.
+ * @param {string[]} userDetails.roles - Array of user role strings.
+ * @returns {boolean} True if user has ADMIN or TENANT_ADMIN role, else false.
+ */
+function validateRoles(userDetails){
+  return userDetails.roles.some((role) =>
+    [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN].includes(role)
+  )
+}
 
 
 
@@ -575,5 +586,6 @@ module.exports = {
   convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId,
   getColorForLevel:getColorForLevel,
   returnTenantDataFromToken:returnTenantDataFromToken,
-  factorQuery:factorQuery
+  factorQuery:factorQuery,
+  validateRoles:validateRoles
 };

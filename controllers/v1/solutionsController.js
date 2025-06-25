@@ -2350,7 +2350,12 @@ module.exports = class Solutions extends Abstract {
   async removeEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(req.params._id, req.body,req.userDetails,req.query.organizations ? req.query.organizations : false);
+        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(
+          req.params._id,
+          req.body,
+          req.userDetails,
+          req.query.organizations ? req.query.organizations : false
+        );
 
         return resolve(solutionUpdated);
       } catch (error) {

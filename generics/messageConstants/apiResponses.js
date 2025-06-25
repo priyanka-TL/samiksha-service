@@ -437,5 +437,5 @@ module.exports = {
   LINK_GENERATED: 'Link generated successfully',
   TENANTID_REQUIRED_IN_SOLUTION: 'TenantId required in solution',
   OBSERVABLE_ENTITY_KEYS_NOT_FOUND: 'Observable entity keys not found in tenant data',
-  INVALID_ORGANIZATION:'Invalid Organization Passed'
+  INVALID_ORGANIZATION: 'Invalid Organization Passed',
 };
