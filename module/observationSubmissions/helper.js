@@ -136,6 +136,8 @@ module.exports = class ObservationSubmissionsHelper {
               if (entityTypeDocumentsAPICall?.success && Array.isArray(entityTypeDocumentsAPICall?.data) && entityTypeDocumentsAPICall.data.length > 0) {
                 observationSubmissionsDocument['entityTypeId'] = entityTypeDocumentsAPICall.data[0]._id;
               }
+
+              await this.attachEntityInformationIfExists(observationSubmissionsDocument);
               return resolve(observationSubmissionsDocument);
 
           } catch (error) {
@@ -246,6 +248,7 @@ module.exports = class ObservationSubmissionsHelper {
           };
         }
 
+        await this.attachEntityInformationIfExists(observationSubmissionsDocument);
         const kafkaMessage =
           await kafkaClient.pushInCompleteObservationSubmissionToKafka(observationSubmissionsDocument);
 
@@ -1409,4 +1412,25 @@ module.exports = class ObservationSubmissionsHelper {
             }
         })
     }
+  /**
+   * Adds parent entity info to the project if an entityIdentifier exists in projectsInfo.
+   * @method
+   * @name attachEntityInformationIfExists
+   * @param {Object} observationSubmissionsDocument - observationSubmissionsDocument object with optional entity info.
+   * @returns {Promise<void>} - attaches parent entity information if it exists to projectsInfo variable
+   */
+  static async attachEntityInformationIfExists(observationSubmissionsDocument) {
+    try {
+      if (observationSubmissionsDocument?.entityInformation?.externalId) {
+        let entityDetailResponse = await entityManagementService.findEntityDetails(
+          observationSubmissionsDocument.tenantId,
+          observationSubmissionsDocument.entityInformation.externalId
+        );
+        if (entityDetailResponse?.success && entityDetailResponse.data?.length > 0) {
+          observationSubmissionsDocument.entityInformation.parentInformation =
+            entityDetailResponse.data[0].parentInformation;
+        }
+      }
+    } catch (err) {}
+  }
 };

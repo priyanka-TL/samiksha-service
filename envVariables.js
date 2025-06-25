@@ -381,6 +381,11 @@ let enviromentVariables = {
     optional: false,
     default: '/ml/',
   },
+  PROGRAM_USER_MAPPING_TOPIC:{
+    message: 'Program Operation Event Topic required',
+    optional: true,
+    default: messageConstants.common.DEFAULT_PROGRAM_USER_MAPPING_TOPIC,
+  },
   IMPROVEMENT_PROJECT_SUBMISSION_TOPIC: {
     message: 'Required IMPROVEMENT_PROJECT_SUBMISSION_TOPIC',
     optional: true,

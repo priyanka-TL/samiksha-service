@@ -8,10 +8,8 @@ module.exports = {
     userId: {
       type: String,
       required: true,
-      index: true,
-      unique: true,
+      index: true
     },
-    roles: Array,
     createdBy: {
       type: String,
       required: true,
@@ -22,18 +20,28 @@ module.exports = {
     },
     status: {
       type: String,
-      default: 'active',
-      index: true,
+      default: 'active'
     },
     isDeleted: {
       type: Boolean,
       default: false,
     },
-    removedFromHomeScreen: Array,
-    improvementProjects: {
+    programRoleMapping: Array,
+    orgIds:{
       type: Array,
-      default: [],
+      require: true,
+      index:true
     },
-    platformRoles: Array,
+    tenantId: {
+      type: String,
+      require: true,
+      index:true
+    }
   },
+  compoundIndex: [
+		{
+			name: { userId: 1, tenantId: 1  },
+			indexType: { unique: true },
+		},
+	],
 };

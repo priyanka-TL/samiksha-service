@@ -235,9 +235,64 @@ const fetchPublicTenantDetails = function (tenantId) {
 }
 
 
+/**
+ * Fetches user profile by userId/username and tenantId.
+ * @param {String} tenantId - tenantId details
+ * @param {String} userId - userId details
+ * @param {String} username - username details
+ * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
+ */
+
+const getUserProfileByIdentifier = function (tenantId, userId = null, username) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let params = userId ? `/${userId}?tenant_code=${tenantId}` : `?tenant_code=${tenantId}&username=${username}`;
+
+      let url = `${userServiceUrl}${messageConstants.endpoints.PROFILE_READ_BY_ID}${params}`;
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+        },
+      };
+
+      request.get(url, options, apiCallBackFunction);
+      let result = {
+        success: true,
+      };
+      function apiCallBackFunction(err, data) {
+        if (err) {
+          result.success = false;
+        } else {
+          let response = JSON.parse(data.body);
+
+          if (response.responseCode === httpStatusCode['ok_userService'].message) {
+            result['data'] = response.result;
+          } else {
+            result.success = false;
+          }
+        }
+
+        return resolve(result);
+      }
+      setTimeout(function () {
+        return resolve(
+          (result = {
+            success: false,
+          })
+        );
+      }, messageConstants.common.SERVER_TIME_OUT);
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
+
+
 module.exports = {
   profile:profile,
   fetchDefaultOrgDetails,
   fetchTenantDetails,
-  fetchPublicTenantDetails
+  fetchPublicTenantDetails,
+  getUserProfileByIdentifier
 };

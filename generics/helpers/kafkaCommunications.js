@@ -32,6 +32,11 @@ const inCompleteSurveySubmissionKafkaTopic =
   process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC && process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC != 'OFF'
     ? process.env.INCOMPLETE_SURVEY_SUBMISSION_TOPIC
     : 'elevate_incomplete_surveys_raw';
+const programOperationTopic=
+    process.env.PROGRAM_USER_MAPPING_TOPIC && process.env.PROGRAM_USER_MAPPING_TOPIC != 'OFF'
+      ? process.env.PROGRAM_USER_MAPPING_TOPIC
+      : 'elevate_program_operation_dev';
+
 const improvementProjectSubmissionTopic = process.env.IMPROVEMENT_PROJECT_SUBMISSION_TOPIC 
 
 const pushCompletedObservationSubmissionToKafka = function (message) {
@@ -244,6 +249,31 @@ const pushMessageToKafka = function (payload) {
     });
 };
 
+/**
+ * Push program operation event to Kafka.
+ * @function
+ * @name pushProgramOperationEvent
+ * @param {Object} message - The message payload to be pushed to Kafka.
+ * @returns {Promise<Object>} Kafka push status response.
+ */
+const pushProgramOperationEvent = function (message) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let kafkaPushStatus = await pushMessageToKafka([
+        {
+          topic: programOperationTopic,
+          messages: JSON.stringify(message),
+        },
+      ]);
+
+      return resolve(kafkaPushStatus);
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
+
+
 module.exports = {
   pushCompletedSubmissionToKafka: pushCompletedSubmissionToKafka,
   pushCompletedObservationSubmissionToKafka: pushCompletedObservationSubmissionToKafka,
@@ -254,5 +284,6 @@ module.exports = {
   pushInCompleteObservationSubmissionToKafka: pushInCompleteObservationSubmissionToKafka,
   pushCompletedSurveySubmissionToKafka: pushCompletedSurveySubmissionToKafka,
   pushInCompleteSurveySubmissionToKafka: pushInCompleteSurveySubmissionToKafka,
+  pushProgramOperationEvent:pushProgramOperationEvent,
   pushSubmissionToProjectService: pushSubmissionToProjectService,
 };
