@@ -2433,7 +2433,6 @@ module.exports = class SolutionsHelper {
           userToken,
           tenantData
         );
-        console.log(checkForTargetedSolution,'checkForTargetedSolution')
         if (!checkForTargetedSolution || Object.keys(checkForTargetedSolution.result).length <= 0) {
           return resolve(checkForTargetedSolution);
         }
@@ -2551,7 +2550,6 @@ module.exports = class SolutionsHelper {
         delete checkForTargetedSolution.result['status'];
         return resolve(checkForTargetedSolution);
       } catch (error) {
-        console.log(error,'error in verifyLink');
         return resolve({
           success: false,
           status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
@@ -2694,7 +2692,6 @@ module.exports = class SolutionsHelper {
           'name',
           'projectTemplateId',
         ]);
-        console.log(solutionData,'<--solutionData')
         // Check the user is targeted to the solution or not
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
           response.solutionId = solutionDetails[0]._id;
@@ -2724,7 +2721,6 @@ module.exports = class SolutionsHelper {
           result: response,
         });
       } catch (error) {
-        console.log(error,'error')
         return resolve({
           success: false,
           status: error.status ? error.status : httpStatusCode['internal_server_error'].status,

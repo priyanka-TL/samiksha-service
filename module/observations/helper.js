@@ -1005,7 +1005,6 @@ module.exports = class ObservationsHelper {
    * @returns {Object}              observation details.
    */
   static details(observationId = "", solutionId = "", userId = "",tenantData) {
-    console.log({ observationId, solutionId, userId, tenantData }, '<--observationId, solutionId, userId, tenantData')
     return new Promise(async (resolve, reject) => {
       try {
         //Check for observation or soultion ID
@@ -1026,10 +1025,9 @@ module.exports = class ObservationsHelper {
           filterQuery.solutionId = new ObjectId(solutionId);
           filterQuery.createdBy = userId;
         }
-        console.log(tenantData,'tenantData')
+
         filterQuery.tenantId = tenantData.tenantId;
         //find the Obserations documents from the observation collections
-        console.log(filterQuery,'<--filterQuery')
         let observationDocument = await this.observationDocuments(filterQuery);
 
         if (!observationDocument[0]) {
@@ -1059,7 +1057,6 @@ module.exports = class ObservationsHelper {
 
         return resolve(observationDocument[0]);
       } catch (error) {
-        console.log(error, '<--error in details');
         return reject(error);
       }
     });
