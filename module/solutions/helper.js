@@ -3945,7 +3945,8 @@ module.exports = class SolutionsHelper {
     return new Promise(async (resolve, reject) => {
       try {
         let tenantId = userDetails.tenantAndOrgInfo.tenantId
-				let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+        let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+        const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
@@ -3988,16 +3989,17 @@ module.exports = class SolutionsHelper {
         let updateObject = { $addToSet: {} };
         let validationExcludedEntitiesKeys = [];
         let tenantDetails
-        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN]
-        if (gen.utils.validateRoles(userDetails,adminTenantAdminRole)){
+        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN];
+        if (gen.utils.validateRoles(userDetails, adminTenantAdminRole)) {
           // Fetch tenant details to validate organization codes
           tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
           if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
             return resolve({
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-              status: httpStatusCode.bad_request.status
+              status: httpStatusCode.bad_request.status,
             });
           }
+
           if (
             Array.isArray(tenantDetails?.data?.meta?.validationExcludedScopeKeys) &&
             tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
@@ -4007,45 +4009,44 @@ module.exports = class SolutionsHelper {
           }
 
           if (gen.utils.convertStringToBoolean(organizations)) {
-            // Extract all valid organization codes from the tenant's config
-            const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
-
-            // Check if all provided organization codes are valid
-            const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
-            // If valid, include them in the update object under scope.organizations
-            if (!isValid) {
-              throw({
-                message: messageConstants.apiResponses.INVALID_ORGANIZATION,
-                status: httpStatusCode.bad_request.status
-              });
+            if (Array.isArray(bodyData.organizations)) {
+              if (bodyData.organizations.includes(ALL_SCOPE_VALUE)) {
+                updateObject.$addToSet[`scope.organizations`] = { $each: [ALL_SCOPE_VALUE] };
+              } else {
+                const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
+                const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
+                if (!isValid) {
+                  throw {
+                    message: messageConstants.apiResponses.INVALID_ORGANIZATION,
+                    status: httpStatusCode.bad_request.status,
+                  };
+                }
+                updateObject.$addToSet[`scope.organizations`] = { $each: bodyData.organizations };
+              }
             }
-            updateObject.$addToSet[`scope.organizations`] = { $each: bodyData.organizations };
           }
         }
 
-				// This logic we need to re-look --------------------------------------------
-				// if (solutionData[0].scope !== programData[0].scope) {
-				// 	let checkEntityInParent = await entitiesService.entityDocuments(
-				// 		{
-				// 			_id: programData[0].scope.entities,- state
-				// 			[`groups.${solutionData[0].scope.entityType}`]: entities,- district
-				// 		},
-				// 		['_id']
-				// 	)
-				// 	if (!checkEntityInParent.success) {
-				// 		throw {
-				// 			message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
-				// 		}
-				// 	}
-				// }
+        // This logic we need to re-look --------------------------------------------
+        // if (solutionData[0].scope !== programData[0].scope) {
+        // 	let checkEntityInParent = await entitiesService.entityDocuments(
+        // 		{
+        // 			_id: programData[0].scope.entities,- state
+        // 			[`groups.${solutionData[0].scope.entityType}`]: entities,- district
+        // 		},
+        // 		['_id']
+        // 	)
+        // 	if (!checkEntityInParent.success) {
+        // 		throw {
+        // 			message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
+        // 		}
+        // 	}
+        // }
 
         // Extract entities from the request body
         let entities = bodyData.entities
         let groupedEntities = {}
         let keysForValidation = []
-        let keysExcluded = []
-        const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE;
-
         // Classify keys based on ALL presence or validationExcludedEntitiesKeys
         for (const [entityType, values] of Object.entries(entities)) {
           if (Array.isArray(values) && values.includes(ALL_SCOPE_VALUE)) {
@@ -4092,23 +4093,6 @@ module.exports = class SolutionsHelper {
         for (const [type, ids] of Object.entries(groupedEntities)) {
           updateObject.$addToSet[`scope.${type}`] = { $each: ids }
         }
-        // Handle organizations
-        if (Array.isArray(bodyData.organizations)) {
-          if (bodyData.organizations.includes(ALL_SCOPE_VALUE)) {
-            updateObject.$addToSet[`scope.organizations`] = { $each: [ALL_SCOPE_VALUE] }
-          } else if (gen.utils.convertStringToBoolean(organizations)) {
-            const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
-            const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
-            if (!isValid) {
-              throw({
-                message: messageConstants.apiResponses.INVALID_ORGANIZATION,
-                status: httpStatusCode.bad_request.status
-              });
-            }
-            updateObject.$addToSet[`scope.organizations`] = { $each: bodyData.organizations };
-          }
-        }
-
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
