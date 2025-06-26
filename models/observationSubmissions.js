@@ -100,6 +100,10 @@ module.exports = {
       type: String,
       require: true,
       index:true
+    },
+    isExternalProgram:{
+      default : false,
+      type : Boolean
     }
   },
   compoundIndex: [

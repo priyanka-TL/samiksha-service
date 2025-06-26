@@ -20,6 +20,7 @@ module.exports = {
   FIND_ENTITY_DOCUMENTS: '/v1/entities/find',
   LIST_BY_ENTITY_TYPE: '/v1/entities/listByEntityType',
   FIND_ENTITY_TYPE_DOCUMENTS :'/v1/entityTypes/find',
+  FIND_ENTITY_DETAILS :'/v1/entities/details',
   GET_TEMPLATE_DETAILS: '/v1/project/templates/details',
   USER_READ:"/v1/user/read",
 	ORGANIZATION_READ: '/v1/organization/read',
@@ -27,6 +28,12 @@ module.exports = {
   PUBLIC_BRANDING : '/v1/public/branding',
   USER_ROLE_EXTENSION:'/v1/userRoleExtension/find',
   PROFILE_READ:'/v1/profile/read',
+  EXTERNAL_PROGRAM_DETAILS: '/v1/programs/details',
+  EXTERNAL_PROGRAM_READ: '/v1/programs/read',
+  EXTERNAL_PROGRAM_UPDATE: '/v1/programs/update',
   PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
   AUTO_DOWNLOAD: '/v1/files/download',
+  PROFILE_READ_BY_ID: '/v1/user/profileById',
+  PUSH_SUBMISSION_TO_TASK: '/v1/userProjects/pushSubmissionToTask',
+
 };

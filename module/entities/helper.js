@@ -1009,6 +1009,7 @@ module.exports = class EntitiesHelper {
     });
   }
 
+
   /**
    * Implement find query for entity
    * @method
@@ -1531,7 +1532,6 @@ module.exports = class EntitiesHelper {
                 let groups = entitiesDetails.data[0].groups;
 
                 let targetedGroup = groups[result.entityType];
-    
                 let filterDataGroups = {
                   "_id":targetedGroup,
                   "tenantId":req.userDetails.tenantData.tenantId,
@@ -1540,7 +1540,6 @@ module.exports = class EntitiesHelper {
                 let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
 
                 entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections,req.pageNo,req.pageSize,req.searchText);
-                
                 if ( !entitiesDetails.success ) {
                   return resolve({
                       "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
@@ -1593,6 +1592,7 @@ module.exports = class EntitiesHelper {
 
             }
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections,req.pageNo,req.pageSize,req.searchText);
+            console.log(entitiesDetails,"<--entitiesDetails line 1598")
             if ( !entitiesDetails.success ) {
                 return resolve({
                     "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
