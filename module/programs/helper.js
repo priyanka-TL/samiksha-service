@@ -184,7 +184,7 @@ module.exports = class ProgramsHelper {
         //if scope exits adding scope to programDocument
         if (data.scope) {
           data.scope.organizations = data.tenantData.orgId;
-          let programScopeUpdated = await this.setScope(program._id, data.scope);
+          let programScopeUpdated = await this.setScope(program._id, data.scope,data.tenantData);
 
           if (!programScopeUpdated.success) {
             throw {
@@ -251,7 +251,7 @@ module.exports = class ProgramsHelper {
           if(!data.scope.organizations){
             data.scope.organizations = tenantData.orgId
           }
-          let programScopeUpdated = await this.setScope(programId, data.scope);
+          let programScopeUpdated = await this.setScope(programId, data.scope,tenantData);
 
           if (!programScopeUpdated.success) {
             throw {
@@ -825,10 +825,11 @@ module.exports = class ProgramsHelper {
    * @param {String} scopeData.entityType - entity type
    * @param {Array} scopeData.entities - entities in scope
    * @param {Array} scopeData.roles - roles in scope
+   * @param {Object} tenantData - tenant data
    * @returns {JSON} - Set scope data.
    */
 
-  static setScope(programId, scopeData) {
+  static setScope(programId, scopeData,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         // Find program document to update or set scope based on program id
@@ -860,6 +861,17 @@ module.exports = class ProgramsHelper {
             });
             scopeData = _.omit(scopeData, keysCannotBeAdded);
           }
+
+          let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
+          if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+            throw ({
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            });
+          }
+          let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+
+          let filteredScope = gen.utils.getFilteredScope(scopeData, tenantPublicDetailsMetaField);
+
                   // }
 
                   const updateObject = {
@@ -867,13 +879,12 @@ module.exports = class ProgramsHelper {
                   }
           
                   // Set the scope in updateObject to the updated scopeData
-                  updateObject['$set']['scope'] = scopeData
+                  updateObject['$set']['scope'] = filteredScope
           
                   // Extract entities from scopeData excluding the 'roles' key
                   const entities = Object.keys(scopeData)
                     .filter((key) => key !== 'roles')
                     .reduce((acc, key) => acc.concat(scopeData[key]), [])
-          
                   // Add the entities array to updateObject
                   updateObject.$set.entities = entities
           
@@ -882,7 +893,6 @@ module.exports = class ProgramsHelper {
           
                   // Add the entityType to updateObject
                   updateObject['$set']['entityType'] = scopeData.entityType
-          
 
         //Updating or set scope in program document
         let updateProgram = await programsQueries.findOneAndUpdate(

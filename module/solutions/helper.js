@@ -189,7 +189,8 @@ module.exports = class SolutionsHelper {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
-            solutionData.scope ? solutionData.scope : {}
+            solutionData.scope ? solutionData.scope : {},
+            tenantData
           );
         }
 
@@ -761,7 +762,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - scope in solution.
    */
 
-  static setScope(programId, solutionId, scopeData) {
+  static setScope(programId, solutionId, scopeData,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
         // Getting program documents
@@ -917,11 +918,23 @@ module.exports = class SolutionsHelper {
           });
           scopeData = _.omit(scopeData, keysCannotBeAdded);
         }
+
+        let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
+        if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+          throw ({
+            message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+          });
+        }
+        let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+
+        let filteredScope = gen.utils.getFilteredScope(scopeData, tenantPublicDetailsMetaField);
+
+
         const updateObject = {
           $set: {},
         };
         // Assign the scopeData to the scope field in updateObject
-        updateObject['$set']['scope'] = scopeData;
+        updateObject['$set']['scope'] = filteredScope;
 
         // Extract all keys from scopeData except 'roles', and merge their values into a single array
         const entities = Object.keys(scopeData)
@@ -1080,7 +1093,8 @@ module.exports = class SolutionsHelper {
           let solutionScope = await this.setScope(
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
-            solutionData.scope
+            solutionData.scope,
+            tenantData
           );
 
           if (!solutionScope.success) {
@@ -2260,7 +2274,8 @@ module.exports = class SolutionsHelper {
               // newSolutionDocument.programId,
               newSolutionDocument.programId ? newSolutionDocument.programId : '',
               duplicateSolutionDocument._id,
-              data.scope
+              data.scope,
+              tenantData
             );
           }
 

@@ -611,6 +611,38 @@ function targetingQuery(bodyData, tenantMeta, mandatoryField, optionalField) {
 
   return filterQuery;
 }
+/**
+ * Filters and formats the scope data based on tenant metadata.
+ *
+ * - Only includes fields defined in mandatory and optional scope fields.
+ * - Mandatory fields are always included: if not present or falsy in scopeData, defaults to ['ALL'].
+ * - Optional fields are included only if present and truthy in scopeData.
+ *
+ * @param {Object} scopeData - The input scope object with field values.
+ * @param {Object} tenantPublicDetailsMetaField - Metadata defining mandatory and optional scope fields.
+ * @param {Object} messageConstants - Constants object containing ALL_SCOPE_VALUE and field keys.
+ * @returns {Object} - The filtered scope object with valid fields and values.
+ */
+function getFilteredScope(scopeData, tenantPublicDetailsMetaField) {
+  const mandatoryFields = tenantPublicDetailsMetaField[messageConstants.common.MANDATORY_SCOPE_FIELD] || [];
+  const optionalFields = tenantPublicDetailsMetaField[messageConstants.common.OPTIONAL_SCOPE_FIELD] || [];
+  
+  const allAllowedFields = [...mandatoryFields, ...optionalFields];
+  const filteredScope = {};
+
+  for (const field of allAllowedFields) {
+    const value = scopeData[field];
+
+    if (value) {
+      filteredScope[field] = value;
+    } else if (mandatoryFields.includes(field)) {
+      filteredScope[field] = [messageConstants.common.ALL_SCOPE_VALUE];
+    }
+  }
+
+  return filteredScope;
+}
+
 
 
 
@@ -651,5 +683,6 @@ module.exports = {
   returnTenantDataFromToken:returnTenantDataFromToken,
   factorQuery:factorQuery,
   extractScopeFactors:extractScopeFactors,
-  targetingQuery:targetingQuery
+  targetingQuery:targetingQuery,
+  getFilteredScope:getFilteredScope,
 };
