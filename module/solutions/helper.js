@@ -186,10 +186,7 @@ module.exports = class SolutionsHelper {
             solutionData.programId,
             solutionCreation._id,
             solutionData.scope ? solutionData.scope : {},
-            tenantData.orgId,
-            userToken,
-            tenantData.tenantId,
-            true  // indicates scope.organizations should be updated or not
+            userDetails
           );
         }
 
@@ -782,14 +779,11 @@ module.exports = class SolutionsHelper {
    * @param {String} programId -  programId.
    * @param {String} solutionId - solution id.
    * @param {Object} scopeData - scope data.
-	 * @param {Array} userOrgIds - userDetails.tenantAndOrgInfo.orgId
-   * @param {String} userToken - user token
-   * @param {String} tenantId - user tenant id
-	 * @param {Boolean} updateOrganizations - indicates if the scope.organizations should be updated or not
+	 * @param {Object} userDetails - loggedin user info
    * @returns {JSON} - scope in solution.
    */
 
-  static setScope(programId, solutionId, scopeData, userOrgIds, userToken, tenantId, updateOrganizations = false) {
+  static setScope(programId, solutionId, scopeData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         // Getting program documents
@@ -815,24 +809,35 @@ module.exports = class SolutionsHelper {
         }
 
         // populate scopeData.organizations data
-				if (scopeData.organizations && scopeData.organizations.length > 0) {
-          let validOrgs = await fetchValidOrgs(tenantId , userToken)
-          if(!validOrgs.success){
+        if (
+          scopeData.organizations &&
+          scopeData.organizations.length > 0 &&
+          userDetails.roles.includes(messageConstants.common.ADMIN)
+        ) {
+          // call user-service to fetch related orgs
+          let validOrgs = await userService.fetchTenantDetails(
+            userDetails.tenantAndOrgInfo.tenantId,
+            userDetails.userToken,
+            true
+          )
+          if (!validOrgs.success) {
             throw {
-              success : false,
-              status : httpStatusCode['bad_request'].status,
-              message : messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE
+              success: false,
+              status: httpStatusCodes['bad_request'].status,
+              message: messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE,
             }
           }
           validOrgs = validOrgs.data
-					scopeData.organizations = scopeData.organizations.filter(
-						(id) => validOrgs.includes(id) || id.toLowerCase() == messageConstants.common.ALL
-					)
-				} else if(updateOrganizations == true){
-					scopeData['organizations'] = userOrgIds
-				}
 
-				for (let index = 0; index < scopeData.organizations.length; index++) {
+          // filter valid orgs
+          scopeData.organizations = scopeData.organizations.filter(
+            (id) => validOrgs.includes(id) || id.toLowerCase() == messageConstants.common.ALL
+          )
+        } else {
+          scopeData['organizations'] = userDetails.tenantAndOrgInfo.orgId
+        }
+
+				for (let index = 0; scopeData.organizations && index < scopeData.organizations.length; index++) {
 					if (scopeData.organizations[index].toLowerCase() == messageConstants.common.ALL) {
 						scopeData.organizations[index] = 'ALL'
 					}
@@ -1131,10 +1136,7 @@ module.exports = class SolutionsHelper {
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
             solutionData.scope,
-            tenantData.orgId,
-            userDetails.userToken,
-            tenantData.tenantId,
-            false // false value indicates not to update organizations if scope.organizations is not present
+            userDetails
           );
 
           if (!solutionScope.success) {
@@ -4559,39 +4561,4 @@ function _createSolutionData(
   }
 
   return solutionData;
-}
-
-
-async function fetchValidOrgs(tenantId, token){
-  try{
-    let orgDetails = await userService.fetchTenantDetails(tenantId,token)
-    if (
-      !orgDetails ||
-      !orgDetails.success ||
-      !orgDetails.data ||
-      !(Object.keys(orgDetails.data).length > 0) ||
-      !orgDetails.data.organizations ||
-      !(orgDetails.data.organizations.length > 0)
-    ) {
-      return { success: false, errorObj: errorObj };
-    }
-  
-    // convert the types of items to string
-    orgDetails.data.related_orgs = orgDetails.data.organizations.map((data)=>{
-      return data.code.toString();
-    });
-  
-    // aggregate valid orgids  
-    let validOrgs = orgDetails.data.related_orgs;
-    return {
-      success : true,
-      data : validOrgs
-    }
-  }
-  catch(err){
-    return {
-      success : false,
-      message : err.message
-    }
-  }
 }
