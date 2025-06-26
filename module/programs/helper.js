@@ -435,7 +435,7 @@ module.exports = class ProgramsHelper {
           // Fetch tenant details to validate org codes and scope keys
           tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
           if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
-            return resolve({
+            throw ({
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
               status: httpStatusCode.bad_request.status
             })
