@@ -628,7 +628,7 @@ module.exports = class AssessmentsHelper {
           entities: requestedData.entities ? requestedData.entities : [],
         };
 
-        if (requestedData.project) {
+        if (requestedData?.project) {
           solutionInformation['project'] = requestedData.project;
           solutionInformation['referenceFrom'] = messageConstants.common.PROJECT;
         }

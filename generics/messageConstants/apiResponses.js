@@ -433,8 +433,10 @@ module.exports = {
   FAILED_TO_DELETE_DATA: 'No user data found to delete.',
   USER_ID_MISSING: 'User ID is missing',
   FAILED_TO_FETCH_TENANT_DETAILS: 'Failed to fetch tenant details',
+  PUSH_SUBMISSION_FAILED: 'Failed to push submission to project',
   DOMAIN_FETCH_FAILED: 'Tenants domain fetch failed',
   LINK_GENERATED: 'Link generated successfully',
   TENANTID_REQUIRED_IN_SOLUTION: 'TenantId required in solution',
-  OBSERVABLE_ENTITY_KEYS_NOT_FOUND: 'Observable entity keys not found in tenant data'
+  OBSERVABLE_ENTITY_KEYS_NOT_FOUND: 'Observable entity keys not found in tenant data',
+  USER_ROLES_PROCESSING_FAILED: 'User roles processing failed. Please check the content.'
 };

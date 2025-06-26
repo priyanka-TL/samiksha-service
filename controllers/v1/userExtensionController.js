@@ -129,12 +129,27 @@ module.exports = class UserExtension extends Abstract {
         let userRolesCSVData = await csv().fromString(req.files.userRoles.data.toString());
 
         if (!userRolesCSVData || userRolesCSVData.length < 1) {
-          throw messageConstants.apiResponses.FILE_DATA_MISSING;
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.FILE_DATA_MISSING
+          }
         }
 
-        let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(userRolesCSVData, req.userDetails);
+        const { tenantAndOrgInfo } = req.userDetails;
 
-        if (newUserRoleData.length > 0) {
+        let newUserRoleData = await userExtensionHelper.bulkCreateOrUpdate(
+          userRolesCSVData,
+          req.userDetails,
+          tenantAndOrgInfo
+        );
+
+        if(!newUserRoleData?.length) {
+          throw {
+            status: httpStatusCode.bad_request.status,
+            message: messageConstants.apiResponses.USER_ROLES_PROCESSING_FAILED,
+          }
+        }
+
           const fileName = `UserRole-Upload`;
           let fileStream = new FileStream(fileName);
           let input = fileStream.initStream();
@@ -154,9 +169,7 @@ module.exports = class UserExtension extends Abstract {
           );
 
           input.push(null);
-        } else {
-          throw messageConstants.apiResponses.SOMETHING_WENT_WRONG;
-        }
+        
       } catch (error) {
         return reject({
           status: error.status || httpStatusCode.internal_server_error.status,

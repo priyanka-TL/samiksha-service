@@ -70,7 +70,10 @@ module.exports = {
         index : true
     },
     project : Object,
-    referenceFrom : String,
+    referenceFrom: {
+      type: String,
+      index: true,
+    },
     scope: {
 			type: Object,
 			default: {},
@@ -106,6 +109,10 @@ module.exports = {
       type: String,
       require: true,
       index:true
+    },
+    isExternalProgram:{
+      default : false,
+      type : Boolean
     }
   },
   compoundIndex: [
