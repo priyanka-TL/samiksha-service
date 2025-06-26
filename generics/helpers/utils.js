@@ -539,8 +539,8 @@ function factorQuery(factors, userRoleInfo) {
 }
 /**
  * Checks if the user has admin-level roles.
- * @param {Object} userDetails - The user details object.
- * @param {string[]} userDetails.roles - Array of user role strings.
+ * @param {string[]} roles - Array of user role strings.
+ * @param {string[]} roleToCheck - Array of user role to validate strings.
  * @returns {boolean} True if user has ADMIN or TENANT_ADMIN role, else false.
  */
 function validateRoles(roles,roleToCheck){
