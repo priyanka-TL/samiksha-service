@@ -424,7 +424,7 @@ module.exports = class ProgramsHelper {
         let validationExcludedEntitiesKeys = []
         let tenantDetails
         let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN]
-        if (gen.utils.validateRoles(userDetails,adminTenantAdminRole)) {
+        if (gen.utils.validateRoles(userDetails.roles,adminTenantAdminRole)) {
           // Fetch tenant details to validate organization codes
           tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
           if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
@@ -638,7 +638,7 @@ module.exports = class ProgramsHelper {
         // Check roles to fetch tenantDetails for validationExcludedScopeKeys
         let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN];
         if (gen.utils.convertStringToBoolean(organizations)) {
-        if (gen.utils.validateRoles(userDetails, adminTenantAdminRole)) {
+        if (gen.utils.validateRoles(userDetails.roles, adminTenantAdminRole)) {
             updateObject.$pull[`scope.organizations`] = { $in: bodyData.organizations };
           }
         }
