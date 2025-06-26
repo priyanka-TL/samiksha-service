@@ -161,10 +161,6 @@ module.exports = class SolutionsHelper {
         solutionData['tenantId'] = tenantData.tenantId;
         solutionData['orgId'] = tenantData.orgId[0];
 
-        if (solutionData['scope']) {
-          solutionData['scope']['organization'] = tenantData.orgId;
-        }
-
         // create new solution document
         let solutionCreation = await solutionsQueries.createSolution(_.omit(solutionData, ['scope']));
 
@@ -189,7 +185,11 @@ module.exports = class SolutionsHelper {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
-            solutionData.scope ? solutionData.scope : {}
+            solutionData.scope ? solutionData.scope : {},
+            tenantData.orgId,
+            userToken,
+            tenantData.tenantId,
+            true  // indicates scope.organizations should be updated or not
           );
         }
 
@@ -782,13 +782,14 @@ module.exports = class SolutionsHelper {
    * @param {String} programId -  programId.
    * @param {String} solutionId - solution id.
    * @param {Object} scopeData - scope data.
-   * @param {String} scopeData.entityType - scope entity type
-   * @param {Array} scopeData.entities - scope entities
-   * @param {Array} scopeData.roles - roles in scope
+	 * @param {Array} userOrgIds - userDetails.tenantAndOrgInfo.orgId
+   * @param {String} userToken - user token
+   * @param {String} tenantId - user tenant id
+	 * @param {Boolean} updateOrganizations - indicates if the scope.organizations should be updated or not
    * @returns {JSON} - scope in solution.
    */
 
-  static setScope(programId, solutionId, scopeData) {
+  static setScope(programId, solutionId, scopeData, userOrgIds, userToken, tenantId, updateOrganizations = false) {
     return new Promise(async (resolve, reject) => {
       try {
         // Getting program documents
@@ -812,6 +813,30 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
+
+        // populate scopeData.organizations data
+				if (scopeData.organizations && scopeData.organizations.length > 0) {
+          let validOrgs = await fetchValidOrgs(tenantId , userToken)
+          if(!validOrgs.success){
+            throw {
+              success : false,
+              status : httpStatusCode['bad_request'].status,
+              message : messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE
+            }
+          }
+          validOrgs = validOrgs.data
+					scopeData.organizations = scopeData.organizations.filter(
+						(id) => validOrgs.includes(id) || id.toLowerCase() == messageConstants.common.ALL
+					)
+				} else if(updateOrganizations == true){
+					scopeData['organizations'] = userOrgIds
+				}
+
+				for (let index = 0; index < scopeData.organizations.length; index++) {
+					if (scopeData.organizations[index].toLowerCase() == messageConstants.common.ALL) {
+						scopeData.organizations[index] = 'ALL'
+					}
+				}
 
         //if program documents has scope update the scope in solution document
         let currentSolutionScope;
@@ -1003,10 +1028,11 @@ module.exports = class SolutionsHelper {
    * @param {Boolean} checkDate   -this is true for when its called via API calls\
    * @param {String} userId       - logged in user id.
    * @param {Object} tenantData   - tenant data.
+   * @param {Object} userDetails - loggedin user's info
    * @returns {JSON}              -solution updating data.
    */
 
-  static update(solutionId, solutionData, userId, checkDate = false, tenantData) {
+  static update(solutionId, solutionData, userId, checkDate = false, tenantData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
@@ -1100,14 +1126,15 @@ module.exports = class SolutionsHelper {
 
         // If req body has scope to update for the solution document
         if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
-          if (!solutionData.scope.organizations) {
-            solutionData.scope.organizations = tenantData.orgId;
-          }
 
           let solutionScope = await this.setScope(
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
-            solutionData.scope
+            solutionData.scope,
+            tenantData.orgId,
+            userDetails.userToken,
+            tenantData.tenantId,
+            false // false value indicates not to update organizations if scope.organizations is not present
           );
 
           if (!solutionScope.success) {
@@ -4532,4 +4559,39 @@ function _createSolutionData(
   }
 
   return solutionData;
+}
+
+
+async function fetchValidOrgs(tenantId, token){
+  try{
+    let orgDetails = await userService.fetchTenantDetails(tenantId,token)
+    if (
+      !orgDetails ||
+      !orgDetails.success ||
+      !orgDetails.data ||
+      !(Object.keys(orgDetails.data).length > 0) ||
+      !orgDetails.data.organizations ||
+      !(orgDetails.data.organizations.length > 0)
+    ) {
+      return { success: false, errorObj: errorObj };
+    }
+  
+    // convert the types of items to string
+    orgDetails.data.related_orgs = orgDetails.data.organizations.map((data)=>{
+      return data.code.toString();
+    });
+  
+    // aggregate valid orgids  
+    let validOrgs = orgDetails.data.related_orgs;
+    return {
+      success : true,
+      data : validOrgs
+    }
+  }
+  catch(err){
+    return {
+      success : false,
+      message : err.message
+    }
+  }
 }

@@ -109,5 +109,6 @@ module.exports = {
   OBJECT: 'object',
   ALL_SCOPE_VALUE:'ALL',
   DELETE:"DELETE",
-  POST:"POST"
+  POST:"POST",
+  ALL: 'all'
 };

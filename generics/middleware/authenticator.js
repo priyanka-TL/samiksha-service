@@ -515,42 +515,38 @@ module.exports = async function (req, res, next) {
     let orgDetails = await userService.fetchTenantDetails(tenantId,token);
     let validOrgIds = null;
 
-    if (orgIdArr.includes('ALL') || orgIdArr.includes('all')) {
-      validOrgIds = ['ALL'];
-    } else {
-      if (
-        !orgDetails ||
-        !orgDetails.success ||
-        !orgDetails.data ||
-        !(Object.keys(orgDetails.data).length > 0) ||
-        !orgDetails.data.organizations ||
-        !(orgDetails.data.organizations.length > 0)
-      ) {
-        let errorObj = {};
-        errorObj.errCode = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_CODE;
-        errorObj.errMsg = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE;
-        errorObj.responseCode = httpStatusCode['bad_request'].status;
-        return { success: false, errorObj: errorObj };
-      }
-
-      // convert the types of items to string
-      orgDetails.data.related_orgs = orgDetails.data.organizations.map((data)=>{
-        return data.code.toString();
-      });
-      // aggregate valid orgids
-
-      let relatedOrgIds = orgDetails.data.related_orgs;
-
-      validOrgIds = orgIdArr.filter((id) => relatedOrgIds.includes(id));
-
-      if (!(validOrgIds.length > 0)) {
-        let errorObj = {};
-        errorObj.errCode = reqMsg.ORGID.INVALID_ORGS;
-        errorObj.errMsg = reqMsg.ORGID.INVALID_ORGS_MESSAGE;
-        errorObj.responseCode = responseCode.unauthorized.status;
-        return { success: false, errorObj: errorObj };
-      }
+    if (
+      !orgDetails ||
+      !orgDetails.success ||
+      !orgDetails.data ||
+      !(Object.keys(orgDetails.data).length > 0) ||
+      !orgDetails.data.organizations ||
+      !(orgDetails.data.organizations.length > 0)
+    ) {
+      let errorObj = {};
+      errorObj.errCode = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_CODE;
+      errorObj.errMsg = messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE;
+      errorObj.responseCode = httpStatusCode['bad_request'].status;
+      return { success: false, errorObj: errorObj };
     }
+
+    // convert the types of items to string
+    orgDetails.data.related_orgs = orgDetails.data.organizations.map((data)=>{
+      return data.code.toString();
+    });
+    // aggregate valid orgids
+
+    let relatedOrgIds = orgDetails.data.related_orgs;
+
+    validOrgIds = orgIdArr.filter((id) => relatedOrgIds.includes(id));
+
+    if (!(validOrgIds.length > 0)) {
+      let errorObj = {};
+      errorObj.errCode = reqMsg.ORGID.INVALID_ORGS;
+      errorObj.errMsg = reqMsg.ORGID.INVALID_ORGS_MESSAGE;
+      errorObj.responseCode = responseCode.unauthorized.status;
+      return { success: false, errorObj: errorObj };
+    }    
 
     return { success: true, validOrgIds: validOrgIds };
   }
