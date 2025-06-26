@@ -3892,6 +3892,8 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Added roles data.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static addRolesInScope(solutionId, roles, tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -4002,9 +4004,13 @@ module.exports = class SolutionsHelper {
   static addEntitiesInScope(solutionId, bodyData, userDetails, organizations) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        // Extract tenant and org IDs from user details
         let tenantId = userDetails.tenantAndOrgInfo.tenantId
         let orgId = userDetails.tenantAndOrgInfo.orgId[0]
         const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
+
+        // Fetch the program document to ensure it exists and has a scope
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
@@ -4043,13 +4049,15 @@ module.exports = class SolutionsHelper {
 					})
 				}
 
-        // Build the $addToSet updateObject
+        // Setup for MongoDB update operation using $addToSet
         let updateObject = { $addToSet: {} };
         let validationExcludedEntitiesKeys = [];
         let tenantDetails
         let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN];
+
+        // Check if user is Admin or Tenant Admin
         if (gen.utils.validateRoles(userDetails.roles, adminTenantAdminRole)) {
-          // Fetch tenant details to validate organization codes
+          // Fetch tenant details to validate org codes and scope keys
           tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
           if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
             return resolve({
@@ -4058,6 +4066,7 @@ module.exports = class SolutionsHelper {
             });
           }
 
+          // Store validation-excluded scope keys if present
           if (
             Array.isArray(tenantDetails?.data?.meta?.validationExcludedScopeKeys) &&
             tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
@@ -4066,9 +4075,11 @@ module.exports = class SolutionsHelper {
             validationExcludedEntitiesKeys.push(...tenantDetails.data.meta.validationExcludedScopeKeys);
           }
 
+          // Handle organization values if passed
           if (gen.utils.convertStringToBoolean(organizations)) {
             if (Array.isArray(bodyData.organizations)) {
               if (bodyData.organizations.includes(ALL_SCOPE_VALUE)) {
+                // Add "ALL" if specified
                 updateObject.$addToSet[`scope.organizations`] = { $each: [ALL_SCOPE_VALUE] };
               } else {
                 const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
@@ -4189,6 +4200,8 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Removed solution roles.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static removeRolesInScope(solutionId, roles, tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -4274,9 +4287,13 @@ module.exports = class SolutionsHelper {
   static removeEntitiesInScope(solutionId, bodyData, userDetails, organizations) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        // Extract tenant and org IDs from userDetails
         let tenantId = userDetails.tenantAndOrgInfo.tenantId
         let orgId = userDetails.tenantAndOrgInfo.orgId[0]
         const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
+
+        // Fetch the program to verify it exists and has a scope field
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
@@ -4295,12 +4312,15 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
+
+        // Initialize the update object to be used in MongoDB update query
         const currentScope = solutionData[0].scope || {};
         let updateObject = { $pull: {} }
-        // Check roles to fetch tenantDetails for validationExcludedScopeKeys
+        // Check if user has Admin or Tenant Admin roles to allow org scope modification
         let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN]
         if (gen.utils.convertStringToBoolean(organizations)) {
           if (gen.utils.validateRoles(userDetails.roles, adminTenantAdminRole)) {
+              // Prepare $pull clause for organizations
               updateObject.$pull[`scope.organizations`] = { $in: bodyData.organizations };
             }
         }
@@ -4308,6 +4328,7 @@ module.exports = class SolutionsHelper {
         // Handle entity removal
         const entities = bodyData.entities || {};
         for (const [key, values] of Object.entries(entities)) {
+          // Check if the key is present in current program scope
           const currentScopeValues = currentScope[key] || [];
           if (!Array.isArray(currentScopeValues) || currentScopeValues.length === 0) {
             throw {
@@ -4316,6 +4337,7 @@ module.exports = class SolutionsHelper {
             };
           }
   
+          // Prepare $pull clause to remove provided entity IDs from scope
           updateObject.$pull[`scope.${key}`] = { $in: values };
         }
         const updateSolution = await solutionsQueries.updateSolutionDocument(
