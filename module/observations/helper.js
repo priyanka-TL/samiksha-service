@@ -2391,7 +2391,8 @@ module.exports = class ObservationsHelper {
         let programDocument
         let programQueryObject = {
           _id: solutionDocument.programId,
-          status: messageConstants.common.ACTIVE_STATUS
+          status: messageConstants.common.ACTIVE_STATUS,
+          tenantId:tenantData.tenantId,
         };
         if (solutionDocument.isExternalProgram) {
           programDocument = await projectService.programDetails(req.userDetails.userToken, solutionDocument.programId);
@@ -2416,8 +2417,7 @@ module.exports = class ObservationsHelper {
             ['externalId', 'name', 'description', 'imageCompression', 'isAPrivateProgram'],
             '',
             '',
-            '',
-            tenantData
+            ''
           );
           programDocument = programDocument.data.data;
         }

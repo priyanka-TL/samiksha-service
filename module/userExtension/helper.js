@@ -262,17 +262,15 @@ module.exports = class UserExtensionHelper {
         - sort: ''
         - skip: ''
         - limit: ''
-        - tenantAndOrgInfo: tenant and organization information passed from req.headers
         */
         //fetching all programs data based on externalId 
         // this is done to avoid multiple database calls for each program
         const allProgramsData = await programsHelper.list(
-          { externalId: { $in: Array.from(allProgramIds) } },
+          { externalId: { $in: Array.from(allProgramIds)},tenantId: tenantAndOrgInfo.tenantId },
           ['_id', 'externalId'],
           '',
           '',
           '',
-          tenantAndOrgInfo
         );
 
         // Create maps for program IDs and program information
