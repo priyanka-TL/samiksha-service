@@ -876,11 +876,11 @@ module.exports = class ProgramsHelper {
           scopeData['organizations'] = userDetails.tenantAndOrgInfo.orgId
         }
 
-				for (let index = 0; scopeData.organizations && index < scopeData.organizations.length; index++) {
-					if (scopeData.organizations[index].toLowerCase() == messageConstants.common.ALL) {
-						scopeData.organizations[index] = 'ALL'
-					}
-				}
+        if (Array.isArray(scopeData.organizations)) {
+          scopeData.organizations = scopeData.organizations.map(orgId =>
+            orgId === messageConstants.common.ALL ? 'ALL' : orgId
+          )
+        }
 
         let scope = {};
         // check if validate entity on or off

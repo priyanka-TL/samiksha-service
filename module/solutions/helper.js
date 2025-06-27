@@ -837,11 +837,11 @@ module.exports = class SolutionsHelper {
           scopeData['organizations'] = userDetails.tenantAndOrgInfo.orgId
         }
 
-				for (let index = 0; scopeData.organizations && index < scopeData.organizations.length; index++) {
-					if (scopeData.organizations[index].toLowerCase() == messageConstants.common.ALL) {
-						scopeData.organizations[index] = 'ALL'
-					}
-				}
+        if (Array.isArray(scopeData.organizations)) {
+          scopeData.organizations = scopeData.organizations.map(orgId =>
+            orgId === messageConstants.common.ALL ? 'ALL' : orgId
+          )
+        }
 
         //if program documents has scope update the scope in solution document
         let currentSolutionScope;
