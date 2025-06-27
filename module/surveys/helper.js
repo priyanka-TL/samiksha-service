@@ -1550,13 +1550,11 @@ module.exports = class SurveysHelper {
           } else {
             // let solutionData = solutionDocument[0];
             const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
-
-          let tenantData = {tenantId:bodyData.tenantId,orgId:bodyData.orgId} 
+            console.log(solutionDocument[0].referenceFrom,'solutionDocument[0].referenceFrom')
            let solutionData=await solutionsHelper.detailsBasedOnRoleAndLocation(
                 new ObjectId(solutionDocument[0]._id),
                 bodyData,
                 messageConstants.common.SURVEY,
-                tenantData,
                 solutionDocument[0].referenceFrom,
               );
             if (!solutionData.success) {

@@ -488,7 +488,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Auto targeted solutions query.
    */
 
-  static queryBasedOnRoleAndLocation(data, type = '') {
+  static queryBasedOnRoleAndLocation(data, type = '',referenceFrom = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
@@ -497,25 +497,29 @@ module.exports = class SolutionsHelper {
           isReusable: false,
           isDeleted: false,
         };
-
-        Object.keys(_.omit(data, ['role', 'filter', 'factors', 'type','tenantId','orgId','organizations'])).forEach((key) => {
-          data[key] = data[key].split(',');
-        });
-        // If validate entity set to ON . strict scoping should be applied
-        if (validateEntity !== messageConstants.common.OFF) {
-          // Getting entities and entity types from request body
-          Object.keys(_.omit(data, ['filter', 'role', 'factors', 'type','tenantId','orgId','organizations'])).forEach((requestedDataKey) => {
-             entities.push(...data[requestedDataKey]);
-            // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
-            entityTypes.push(requestedDataKey);
+        if (referenceFrom === '') {
+          Object.keys(
+            _.omit(data, ['role', 'filter', 'factors', 'type', 'tenantId', 'orgId', 'organizations'])
+          ).forEach((key) => {
+            data[key] = data[key].split(',');
           });
-          if (!(entities.length > 0)) {
-            throw {
-              message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
-            };
-          }
+          // If validate entity set to ON . strict scoping should be applied
+          if (validateEntity !== messageConstants.common.OFF) {
+            // Getting entities and entity types from request body
+            Object.keys(
+              _.omit(data, ['filter', 'role', 'factors', 'type', 'tenantId', 'orgId', 'organizations'])
+            ).forEach((requestedDataKey) => {
+              entities.push(...data[requestedDataKey]);
+              // if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey]);
+              entityTypes.push(requestedDataKey);
+            });
+            if (!(entities.length > 0)) {
+              throw {
+                message: messageConstants.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
+              };
+            }
 
-          /*
+            /*
           if (!data.role) {
             throw {
               message: messageConstants.apiResponses.USER_ROLES_NOT_FOUND,
@@ -528,90 +532,89 @@ module.exports = class SolutionsHelper {
             $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')],
           };
           */
-          // filterQuery['scope.entities'] = { $in: entities };
-          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
+            // filterQuery['scope.entities'] = { $in: entities };
+            let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type', 'tenantId', 'orgId']);
 
-          let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
-					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
-            return resolve({
-              success: false,
-              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-            });
-          }
-          let tenantPublicDetailsMetaField = tenantDetails.data.meta; 
-          let builtQuery = gen.utils.targetingQuery(
-            data,
-            tenantPublicDetailsMetaField,
-            messageConstants.common.MANDATORY_SCOPE_FIELD,
-            messageConstants.common.OPTIONAL_SCOPE_FIELD
-          )
-          filterQuery = {...filterQuery,...builtQuery}
-          filterQuery['scope.entityType'] = { $in: entityTypes };
-          
-        } else {
-          // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
-          // let userRoleKeys = Object.keys(userRoleInfo);
-          // userRoleKeys.forEach((entities) => {
-          //   filterQuery['scope.' + entities] = {
-          //     $in: userRoleInfo[entities].split(','),
-          //   };
-          // });
+            let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
+            if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+              return resolve({
+                success: false,
+                message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+              });
+            }
+            let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+            let builtQuery = gen.utils.targetingQuery(
+              data,
+              tenantPublicDetailsMetaField,
+              messageConstants.common.MANDATORY_SCOPE_FIELD,
+              messageConstants.common.OPTIONAL_SCOPE_FIELD
+            );
+            filterQuery = { ...filterQuery, ...builtQuery };
+            filterQuery['scope.entityType'] = { $in: entityTypes };
+          } else {
+            // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
+            // let userRoleKeys = Object.keys(userRoleInfo);
+            // userRoleKeys.forEach((entities) => {
+            //   filterQuery['scope.' + entities] = {
+            //     $in: userRoleInfo[entities].split(','),
+            //   };
+            // });
 
-          // Obtain userInfo
-          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
-          let userRoleKeys = Object.keys(userRoleInfo);
-          let queryFilter = [];
+            // Obtain userInfo
+            let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type', 'tenantId', 'orgId']);
+            let userRoleKeys = Object.keys(userRoleInfo);
+            let queryFilter = [];
 
-          // if factors are passed or query has to be build based on the keys passed
-          // factors = [ 'professional_role', 'professional_subroles' ]
-          if (data.hasOwnProperty('factors') && data.factors.length > 0) {
-            let factors = data.factors;
-            // Build query based on each key
-            factors.forEach((factor) => {
-              let scope = 'scope.' + factor;
-              let values = userRoleInfo[factor];
-              if (factor === 'role') {
+            // if factors are passed or query has to be build based on the keys passed
+            // factors = [ 'professional_role', 'professional_subroles' ]
+            if (data.hasOwnProperty('factors') && data.factors.length > 0) {
+              let factors = data.factors;
+              // Build query based on each key
+              factors.forEach((factor) => {
+                let scope = 'scope.' + factor;
+                let values = userRoleInfo[factor];
+                if (factor === 'role') {
+                  queryFilter.push({
+                    ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
+                  });
+                } else if (!Array.isArray(values)) {
+                  queryFilter.push({ [scope]: { $in: values.split(',') } });
+                } else {
+                  queryFilter.push({ [scope]: { $in: [...values] } });
+                }
+              });
+              // append query filter
+              if (filterQuery['$and']) {
+                filterQuery['$and'].push({
+                  $or: queryFilter,
+                });
+              } else {
+                filterQuery['$or'] = queryFilter;
+              }
+            } else {
+              userRoleKeys.forEach((key) => {
+                let scope = 'scope.' + key;
+                let values = userRoleInfo[key];
+
+                if (!Array.isArray(values)) {
+                  queryFilter.push({ [scope]: { $in: values.split(',') } });
+                } else {
+                  queryFilter.push({ [scope]: { $in: [...values] } });
+                }
+              });
+
+              if (data.role) {
                 queryFilter.push({
                   ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
                 });
-              } else if (!Array.isArray(values)) {
-                queryFilter.push({ [scope]: { $in: values.split(',') } });
-              } else {
-                queryFilter.push({ [scope]: { $in: [...values] } });
               }
-            });
-            // append query filter
-            if(filterQuery['$and']){
-              filterQuery['$and'].push({
-                $or: queryFilter,
-              });
-            }else{
-              filterQuery['$or'] = queryFilter;
-            }
-          } else {
-            userRoleKeys.forEach((key) => {
-              let scope = 'scope.' + key;
-              let values = userRoleInfo[key];
-
-              if (!Array.isArray(values)) {
-                queryFilter.push({ [scope]: { $in: values.split(',') } });
-              } else {
-                queryFilter.push({ [scope]: { $in: [...values] } });
+              if (queryFilter.length > 0) {
+                // append query filter
+                filterQuery['$and'] = queryFilter;
               }
-            });
-
-            if (data.role) {
-              queryFilter.push({
-                ['scope.roles']: { $in: [messageConstants.common.ALL_ROLES, ...data.role.split(',')] },
-              });
             }
-           if(queryFilter.length>0){
-            // append query filter
-            filterQuery['$and'] = queryFilter;
-           }
           }
         }
-
         if (type === messageConstants.common.SURVEY) {
           filterQuery['status'] = {
             $in: [messageConstants.common.ACTIVE_STATUS, messageConstants.common.INACTIVE_STATUS],
