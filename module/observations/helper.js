@@ -2403,6 +2403,14 @@ module.exports = class ObservationsHelper {
           }
           programDocument = [programDocument.result];
         } else {
+          /*
+          arguments passed to programsHelper.list() are:
+          - filter: { externalId: { $in: Array.from(allProgramIds) } }
+          - projection: ['_id', 'externalId']
+          - sort: ''
+          - skip: ''
+          - limit: ''
+        */
           programDocument = await programsHelper.list(
             programQueryObject,
             ['externalId', 'name', 'description', 'imageCompression', 'isAPrivateProgram'],

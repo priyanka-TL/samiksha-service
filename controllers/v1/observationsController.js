@@ -817,7 +817,6 @@ module.exports = class Observations extends Abstract {
             _id: observationDocument.programId,
             status: messageConstants.common.ACTIVE_STATUS,
             tenantId: req.userDetails.tenantData.tenantId,
-            ...gen
           };
           let programDocument;
           if (solutionDocument.isExternalProgram) {
@@ -833,13 +832,20 @@ module.exports = class Observations extends Abstract {
             }
             programDocument = programDocument.result;
           } else {
+            /*
+            arguments passed to programsHelper.list() are:
+            - filter: { externalId: { $in: Array.from(allProgramIds) } }
+            - projection: ['_id', 'externalId']
+            - sort: ''
+            - skip: ''
+            - limit: ''
+            */
             programDocument = await programsHelper.list(
               programQueryObject,
               ['externalId', 'name', 'description', 'imageCompression', 'isAPrivateProgram'],
               '',
               '',
-              '',
-              req.userDetails.tenantData
+              ''
             );
 
             programDocument = programDocument?.data?.data[0];

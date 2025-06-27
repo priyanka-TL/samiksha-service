@@ -893,8 +893,7 @@ module.exports = class SurveysHelper {
               ],
               '',
               '',
-              '',
-              tenantData
+              ''
              );
               programDocument = programDocument.data.data
             }

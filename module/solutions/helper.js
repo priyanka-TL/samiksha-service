@@ -2122,13 +2122,20 @@ module.exports = class SolutionsHelper {
           } else {
             programQuery[gen.utils.isValidMongoId(programId) ? '_id' : 'externalId'] = programId;
             programQuery['tenantId'] = tenantData.tenantId;
+            /*
+            arguments passed to programsHelper.list() are:
+            - filter: { externalId: { $in: Array.from(allProgramIds) } }
+            - projection: ['_id', 'externalId']
+            - sort: ''
+            - skip: ''
+            - limit: ''
+            */
             programDocument = await programsHelper.list(
               programQuery,
               ['externalId', 'name', 'description', 'isAPrivateProgram'],
               '',
               '',
-              '',
-              tenantData
+              ''
             );
             programDocument = programDocument?.data?.data?.[0];
           }
