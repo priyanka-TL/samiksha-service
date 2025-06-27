@@ -46,19 +46,19 @@ module.exports = (req) => {
 					req.checkBody(`entities.${key}`).isArray().withMessage(`${key} should be an array`)
 				}
 			}
-      if (req.query.organizations === 'true') {
-        req.checkBody('organizations')
-          .exists()
-          .withMessage('Organizations field is required when organizations=true in query')
-          .isArray()
-          .withMessage('Organizations must be an array')
-          .custom((value) => {
-            if (Array.isArray(value) && value.length === 0) {
-              throw new Error('Organizations array cannot be empty when organizations=true in query');
-            }
-            return true;
-          });
-      }
+      if (req.body.organizations) {
+				req.checkBody('organizations')
+					.exists()
+					.withMessage('Organizations field is required when organizations=true in query')
+					.isArray()
+					.withMessage('Organizations must be an array')
+					.custom((value) => {
+						if (Array.isArray(value) && value.length === 0) {
+							throw new Error('Organizations array cannot be empty')
+						}
+						return true
+					})
+			}
     },
     removeRolesInScope: function () {
       req.checkParams('_id').exists().withMessage('required program id');
@@ -78,19 +78,9 @@ module.exports = (req) => {
 					req.checkBody(`entities.${key}`).isArray().withMessage(`${key} should be an array`)
 				}
 			}
-      if (req.query.organizations === 'true') {
-        req.checkBody('organizations')
-          .exists()
-          .withMessage('Organizations field is required when organizations=true in query')
-          .isArray()
-          .withMessage('Organizations must be an array')
-          .custom((value) => {
-            if (Array.isArray(value) && value.length === 0) {
-              throw new Error('Organizations array cannot be empty when organizations=true in query');
-            }
-            return true;
-          });
-      }
+      if (req.body.organizations) {
+				req.checkBody('organizations').isArray().withMessage('Organizations must be an array')
+			}
     },
     join: function () {
       req.checkParams('_id').exists().withMessage('required program id');

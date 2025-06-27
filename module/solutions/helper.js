@@ -3997,11 +3997,10 @@ module.exports = class SolutionsHelper {
    * @param {String} solutionId - solution Id.
 	 * @param {Object} bodyData - body data.
 	 * @param {Object} userDetails - User Details
-	 * @param {Boolean} organizations - If organizations is Present.
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(solutionId, bodyData, userDetails, organizations) {
+  static addEntitiesInScope(solutionId, bodyData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
 
@@ -4076,7 +4075,7 @@ module.exports = class SolutionsHelper {
           }
 
           // Handle organization values if passed
-          if (gen.utils.convertStringToBoolean(organizations)) {
+          if (bodyData.organizations) {
             if (Array.isArray(bodyData.organizations)) {
               if (bodyData.organizations.includes(ALL_SCOPE_VALUE)) {
                 // Add "ALL" if specified
@@ -4280,11 +4279,10 @@ module.exports = class SolutionsHelper {
    * @param {String} solutionId - Program Id.
 	 * @param {Object} bodyData - body data.
 	 * @param {Object} userDetails - User Details
-	 * @param {Boolean} organizations - If organizations is Present.
    * @returns {JSON} - Removed entities from solution scope.
    */
 
-  static removeEntitiesInScope(solutionId, bodyData, userDetails, organizations) {
+  static removeEntitiesInScope(solutionId, bodyData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
 
@@ -4293,7 +4291,7 @@ module.exports = class SolutionsHelper {
         let orgId = userDetails.tenantAndOrgInfo.orgId[0]
         const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
 
-        // Fetch the program to verify it exists and has a scope field
+        // Fetch the solution to verify it exists and has a scope field
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
@@ -4314,32 +4312,53 @@ module.exports = class SolutionsHelper {
         }
 
         // Initialize the update object to be used in MongoDB update query
-        const currentScope = solutionData[0].scope || {};
-        let updateObject = { $pull: {} }
+				const currentScope = solutionData[0].scope || {};
+				// Deep copy to avoid mutation
+				let updatedScope = JSON.parse(JSON.stringify(currentScope))
+
         // Check if user has Admin or Tenant Admin roles to allow org scope modification
-        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN]
-        if (gen.utils.convertStringToBoolean(organizations)) {
-          if (gen.utils.validateRoles(userDetails.roles, adminTenantAdminRole)) {
-              // Prepare $pull clause for organizations
-              updateObject.$pull[`scope.organizations`] = { $in: bodyData.organizations };
-            }
-        }
-  
-        // Handle entity removal
-        const entities = bodyData.entities || {};
-        for (const [key, values] of Object.entries(entities)) {
-          // Check if the key is present in current program scope
-          const currentScopeValues = currentScope[key] || [];
-          if (!Array.isArray(currentScopeValues) || currentScopeValues.length === 0) {
-            throw {
-              message: `${key} is not present in solution scope`,
-              status: httpStatusCode.bad_request.status,
-            };
-          }
-  
-          // Prepare $pull clause to remove provided entity IDs from scope
-          updateObject.$pull[`scope.${key}`] = { $in: values };
-        }
+        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN];
+				let tenantDetails
+				if (gen.utils.validateRoles(userDetails.roles, adminTenantAdminRole)) {
+					// Fetch tenant meta details if user is admin/tenant admin
+					tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken)
+					if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
+						throw {
+							message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+							status: httpStatusCode.bad_request.status,
+						}
+					}
+				}
+
+				// Remove entity values from current scope
+				const entitiesToRemove = bodyData.entities || {}
+				for (const [key, valuesToRemove] of Object.entries(entitiesToRemove)) {
+					const currentValues = updatedScope[key] || []
+					// If current scope does not contain an array for the key, throw error
+					if (!Array.isArray(currentValues)) {
+						throw {
+							message: `${key} is not present in solution scope`,
+							status: httpStatusCode.bad_request.status,
+						}
+					}
+					// Remove matching values
+					updatedScope[key] = currentValues.filter((val) => !valuesToRemove.includes(val))
+				}
+
+				// Fill with ALL for empty keys listed in tenant meta.factors
+				const factorKeys = tenantDetails?.data?.meta?.factors || []
+				for (const factorKey of factorKeys) {
+					if (!Array.isArray(updatedScope[factorKey]) || updatedScope[factorKey].length === 0) {
+						updatedScope[factorKey] = [ALL_SCOPE_VALUE]
+					}
+				}
+
+				// Prepare update object
+				let updateObject = {
+					$set: {
+						scope: updatedScope,
+					},
+				}
         const updateSolution = await solutionsQueries.updateSolutionDocument(
           { _id: solutionId },
           updateObject,
