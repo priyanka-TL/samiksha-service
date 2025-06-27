@@ -488,7 +488,7 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Auto targeted solutions query.
    */
 
-  static queryBasedOnRoleAndLocation(data, type = '',referenceFrom = '') {
+  static queryBasedOnRoleAndLocation(data, type = '', referenceFrom = '') {
     return new Promise(async (resolve, reject) => {
       try {
         let entities = [];
