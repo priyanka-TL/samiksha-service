@@ -3,43 +3,22 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - test-actions     # Add other branches as needed
-  pull_request:
-    branches:
       - test-actions
-    types: [closed]
-  workflow_dispatch:  # Manual trigger with inputs
+  workflow_dispatch:
     inputs:
       custom_tag:
         description: 'Custom tag name for the Docker image'
         required: false
         default: 'manual-build'
         type: string
-      environment:
-        description: 'Target environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
-      push_latest:
-        description: 'Also tag as latest'
-        required: false
-        default: false
-        type: boolean
 
 env:
-  # DOCKER_IMAGE_NAME: samiksha-service  # Configure your image name here
-  DOCKER_REGISTRY: docker.io
-  # DOCKER_NAMESPACE: shikshalokamqa
   DOCKER_IMAGE_NAME: test-githib-workflow
+  DOCKER_REGISTRY: docker.io
   DOCKER_NAMESPACE: priyanka2171
 
 jobs:
   build-and-push:
-    # Only run on merged PRs or direct pushes to specified branches
-    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     
     steps:
@@ -55,42 +34,24 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
-        tags: |
-          # Manual workflow dispatch tags
-          type=raw,value=${{ github.event.inputs.custom_tag }},enable=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.custom_tag != '' }}
-          type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.push_latest == 'true' }}
-          type=raw,value=${{ github.event.inputs.environment }},enable=${{ github.event_name == 'workflow_dispatch' }}
-          # Automatic tags for push/PR events
-          type=raw,value=latest,enable={{is_default_branch}}
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix={{branch}}-
-          type=raw,value=staging-{{date 'YYYYMMDD-HHmmss'}},enable={{is_default_branch}}
+    - name: Set custom tag
+      id: tag
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.custom_tag }}" ]; then
+          echo "tag=${{ github.event.inputs.custom_tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=test-actions-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+        fi
     
     - name: Build and push Docker image
-      id: build
       uses: docker/build-push-action@v5
       with:
         context: .
-        file: ./Dockerfile  # Adjust path if needed
+        file: ./Dockerfile
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        platforms: linux/amd64,linux/arm64  # Multi-platform support
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
+        platforms: linux/amd64,linux/arm64
         
-    - name: Image digest
-      run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"
-      
-    - name: Print pushed tags
+    - name: Print image info
       run: |
-        echo "Pushed tags"
-        echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
+        echo "Image pushed: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.tag }}"
