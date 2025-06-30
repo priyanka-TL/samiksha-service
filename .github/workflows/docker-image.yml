@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - test-actions
-  pull_request:
-    branches:
-      - test-actions
-    types: [closed]
 
 env:
   # DOCKER_IMAGE_NAME: samiksha-service  # Configure your image name here
