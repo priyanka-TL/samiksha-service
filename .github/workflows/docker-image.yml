@@ -38,7 +38,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        # images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
+        #images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
         images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}
         tags: |
           # Set latest tag for default branch
@@ -53,9 +53,10 @@ jobs:
           # SHA tag for unique identification
           type=sha,prefix={{branch}}-
           # Custom staging tag when pushed to staging branch
-          type=raw,value=staging-{{date 'YYYYMMDD-HHmmss'}},enable={{is_default_branch}}
+          type=raw,value=test-actions-{{date 'YYYYMMDD-HHmmss'}},enable={{is_default_branch}}
     
     - name: Build and push Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -68,7 +69,7 @@ jobs:
         cache-to: type=gha,mode=max
         
     - name: Image digest
-      run: echo "Image pushed with digest: ${{ steps.build.outputs.digest }}"
+      run: echo "Image pushed with digest  ${{ steps.build.outputs.digest }}"
       
     - name: Print pushed tags
       run: |
