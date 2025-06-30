@@ -14,6 +14,7 @@ env:
   DOCKER_REGISTRY: docker.io
   # DOCKER_NAMESPACE: shikshalokamqa
   DOCKER_IMAGE_NAME: test-githib-workflow
+  DOCKER_NAMESPACE: priyanka2171
 
 jobs:
   build-and-push:
@@ -38,8 +39,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        #images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
-        images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}
+        images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
         tags: |
           # Set latest tag for default branch
           type=raw,value=latest,enable={{is_default_branch}}
