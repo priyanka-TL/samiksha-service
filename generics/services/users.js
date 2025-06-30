@@ -136,10 +136,11 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
  * Fetches the tenant details for a given tenant ID along with org it is associated with.
  * @param {string} tenantId - The code/id of the organization.
  * @param {String} userToken - user token
+ * @param {Boolean} aggregateValidOrgs - boolean value to populate valid orgs from response
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const fetchTenantDetails = function (tenantId, userToken) {
+const fetchTenantDetails = function (tenantId, userToken, aggregateValidOrgs = false) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			let url =
@@ -163,7 +164,19 @@ const fetchTenantDetails = function (tenantId, userToken) {
 				} else {
 					let response = JSON.parse(data.body)
 					if (response.responseCode === httpStatusCode['ok_userService'].message) {
-						result['data'] = response.result
+						if (aggregateValidOrgs == true) {
+							if (response.result.organizations && response.result.organizations.length) {
+								// convert the types of items to string
+								let validOrgs = response.result.organizations.map((data) => {
+									return data.code.toString()
+								})
+								result['data'] = validOrgs
+							} else {
+								result['data'] = []
+							}
+						} else {
+							result['data'] = response.result
+						}
 					} else {
 						result.success = false
 					}

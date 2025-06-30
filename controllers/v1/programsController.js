@@ -162,7 +162,8 @@ module.exports = class Programs extends Abstract {
 
         let programCreationData = await programsHelper.create(
           req.body,
-          true, // checkDate
+          true, // checkDate,
+          req.userDetails
         );
 
         return resolve({
@@ -252,7 +253,8 @@ module.exports = class Programs extends Abstract {
         req.body,
         req.userDetails.userId,
         true, //checkDate
-        tenantFilter
+        tenantFilter,
+        req.userDetails
       );
 
       programUpdationData.result = programUpdationData.data;
