@@ -128,10 +128,11 @@ module.exports = class ProgramsHelper {
    * @name create
    * @param {Array} data
    * @param {Boolean} checkDate this is true for when its called via API calls
+   * @param {Object} userDetails loggedin user's info
    * @returns {JSON} - create program.
    */
 
-  static create(data, checkDate = false) {
+  static create(data, checkDate = false, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = {
@@ -209,10 +210,11 @@ module.exports = class ProgramsHelper {
    * @param {String} userId
    * @param {Boolean} checkDate -this is true for when its called via API calls
    * @param {Object} tenantData - tenant data
+   * @param {Object} userDetails - loggedin user's info
    * @returns {JSON}            - update program.
    */
 
-  static update(programId, data, userId, checkDate = false,tenantData) {
+  static update(programId, data, userId, checkDate = false, tenantData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         data.updatedBy = userId;
@@ -842,6 +844,41 @@ module.exports = class ProgramsHelper {
           });
         }
 
+        // populate scopeData.organizations data
+        if (
+          scopeData.organizations &&
+          scopeData.organizations.length > 0 &&
+          userDetails.roles.includes(messageConstants.common.ADMIN)
+        ) {
+          // call user-service to fetch related orgs
+          let validOrgs = await userService.fetchTenantDetails(
+            userDetails.tenantAndOrgInfo.tenantId,
+            userDetails.userToken,
+            true
+          )
+          if (!validOrgs.success) {
+            throw {
+              success: false,
+              status: httpStatusCodes['bad_request'].status,
+              message: messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE,
+            }
+          }
+          validOrgs = validOrgs.data
+
+          // filter valid orgs
+          scopeData.organizations = scopeData.organizations.filter(
+            (id) => validOrgs.includes(id) || id.toLowerCase() == messageConstants.common.ALL
+          )
+        } else {
+          scopeData['organizations'] = userDetails.tenantAndOrgInfo.orgId
+        }
+
+        if (Array.isArray(scopeData.organizations)) {
+          scopeData.organizations = scopeData.organizations.map(orgId =>
+            orgId === messageConstants.common.ALL ? 'ALL' : orgId
+          )
+        }
+
         let scope = {};
         // check if validate entity on or off
         // if (validateEntity !== messageConstants.common.OFF) {
@@ -863,8 +900,9 @@ module.exports = class ProgramsHelper {
           }
 
           let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
-          if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+          if (!tenantDetails.success || !tenantDetails?.data?.meta) {
             throw ({
+              status: httpStatusCode['bad_request'].status,
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             });
           }
@@ -1368,7 +1406,7 @@ module.exports = class ProgramsHelper {
           let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
           let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
-					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+					if (!tenantDetails.success || !tenantDetails?.data?.meta) {
             return resolve({
               success: false,
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,

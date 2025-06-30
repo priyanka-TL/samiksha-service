@@ -70,8 +70,9 @@ module.exports = class Programs extends Abstract {
       try {
 
         let tenantDetails = await userService.fetchPublicTenantDetails(req.userDetails.tenantData.tenantId);
-        if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+        if (!tenantDetails.success || !tenantDetails?.data?.meta) {
           throw ({
+            status: httpStatusCode.internal_server_error.status,
             message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
           });
         }
@@ -179,7 +180,8 @@ module.exports = class Programs extends Abstract {
 
         let programCreationData = await programsHelper.create(
           req.body,
-          true, // checkDate
+          true, // checkDate,
+          req.userDetails
         );
 
         return resolve({
@@ -252,14 +254,6 @@ module.exports = class Programs extends Abstract {
    * @param {Object}
    * @returns {JSON} -
    */
-  /**
-   * Update program.
-   * @method
-   * @name update
-   * @param {Object} req - requested data.
-   * @param {Object}
-   * @returns {JSON} -
-   */
 
   async update(req) {
     try {
@@ -269,7 +263,8 @@ module.exports = class Programs extends Abstract {
         req.body,
         req.userDetails.userId,
         true, //checkDate
-        tenantFilter
+        tenantFilter,
+        req.userDetails
       );
 
       programUpdationData.result = programUpdationData.data;
