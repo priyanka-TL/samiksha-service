@@ -4,54 +4,124 @@ on:
   push:
     branches:
       - test-actions
-  workflow_dispatch:
-    inputs:
-      custom_tag:
-        description: 'Custom tag name for the Docker image'
-        required: false
-        default: 'manual-build'
-        type: string
+  pull_request:
+    branches:
+      - test-actions
+    types: [closed]
 
 env:
-  DOCKER_IMAGE_NAME: test-githib-workflow
+  # DOCKER_IMAGE_NAME: samiksha-service  # Configure your image name here
   DOCKER_REGISTRY: docker.io
+  # DOCKER_NAMESPACE: shikshalokamqa
+  DOCKER_IMAGE_NAME: test-githib-workflow
   DOCKER_NAMESPACE: priyanka2171
 
 jobs:
   build-and-push:
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    
-    - name: Set custom tag
-      id: tag
+
+    - name: Fetch latest version from Docker Hub
+      id: fetch-version
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.custom_tag }}" ]; then
-          echo "tag=${{ github.event.inputs.custom_tag }}" >> $GITHUB_OUTPUT
+        # Fetch tags from Docker Hub API
+        TAGS=$(curl -s "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags?page_size=100" | jq -r '.results[].name')
+        # Filter semantic version tags (e.g., 3.3.3) and sort to get the latest
+        LATEST_TAG=$(echo "$TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+        if [ -z "$LATEST_TAG" ]; then
+          echo "No valid semver tag found, defaulting to 1.0.0"
+          echo "current_version=1.0.0" >> $GITHUB_OUTPUT
         else
-          echo "tag=test-actions-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          echo "current_version=$LATEST_TAG" >> $GITHUB_OUTPUT
         fi
-    
+      env:
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Calculate new version
+      id: increment-version
+      run: |
+        CURRENT_VERSION=${{ steps.fetch-version.outputs.current_version }}
+        # Split version into major, minor, patch
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+        if [ -z "$MAJOR" ] || [ -z "$MINOR" ] || [ -z "$PATCH" ]; then
+          echo "Invalid version format, defaulting to 1.0.0"
+          NEW_VERSION="1.0.0"
+        else
+          # Increment patch, or minor if patch reaches 10
+          if [ "$PATCH" -ge 9 ]; then
+            NEW_MINOR=$((MINOR + 1))
+            NEW_PATCH=0
+          else
+            NEW_MINOR=$MINOR
+            NEW_PATCH=$((PATCH + 1))
+          fi
+          NEW_VERSION="$MAJOR.$NEW_MINOR.$NEW_PATCH"
+        fi
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "Calculated new version: $NEW_VERSION"
+      shell: bash
+
+    - name: Check if new version exists on Docker Hub
+      id: check-version
+      run: |
+        NEW_VERSION=${{ steps.increment-version.outputs.new_version }}
+        # Check if the new version tag exists
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/$NEW_VERSION")
+        if [ "$RESPONSE" -eq 200 ]; then
+          echo "Error: Tag $NEW_VERSION already exists on Docker Hub"
+          exit 1
+        else
+          echo "Tag $NEW_VERSION does not exist, proceeding with build"
+          echo "version_exists=false" >> $GITHUB_OUTPUT
+        fi
+      env:
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
+        tags: |
+          # Use the incremented version
+          type=raw,value=${{ steps.increment-version.outputs.new_version }}
+          # Optionally keep other tags
+          type=raw,value=latest,enable={{is_default_branch}}
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=release{{date 'YYYYMMDD-HHmmss'}},enable={{is_default_branch}}
+
     - name: Build and push Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         platforms: linux/amd64,linux/arm64
-        
-    - name: Print image info
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Image digest
+      run: echo "Image pushed with digest  ${{ steps.build.outputs.digest }}"
+
+    - name: Print pushed tags
       run: |
-        echo "Image pushed: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.tag }}"
+        echo "Pushed tags:"
+        echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
