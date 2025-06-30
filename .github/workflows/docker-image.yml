@@ -92,5 +92,5 @@ jobs:
       
     - name: Print pushed tags
       run: |
-        echo "Pushed tags:"
+        echo "Pushed tags"
         echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
