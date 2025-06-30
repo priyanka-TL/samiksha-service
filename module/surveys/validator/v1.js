@@ -14,7 +14,7 @@ module.exports = (req) => {
       req.checkQuery('appName').exists().withMessage('required appName');
     },
 
-    mapSurverySolutionToProgram: function () {
+    mapSurveySolutionToProgram: function () {
       req
         .checkParams('_id')
         .exists()

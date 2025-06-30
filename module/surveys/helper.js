@@ -372,14 +372,14 @@ module.exports = class SurveysHelper {
   /**
    * Map survey solution to program.
    * @method
-   * @name mapSurverySolutionToProgram
+   * @name mapSurveySolutionToProgram
    * @param {String} solutionId - survey solution id
    * @param {String} programId - programId
    * @param {Object} tenantAndOrgInfo - tenant and org info
    * @returns {String} - message.
    */
 
-  static mapSurverySolutionToProgram(solutionId = '', programId = '',tenantAndOrgInfo) {
+  static mapSurveySolutionToProgram(solutionId = '', programId = '',tenantAndOrgInfo) {
     return new Promise(async (resolve, reject) => {
       try {
         if (solutionId == '') {

@@ -207,7 +207,7 @@ module.exports = async function (req, res, next) {
     'solutions/uploadCriteriaRubricExpressions',
     'solutions/importFromSolution',
     'surveys/importSurveyTemplateToSolution',
-    'surveys/mapSurverySolutionToProgram',
+    'surveys/mapSurveySolutionToProgram',
     "criteria/upload",
     "questions/bulkCreate",
     "frameworks/create",
