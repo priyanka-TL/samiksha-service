@@ -8,6 +8,26 @@ on:
     branches:
       - test-actions
     types: [closed]
+  workflow_dispatch:  # Manual trigger with inputs
+    inputs:
+      custom_tag:
+        description: 'Custom tag name for the Docker image'
+        required: false
+        default: 'manual-build'
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      push_latest:
+        description: 'Also tag as latest'
+        required: false
+        default: false
+        type: boolean
 
 env:
   # DOCKER_IMAGE_NAME: samiksha-service  # Configure your image name here
@@ -41,19 +61,18 @@ jobs:
       with:
         images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
         tags: |
-          # Set latest tag for default branch
+          # Manual workflow dispatch tags
+          type=raw,value=${{ github.event.inputs.custom_tag }},enable=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.custom_tag != '' }}
+          type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.push_latest == 'true' }}
+          type=raw,value=${{ github.event.inputs.environment }},enable=${{ github.event_name == 'workflow_dispatch' }}
+          # Automatic tags for push/PR events
           type=raw,value=latest,enable={{is_default_branch}}
-          # Branch name tag
           type=ref,event=branch
-          # PR number tag
           type=ref,event=pr
-          # Semantic versioning tags (if you use version tags)
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
-          # SHA tag for unique identification
           type=sha,prefix={{branch}}-
-          # Custom staging tag when pushed to staging branch
-          type=raw,value=test-actions-{{date 'YYYYMMDD-HHmmss'}},enable={{is_default_branch}}
+          type=raw,value=staging-{{date 'YYYYMMDD-HHmmss'}},enable={{is_default_branch}}
     
     - name: Build and push Docker image
       id: build
@@ -69,7 +88,7 @@ jobs:
         cache-to: type=gha,mode=max
         
     - name: Image digest
-      run: echo "Image pushed with digest  ${{ steps.build.outputs.digest }}"
+      run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"
       
     - name: Print pushed tags
       run: |
