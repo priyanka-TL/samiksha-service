@@ -262,17 +262,15 @@ module.exports = class UserExtensionHelper {
         - sort: ''
         - skip: ''
         - limit: ''
-        - tenantAndOrgInfo: tenant and organization information passed from req.headers
         */
         //fetching all programs data based on externalId 
         // this is done to avoid multiple database calls for each program
         const allProgramsData = await programsHelper.list(
-          { externalId: { $in: Array.from(allProgramIds) } },
-          ['_id', 'externalId'],
+          { externalId: { $in: Array.from(allProgramIds)},tenantId: tenantAndOrgInfo.tenantId },
+          ['_id', 'externalId', 'name'],
           '',
           '',
           '',
-          tenantAndOrgInfo
         );
 
         // Create maps for program IDs and program information
@@ -1096,7 +1094,7 @@ function createKafkaPayload (userProfile, programId, role, eventType,programInfo
     entity:messageConstants.common.PROGRAM,
     meta: {
 			programInformation: {
-				name: programInfoMap[programId].externalId,
+				name: programInfoMap[programId].name,
 				externalId: programInfoMap[programId].externalId,
 				id: programId.toString(),
 			},

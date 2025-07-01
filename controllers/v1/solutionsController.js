@@ -504,7 +504,8 @@ module.exports = class Solutions extends Abstract {
           req.body,
           req.userDetails.userId,
           true, //checkDate,
-          tenantData
+          tenantData,
+          req.userDetails
         );
         return resolve(solutionData);
       } catch (error) {
@@ -2049,7 +2050,7 @@ module.exports = class Solutions extends Abstract {
     return new Promise(async (resolve, reject) => {
       try {
         //passing {true} for checkDate params in helper
-        let solutionData = await solutionsHelper.createSolution(req.body, true, req.userDetails.tenantAndOrgInfo);
+        let solutionData = await solutionsHelper.createSolution(req.body, true, req.userDetails.tenantAndOrgInfo, req.userDetails.userToken, req.userDetails);
 
         solutionData['result'] = solutionData.data;
 

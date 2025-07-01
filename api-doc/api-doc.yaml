@@ -5265,7 +5265,7 @@ paths:
                     status: 500
                     message: Oops! Something Went Wrong.
   /v1/files/getDownloadableUrl:
-    get:
+    post:
       summary: Returns downloadable URL for the files
       description: This API is used to retrieve a downloadable URL for a file that has already been uploaded to the cloud. By providing the necessary file information, the API returns a secure URL that can be used to download the file directly. This API is particularly useful for accessing files stored in cloud storage after an upload process is complete.
       operationId: ''
@@ -5339,7 +5339,8 @@ paths:
                         - msg
   /v1/userExtension/bulkUpload:
     post:
-      tags: *ref_3
+      tags: 
+        - userExtension
       summary: >-
         Bulk processes CSV data to assign/update user roles across programs with
         validation and event notifications.
@@ -5349,6 +5350,7 @@ paths:
         operations (add, remove, override) and real-time event notifications via
         Kafka.
       requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -5357,32 +5359,39 @@ paths:
                 userRoles:
                   type: string
                   format: binary
-              required: []
+              required:
+                - userRoles
       parameters:
-        - *ref_4
         - in: header
           name: tenantId
-          description: ''
-          schema: &ref_5
+          schema:
             type: string
+          required: true
+          description: Tenant identifier
         - in: header
           name: orgId
-          description: ''
-          schema: *ref_5
+          schema:
+            type: string
+          required: true
+          description: Organization identifier
         - in: header
           name: admin-auth-token
-          description: ''
-          schema: *ref_5
+          schema:
+            type: string
+          required: false
+          description: Admin authentication token
         - in: header
           name: internal-access-token
-          description: ''
-          schema: *ref_5
+          schema:
+            type: string
+          required: true
+          description: Internal access token for authorization
+
       responses:
         '200':
           description: Success response
           content:
             text/html:
-              schema: *ref_6
               examples:
                 SuccessResponse:
                   value: >-
@@ -5399,7 +5408,31 @@ paths:
                   value: ''
                 example2:
                   value: ''
-        '400': *ref_7
+        '400':
+          description: Failure response
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                      required:
+                        - location
+                        - param
+                        - msg
 
 components:
   securitySchemes: {}

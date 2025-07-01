@@ -376,7 +376,7 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
       };
 
       // Make the HTTP POST request to the user role extension API
-      request.post(url, options, requestCallBack);
+      request.get(url, options, requestCallBack);
 
       // Callback function to handle the response from the HTTP POST request
       function requestCallBack(err, data) {
