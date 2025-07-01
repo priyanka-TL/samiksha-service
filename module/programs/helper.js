@@ -184,7 +184,6 @@ module.exports = class ProgramsHelper {
 
         //if scope exits adding scope to programDocument
         if (data.scope) {
-          data.scope.organizations = data.tenantData.orgId;
           let programScopeUpdated = await this.setScope(program._id, data.scope,userDetails);
 
           if (!programScopeUpdated.success) {
@@ -250,9 +249,6 @@ module.exports = class ProgramsHelper {
         }
         // If the request body contains scope data, it will be updated as follows
         if (data.scope) {
-          if(!data.scope.organizations){
-            data.scope.organizations = tenantData.orgId
-          }
           let programScopeUpdated = await this.setScope(programId, data.scope,userDetails);
 
           if (!programScopeUpdated.success) {
