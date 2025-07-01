@@ -2305,11 +2305,6 @@ module.exports = class SolutionsHelper {
 
         let duplicateSolutionDocument = await solutionsQueries.createSolution(_.omit(newSolutionDocument, ['_id']));
         
-        
-        
-        data.scope = {
-          "state":["Goa","MH"]
-        }
         if (duplicateSolutionDocument._id) {
           if (data.scope && Object.keys(data.scope).length > 0) {
             data.scope.organizations = tenantData.orgId;
