@@ -1103,7 +1103,9 @@ module.exports = class SolutionsHelper {
           updateObject['$set'][updationData] = solutionUpdateData[updationData];
         });
         updateObject['$set']['updatedBy'] = userId;
-        updateObject['$set']['status'] = 'active';
+        if(!solutionUpdateData['status']){
+          updateObject['$set']['status'] = 'active';
+        }
         //updating solution document
         let solutionUpdatedData = await solutionsQueries.updateSolutionDocument(
           {
