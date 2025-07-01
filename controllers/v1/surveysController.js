@@ -150,12 +150,12 @@ module.exports = class Surveys extends Abstract {
   }
 
   /**
-     * @api {get} /assessment/api/v1/surveys/mapSurverySolutionToProgram/:solutionId?programId=:programId Map survey solution to program.
+     * @api {get} /assessment/api/v1/surveys/mapSurveySolutionToProgram/:solutionId?programId=:programId Map survey solution to program.
      * @apiVersion 1.0.0
      * @apiName Map survey solution to program.
      * @apiGroup Surveys
      * @apiHeader {String} X-authenticated-user-token Authenticity token
-     * @apiSampleRequest /assessment/api/v1/surveys/mapSurverySolutionToProgram/5f58b0b8894a0928fc8aa9b3?programId=test-survey-program
+     * @apiSampleRequest /assessment/api/v1/surveys/mapSurveySolutionToProgram/5f58b0b8894a0928fc8aa9b3?programId=test-survey-program
      * @apiParamExample {json} Response:
      * {
          "status": 200,
@@ -168,17 +168,17 @@ module.exports = class Surveys extends Abstract {
   /**
    * Map survey solution to program.
    * @method
-   * @name mapSurverySolutionToProgram
+   * @name mapSurveySolutionToProgram
    * @param {Object} req -request Data.
    * @param {String} req.params._id - survey solution id.
    * @param {String} req.query.programId - program Id
    * @returns {String} - message
    */
 
-  async mapSurverySolutionToProgram(req) {
+  async mapSurveySolutionToProgram(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await surveysHelper.mapSurverySolutionToProgram(
+        let result = await surveysHelper.mapSurveySolutionToProgram(
           req.params._id,
           req.query.programId,
           req.userDetails.tenantAndOrgInfo

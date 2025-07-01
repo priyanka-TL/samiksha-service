@@ -108,6 +108,8 @@ module.exports = {
 	DELETE_EVENT_TYPE: 'delete',
   CREATE_EVENT_TYPE:'create',
   OBJECT: 'object',
+  OPTIONAL_SCOPE_FIELD: 'optional_factors',
+  MANDATORY_SCOPE_FIELD: 'factors',
   ALL_SCOPE_VALUE:'ALL',
   ADD_OPERATION:"ADD",
   APPEND_OPERATION:'APPEND',

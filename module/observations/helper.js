@@ -1022,10 +1022,11 @@ module.exports = class ObservationsHelper {
         }
 
         if (solutionId && solutionId != "" && userId && userId != "") {
-          filterQuery.solutionId = ObjectId(solutionId);
+          filterQuery.solutionId = new ObjectId(solutionId);
           filterQuery.createdBy = userId;
         }
-        
+
+        filterQuery.tenantId = tenantData.tenantId;
         //find the Obserations documents from the observation collections
         let observationDocument = await this.observationDocuments(filterQuery);
 
@@ -2390,13 +2391,11 @@ module.exports = class ObservationsHelper {
         let programDocument
         let programQueryObject = {
           _id: solutionDocument.programId,
-          status: messageConstants.common.ACTIVE_STATUS
+          status: messageConstants.common.ACTIVE_STATUS,
+          tenantId:tenantData.tenantId,
         };
         if (solutionDocument.isExternalProgram) {
-          programDocument = await projectService.programDetails(
-            req.userDetails.userToken,
-            solutionDocument.programId
-          );
+          programDocument = await projectService.programDetails(req.userDetails.userToken, solutionDocument.programId);
           if (programDocument.status != httpStatusCode.ok.status || !programDocument?.result?._id) {
             throw {
               status: httpStatusCode.bad_request.status,
@@ -2405,19 +2404,20 @@ module.exports = class ObservationsHelper {
           }
           programDocument = [programDocument.result];
         } else {
+          /*
+          arguments passed to programsHelper.list() are:
+          - filter: { externalId: { $in: Array.from(allProgramIds) } }
+          - projection: ['_id', 'externalId']
+          - sort: ''
+          - skip: ''
+          - limit: ''
+        */
           programDocument = await programsHelper.list(
             programQueryObject,
-            [
-              "externalId",
-              "name",
-              "description",
-              "imageCompression",
-              "isAPrivateProgram",
-            ],
-            "",
-            "",
-            "",
-            tenantData
+            ['externalId', 'name', 'description', 'imageCompression', 'isAPrivateProgram'],
+            '',
+            '',
+            ''
           );
           programDocument = programDocument.data.data;
         }
