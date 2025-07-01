@@ -185,7 +185,7 @@ module.exports = class ProgramsHelper {
         //if scope exits adding scope to programDocument
         if (data.scope) {
           data.scope.organizations = data.tenantData.orgId;
-          let programScopeUpdated = await this.setScope(program._id, data.scope,data.tenantData);
+          let programScopeUpdated = await this.setScope(program._id, data.scope,userDetails);
 
           if (!programScopeUpdated.success) {
             throw {
@@ -253,7 +253,7 @@ module.exports = class ProgramsHelper {
           if(!data.scope.organizations){
             data.scope.organizations = tenantData.orgId
           }
-          let programScopeUpdated = await this.setScope(programId, data.scope,tenantData);
+          let programScopeUpdated = await this.setScope(programId, data.scope,userDetails);
 
           if (!programScopeUpdated.success) {
             throw {
@@ -831,7 +831,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Set scope data.
    */
 
-  static setScope(programId, scopeData,tenantData) {
+  static setScope(programId, scopeData,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         // Find program document to update or set scope based on program id
@@ -899,7 +899,7 @@ module.exports = class ProgramsHelper {
             scopeData = _.omit(scopeData, keysCannotBeAdded);
           }
 
-          let tenantDetails = await userService.fetchPublicTenantDetails(tenantData.tenantId);
+          let tenantDetails = await userService.fetchPublicTenantDetails(userDetails.tenantAndOrgInfo.tenantId);
           if (!tenantDetails.success || !tenantDetails?.data?.meta) {
             throw ({
               status: httpStatusCode['bad_request'].status,
