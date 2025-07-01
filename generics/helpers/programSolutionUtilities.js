@@ -67,23 +67,6 @@ function getUpdateObjectTOAddScope(bodyData, tenantId, orgId, userDetails) {
           }
         }
       }
-
-      // This logic we need to re-look --------------------------------------------
-      // if (solutionData[0].scope !== programData[0].scope) {
-      // 	let checkEntityInParent = await entitiesService.entityDocuments(
-      // 		{
-      // 			_id: programData[0].scope.entities,- state
-      // 			[`groups.${solutionData[0].scope.entityType}`]: entities,- district
-      // 		},
-      // 		['_id']
-      // 	)
-      // 	if (!checkEntityInParent.success) {
-      // 		throw {
-      // 			message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
-      // 		}
-      // 	}
-      // }
-
       // Extract entities from the request body
       let entities = bodyData.entities;
       let groupedEntities = {};
