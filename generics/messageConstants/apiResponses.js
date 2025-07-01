@@ -439,5 +439,7 @@ module.exports = {
   TENANTID_REQUIRED_IN_SOLUTION: 'TenantId required in solution',
   OBSERVABLE_ENTITY_KEYS_NOT_FOUND: 'Observable entity keys not found in tenant data',
   INVALID_ORGANIZATION: 'Invalid Organization Passed',
-  USER_ROLES_PROCESSING_FAILED: 'User roles processing failed. Please check the content.'
+  USER_ROLES_PROCESSING_FAILED: 'User roles processing failed. Please check the content.',
+  UPDATE_OBJECT_FAILED: 'Failed to generate update object',
+	UPDATE_OBJECT_SUCCESSFULLY: 'Successfully generate update object',
 };

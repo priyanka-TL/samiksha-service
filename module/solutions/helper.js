@@ -24,6 +24,8 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 const userService = require(ROOT_PATH + '/generics/services/users');
 const projectService = require(ROOT_PATH + '/generics/services/project');
+const programSolutionUtility = require(ROOT_PATH + '/generics/helpers/programSolutionUtilities')
+
 
 /**
  * SolutionsHelper
@@ -4007,7 +4009,6 @@ module.exports = class SolutionsHelper {
         // Extract tenant and org IDs from user details
         let tenantId = userDetails.tenantAndOrgInfo.tenantId
         let orgId = userDetails.tenantAndOrgInfo.orgId[0]
-        const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
 
         // Fetch the program document to ensure it exists and has a scope
         let solutionData = await solutionsQueries.solutionDocuments(
@@ -4048,124 +4049,25 @@ module.exports = class SolutionsHelper {
 					})
 				}
 
+        let updateObjectData = await programSolutionUtility.getUpdateObjectTOAddScope(
+					bodyData,
+					tenantId,
+					orgId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
+					}
+				}
         // Setup for MongoDB update operation using $addToSet
-        let updateObject = { $addToSet: {} };
-        let validationExcludedEntitiesKeys = [];
-        let tenantDetails
-        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN];
-
-        // Check if user is Admin or Tenant Admin
-        if (gen.utils.validateRoles(userDetails.roles, adminTenantAdminRole)) {
-          // Fetch tenant details to validate org codes and scope keys
-          tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken);
-          if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
-            throw({
-              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-              status: httpStatusCode.bad_request.status,
-            });
-          }
-
-          // Store validation-excluded scope keys if present
-          if (
-            Array.isArray(tenantDetails?.data?.meta?.validationExcludedScopeKeys) &&
-            tenantDetails.data.meta.validationExcludedScopeKeys.length > 0
-          ) {
-            // Fetch tenant details (will include valid org codes & validationExcludedScopeKeys)
-            validationExcludedEntitiesKeys.push(...tenantDetails.data.meta.validationExcludedScopeKeys);
-          }
-
-          // Handle organization values if passed
-          if (bodyData.organizations) {
-            if (Array.isArray(bodyData.organizations)) {
-              if (bodyData.organizations.includes(ALL_SCOPE_VALUE)) {
-                // Add "ALL" if specified
-                updateObject.$addToSet[`scope.organizations`] = { $each: [ALL_SCOPE_VALUE] };
-              } else {
-                const validOrgCodes = tenantDetails.data.organizations.map((org) => org.code);
-                const isValid = bodyData.organizations.every((orgCode) => validOrgCodes.includes(orgCode));
-                if (!isValid) {
-                  throw {
-                    message: messageConstants.apiResponses.INVALID_ORGANIZATION,
-                    status: httpStatusCode.bad_request.status,
-                  };
-                }
-                updateObject.$addToSet[`scope.organizations`] = { $each: bodyData.organizations };
-              }
-            }
-          }
-        }
-
-        // This logic we need to re-look --------------------------------------------
-        // if (solutionData[0].scope !== programData[0].scope) {
-        // 	let checkEntityInParent = await entitiesService.entityDocuments(
-        // 		{
-        // 			_id: programData[0].scope.entities,- state
-        // 			[`groups.${solutionData[0].scope.entityType}`]: entities,- district
-        // 		},
-        // 		['_id']
-        // 	)
-        // 	if (!checkEntityInParent.success) {
-        // 		throw {
-        // 			message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
-        // 		}
-        // 	}
-        // }
-
-        // Extract entities from the request body
-        let entities = bodyData.entities
-        let groupedEntities = {}
-        let keysForValidation = []
-        // Classify keys based on ALL presence or validationExcludedEntitiesKeys
-        for (const [entityType, values] of Object.entries(entities)) {
-          if (Array.isArray(values) && values.includes(ALL_SCOPE_VALUE)) {
-            // If "ALL" present, skip validation and directly assign
-            groupedEntities[entityType] = [ALL_SCOPE_VALUE];
-          } else if (validationExcludedEntitiesKeys.includes(entityType)) {
-            // Excluded from validation
-            groupedEntities[entityType] = values
-          } else {
-            // Needs validation
-            keysForValidation.push(entityType)
-          }
-        }
-
-        // Validate only if needed
-        let entitiesToValidate = keysForValidation.flatMap((key) => entities[key])
-        if (entitiesToValidate.length > 0) {
-          let entitiesData = await entityManagementService.entityDocuments(
-            {
-              _id: { $in: entitiesToValidate },
-              tenantId:tenantId,
-              orgId:orgId,
-            },
-            ['_id', 'entityType']
-          )
-
-          if (!entitiesData.success || !entitiesData.data.length > 0) {
-            throw {
-              message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-              status: httpStatusCode.bad_request.status
-            }
-          }
-
-          entitiesData = entitiesData.data
-          for (const entity of entitiesData) {
-            if (!groupedEntities[entity.entityType]) {
-              groupedEntities[entity.entityType] = [];
-            }
-            groupedEntities[entity.entityType].push(entity._id);
-          }
-        }
-
-        // Construct $addToSet object
-        for (const [type, ids] of Object.entries(groupedEntities)) {
-          updateObject.$addToSet[`scope.${type}`] = { $each: ids }
-        }
+        
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
           },
-          updateObject,
+          updateObjectData.updateObject,
           { new: true }
         )
         if (!updateSolution || !updateSolution._id) {
@@ -4313,50 +4215,23 @@ module.exports = class SolutionsHelper {
 
         // Initialize the update object to be used in MongoDB update query
 				const currentScope = solutionData[0].scope || {};
-				// Deep copy to avoid mutation
-				let updatedScope = JSON.parse(JSON.stringify(currentScope))
-
-        // Check if user has Admin or Tenant Admin roles to allow org scope modification
-        let adminTenantAdminRole = [messageConstants.common.ADMIN, messageConstants.common.TENANT_ADMIN];
-				let tenantDetails
-				if (gen.utils.validateRoles(userDetails.roles, adminTenantAdminRole)) {
-					// Fetch tenant meta details if user is admin/tenant admin
-					tenantDetails = await userService.fetchTenantDetails(tenantId, userDetails.userToken)
-					if (!tenantDetails?.success || !tenantDetails?.data?.meta) {
-						throw {
-							message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
-							status: httpStatusCode.bad_request.status,
-						}
-					}
-				}
-
-				// Remove entity values from current scope
-				const entitiesToRemove = bodyData.entities || {}
-				for (const [key, valuesToRemove] of Object.entries(entitiesToRemove)) {
-					const currentValues = updatedScope[key] || []
-					// If current scope does not contain an array for the key, throw error
-					if (!Array.isArray(currentValues)) {
-						throw {
-							message: `${key} is not present in solution scope`,
-							status: httpStatusCode.bad_request.status,
-						}
-					}
-					// Remove matching values
-					updatedScope[key] = currentValues.filter((val) => !valuesToRemove.includes(val))
-				}
-
-				// Fill with ALL for empty keys listed in tenant meta.factors
-				const factorKeys = tenantDetails?.data?.meta?.factors || []
-				for (const factorKey of factorKeys) {
-					if (!Array.isArray(updatedScope[factorKey]) || updatedScope[factorKey].length === 0) {
-						updatedScope[factorKey] = [ALL_SCOPE_VALUE]
+				let updateObjectData = await programSolutionUtility.getUpdateObjectToRemoveScope(
+					currentScope,
+					bodyData,
+					tenantId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
 					}
 				}
 
 				// Prepare update object
 				let updateObject = {
 					$set: {
-						scope: updatedScope,
+						scope: updateObjectData.updatedScope,
 					},
 				}
         const updateSolution = await solutionsQueries.updateSolutionDocument(
