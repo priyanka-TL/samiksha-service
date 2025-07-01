@@ -215,6 +215,14 @@ module.exports = async function (req, res, next) {
     "forms/create",
     "forms/update",
     'users/deleteUserPIIData',
+    'programs/addEntitiesInScope',
+    'programs/removeEntitiesInScope',
+    'programs/addRolesInScope',
+    'programs/removeRolesInScope',
+    'solutions/addEntitiesInScope',
+    'solutions/removeEntitiesInScope',
+    'solutions/addRolesInScope',
+    'solutions/removeRolesInScope',
     'userExtension/bulkUpload'
   ];
 
