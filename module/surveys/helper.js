@@ -390,15 +390,23 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.PROGRAM_ID_REQUIRED);
         }
 
+        /*
+        arguments passed to programsHelper.list() are:
+        - filter: { externalId: { $in: Array.from(allProgramIds) } }
+        - projection: ['_id', 'externalId']
+        - sort: ''
+        - skip: ''
+        - limit: ''
+        */
         let programDocument = await programsHelper.list(
           {
             externalId: programId,
+            tenantId: tenantAndOrgInfo.tenantId
           },
           ['externalId', 'name', 'description'],
           '',
           '',
-          '',
-          tenantAndOrgInfo
+          ''
         );
         programDocument = programDocument.data.data
         if (!programDocument.length) {
@@ -851,6 +859,7 @@ module.exports = class SurveysHelper {
               _id: surveyDocument.programId,
               status: messageConstants.common.ACTIVE_STATUS,
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
+              tenantId:tenantData.tenantId
             };
 
             if(surveyDocument.isExternalProgram){
@@ -867,6 +876,14 @@ module.exports = class SurveysHelper {
               }
               programDocument=[_.pick(programDocument.result,["_id",'externalId','name',  'description'])]
             }else{
+              /*
+                arguments passed to programsHelper.list() are:
+                - filter: { externalId: { $in: Array.from(allProgramIds) } }
+                - projection: ['_id', 'externalId']
+                - sort: ''
+                - skip: ''
+                - limit: ''
+              */
               programDocument = await programsHelper.list(programQueryObject, [
                 'externalId',
                 'name',
@@ -876,8 +893,7 @@ module.exports = class SurveysHelper {
               ],
               '',
               '',
-              '',
-              tenantData
+              ''
              );
               programDocument = programDocument.data.data
             }
@@ -1534,13 +1550,10 @@ module.exports = class SurveysHelper {
           } else {
             // let solutionData = solutionDocument[0];
             const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
-
-          let tenantData = {tenantId:bodyData.tenantId,orgId:bodyData.orgId} 
            let solutionData=await solutionsHelper.detailsBasedOnRoleAndLocation(
                 new ObjectId(solutionDocument[0]._id),
                 bodyData,
                 messageConstants.common.SURVEY,
-                tenantData,
                 solutionDocument[0].referenceFrom,
               );
             if (!solutionData.success) {

@@ -10,7 +10,7 @@ const submissionsHelper = require(MODULES_BASE_PATH + '/submissions/helper');
 const insightsHelper = require(MODULES_BASE_PATH + '/insights/helper');
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
 const programsHelper = require(MODULES_BASE_PATH + '/programs/helper');
-
+const userService = require(ROOT_PATH + '/generics/services/users');
 /**
  * Programs
  * @class
@@ -68,13 +68,31 @@ module.exports = class Programs extends Abstract {
   async list(req) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        let tenantDetails = await userService.fetchPublicTenantDetails(req.userDetails.tenantData.tenantId);
+        if (!tenantDetails.success || !tenantDetails?.data?.meta) {
+          throw ({
+            status: httpStatusCode.internal_server_error.status,
+            message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+          });
+        }
+        let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+        let queryResult = gen.utils.targetingQuery(
+          req.body,
+          tenantPublicDetailsMetaField,
+          messageConstants.common.MANDATORY_SCOPE_FIELD,
+          messageConstants.common.OPTIONAL_SCOPE_FIELD
+        )
+
         let listOfPrograms = await programsHelper.list(
-          "",          //filter
-          "",          // projection
+          {
+            tenantId: req.userDetails.tenantData.tenantId,
+            ...queryResult, // targetingQuery
+          }, //filter
+          '', // projection
           req.pageNo, //middleware convert req.params.page as req.PageNo
           req.pageSize, //middleware convert req.params.linit as req.PageSize
-          req.query.searchText,
-          req.userDetails.tenantData
+          req.query.searchText
         );
 
         listOfPrograms['result'] = listOfPrograms.data;
@@ -228,14 +246,6 @@ module.exports = class Programs extends Abstract {
   * @apiUse errorBody
   */
 
-  /**
-   * Update program.
-   * @method
-   * @name update
-   * @param {Object} req - requested data.
-   * @param {Object}
-   * @returns {JSON} -
-   */
   /**
    * Update program.
    * @method
