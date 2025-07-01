@@ -161,10 +161,6 @@ module.exports = class SolutionsHelper {
         solutionData['tenantId'] = tenantData.tenantId;
         solutionData['orgId'] = tenantData.orgId[0];
 
-        if (solutionData['scope']) {
-          solutionData['scope']['organization'] = tenantData.orgId;
-        }
-
         // create new solution document
         let solutionCreation = await solutionsQueries.createSolution(_.omit(solutionData, ['scope']));
 
@@ -189,7 +185,8 @@ module.exports = class SolutionsHelper {
           let solutionScope = await this.setScope(
             solutionData.programId,
             solutionCreation._id,
-            solutionData.scope ? solutionData.scope : {}
+            solutionData.scope ? solutionData.scope : {},
+            userDetails
           );
         }
 
@@ -782,13 +779,11 @@ module.exports = class SolutionsHelper {
    * @param {String} programId -  programId.
    * @param {String} solutionId - solution id.
    * @param {Object} scopeData - scope data.
-   * @param {String} scopeData.entityType - scope entity type
-   * @param {Array} scopeData.entities - scope entities
-   * @param {Array} scopeData.roles - roles in scope
+	 * @param {Object} userDetails - loggedin user info
    * @returns {JSON} - scope in solution.
    */
 
-  static setScope(programId, solutionId, scopeData) {
+  static setScope(programId, solutionId, scopeData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         // Getting program documents
@@ -811,6 +806,41 @@ module.exports = class SolutionsHelper {
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
+        }
+
+        // populate scopeData.organizations data
+        if (
+          scopeData.organizations &&
+          scopeData.organizations.length > 0 &&
+          userDetails.roles.includes(messageConstants.common.ADMIN)
+        ) {
+          // call user-service to fetch related orgs
+          let validOrgs = await userService.fetchTenantDetails(
+            userDetails.tenantAndOrgInfo.tenantId,
+            userDetails.userToken,
+            true
+          )
+          if (!validOrgs.success) {
+            throw {
+              success: false,
+              status: httpStatusCodes['bad_request'].status,
+              message: messageConstants.apiResponses.ORG_DETAILS_FETCH_UNSUCCESSFUL_MESSAGE,
+            }
+          }
+          validOrgs = validOrgs.data
+
+          // filter valid orgs
+          scopeData.organizations = scopeData.organizations.filter(
+            (id) => validOrgs.includes(id) || id.toLowerCase() == messageConstants.common.ALL
+          )
+        } else {
+          scopeData['organizations'] = userDetails.tenantAndOrgInfo.orgId
+        }
+
+        if (Array.isArray(scopeData.organizations)) {
+          scopeData.organizations = scopeData.organizations.map(orgId =>
+            orgId === messageConstants.common.ALL ? 'ALL' : orgId
+          )
         }
 
         //if program documents has scope update the scope in solution document
@@ -1003,10 +1033,11 @@ module.exports = class SolutionsHelper {
    * @param {Boolean} checkDate   -this is true for when its called via API calls\
    * @param {String} userId       - logged in user id.
    * @param {Object} tenantData   - tenant data.
+   * @param {Object} userDetails - loggedin user's info
    * @returns {JSON}              -solution updating data.
    */
 
-  static update(solutionId, solutionData, userId, checkDate = false, tenantData) {
+  static update(solutionId, solutionData, userId, checkDate = false, tenantData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         let queryObject = {
@@ -1100,14 +1131,12 @@ module.exports = class SolutionsHelper {
 
         // If req body has scope to update for the solution document
         if (solutionData.scope && Object.keys(solutionData.scope).length > 0) {
-          if (!solutionData.scope.organizations) {
-            solutionData.scope.organizations = tenantData.orgId;
-          }
 
           let solutionScope = await this.setScope(
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
-            solutionData.scope
+            solutionData.scope,
+            userDetails
           );
 
           if (!solutionScope.success) {

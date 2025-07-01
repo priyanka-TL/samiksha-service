@@ -1430,6 +1430,16 @@ module.exports = class ObservationSubmissionsHelper {
           observationSubmissionsDocument.entityInformation.parentInformation =
             entityDetailResponse.data[0].parentInformation;
         }
+        // Set entityId, entityType, and typeId if they exist in the document, to inside entity information for data team
+        if (observationSubmissionsDocument.entityId) {
+          observationSubmissionsDocument.entityInformation._id = observationSubmissionsDocument.entityId;
+        }
+        if (observationSubmissionsDocument.entityType) {
+          observationSubmissionsDocument.entityInformation.type = observationSubmissionsDocument.entityType;
+        }
+        if (observationSubmissionsDocument.entityTypeId) {
+          observationSubmissionsDocument.entityInformation.typeId = observationSubmissionsDocument.entityTypeId;
+        }
       }
     } catch (err) {}
   }

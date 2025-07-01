@@ -116,5 +116,6 @@ module.exports = {
   PROMISE_FULFILLED: 'fulfilled',
   DEFAULT_PROGRAM_USER_MAPPING_TOPIC:'elevate_program_operation',
   DELETE:"DELETE",
-  POST:"POST"
+  POST:"POST",
+  ALL: 'all'
 };
