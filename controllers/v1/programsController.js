@@ -310,6 +310,8 @@ module.exports = class Programs extends Abstract {
    * @returns {Array} Program scope roles.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   async addRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -333,7 +335,32 @@ module.exports = class Programs extends Abstract {
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
-      "entities" : ["5f33c3d85f637784791cd830"]
+        "entities": {
+            "district": [
+                "681b0800f21c88cef951890e"
+            ],
+            "professional_subroles": [
+                "682301604e2812081f342674",
+                "682303044e2812081f3426fb"
+            ],
+            "professional_role": [
+                "681b07b49c57cdcf03c79ae3",
+                "681b0800f21c88cef9517e0e"
+            ],
+            "school": [
+                "67c82d9553812588916410d3"
+            ],
+            "language": [
+                "681b0800f21c88cef951890e"
+            ],
+            "gender": [
+                "67c82d955381258891642345"
+            ]
+        },
+        "organizations": [
+            "blr"
+        ]
+      } 
     }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiSampleRequest /samiksha/v1/programs/addEntitiesInScope/5ffbf8909259097d48017bbf
@@ -352,7 +379,8 @@ module.exports = class Programs extends Abstract {
    * @name addEntitiesInScope
    * @param {Object} req - requested data.
    * @param {String} req.params._id - program id.
-   * @param {Array} req.body.entities - Entities to be added.
+	 * @param {Object} req.body - data to be added.
+	 * @param {Object} req.userDetails - User details
    * @returns {Array} Program scope roles.
    */
 
@@ -362,8 +390,8 @@ module.exports = class Programs extends Abstract {
         let tenantFilter =  req.userDetails.tenantAndOrgInfo;
         let programDetails = await programsHelper.addEntitiesInScope(
           req.params._id,
-          req.body.entities,
-          tenantFilter
+          req.body,
+          req.userDetails,
         );
 
         return resolve(programDetails);
@@ -407,6 +435,8 @@ module.exports = class Programs extends Abstract {
    * @returns {Array} Program scope roles.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   async removeRolesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -430,7 +460,20 @@ module.exports = class Programs extends Abstract {
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
-      "entities" : ["5f33c3d85f637784791cd830"]
+        "entities": {
+            "professional_subroles": [
+                "682301254e2812081f34266c",
+                "682303044e2812081f3426fb",
+                "682301604e2812081f342674"
+            ],
+            "professional_role": [
+                "681b07b49c57cdcf03c79ae3",
+                "681b0800f21c88cef9517e0e"
+            ]
+        },
+        "organizations": [
+            "ALL"
+        ]
     }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiSampleRequest /samiksha/v1/programs/removeEntitiesInScope/5ffbf8909259097d48017bbf
@@ -449,14 +492,15 @@ module.exports = class Programs extends Abstract {
    * @name removeEntitiesInScope
    * @param {Object} req - requested data.
    * @param {String} req.params._id - program id.
-   * @param {Array} req.body.entities - Entities to be added.
+	 * @param {Object} req.body - data to be removed.
+	 * @param {Object} req.userDetails - User details
    * @returns {Array} Program scope roles.
    */
 
   async removeEntitiesInScope(req) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities,req.userDetails.tenantData);
+        let programDetails = await programsHelper.removeEntitiesInScope(req.params._id, req.body,req.userDetails);
 
         return resolve(programDetails);
       } catch (error) {
