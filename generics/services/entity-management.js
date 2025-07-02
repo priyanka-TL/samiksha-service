@@ -407,20 +407,20 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
 
 /**
  * @method
- * @name getAggregate
+ * @name fetchDocuments
  * @param {Array} pipelineData - aggregate pipeline object
  * @returns {Object} - entity details
  */
 
 // Function to fetch entity docuemnts using aggregate pipeline
-const getAggregate = function (pipelineData) {
+const fetchDocuments = function (pipelineData) {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
-      const url = entityManagementServiceUrl + messageConstants.endpoints.ENTITY_GET_AGGREGATE
+      const url = entityManagementServiceUrl + messageConstants.endpoints.ENTITY_FETCH
 
       let requestJSON = {
-        pipelineData
+        query : pipelineData
       };
 
       // Set the options for the HTTP POST request
@@ -470,5 +470,5 @@ module.exports = {
   userRoleExtension:userRoleExtension,
   getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType,
   findEntityDetails:findEntityDetails,
-  getAggregate : getAggregate
+  fetchDocuments : fetchDocuments
 };

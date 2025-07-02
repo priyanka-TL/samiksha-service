@@ -1590,9 +1590,8 @@ module.exports = class EntitiesHelper {
                 }
               ]
               // Fetch data from entity service
-              entitiesDetails = await entityManagementService.getAggregate(pipeline)
-              
-              if ( !entitiesDetails.success ) {
+              entitiesDetails = await entityManagementService.fetchDocuments(pipeline)
+              if ( !entitiesDetails.success || !(entitiesDetails.data.length > 0)) {
                 return resolve({
                     "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
                     "result" : [{
@@ -1603,11 +1602,11 @@ module.exports = class EntitiesHelper {
               }
               let entityDocuments = entitiesDetails.data;
               
-              entityDocuments = entityDocuments.map(item => ({
-                _id: item._id,
-                externalId: item.metaInformation?.externalId || null,
-                name: item.metaInformation?.name || null,
-                entityType:item.entityType
+              entityDocuments = entityDocuments.map(entity => ({
+                _id: entity._id,
+                externalId: entity.metaInformation?.externalId || null,
+                name: entity.metaInformation?.name || null,
+                entityType:entity.entityType
               }));
   
               let data = 
