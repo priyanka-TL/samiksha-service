@@ -3672,7 +3672,7 @@
       "service": "survey"
     },
     {
-      "sourceRoute": "/survey/v1/entities/getAggregate",
+      "sourceRoute": "/entity-management/v1/entities/getAggregate",
       "type": "POST",
       "priority": "MUST_HAVE",
       "inSequence": false,
