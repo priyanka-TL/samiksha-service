@@ -24,6 +24,8 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
 const userService = require(ROOT_PATH + '/generics/services/users');
 const projectService = require(ROOT_PATH + '/generics/services/project');
+const programSolutionUtility = require(ROOT_PATH + '/generics/helpers/programSolutionUtilities')
+
 
 /**
  * SolutionsHelper
@@ -3932,6 +3934,8 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Added roles data.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static addRolesInScope(solutionId, roles, tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -4033,29 +4037,37 @@ module.exports = class SolutionsHelper {
    * @method
    * @name addEntitiesInScope
    * @param {String} solutionId - solution Id.
-   * @param {Array} entities - entities data.
-   * @param {Object} tenantData - tenantData data.
+	 * @param {Object} bodyData - body data.
+	 * @param {Object} userDetails - User Details
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(solutionId, entities, token, tenantData) {
+  static addEntitiesInScope(solutionId, bodyData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        // Extract tenant and org IDs from user details
+        let tenantId = userDetails.tenantAndOrgInfo.tenantId
+        let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+
+        // Fetch the program document to ensure it exists and has a scope
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
-            tenantId: tenantData.tenantId,
+            tenantId: tenantId,
+            orgId: orgId,
           },
-          ['_id', 'programId', 'scope.entityType']
+          ['_id', 'programId', 'scope']
         );
 
         if (!(solutionData.length > 0)) {
           return resolve({
             status: httpStatusCode.bad_request.status,
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
+            status: httpStatusCode.bad_request.status
           });
         }
         //Check if the solution is part of program or not
@@ -4064,69 +4076,59 @@ module.exports = class SolutionsHelper {
           programData = await programsQueries.programDocuments(
             {
               _id: solutionData[0].programId,
-              tenantId: tenantData.tenantId,
+              tenantId: tenantId
             },
-            ['scope.entities', 'scope.entityType']
+            ['scope']
           );
-
-          if (!(programData.length > 0)) {
-            return resolve({
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
-            });
-          }
-          if (solutionData[0].scope.entityType !== programData[0].scope.entityType) {
-            let checkEntityInParent = await entityManagementService.entityDocuments(
-              {
-                _id: programData[0].scope.entities,
-                [`groups.${solutionData[0].scope.entityType}`]: entities,
-                tenantId: tenantData.tenantId,
-                orgIds: { $in: ['ALL', tenantData.orgId] },
-              },
-              ['_id']
-            );
-            if (!(checkEntityInParent.length > 0)) {
-              throw {
-                message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
-              };
-            }
-          }
         }
 
-        let entityIds = [];
-        let entitiesData = await entityManagementService.entityDocuments(
-          {
-            _id: { $in: entities },
-            entityType: solutionData[0].scope.entityType,
-            tenantId: tenantData.tenantId,
-            orgIds: { $in: ['ALL', tenantData.orgId] },
-          },
-          ['_id']
-        );
+        if (!programData.length > 0) {
+					throw({
+						status: httpStatusCode.bad_request.status,
+						message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+					})
+				}
+      // This logic we need to re-look --------------------------------------------
+      // if (solutionData[0].scope !== programData[0].scope) {
+      // 	let checkEntityInParent = await entityManagementService.entityDocuments(
+      // 		{
+      // 			_id: programData[0].scope.entities,- state
+      // 			[`groups.${solutionData[0].scope.entityType}`]: entities,- district
+      // 		},
+      // 		['_id']
+      // 	)
+      // 	if (!checkEntityInParent.success) {
+      // 		throw {
+      // 			message: messageConstants.apiResponses.ENTITY_NOT_EXISTS_IN_PARENT,
+      // 		}
+      // 	}
+      // }
 
-        if (!entitiesData.success) {
-          throw {
-            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-          };
-        }
-        entitiesData = entitiesData.data;
-
-        entitiesData.forEach((entity) => {
-          entityIds.push(entity._id);
-        });
-
+        let updateObjectData = await programSolutionUtility.getUpdateObjectTOAddScope(
+					bodyData,
+					tenantId,
+					orgId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
+					}
+				}
+        // Setup for MongoDB update operation using $addToSet
+        
         let updateSolution = await solutionsQueries.updateSolutionDocument(
           {
             _id: solutionId,
           },
-          {
-            $addToSet: { 'scope.entities': { $each: entityIds } },
-          },
+          updateObjectData.updateObject,
           { new: true }
-        );
+        )
         if (!updateSolution || !updateSolution._id) {
           throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
+            status: httpStatusCode.bad_request.status
           };
         }
 
@@ -4154,6 +4156,8 @@ module.exports = class SolutionsHelper {
    * @returns {JSON} - Removed solution roles.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static removeRolesInScope(solutionId, roles, tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -4230,23 +4234,31 @@ module.exports = class SolutionsHelper {
    * @method
    * @name removeEntitiesInScope
    * @param {String} solutionId - Program Id.
-   * @param {Array} entities - entities.
-   * @param {Object} tenantData - tenant data.
+	 * @param {Object} bodyData - body data.
+	 * @param {Object} userDetails - User Details
    * @returns {JSON} - Removed entities from solution scope.
    */
 
-  static removeEntitiesInScope(solutionId, entities, tenantData) {
+  static removeEntitiesInScope(solutionId, bodyData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        // Extract tenant and org IDs from userDetails
+        let tenantId = userDetails.tenantAndOrgInfo.tenantId
+        let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+        const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
+
+        // Fetch the solution to verify it exists and has a scope field
         let solutionData = await solutionsQueries.solutionDocuments(
           {
             _id: solutionId,
             scope: { $exists: true },
             isReusable: false,
             isDeleted: false,
-            tenantId: tenantData.tenantId,
+            tenantId: tenantId,
+            orgId: orgId,
           },
-          ['_id', 'scope.entities']
+          ['_id', 'scope']
         );
 
         if (!(solutionData.length > 0)) {
@@ -4255,27 +4267,37 @@ module.exports = class SolutionsHelper {
             message: messageConstants.apiResponses.SOLUTION_NOT_FOUND,
           });
         }
-        let entitiesData = [];
-        entitiesData = solutionData[0].scope.entities;
-        if (!(entitiesData.length > 0)) {
-          throw {
-            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-          };
-        }
 
-        let updateSolution = await solutionsQueries.updateSolutionDocument(
-          {
-            _id: solutionId,
-            tenantId: tenantData.tenantId,
-          },
-          {
-            $pull: { 'scope.entities': { $in: entities } },
-          },
+        // Initialize the update object to be used in MongoDB update query
+				const currentScope = solutionData[0].scope || {};
+				let updateObjectData = await programSolutionUtility.getUpdateObjectToRemoveScope(
+					currentScope,
+					bodyData,
+					tenantId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
+					}
+				}
+
+				// Prepare update object
+				let updateObject = {
+					$set: {
+						scope: updateObjectData.updatedScope,
+					},
+				}
+        const updateSolution = await solutionsQueries.updateSolutionDocument(
+          { _id: solutionId },
+          updateObject,
           { new: true }
         );
         if (!updateSolution || !updateSolution._id) {
           throw {
             message: messageConstants.apiResponses.SOLUTION_NOT_UPDATED,
+            status: httpStatusCode.bad_request.status,
           };
         }
 

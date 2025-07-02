@@ -12,6 +12,7 @@ const userService = require(ROOT_PATH + '/generics/services/users');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const programSolutionUtility = require(ROOT_PATH + '/generics/helpers/programSolutionUtilities')
 
 /**
  * ProgramsHelper
@@ -285,6 +286,8 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Added roles data.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static addRolesInScope(programId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -377,62 +380,55 @@ module.exports = class ProgramsHelper {
    * @method
    * @name addEntitiesInScope
    * @param {String} programId - Program Id.
-   * @param {Array} entities - entities data.
-   * @param {Object} tenantData - tenantData
+	 * @param {Object} bodyData - body data.
+	 * @param {Object} userDetails - User Details
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(programId, entities,tenantData) {
+  static addEntitiesInScope(programId, bodyData,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
+        // Extract tenant and org IDs from user details
+        let tenantId = userDetails.tenantAndOrgInfo.tenantId
+				let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+
+        // Fetch the program document to ensure it exists and has a scope
         let programData = await programsQueries.programDocuments(
           {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId: tenantData.tenantId
+            tenantId: tenantId,
+            orgId: orgId,
           },
-          ['_id', 'scope.entityType']
+          ['_id', 'scope']
         );
 
         if (!(programData.length > 0)) {
           throw {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            status: httpStatusCode.bad_request.status
           };
         }
+        let updateObjectData = await programSolutionUtility.getUpdateObjectTOAddScope(
+					bodyData,
+					tenantId,
+					orgId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
+					}
+				}
 
-        let entityIds = [];
-
-        let entitiesData = await entityManagementService.entityDocuments(
-          {
-            _id: { $in: entities },
-            entityType: programData[0].scope.entityType,
-            tenantId: tenantData.tenantId,
-            orgId:{$in:['ALL',tenantData.orgId]}
-          },
-          ['_id']
-        );
-
-        if (!entitiesData.success) {
-          throw {
-            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-          };
-        }
-
-        entitiesData = entitiesData.data;
-
-        entitiesData.forEach((entity) => {
-          entityIds.push(entity._id);
-        });
-
+        // Perform the actual update on the program
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
             _id: programId,
-            tenantId: tenantData.tenantId
           },
-          {
-            $addToSet: { 'scope.entities': { $each: entityIds } },
-          },
+          updateObjectData.updateObject,
           { new: true }
         );
         if (!updateProgram || !updateProgram._id) {
@@ -465,6 +461,8 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Added roles data.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static removeRolesInScope(programId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -526,50 +524,71 @@ module.exports = class ProgramsHelper {
    * @method
    * @name removeEntitiesInScope
    * @param {String} programId - Program Id.
-   * @param {Array} entities - entities.
-   * @param {Object} tenantData - tenant data
+	 * @param {Object} bodyData - body data.
+	 * @param {Object} userDetails - User Details
    * @returns {JSON} - Removed entities data.
    */
 
-  static removeEntitiesInScope(programId, entities,tenantData) {
+  static removeEntitiesInScope(programId, bodyData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        // Extract tenant and org IDs from userDetails
+        let tenantId = userDetails.tenantAndOrgInfo.tenantId
+				let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+        const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
+
+        // Fetch the program to verify it exists and has a scope field
         let programData = await programsQueries.programDocuments(
           {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId:tenantData.tenantId
+            tenantId: tenantId,
+						orgId: orgId,
           },
-          ['_id', 'scope.entities']
+          ['_id', 'scope']
         );
 
         if (!(programData.length > 0)) {
           throw {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            status: httpStatusCode.bad_request.status
           };
         }
-        let entitiesData = [];
-        entitiesData = programData[0].scope.entities;
+				// Initialize the update object to be used in MongoDB update query
+				const currentScope = programData[0].scope || {};
+        let updateObjectData = await programSolutionUtility.getUpdateObjectToRemoveScope(
+					currentScope,
+					bodyData,
+					tenantId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
+					}
+				}
 
-        if (!(entitiesData.length > 0)) {
-          throw {
-            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-          };
-        }
-
+				// Prepare update object
+				let updateObject = {
+					$set: {
+						scope: updateObjectData.updatedScope,
+					},
+				}
+        // Update the program document with $pull operation to remove specified values
         let updateProgram = await programsQueries.findOneAndUpdate(
-          {
-            _id: programId,
-          },
-          {
-            $pull: { 'scope.entities': { $in: entities } },
-          },
-          { new: true }
-        );
+					{
+						_id: programId,
+					},
+					updateObject,
+					{ new: true }
+				)
         if (!updateProgram || !updateProgram._id) {
           throw {
             message: messageConstants.apiResponses.PROGRAM_NOT_UPDATED,
+            status: httpStatusCode.bad_request.status
           };
         }
 

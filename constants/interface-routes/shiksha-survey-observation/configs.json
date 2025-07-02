@@ -799,7 +799,7 @@
         "service": "survey"
       },
       {
-        "sourceRoute": "/survey/v1/surveys/mapSurverySolutionToProgram/:id",
+        "sourceRoute": "/survey/v1/surveys/mapSurveySolutionToProgram/:id",
         "type": "POST",
         "priority": "MUST_HAVE",
         "inSequence": false,
@@ -813,7 +813,7 @@
         "service": "survey"
       },
       {
-        "sourceRoute": "/survey/v1/surveys/mapSurverySolutionToProgram",
+        "sourceRoute": "/survey/v1/surveys/mapSurveySolutionToProgram",
         "type": "POST",
         "priority": "MUST_HAVE",
         "inSequence": false,

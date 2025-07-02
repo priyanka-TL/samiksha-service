@@ -1577,13 +1577,13 @@
 							]
 						},
 						{
-							"name": "mapSurverySolutionToProgram",
+							"name": "mapSurveySolutionToProgram",
 							"item": [
 								{
 									"name": ":solutionId",
 									"item": [
 										{
-											"name": "mapSurverySolutionToProgram Copy",
+											"name": "mapSurveySolutionToProgram ",
 											"request": {
 												"method": "POST",
 												"header": [
@@ -1605,14 +1605,14 @@
 													"raw": "<string>"
 												},
 												"url": {
-													"raw": "{{baseUrl}}/v1/surveys/mapSurverySolutionToProgram/:solutionId?programId=<string>",
+													"raw": "{{baseUrl}}/v1/surveys/mapSurveySolutionToProgram/:solutionId?programId=<string>",
 													"host": [
 														"{{baseUrl}}"
 													],
 													"path": [
 														"v1",
 														"surveys",
-														"mapSurverySolutionToProgram",
+														"mapSurveySolutionToProgram",
 														":solutionId"
 													],
 													"query": [
@@ -1653,14 +1653,14 @@
 															"raw": "<string>"
 														},
 														"url": {
-															"raw": "{{baseUrl}}/v1/surveys/mapSurverySolutionToProgram/:solutionId?programId=<string>",
+															"raw": "{{baseUrl}}/v1/surveys/mapSurveySolutionToProgram/:solutionId?programId=<string>",
 															"host": [
 																"{{baseUrl}}"
 															],
 															"path": [
 																"v1",
 																"surveys",
-																"mapSurverySolutionToProgram",
+																"mapSurveySolutionToProgram",
 																":solutionId"
 															],
 															"query": [
