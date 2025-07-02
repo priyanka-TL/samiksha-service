@@ -1091,7 +1091,7 @@ function createKafkaPayload (userProfile, programId, role, eventType,programInfo
     username: userProfile.username,
     role,
     eventType,
-    entity:messageConstants.common.PROGRAM,
+    entity:messageConstants.common.PROGRAM.toLowerCase(),
     meta: {
 			programInformation: {
 				name: programInfoMap[programId].name,
