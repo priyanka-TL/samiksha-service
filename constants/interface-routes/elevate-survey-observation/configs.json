@@ -3683,7 +3683,7 @@
           "packageName": "elevate-survey-observation"
         }
       ],
-      "service": "survey"
+      "service": "entity"
     }
   ]
 }
