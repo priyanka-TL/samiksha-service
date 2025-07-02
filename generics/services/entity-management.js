@@ -374,7 +374,6 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
           "tenantId":tenantId
         }
       };
-
       // Make the HTTP POST request to the user role extension API
       request.get(url, options, requestCallBack);
 
@@ -405,6 +404,64 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
   });
 };
 
+
+/**
+ * @method
+ * @name getAggregate
+ * @param {Array} pipelineData - aggregate pipeline object
+ * @returns {Object} - entity details
+ */
+
+// Function to fetch entity docuemnts using aggregate pipeline
+const getAggregate = function (pipelineData) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Function to find entity documents based on the given filter and projection
+      const url = entityManagementServiceUrl + messageConstants.endpoints.ENTITY_GET_AGGREGATE
+
+      let requestJSON = {
+        pipelineData
+      };
+
+      // Set the options for the HTTP POST request
+      const options = {
+        headers: {
+          'content-type': 'application/json',
+          'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+        },
+        json: requestJSON,
+      };
+
+      // Make the HTTP POST request to the entity management service
+      request.post(url, options, requestCallBack);
+
+      // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
+      function requestCallBack(err, data) {
+        let result = {
+          success: true,
+          data : []
+        };
+
+        if (err) {
+          result.success = false;
+        } else {
+          let response = data.body;
+          // Check if the response status is OK (HTTP 200)
+          if (response.status === httpStatusCode['ok'].status) {
+            result['data'] = response.result;
+          } else {
+            result.success = false;
+          }
+        }
+
+        return resolve(result);
+      }
+    } catch (error) {
+      return reject(error);
+    }
+  });
+};
+
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
@@ -412,5 +469,6 @@ module.exports = {
   listByEntityType:listByEntityType,
   userRoleExtension:userRoleExtension,
   getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType,
-  findEntityDetails:findEntityDetails
+  findEntityDetails:findEntityDetails,
+  getAggregate : getAggregate
 };

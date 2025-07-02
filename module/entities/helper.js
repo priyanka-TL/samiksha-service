@@ -1426,6 +1426,9 @@ module.exports = class EntitiesHelper {
       try {
 
           let formatForSearchEntities = true;
+          const pageSize = parseInt(req.pageSize) || 10
+          const pageNo = parseInt(req.pageNo) || 1
+          const skip = (pageNo - 1) * pageSize
           let response = {
               result: {}
           };
@@ -1483,12 +1486,11 @@ module.exports = class EntitiesHelper {
           // }
           let entityProjections = ['entityType','metaInformation.externalId', 'metaInformation.name','groups']
 
-          if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
+          if(req.query.parentEntityId ) {
 
               let filterData = {
                   "_id" : req.query.parentEntityId,
-                  "tenantId":req.userDetails.tenantData.tenantId,
-                  "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
+                  "tenantId":req.userDetails.tenantData.tenantId
               };
                   
               let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
@@ -1529,57 +1531,100 @@ module.exports = class EntitiesHelper {
                   return resolve(response);
 
               } else {
-                let groups = entitiesDetails.data[0].groups;
-
-                let targetedGroup = groups[result.entityType];
-                let filterDataGroups = {
-                  "_id":targetedGroup,
-                  "tenantId":req.userDetails.tenantData.tenantId,
-                  "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
+               let pipeline = [
+                {
+                  $match: {
+                    _id: {$in : [req.query.parentEntityId]}
+                  }
+                },
+                {
+                  $project: {
+                    groupIds: `$groups.${result.entityType}`
+                  }
+                },
+                // Unwind the array so we don't hold all in memory
+                {
+                  $unwind: "$groupIds"
+                },
+                // Replace the root so we can lookup directly
+                {
+                  $replaceRoot: { newRoot: { _id: "$groupIds" } }
+                },
+                // Lookup actual school entity details
+                {
+                  $lookup: {
+                    from: "entities",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "groupEntityData"
+                  }
+                },
+                {
+                  $unwind: "$groupEntityData"
+                },
+                ...(req.searchText ? [{
+                  $match: {
+                    "groupEntityData.metaInformation.name": {
+                      $regex: req.searchText,
+                      $options: "i"  // case-insensitive search
+                    }
+                  }
+                }] : []),
+                {
+                  $skip: skip
+                },
+                {
+                  $limit: pageSize
+                },
+                {
+                  $replaceRoot: { newRoot: "$groupEntityData" }
+                },
+                // Projection for second stage
+                {
+                  $project: {
+                    _id: 1,
+                    entityType: 1,
+                    "metaInformation.externalId": 1,
+                    "metaInformation.name": 1
+                  }
                 }
-                let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
-
-                entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections,req.pageNo,req.pageSize,req.searchText);
-                if ( !entitiesDetails.success ) {
-                  return resolve({
-                      "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
-                      "result" : [{
-                          "count":0,
-                          "data" : []
-                      }]
-                  })
+              ]
+              // Fetch data from entity service
+              entitiesDetails = await entityManagementService.getAggregate(pipeline)
+              
+              if ( !entitiesDetails.success ) {
+                return resolve({
+                    "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                    "result" : [{
+                        "count":0,
+                        "data" : []
+                    }]
+                })
               }
-                let entityDocuments = entitiesDetails.data;
-                
-                entityDocuments = entityDocuments.map(item => ({
-                  _id: item._id,
-                  externalId: item.metaInformation?.externalId || null,
-                  name: item.metaInformation?.name || null,
-                  entityType:item.entityType
-                }));
-    
-                  let data = 
-                  await this.observationSearchEntitiesResponse(
-                    entityDocuments,
-                      result.entities
-                  )
-    
-                  response.result.push({
-                    "data" : data,
-                    "count" : data.length
-                  });
-                  
-                  response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
-    
-                  // response.result.push({
-                  //     "data" : data,
-                  //     "count" : data.length
-                  // });
-    
+              let entityDocuments = entitiesDetails.data;
+              
+              entityDocuments = entityDocuments.map(item => ({
+                _id: item._id,
+                externalId: item.metaInformation?.externalId || null,
+                name: item.metaInformation?.name || null,
+                entityType:item.entityType
+              }));
+  
+              let data = 
+              await this.observationSearchEntitiesResponse(
+                entityDocuments,
+                  result.entities
+              )
 
-                return resolve(response);
-                      
-              }
+              response.result.push({
+                "data" : data,
+                "count" : data.length
+              });
+              
+              response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
+
+              return resolve(response)                      
+            }
               
           } else {
 
