@@ -1426,9 +1426,7 @@ module.exports = class EntitiesHelper {
       try {
 
           let formatForSearchEntities = true;
-          const pageSize = parseInt(req.pageSize) || 10
-          const pageNo = parseInt(req.pageNo) || 1
-          const skip = (pageNo - 1) * pageSize
+          const skip = (parseInt(req.pageNo) - 1) * parseInt(req.pageSize)
           let response = {
               result: {}
           };
@@ -1574,7 +1572,7 @@ module.exports = class EntitiesHelper {
                   $skip: skip
                 },
                 {
-                  $limit: pageSize
+                  $limit: req.pageSize
                 },
                 {
                   $replaceRoot: { newRoot: "$groupEntityData" }
