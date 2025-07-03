@@ -1550,6 +1550,10 @@ module.exports = class SurveysHelper {
           } else {
             // let solutionData = solutionDocument[0];
             const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+            if(solutionDocument[0].isAPrivateProgram){
+              solutionDocument[0].referenceFrom = messageConstants.common.PRIVATE;
+            }
+
            let solutionData=await solutionsHelper.detailsBasedOnRoleAndLocation(
                 new ObjectId(solutionDocument[0]._id),
                 bodyData,

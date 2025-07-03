@@ -2482,6 +2482,14 @@ module.exports = class SolutionsHelper {
         // check solution document is exists and  end date validation
         let verifySolution = await this.verifySolutionDetails(link, userId, userToken, tenantData);
 
+				if (!verifySolution.success) {
+					throw {
+						satus: httpStatusCode.bad_request.status,
+						message: verifySolution.message ? verifySolution.message : messageConstants.apiResponses.INVALID_LINK,
+					}
+				}
+
+
         // Check targeted solution based on role and location
         let checkForTargetedSolution = await this.checkForTargetedSolution(
           link,
@@ -2671,7 +2679,7 @@ module.exports = class SolutionsHelper {
         if (solutionData[0].endDate && new Date() > new Date(solutionData[0].endDate)) {
           if (solutionData[0].status === messageConstants.common.ACTIVE_STATUS) {
             let updateSolution = await this.update(
-              solutionData[0]._id,
+              solutionData[0]._id.toString(),
               {
                 status: messageConstants.common.INACTIVE_STATUS,
               },
@@ -2691,6 +2699,7 @@ module.exports = class SolutionsHelper {
         return resolve({
           message: messageConstants.apiResponses.LINK_VERIFIED,
           result: response,
+          success:true
         });
       } catch (error) {
         return resolve({
@@ -3040,6 +3049,10 @@ module.exports = class SolutionsHelper {
               'themes',
               'evidenceMethods',
               'sections',
+              'startDate',
+              'endDate',
+              'isReusable',
+              'entityType'
             ]
           );
 
