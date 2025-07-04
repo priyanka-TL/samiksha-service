@@ -18,6 +18,11 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  * @param {Array} projection - Projected data.
  * @param {number} page - The page number for pagination.
  * @param {number} limit - The maximum number of results per page.
+ * @param {String} search - Text string used for filtering entities using a search.
+ * @param {String} aggregateValue - Path to the field to aggregate (e.g., 'groups.school') used for grouping or lookups.
+ * @param {Boolean} isAggregateStaging - Flag indicating whether aggregation stages should be used in the pipeline (true = include stages).
+ * @param {Boolean} isSort - Flag indicating whether sorting is required within the aggregation pipeline.
+ * @param {Array<Object>} aggregateProjection - Array of projection fields to apply within the aggregation pipeline (used when `isAggregateStaging` is true).
  * @returns {JSON} - List of entity data.
  */
 
