@@ -34,6 +34,5 @@ module.exports = {
   PROJECT_LIST_BY_ID :'/v1/project/templates/listByIds',
   AUTO_DOWNLOAD: '/v1/files/download',
   PROFILE_READ_BY_ID: '/v1/user/profileById',
-  PUSH_SUBMISSION_TO_TASK: '/v1/userProjects/pushSubmissionToTask',
-  ENTITY_FETCH: '/v1/entities/fetch'
+  PUSH_SUBMISSION_TO_TASK: '/v1/userProjects/pushSubmissionToTask'
 };

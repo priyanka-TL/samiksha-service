@@ -1529,66 +1529,11 @@ module.exports = class EntitiesHelper {
                   return resolve(response);
 
               } else {
-               let pipeline = [
-                {
-                  $match: {
-                    _id: {$in : [req.query.parentEntityId]}
-                  }
-                },
-                {
-                  $project: {
-                    groupIds: `$groups.${result.entityType}`
-                  }
-                },
-                // Unwind the array so we don't hold all in memory
-                {
-                  $unwind: "$groupIds"
-                },
-                // Replace the root so we can lookup directly
-                {
-                  $replaceRoot: { newRoot: { _id: "$groupIds" } }
-                },
-                // Lookup actual school entity details
-                {
-                  $lookup: {
-                    from: "entities",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "groupEntityData"
-                  }
-                },
-                {
-                  $unwind: "$groupEntityData"
-                },
-                ...(req.searchText ? [{
-                  $match: {
-                    "groupEntityData.metaInformation.name": {
-                      $regex: req.searchText,
-                      $options: "i"  // case-insensitive search
-                    }
-                  }
-                }] : []),
-                {
-                  $skip: skip
-                },
-                {
-                  $limit: req.pageSize
-                },
-                {
-                  $replaceRoot: { newRoot: "$groupEntityData" }
-                },
-                // Projection for second stage
-                {
-                  $project: {
-                    _id: 1,
-                    entityType: 1,
-                    "metaInformation.externalId": 1,
-                    "metaInformation.name": 1
-                  }
-                }
-              ]
               // Fetch data from entity service
-              entitiesDetails = await entityManagementService.fetchDocuments(pipeline)
+
+              let projections = ['_id','entityType','metaInformation.externalId', 'metaInformation.name']
+              entitiesDetails = await entityManagementService.entityDocuments(filterData,[],req.pageNo,req.pageSize,req.searchText,`$groups.${result.entityType}`, true, false, projections);
+              
               if ( !entitiesDetails.success || !(entitiesDetails.data.length > 0)) {
                 return resolve({
                     "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
@@ -1630,9 +1575,10 @@ module.exports = class EntitiesHelper {
               "entityType":result.entityType,
               "_id":result.entities,
               "tenantId":req.userDetails.tenantData.tenantId,
-              "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
+              // "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
 
             }
+            // console.log(filterData)
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections,req.pageNo,req.pageSize,req.searchText);
             console.log(entitiesDetails,"<--entitiesDetails line 1598")
             if ( !entitiesDetails.success ) {

@@ -22,14 +22,14 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  */
 
 // Function to find entity documents based on the given filter and projection
-const entityDocuments = function (filterData = 'all', projection = 'all', page = null, limit = null, search = '') {
+const entityDocuments = function (filterData = 'all', projection = 'all', page = null, limit = null, search = '', aggregateValue = null, isAggregateStaging = false, isSort = true, aggregateProjection = []) {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
       const url =
         entityManagementServiceUrl +
         messageConstants.endpoints.FIND_ENTITY_DOCUMENTS +
-        `?page=${page}&limit=${limit}&search=${search}`;
+        `?page=${page}&limit=${limit}&search=${search}&aggregateValue=${aggregateValue}&aggregateStaging=${isAggregateStaging}&aggregateSort=${isSort}`;
 
       if (filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0) {
         filterData['_id'] = {
@@ -40,8 +40,8 @@ const entityDocuments = function (filterData = 'all', projection = 'all', page =
       let requestJSON = {
         query: filterData,
         projection: projection,
+        aggregateProjection: aggregateProjection
       };
-
       // Set the options for the HTTP POST request
       const options = {
         headers: {
@@ -50,6 +50,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all', page =
         },
         json: requestJSON,
       };
+      console.log(JSON.stringify(filterData))
 
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
@@ -405,63 +406,6 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
 };
 
 
-/**
- * @method
- * @name fetchDocuments
- * @param {Array} pipelineData - aggregate pipeline object
- * @returns {Object} - entity details
- */
-
-// Function to fetch entity docuemnts using aggregate pipeline
-const fetchDocuments = function (pipelineData) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Function to find entity documents based on the given filter and projection
-      const url = entityManagementServiceUrl + messageConstants.endpoints.ENTITY_FETCH
-
-      let requestJSON = {
-        query : pipelineData
-      };
-
-      // Set the options for the HTTP POST request
-      const options = {
-        headers: {
-          'content-type': 'application/json',
-          'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-        },
-        json: requestJSON,
-      };
-
-      // Make the HTTP POST request to the entity management service
-      request.post(url, options, requestCallBack);
-
-      // Callback functioCopy as Expressionn to handle the response from the HTTP POST request
-      function requestCallBack(err, data) {
-        let result = {
-          success: true,
-          data : []
-        };
-
-        if (err) {
-          result.success = false;
-        } else {
-          let response = data.body;
-          // Check if the response status is OK (HTTP 200)
-          if (response.status === httpStatusCode['ok'].status) {
-            result['data'] = response.result;
-          } else {
-            result.success = false;
-          }
-        }
-
-        return resolve(result);
-      }
-    } catch (error) {
-      return reject(error);
-    }
-  });
-};
-
 module.exports = {
   entityDocuments: entityDocuments,
   entityTypeDocuments: entityTypeDocuments,
@@ -469,6 +413,5 @@ module.exports = {
   listByEntityType:listByEntityType,
   userRoleExtension:userRoleExtension,
   getSubEntitiesBasedOnEntityType:getSubEntitiesBasedOnEntityType,
-  findEntityDetails:findEntityDetails,
-  fetchDocuments : fetchDocuments
+  findEntityDetails:findEntityDetails
 };
