@@ -1426,7 +1426,6 @@ module.exports = class EntitiesHelper {
       try {
 
           let formatForSearchEntities = true;
-          const skip = (parseInt(req.pageNo) - 1) * parseInt(req.pageSize)
           let response = {
               result: {}
           };
