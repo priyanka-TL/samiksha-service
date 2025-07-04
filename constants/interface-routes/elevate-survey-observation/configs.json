@@ -3670,20 +3670,6 @@
         }
       ],
       "service": "survey"
-    },
-    {
-      "sourceRoute": "/entity-management/v1/entities/fetch",
-      "type": "POST",
-      "priority": "MUST_HAVE",
-      "inSequence": false,
-      "orchestrated": false,
-      "targetPackages": [
-        {
-          "basePackageName": "survey",
-          "packageName": "elevate-survey-observation"
-        }
-      ],
-      "service": "entity"
     }
   ]
 }

@@ -1575,10 +1575,9 @@ module.exports = class EntitiesHelper {
               "entityType":result.entityType,
               "_id":result.entities,
               "tenantId":req.userDetails.tenantData.tenantId,
-              // "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
+              "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
 
             }
-            // console.log(filterData)
             let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections,req.pageNo,req.pageSize,req.searchText);
             console.log(entitiesDetails,"<--entitiesDetails line 1598")
             if ( !entitiesDetails.success ) {

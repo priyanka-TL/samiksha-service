@@ -50,7 +50,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all', page =
         },
         json: requestJSON,
       };
-      console.log(JSON.stringify(filterData))
 
       // Make the HTTP POST request to the entity management service
       request.post(url, options, requestCallBack);
