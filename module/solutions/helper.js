@@ -2519,7 +2519,7 @@ module.exports = class SolutionsHelper {
             } else if (!isSolutionActive) {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
-          } else {
+          } else if(checkForTargetedSolution.result.availableForPrivateConsumption) {
             if (!isSolutionActive) {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
@@ -2540,6 +2540,12 @@ module.exports = class SolutionsHelper {
             if (privateProgramAndSolutionDetails.result != '') {
               checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
             }
+          } else {
+            // Not targeted solution and not available for private consumption
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.SOLUTION_NOT_ALLOWED_TO_BE_CONSUMED,
+            };
           }
         } else if (solutionData.type === messageConstants.common.SURVEY) {
           // Get survey submissions of user
@@ -2740,6 +2746,7 @@ module.exports = class SolutionsHelper {
           'projectTemplateId',
           'programName',
           'status',
+          'availableForPrivateConsumption'
         ]);
 
         bodyData.tenantId = tenantData.tenantId;
@@ -2757,6 +2764,7 @@ module.exports = class SolutionsHelper {
           'programId',
           'name',
           'projectTemplateId',
+          'availableForPrivateConsumption'
         ]);
         // Check the user is targeted to the solution or not
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
@@ -2776,6 +2784,7 @@ module.exports = class SolutionsHelper {
 
         response.isATargetedSolution = true;
         Object.assign(response, solutionData[0]);
+        response.availableForPrivateConsumption = solutionDetails[0].availableForPrivateConsumption ? solutionDetails[0].availableForPrivateConsumption : false;
         response.solutionId = solutionData[0]._id;
         response.projectTemplateId = solutionDetails[0].projectTemplateId ? solutionDetails[0].projectTemplateId : '';
         response.programName = solutionDetails[0].programName;

@@ -92,6 +92,10 @@ module.exports = {
       type: Number,
       default: 1
     },
+    availableForPrivateConsumption:{
+      type: Boolean,
+      default: false
+    },
     reportInformation : Object,
     certificateTemplateId : "ObjectId",
     rootOrganisations : Array,
