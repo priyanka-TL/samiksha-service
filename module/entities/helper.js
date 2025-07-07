@@ -1531,7 +1531,17 @@ module.exports = class EntitiesHelper {
               // Fetch data from entity service
 
               let projections = ['_id','entityType','metaInformation.externalId', 'metaInformation.name']
-              entitiesDetails = await entityManagementService.entityDocuments(filterData,[],req.pageNo,req.pageSize,req.searchText,`$groups.${result.entityType}`, true, false, projections);
+              entitiesDetails = await entityManagementService.entityDocuments(
+                filterData,                     // MongoDB filter criteria to find matching entities
+                [],                             // Empty projection array; default fields will be returned
+                req.pageNo,                     // Current page number for pagination
+                req.pageSize,                   // Number of records to fetch per page
+                req.searchText,                 // Optional search keyword for text-based filtering (e.g., entity name)
+                `$groups.${result.entityType}`, // Aggregate path to group IDs (e.g., 'groups.school' or 'groups.district')
+                true,                           // Enable aggregation pipeline staging
+                false,                         // Disable sorting inside aggregation pipeline
+                projections                    // Fields to include/exclude in aggregation projection
+              );
               
               if ( !entitiesDetails.success || !(entitiesDetails.data.length > 0)) {
                 return resolve({
