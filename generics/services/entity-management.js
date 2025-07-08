@@ -18,18 +18,23 @@ const validateEntity = process.env.VALIDATE_ENTITIES;
  * @param {Array} projection - Projected data.
  * @param {number} page - The page number for pagination.
  * @param {number} limit - The maximum number of results per page.
+ * @param {String} search - Text string used for filtering entities using a search.
+ * @param {String} aggregateValue - Path to the field to aggregate (e.g., 'groups.school') used for grouping or lookups.
+ * @param {Boolean} isAggregateStaging - Flag indicating whether aggregation stages should be used in the pipeline (true = include stages).
+ * @param {Boolean} isSort - Flag indicating whether sorting is required within the aggregation pipeline.
+ * @param {Array<Object>} aggregateProjection - Array of projection fields to apply within the aggregation pipeline (used when `isAggregateStaging` is true).
  * @returns {JSON} - List of entity data.
  */
 
 // Function to find entity documents based on the given filter and projection
-const entityDocuments = function (filterData = 'all', projection = 'all', page = null, limit = null, search = '') {
+const entityDocuments = function (filterData = 'all', projection = 'all', page = null, limit = null, search = '', aggregateValue = null, isAggregateStaging = false, isSort = true, aggregateProjection = []) {
   return new Promise(async (resolve, reject) => {
     try {
       // Function to find entity documents based on the given filter and projection
       const url =
         entityManagementServiceUrl +
         messageConstants.endpoints.FIND_ENTITY_DOCUMENTS +
-        `?page=${page}&limit=${limit}&search=${search}`;
+        `?page=${page}&limit=${limit}&search=${search}&aggregateValue=${aggregateValue}&aggregateStaging=${isAggregateStaging}&aggregateSort=${isSort}`;
 
       if (filterData._id && Array.isArray(filterData._id) && filterData._id.length > 0) {
         filterData['_id'] = {
@@ -40,8 +45,8 @@ const entityDocuments = function (filterData = 'all', projection = 'all', page =
       let requestJSON = {
         query: filterData,
         projection: projection,
+        aggregateProjection: aggregateProjection
       };
-
       // Set the options for the HTTP POST request
       const options = {
         headers: {
@@ -374,7 +379,6 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
           "tenantId":tenantId
         }
       };
-
       // Make the HTTP POST request to the user role extension API
       request.get(url, options, requestCallBack);
 
@@ -404,6 +408,7 @@ const findEntityDetails = function (tenantId,entityIdentifier) {
     }
   });
 };
+
 
 module.exports = {
   entityDocuments: entityDocuments,
