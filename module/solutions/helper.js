@@ -1106,7 +1106,7 @@ module.exports = class SolutionsHelper {
         });
         updateObject['$set']['updatedBy'] = userId;
         if(!solutionUpdateData['status']){
-          updateObject['$set']['status'] = 'active';
+          updateObject['$set']['status'] = messageConstants.common.ACTIVE_STATUS;
         }
         //updating solution document
         let solutionUpdatedData = await solutionsQueries.updateSolutionDocument(
@@ -2790,7 +2790,6 @@ module.exports = class SolutionsHelper {
 
         response.isATargetedSolution = true;
         Object.assign(response, solutionData[0]);
-        response.availableForPrivateConsumption = solutionDetails[0].availableForPrivateConsumption ? solutionDetails[0].availableForPrivateConsumption : false;
         response.solutionId = solutionData[0]._id;
         response.projectTemplateId = solutionDetails[0].projectTemplateId ? solutionDetails[0].projectTemplateId : '';
         response.programName = solutionDetails[0].programName;
