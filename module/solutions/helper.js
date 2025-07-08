@@ -2587,7 +2587,7 @@ module.exports = class SolutionsHelper {
             } else if (!isSolutionActive) {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
-          } else {
+          } else  if(checkForTargetedSolution.result.availableForPrivateConsumption) {
             if (!isSolutionActive) {
               throw new Error(messageConstants.apiResponses.LINK_IS_EXPIRED);
             }
@@ -2615,6 +2615,12 @@ module.exports = class SolutionsHelper {
             if (privateProgramAndSolutionDetails.result != '') {
               checkForTargetedSolution.result['solutionId'] = privateProgramAndSolutionDetails.result;
             }
+          } else {
+            // Not targeted solution and not available for private consumption
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.SOLUTION_NOT_ALLOWED_TO_BE_CONSUMED,
+            };
           }
         }
 
@@ -2763,8 +2769,7 @@ module.exports = class SolutionsHelper {
           'type',
           'programId',
           'name',
-          'projectTemplateId',
-          'availableForPrivateConsumption'
+          'projectTemplateId'
         ]);
         // Check the user is targeted to the solution or not
         if (!Array.isArray(solutionData) || solutionData.length < 1) {
@@ -2774,6 +2779,7 @@ module.exports = class SolutionsHelper {
           response.programId = solutionDetails[0].programId;
           response.programName = solutionDetails[0].programName;
           response.status = solutionDetails[0].status;
+					response.availableForPrivateConsumption = solutionDetails[0].availableForPrivateConsumption ?? false //obs/survey will not be available for private consumption by default
 
           return resolve({
             success: true,
