@@ -31,7 +31,10 @@ module.exports = {
     programName: String,
     programDescription: String,
     entityProfileFieldsPerEntityTypes: Object,
-    startDate: Date,
+    startDate: {
+      type : Date,
+      index : true
+    },
     endDate: {
       type : Date,
       index : true
