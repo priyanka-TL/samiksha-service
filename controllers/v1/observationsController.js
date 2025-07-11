@@ -1270,7 +1270,7 @@ module.exports = class Observations extends Abstract {
         newSolutionDocument.isReusable = true;  
         newSolutionDocument.tenantId = tenantFilter.tenantId;
         newSolutionDocument.orgId = tenantFilter.orgId[0];
-
+        newSolutionDocument.isExternalProgram = req?.query?.isExternalProgram ?? false
         let newBaseSolution = await database.models.solutions.create(_.omit(newSolutionDocument, ['_id']));
 
         if (newBaseSolution._id) {
