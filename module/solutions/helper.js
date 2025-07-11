@@ -72,6 +72,7 @@ module.exports = class SolutionsHelper {
               'scope',
               'endDate',
               'startDate',
+              "externalId"
             ]);
             if (!programData.length) {
               throw {
@@ -84,6 +85,7 @@ module.exports = class SolutionsHelper {
           solutionData.programId = programData[0]._id;
           solutionData.programName = programData[0].name;
           solutionData.programDescription = programData[0].description;
+          solutionData.programExternalId = programData[0].externalId;
         }
 
         if (solutionData.type == messageConstants.common.COURSE && !solutionData.link) {
