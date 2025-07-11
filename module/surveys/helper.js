@@ -126,6 +126,7 @@ module.exports = class SurveysHelper {
         newSolutionDocument.keywords = ['Survey'];
         newSolutionDocument.isReusable = true;
         newSolutionDocument.status = messageConstants.common.ACTIVE_STATUS;
+        newSolutionDocument.isExternalProgram = solutionData?.isExternalProgram ?? false;
         let date = new Date();
         newSolutionDocument.startDate = solutionData.startDate ? new Date(solutionData.startDate) : new Date();
         newSolutionDocument.endDate = solutionData.endDate
