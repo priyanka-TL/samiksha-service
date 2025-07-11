@@ -699,13 +699,7 @@ module.exports = class SolutionsHelper {
         } else {
           if (type !== '') {
             matchQuery['type'] = type;
-            if (type === messageConstants.common.SURVEY) {
-              const currentDate = new Date();
-              currentDate.setDate(currentDate.getDate() - 15);
-              matchQuery['endDate'] = { $gte: currentDate };
-            } else {
-              matchQuery['endDate'] = { $gte: new Date() };
-            }
+            matchQuery['endDate'] = { $gte: new Date() };
           }
 
           if (subType !== '') {

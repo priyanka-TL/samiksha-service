@@ -1535,6 +1535,7 @@ module.exports = class SurveysHelper {
 
         let solutionDocument = await solutionsQueries.solutionDocuments({
           _id: solutionId,
+          tenantId: bodyData.tenantId
           // author: userId,
         });
         if (surveyId == '') {
@@ -1542,6 +1543,7 @@ module.exports = class SurveysHelper {
             {
               solutionId: solutionId,
               createdBy: userId,
+              tenantId: bodyData.tenantId
             },
             ['_id'],
           );
@@ -1566,7 +1568,6 @@ module.exports = class SurveysHelper {
               );
             }
             let currentDate =new Date()
-            currentDate.setDate(currentDate.getDate()-15)
             if (
               solutionData.data.hasOwnProperty("endDate") &&
               new Date(solutionData.data.endDate) <  currentDate
