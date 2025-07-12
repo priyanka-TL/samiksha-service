@@ -1187,9 +1187,11 @@ module.exports = class Observations extends Abstract {
         ) {
           throw messageConstants.apiResponses.INVALID_PARAMETER;
         }
-        if(req?.query?.isExternalProgram){
-          req?.query?.isExternalProgram = gen.utils.convertStringToBoolean(req?.query?.isExternalProgram)
+       
+        if (req?.query?.isExternalProgram) {
+          req.query.isExternalProgram = gen.utils.convertStringToBoolean(req.query.isExternalProgram);
         }
+
         let frameworkDocument = await database.models.frameworks
           .findOne({
             externalId: req.query.frameworkId,
