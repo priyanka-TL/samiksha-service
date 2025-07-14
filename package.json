@@ -12,7 +12,7 @@
     "dev": "module/migrations/bin/migrations.js up && nodemon app.js",
     "migrations": "module/migrations/bin/migrations.js",
     "format": "npx prettier --write ",
-		"db:populate-data": "node ./documentation/1.0.0/sample-data/mac-linux/insertData.js"
+    "db:populate-data": "node ./documentation/1.0.0/sample-data/mac-linux/insertData.js"
   },
   "keywords": [
     "shikshalokam",
@@ -37,6 +37,7 @@
     "dotenv": "^6.2.0",
     "ejs": "^3.1.10",
     "elevate-logger": "^3.1.0",
+    "elevate-services-health-check": "^0.0.3",
     "express": "^4.18.2",
     "express-cassandra": "^2.9.0",
     "express-fileupload": "^0.4.0",
@@ -50,7 +51,6 @@
     "json2csv": "^4.5.4",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^2.2.0",
-    "kafka-node": "^4.1.3",
     "keycloak-auth-utils": "^3.3.0",
     "log": "^1.4.0",
     "mathjs": "^5.10.3",
