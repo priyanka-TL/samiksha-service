@@ -583,7 +583,6 @@ module.exports = class SurveySubmissionsHelper {
                 result.data.push(surveySubmission);
               } else {
                 let currentDate = new Date();
-                currentDate.setDate(currentDate.getDate() - 15);
                 if (new Date(surveySubmission.endDate) > currentDate) {
                   result.data.push(surveySubmission);
                 }
