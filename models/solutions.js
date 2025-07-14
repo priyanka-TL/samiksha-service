@@ -31,7 +31,10 @@ module.exports = {
     programName: String,
     programDescription: String,
     entityProfileFieldsPerEntityTypes: Object,
-    startDate: Date,
+    startDate: {
+      type : Date,
+      index : true
+    },
     endDate: {
       type : Date,
       index : true
@@ -91,6 +94,10 @@ module.exports = {
     minNoOfSubmissionsRequired: {
       type: Number,
       default: 1
+    },
+    availableForPrivateConsumption:{
+      type: Boolean,
+      default: false
     },
     reportInformation : Object,
     certificateTemplateId : "ObjectId",
