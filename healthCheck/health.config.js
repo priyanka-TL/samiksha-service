@@ -24,7 +24,7 @@ module.exports = {
     microservices: [
       {
         name: 'EntityManagementService',
-		url: `${process.env.INTERFACE_SERVICE_URL}/entity/health?serviceName=${process.env.SERVICE_NAME}`,
+		url: `${process.env.INTERFACE_SERVICE_URL}/entity-management/health?serviceName=${process.env.SERVICE_NAME}`,
         enabled: true,
         request: {
           method: 'GET',
