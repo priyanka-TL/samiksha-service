@@ -192,7 +192,13 @@ module.exports = class criteriaHelper {
 
         if (improvementProjectIds.length > 0) {
           let improvementProjects = await projectService.templateLists(improvementProjectIds,userDetails);
-
+          //Error handle if the projectTemplate not found
+          if(!improvementProjects.success  || !(improvementProjects?.data?.length > 0)){            
+            throw {
+              status: httpStatusCode.bad_request.status,
+              message: messageConstants.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
+            };
+          }
           if (improvementProjects.data && improvementProjects.data.length > 0) {
             let improvements = {};
 
