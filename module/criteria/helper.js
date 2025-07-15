@@ -159,12 +159,12 @@ module.exports = class criteriaHelper {
    * @method
    * @name upload
    * @param {Object} criteriaData - criteria data to insert
-   * @param {String} userId - logged in user id
-   * @param {String} token - logged in user token
+   * @param {String} userDetails - logged in user details
+   * @param {String} tenantFilter - tenantFilter
    * @returns {Array} - returns created criteria.
    */
 
-  static upload(criteriaData, userId, token,tenantFilter) {
+  static upload(criteriaData,userDetails,tenantFilter) {
     return new Promise(async (resolve, reject) => {
       try {
         let improvementProjectIds = [];
@@ -191,7 +191,7 @@ module.exports = class criteriaHelper {
         }
 
         if (improvementProjectIds.length > 0) {
-          let improvementProjects = await projectService.templateLists(token,improvementProjectIds);
+          let improvementProjects = await projectService.templateLists(improvementProjectIds,userDetails);
 
           if (improvementProjects.data && improvementProjects.data.length > 0) {
             let improvements = {};
@@ -341,7 +341,7 @@ module.exports = class criteriaHelper {
 
               criteriaStructure['evidences'] = [];
               criteriaStructure['deleted'] = false;
-              criteriaStructure['owner'] = userId;
+              criteriaStructure['owner'] = userDetails.userId;
               criteriaStructure['timesUsed'] = 12;
               criteriaStructure['weightage'] = 20;
               criteriaStructure['remarks'] = '';
