@@ -85,4 +85,4 @@
 
     - name: debug info
       debug:
-         msg: "Pm2 log {{pm2Info}}"
+        msg: "Pm2 log {{pm2Info}}"

@@ -250,16 +250,6 @@ module.exports = class SolutionsHelper {
         let mergedData = [];
         let solutionIds = [];
         if (assignedSolutions.success && assignedSolutions.data) {
-          // Remove observation solutions which for project tasks.
-
-          _.remove(assignedSolutions.data.data, function (solution) {
-            return (
-              solution.referenceFrom == messageConstants.common.PROJECT &&
-              solution.type == messageConstants.common.OBSERVATION && 
-              solution.type == messageConstants.common.SURVEY
-            );
-          });
-
           totalCount =
             assignedSolutions.data.data && assignedSolutions.data.data.length > 0
               ? assignedSolutions.data.data.length
@@ -754,23 +744,38 @@ module.exports = class SolutionsHelper {
    * @param {String} solutionId - solution id.
    * @param {Object} scopeData - scope data.
 	 * @param {Object} userDetails - loggedin user info
+   * @param {Object} solutionDocument - solutionDetails
    * @returns {JSON} - scope in solution.
    */
 
-  static setScope(programId, solutionId, scopeData, userDetails) {
+  static setScope(programId, solutionId, scopeData, userDetails,solutionDocument) {
     return new Promise(async (resolve, reject) => {
       try {
         // Getting program documents
         let programData;
         if (programId) {
-          programData = await programsQueries.programDocuments({ _id: programId }, ['_id', 'scope']);
+           if(solutionDocument.isExternalProgram){
+            programData = await projectService.programDetails(userDetails.userToken, programId, userDetails,userDetails.tenantAndOrgInfo);
+            if (programData.status != httpStatusCode.ok.status || !programData?.result?._id) {
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              };
+            }
+            programData = [programData.result];
 
-          if (!(programData.length > 0)) {
-            return resolve({
-              status: httpStatusCode.bad_request.status,
-              message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
-            });
-          }
+           }else{
+             
+            programData = await programsQueries.programDocuments({ _id: programId }, ['_id', 'scope']);
+
+            if (!(programData.length > 0)) {
+              return resolve({
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              });
+            }
+           }
+        
         }
         // Getting solution document to set the scope
         let solutionData = await solutionsQueries.solutionDocuments({ _id: solutionId }, ['_id']);
@@ -1041,7 +1046,7 @@ module.exports = class SolutionsHelper {
         }
 
         // Getting solution document to update based on solution id
-        let solutionDocument = await solutionsQueries.solutionDocuments(queryObject, ['_id', 'programId']);
+        let solutionDocument = await solutionsQueries.solutionDocuments(queryObject, ['_id', 'programId',"isExternalProgram"]);
         if (!(solutionDocument.length > 0)) {
           return resolve({
             status: httpStatusCode.bad_request.status,
@@ -1055,19 +1060,32 @@ module.exports = class SolutionsHelper {
           checkDate &&
           (solutionData.hasOwnProperty('endDate') || solutionData.hasOwnProperty('endDate'))
         ) {
-          // getting program document to update start and end date
-          let programData = await programsQueries.programDocuments(
-            {
+          let programData;
+           if( solutionDocument[0].isExternalProgram ){
+             
+            programData = await projectService.programDetails(userDetails.userToken, solutionDocument[0].programId, userDetails,tenantData);
+            if (programData.status != httpStatusCode.ok.status || !programData?.result?._id) {
+              throw {
+                status: httpStatusCode.bad_request.status,
+                message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              };
+            }
+            programData = [programData.result];
+           }else{
+             // getting program document to update start and end date
+             programData = await programsQueries.programDocuments(
+             {
               _id: solutionDocument[0].programId,
               tenantId: tenantData.tenantId,
-            },
-            ['_id', 'endDate', 'startDate']
-          );
-          if (!(programData.length > 0)) {
-            throw {
-              message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
-            };
-          }
+             },
+             ['_id', 'endDate', 'startDate']
+            );
+            if (!(programData.length > 0)) {
+              throw {
+               message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+              };
+           }
+         }
           if (solutionData.hasOwnProperty('endDate')) {
             solutionData.endDate = gen.utils.getEndDate(solutionData.endDate, timeZoneDifference);
             if (solutionData.endDate > programData[0].endDate) {
@@ -1126,7 +1144,8 @@ module.exports = class SolutionsHelper {
             solutionUpdatedData.programId,
             solutionUpdatedData._id,
             solutionData.scope,
-            userDetails
+            userDetails,
+            solutionUpdatedData
           );
 
           if (!solutionScope.success) {
