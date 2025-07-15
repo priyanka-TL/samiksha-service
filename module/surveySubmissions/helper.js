@@ -501,6 +501,7 @@ module.exports = class SurveySubmissionsHelper {
           $match: {
             createdBy: userId,
             tenantId: tenantFilter.tenantId,
+            referenceFrom: { $ne: messageConstants.common.PROJECT },
             orgId: {
               $in: ['ALL', tenantFilter.orgId],
             },
@@ -633,6 +634,7 @@ module.exports = class SurveySubmissionsHelper {
           $match: {
             author: userId,
             type: messageConstants.common.SURVEY,
+            referenceFrom: { $ne: messageConstants.common.PROJECT },
             isReusable: false,
             isDeleted: false,
             tenantId: tenantFilter.tenantId,
