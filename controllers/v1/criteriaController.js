@@ -65,7 +65,7 @@ module.exports = class Criteria extends Abstract {
           });
         })();
 
-        let updatedCriteria = await criteriaHelper.upload(criteriaData, req.userDetails.id, req.userDetails.userToken,tenantFilter);
+        let updatedCriteria = await criteriaHelper.upload(criteriaData,req.userDetails,tenantFilter);
 
         if (updatedCriteria.length > 0) {
           updatedCriteria.forEach((criteria) => {

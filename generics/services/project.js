@@ -17,7 +17,7 @@ const projectServiceUrl = process.env.IMPROVEMENT_PROJECT_BASE_URL;
  */
 
 // Function to fetch the project template based on the given externalId
-const templateLists = function (userToken, externalId) {
+const templateLists = function (externalId,userDetails) {
   return new Promise(async (resolve, reject) => {
     try {
       // Construct the URL for the project service
@@ -27,12 +27,21 @@ const templateLists = function (userToken, externalId) {
       const options = {
         headers: {
           'content-type': 'application/json',
-          'X-auth-token': userToken,
+          'X-auth-token': userDetails.userToken,
+          'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
         },
         json: {
           externalIds: externalId,
         },
       };
+       //add  tenant and orgId in the header if role issuper admin
+       if (userDetails?.roles && userDetails.roles.includes(messageConstants.common.ADMIN)) {
+        _.assign(options.headers, {
+          'admin-auth-token': process.env.ADMIN_AUTH_TOKEN,
+          tenantId: userDetails.tenantAndOrgInfo.tenantId,
+          orgId: userDetails.tenantAndOrgInfo.orgId.join(','),
+        });
+      }
       request.post(url, options, projectServiceCallback);
       let result = {
         success: true,
