@@ -6,7 +6,7 @@
  */
 
 module.exports = {
-  name: process.env.SERVICE_NAME,
+  name: process.env.SERVICE_NAME_HEALTH_CHECK,
   version: '1.0.0',
   checks: {
     mongodb: {
@@ -24,7 +24,7 @@ module.exports = {
     microservices: [
       {
         name: 'EntityManagementService',
-		url: `${process.env.INTERFACE_SERVICE_URL}/entity-management/health?serviceName=${process.env.SERVICE_NAME}`,
+		url: `${process.env.INTERFACE_SERVICE_URL}/entity-management/health?serviceName=${process.env.SERVICE_NAME_HEALTH_CHECK}`,
         enabled: true,
         request: {
           method: 'GET',
@@ -40,7 +40,7 @@ module.exports = {
       },
       {
         name: 'ProjectService',
-		url: `${process.env.INTERFACE_SERVICE_URL}/project/health?serviceName=${process.env.SERVICE_NAME}`,
+		url: `${process.env.INTERFACE_SERVICE_URL}/project/health?serviceName=${process.env.SERVICE_NAME_HEALTH_CHECK}`,
         enabled: true,
         request: {
           method: 'GET',
@@ -56,7 +56,7 @@ module.exports = {
       },
       {
         name: 'UserService',
-		url: `${process.env.INTERFACE_SERVICE_URL}/user/health?serviceName=${process.env.SERVICE_NAME}`,
+		url: `${process.env.INTERFACE_SERVICE_URL}/user/health?serviceName=${process.env.SERVICE_NAME_HEALTH_CHECK}`,
         enabled: true,
         request: {
           method: 'GET',
