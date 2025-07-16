@@ -126,6 +126,7 @@ module.exports = class SurveysHelper {
         newSolutionDocument.keywords = ['Survey'];
         newSolutionDocument.isReusable = true;
         newSolutionDocument.status = messageConstants.common.ACTIVE_STATUS;
+        newSolutionDocument.isExternalProgram = solutionData?.isExternalProgram ?? false;
         let date = new Date();
         newSolutionDocument.startDate = solutionData.startDate ? new Date(solutionData.startDate) : new Date();
         newSolutionDocument.endDate = solutionData.endDate
@@ -372,14 +373,14 @@ module.exports = class SurveysHelper {
   /**
    * Map survey solution to program.
    * @method
-   * @name mapSurverySolutionToProgram
+   * @name mapSurveySolutionToProgram
    * @param {String} solutionId - survey solution id
    * @param {String} programId - programId
    * @param {Object} tenantAndOrgInfo - tenant and org info
    * @returns {String} - message.
    */
 
-  static mapSurverySolutionToProgram(solutionId = '', programId = '',tenantAndOrgInfo) {
+  static mapSurveySolutionToProgram(solutionId = '', programId = '',tenantAndOrgInfo) {
     return new Promise(async (resolve, reject) => {
       try {
         if (solutionId == '') {
@@ -390,15 +391,23 @@ module.exports = class SurveysHelper {
           throw new Error(messageConstants.apiResponses.PROGRAM_ID_REQUIRED);
         }
 
+        /*
+        arguments passed to programsHelper.list() are:
+        - filter: { externalId: { $in: Array.from(allProgramIds) } }
+        - projection: ['_id', 'externalId']
+        - sort: ''
+        - skip: ''
+        - limit: ''
+        */
         let programDocument = await programsHelper.list(
           {
             externalId: programId,
+            tenantId: tenantAndOrgInfo.tenantId
           },
           ['externalId', 'name', 'description'],
           '',
           '',
-          '',
-          tenantAndOrgInfo
+          ''
         );
         programDocument = programDocument.data.data
         if (!programDocument.length) {
@@ -851,6 +860,7 @@ module.exports = class SurveysHelper {
               _id: surveyDocument.programId,
               status: messageConstants.common.ACTIVE_STATUS,
               components: { $in: [new ObjectId(surveyDocument.solutionId)] },
+              tenantId:tenantData.tenantId
             };
 
             if(surveyDocument.isExternalProgram){
@@ -867,6 +877,14 @@ module.exports = class SurveysHelper {
               }
               programDocument=[_.pick(programDocument.result,["_id",'externalId','name',  'description'])]
             }else{
+              /*
+                arguments passed to programsHelper.list() are:
+                - filter: { externalId: { $in: Array.from(allProgramIds) } }
+                - projection: ['_id', 'externalId']
+                - sort: ''
+                - skip: ''
+                - limit: ''
+              */
               programDocument = await programsHelper.list(programQueryObject, [
                 'externalId',
                 'name',
@@ -876,8 +894,7 @@ module.exports = class SurveysHelper {
               ],
               '',
               '',
-              '',
-              tenantData
+              ''
              );
               programDocument = programDocument.data.data
             }
@@ -1519,6 +1536,7 @@ module.exports = class SurveysHelper {
 
         let solutionDocument = await solutionsQueries.solutionDocuments({
           _id: solutionId,
+          tenantId: bodyData.tenantId
           // author: userId,
         });
         if (surveyId == '') {
@@ -1526,6 +1544,7 @@ module.exports = class SurveysHelper {
             {
               solutionId: solutionId,
               createdBy: userId,
+              tenantId: bodyData.tenantId
             },
             ['_id'],
           );
@@ -1534,13 +1553,14 @@ module.exports = class SurveysHelper {
           } else {
             // let solutionData = solutionDocument[0];
             const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper');
+            if(solutionDocument[0].isAPrivateProgram){
+              solutionDocument[0].referenceFrom = messageConstants.common.PRIVATE;
+            }
 
-          let tenantData = {tenantId:bodyData.tenantId,orgId:bodyData.orgId} 
            let solutionData=await solutionsHelper.detailsBasedOnRoleAndLocation(
                 new ObjectId(solutionDocument[0]._id),
                 bodyData,
                 messageConstants.common.SURVEY,
-                tenantData,
                 solutionDocument[0].referenceFrom,
               );
             if (!solutionData.success) {
@@ -1549,7 +1569,6 @@ module.exports = class SurveysHelper {
               );
             }
             let currentDate =new Date()
-            currentDate.setDate(currentDate.getDate()-15)
             if (
               solutionData.data.hasOwnProperty("endDate") &&
               new Date(solutionData.data.endDate) <  currentDate

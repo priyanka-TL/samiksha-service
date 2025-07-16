@@ -1483,12 +1483,11 @@ module.exports = class EntitiesHelper {
           // }
           let entityProjections = ['entityType','metaInformation.externalId', 'metaInformation.name','groups']
 
-          if( !(userAllowedEntities.length > 0) && req.query.parentEntityId ) {
+          if(req.query.parentEntityId ) {
 
               let filterData = {
                   "_id" : req.query.parentEntityId,
-                  "tenantId":req.userDetails.tenantData.tenantId,
-                  "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
+                  "tenantId":req.userDetails.tenantData.tenantId
               };
                   
               let entitiesDetails = await entityManagementService.entityDocuments(filterData,entityProjections);
@@ -1529,57 +1528,54 @@ module.exports = class EntitiesHelper {
                   return resolve(response);
 
               } else {
-                let groups = entitiesDetails.data[0].groups;
+              // Fetch data from entity service
 
-                let targetedGroup = groups[result.entityType];
-                let filterDataGroups = {
-                  "_id":targetedGroup,
-                  "tenantId":req.userDetails.tenantData.tenantId,
-                  "orgIds": {$in:['ALL',req.userDetails.tenantData.orgId]}
-                }
-                let projections = ['entityType','metaInformation.externalId', 'metaInformation.name']
-
-                entitiesDetails = await entityManagementService.entityDocuments(filterDataGroups,projections,req.pageNo,req.pageSize,req.searchText);
-                if ( !entitiesDetails.success ) {
-                  return resolve({
-                      "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
-                      "result" : [{
-                          "count":0,
-                          "data" : []
-                      }]
-                  })
+              let projections = ['_id','entityType','metaInformation.externalId', 'metaInformation.name']
+              entitiesDetails = await entityManagementService.entityDocuments(
+                filterData,                     // MongoDB filter criteria to find matching entities
+                [],                             // Empty projection array; default fields will be returned
+                req.pageNo,                     // Current page number for pagination
+                req.pageSize,                   // Number of records to fetch per page
+                req.searchText,                 // Optional search keyword for text-based filtering (e.g., entity name)
+                `$groups.${result.entityType}`, // Aggregate path to group IDs (e.g., 'groups.school' or 'groups.district')
+                true,                           // Enable aggregation pipeline staging
+                false,                         // Disable sorting inside aggregation pipeline
+                projections                    // Fields to include/exclude in aggregation projection
+              );
+              
+              if ( !entitiesDetails.success || !(entitiesDetails.data.length > 0)) {
+                return resolve({
+                    "message" : messageConstants.apiResponses.ENTITY_NOT_FOUND,
+                    "result" : [{
+                        "count":0,
+                        "data" : []
+                    }]
+                })
               }
-                let entityDocuments = entitiesDetails.data;
-                
-                entityDocuments = entityDocuments.map(item => ({
-                  _id: item._id,
-                  externalId: item.metaInformation?.externalId || null,
-                  name: item.metaInformation?.name || null,
-                  entityType:item.entityType
-                }));
-    
-                  let data = 
-                  await this.observationSearchEntitiesResponse(
-                    entityDocuments,
-                      result.entities
-                  )
-    
-                  response.result.push({
-                    "data" : data,
-                    "count" : data.length
-                  });
-                  
-                  response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
-    
-                  // response.result.push({
-                  //     "data" : data,
-                  //     "count" : data.length
-                  // });
-    
+              let entityDocuments = entitiesDetails.data;
+              
+              entityDocuments = entityDocuments.map(entity => ({
+                _id: entity._id,
+                externalId: entity.metaInformation?.externalId || null,
+                name: entity.metaInformation?.name || null,
+                entityType:entity.entityType
+              }));
+  
+              let data = 
+              await this.observationSearchEntitiesResponse(
+                entityDocuments,
+                  result.entities
+              )
 
-                return resolve(response);
-                      
-              }
+              response.result.push({
+                "data" : data,
+                "count" : data.length
+              });
+              
+              response["message"] = messageConstants.apiResponses.ENTITY_FETCHED;
+
+              return resolve(response)                      
+            }
               
           } else {
 

@@ -438,5 +438,10 @@ module.exports = {
   LINK_GENERATED: 'Link generated successfully',
   TENANTID_REQUIRED_IN_SOLUTION: 'TenantId required in solution',
   OBSERVABLE_ENTITY_KEYS_NOT_FOUND: 'Observable entity keys not found in tenant data',
-  USER_ROLES_PROCESSING_FAILED: 'User roles processing failed. Please check the content.'
+  INVALID_ORGANIZATION: 'Invalid Organization Passed',
+  USER_ROLES_PROCESSING_FAILED: 'User roles processing failed. Please check the content.',
+  UPDATE_OBJECT_FAILED: 'Failed to generate update object',
+	UPDATE_OBJECT_SUCCESSFULLY: 'Successfully generate update object',
+  SOLUTION_NOT_ALLOWED_TO_BE_CONSUMED: 'This solution is not allowed to be consumed privately',
+  PROJECT_TEMPLATE_NOT_FOUND: 'Project templates not found',
 };

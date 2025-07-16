@@ -537,6 +537,123 @@ function factorQuery(factors, userRoleInfo) {
 
   return queryFilter;
 }
+/**
+ * Checks if the user has admin-level roles.
+ * @param {string[]} roles - Array of user role strings.
+ * @param {string[]} roleToCheck - Array of user role to validate strings.
+ * @returns {boolean} True if user has ADMIN or TENANT_ADMIN role, else false.
+ */
+function validateRoles(roles,roleToCheck){
+  return roles.some((role) =>
+    roleToCheck.includes(role)
+  )
+}
+
+/**
+ * Extracts mandatory and optional scope factors from tenant metadata.
+ *
+ * @param {Object} tenantMeta - Metadata object containing scope configuration fields.
+ * @param {string} mandatoryKey - Key name in tenantMeta for mandatory scope fields.
+ * @param {string} optionalKey - Key name in tenantMeta for optional scope fields.
+ * @returns {{ mandatoryFactors: string[], optionalFactors: string[] }} 
+ *          An object containing arrays of mandatory and optional factors.
+ */
+function extractScopeFactors(tenantMeta, mandatoryKey, optionalKey) {
+  const factors = [];
+  const optionalFactors = [];
+
+  if (
+    tenantMeta.hasOwnProperty(mandatoryKey) &&
+    Array.isArray(tenantMeta[mandatoryKey]) &&
+    tenantMeta[mandatoryKey].length > 0
+  ) {
+    factors.push(...tenantMeta[mandatoryKey]);
+  }
+
+  if (
+    tenantMeta.hasOwnProperty(optionalKey) &&
+    Array.isArray(tenantMeta[optionalKey]) &&
+    tenantMeta[optionalKey].length > 0
+  ) {
+    optionalFactors.push(...tenantMeta[optionalKey]);
+  }
+
+  return {
+    mandatoryFactors: factors,
+    optionalFactors: optionalFactors
+  };
+}
+/**
+ * Generates a MongoDB filter query with optional conditions ($or) always nested inside $and.
+ *
+ * @param {Object} bodyData - The data to evaluate against factors.
+ * @param {Object} tenantMeta - Metadata containing scope definitions.
+ * @param {Array<string>} mandatoryField - List of mandatory scope fields.
+ * @param {Array<string>} optionalField - List of optional scope fields.
+ * @returns {Object} MongoDB filter query.
+ */
+function targetingQuery(bodyData, tenantMeta, mandatoryField, optionalField) {
+
+  let { mandatoryFactors, optionalFactors } = extractScopeFactors(
+    tenantMeta,
+    mandatoryField,
+    optionalField
+  );
+
+  const andClauses = [];
+
+  // Add mandatory conditions if any
+  if (Array.isArray(mandatoryFactors) && mandatoryFactors.length > 0) {
+    const mandatoryQuery = gen.utils.factorQuery(mandatoryFactors, bodyData);
+    if (Array.isArray(mandatoryQuery) && mandatoryQuery.length > 0) {
+      andClauses.push(...mandatoryQuery);
+    }
+  }
+
+  // Add optional conditions as $or inside $and
+  if (Array.isArray(optionalFactors) && optionalFactors.length > 0) {
+    const optionalQuery = gen.utils.factorQuery(optionalFactors, bodyData);
+    if (Array.isArray(optionalQuery) && optionalQuery.length > 0) {
+      andClauses.push({ $or: optionalQuery });
+    }
+  }
+
+  let filterQuery = andClauses.length > 0 ? { $and: andClauses } : {};
+
+  return filterQuery;
+}
+/**
+ * Filters and formats the scope data based on tenant metadata.
+ *
+ * - Only includes fields defined in mandatory and optional scope fields.
+ * - Mandatory fields are always included: if not present or falsy in scopeData, defaults to ['ALL'].
+ * - Optional fields are included only if present and truthy in scopeData.
+ *
+ * @param {Object} scopeData - The input scope object with field values.
+ * @param {Object} tenantPublicDetailsMetaField - Metadata defining mandatory and optional scope fields.
+ * @param {Object} messageConstants - Constants object containing ALL_SCOPE_VALUE and field keys.
+ * @returns {Object} - The filtered scope object with valid fields and values.
+ */
+function getFilteredScope(scopeData, tenantPublicDetailsMetaField) {
+  const mandatoryFields = tenantPublicDetailsMetaField[messageConstants.common.MANDATORY_SCOPE_FIELD] || [];
+  const optionalFields = tenantPublicDetailsMetaField[messageConstants.common.OPTIONAL_SCOPE_FIELD] || [];
+  
+  const allAllowedFields = [...mandatoryFields, ...optionalFields];
+  const filteredScope = {};
+
+  for (const field of allAllowedFields) {
+    const value = scopeData[field];
+
+    if (value) {
+      filteredScope[field] = value;
+    } else if (mandatoryFields.includes(field)) {
+      filteredScope[field] = [messageConstants.common.ALL_SCOPE_VALUE];
+    }
+  }
+
+  return filteredScope;
+}
+
 
 
 
@@ -575,5 +692,9 @@ module.exports = {
   convertArrayObjectIdtoStringOfObjectId:convertArrayObjectIdtoStringOfObjectId,
   getColorForLevel:getColorForLevel,
   returnTenantDataFromToken:returnTenantDataFromToken,
-  factorQuery:factorQuery
+  factorQuery:factorQuery,
+  validateRoles:validateRoles,
+  extractScopeFactors:extractScopeFactors,
+  targetingQuery:targetingQuery,
+  getFilteredScope:getFilteredScope,
 };

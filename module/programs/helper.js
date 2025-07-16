@@ -12,6 +12,7 @@ const userService = require(ROOT_PATH + '/generics/services/users');
 const programsQueries = require(DB_QUERY_BASE_PATH + '/programs');
 const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers');
 const entityManagementService = require(ROOT_PATH + '/generics/services/entity-management');
+const programSolutionUtility = require(ROOT_PATH + '/generics/helpers/programSolutionUtilities')
 
 /**
  * ProgramsHelper
@@ -22,31 +23,21 @@ module.exports = class ProgramsHelper {
    * List program
    * @method
    * @name list
+   * @param {Object} filter - filter.
+   * @param {Array} projection - projection.
    * @param {Number} pageNo - page no.
    * @param {Number} pageSize - page size.
    * @param {String} searchText - text to search.
-   *  @param {Object} filter - filter.
-   *  @param {Array} projection - projection.
-   * @param {Object} tenantFilter - tenant filter.
    * @returns {Object} - Programs list.
    */
 
-  static list(filter = {}, projection, pageNo = '', pageSize = '', searchText,tenantFilter) {
+  static list(filter = {}, projection, pageNo = '', pageSize = '', searchText) {
     return new Promise(async (resolve, reject) => {
       try {
         let programDocument = [];
-        let orgIdArr = [];
-        if (tenantFilter.orgId) {
-          orgIdArr = Array.isArray(tenantFilter.orgId)
-            ? tenantFilter.orgId
-            : [tenantFilter.orgId];
-        }
-
-        let matchQuery = { status: messageConstants.common.ACTIVE_STATUS,
-          tenantId:tenantFilter.tenantId,
-          "scope.organizations": {
-            "$in": ["ALL", ...orgIdArr]
-          },
+        
+        let matchQuery = {
+           status: messageConstants.common.ACTIVE_STATUS
          };
 
         if (Object.keys(filter).length > 0) {
@@ -194,7 +185,7 @@ module.exports = class ProgramsHelper {
 
         //if scope exits adding scope to programDocument
         if (data.scope) {
-          let programScopeUpdated = await this.setScope(program._id, data.scope, userDetails)
+          let programScopeUpdated = await this.setScope(program._id, data.scope,userDetails);
 
           if (!programScopeUpdated.success) {
             throw {
@@ -259,7 +250,7 @@ module.exports = class ProgramsHelper {
         }
         // If the request body contains scope data, it will be updated as follows
         if (data.scope) {
-          let programScopeUpdated = await this.setScope(programId, data.scope, userDetails)
+          let programScopeUpdated = await this.setScope(programId, data.scope,userDetails);
 
           if (!programScopeUpdated.success) {
             throw {
@@ -295,6 +286,8 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Added roles data.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static addRolesInScope(programId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -387,62 +380,55 @@ module.exports = class ProgramsHelper {
    * @method
    * @name addEntitiesInScope
    * @param {String} programId - Program Id.
-   * @param {Array} entities - entities data.
-   * @param {Object} tenantData - tenantData
+	 * @param {Object} bodyData - body data.
+	 * @param {Object} userDetails - User Details
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(programId, entities,tenantData) {
+  static addEntitiesInScope(programId, bodyData,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
+        // Extract tenant and org IDs from user details
+        let tenantId = userDetails.tenantAndOrgInfo.tenantId
+				let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+
+        // Fetch the program document to ensure it exists and has a scope
         let programData = await programsQueries.programDocuments(
           {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId: tenantData.tenantId
+            tenantId: tenantId,
+            orgId: orgId,
           },
-          ['_id', 'scope.entityType']
+          ['_id', 'scope']
         );
 
         if (!(programData.length > 0)) {
           throw {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            status: httpStatusCode.bad_request.status
           };
         }
+        let updateObjectData = await programSolutionUtility.getUpdateObjectTOAddScope(
+					bodyData,
+					tenantId,
+					orgId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
+					}
+				}
 
-        let entityIds = [];
-
-        let entitiesData = await entityManagementService.entityDocuments(
-          {
-            _id: { $in: entities },
-            entityType: programData[0].scope.entityType,
-            tenantId: tenantData.tenantId,
-            orgId:{$in:['ALL',tenantData.orgId]}
-          },
-          ['_id']
-        );
-
-        if (!entitiesData.success) {
-          throw {
-            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-          };
-        }
-
-        entitiesData = entitiesData.data;
-
-        entitiesData.forEach((entity) => {
-          entityIds.push(entity._id);
-        });
-
+        // Perform the actual update on the program
         let updateProgram = await programsQueries.findOneAndUpdate(
           {
             _id: programId,
-            tenantId: tenantData.tenantId
           },
-          {
-            $addToSet: { 'scope.entities': { $each: entityIds } },
-          },
+          updateObjectData.updateObject,
           { new: true }
         );
         if (!updateProgram || !updateProgram._id) {
@@ -475,6 +461,8 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Added roles data.
    */
 
+  // Role-based logic has been removed from the current implementation, so this API is currently not in use.
+  //  It may be revisited in the future based on requirements.
   static removeRolesInScope(programId, roles,tenantData) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -536,50 +524,71 @@ module.exports = class ProgramsHelper {
    * @method
    * @name removeEntitiesInScope
    * @param {String} programId - Program Id.
-   * @param {Array} entities - entities.
-   * @param {Object} tenantData - tenant data
+	 * @param {Object} bodyData - body data.
+	 * @param {Object} userDetails - User Details
    * @returns {JSON} - Removed entities data.
    */
 
-  static removeEntitiesInScope(programId, entities,tenantData) {
+  static removeEntitiesInScope(programId, bodyData, userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
+
+        // Extract tenant and org IDs from userDetails
+        let tenantId = userDetails.tenantAndOrgInfo.tenantId
+				let orgId = userDetails.tenantAndOrgInfo.orgId[0]
+        const ALL_SCOPE_VALUE = messageConstants.common.ALL_SCOPE_VALUE
+
+        // Fetch the program to verify it exists and has a scope field
         let programData = await programsQueries.programDocuments(
           {
             _id: programId,
             scope: { $exists: true },
             isAPrivateProgram: false,
-            tenantId:tenantData.tenantId
+            tenantId: tenantId,
+						orgId: orgId,
           },
-          ['_id', 'scope.entities']
+          ['_id', 'scope']
         );
 
         if (!(programData.length > 0)) {
           throw {
             message: messageConstants.apiResponses.PROGRAM_NOT_FOUND,
+            status: httpStatusCode.bad_request.status
           };
         }
-        let entitiesData = [];
-        entitiesData = programData[0].scope.entities;
+				// Initialize the update object to be used in MongoDB update query
+				const currentScope = programData[0].scope || {};
+        let updateObjectData = await programSolutionUtility.getUpdateObjectToRemoveScope(
+					currentScope,
+					bodyData,
+					tenantId,
+					userDetails
+				)
+				if (!updateObjectData?.success) {
+					throw {
+						message: messageConstants.apiResponses.UPDATE_OBJECT_FAILED,
+						status: httpStatusCode.bad_request.status,
+					}
+				}
 
-        if (!(entitiesData.length > 0)) {
-          throw {
-            message: messageConstants.apiResponses.ENTITIES_NOT_FOUND,
-          };
-        }
-
+				// Prepare update object
+				let updateObject = {
+					$set: {
+						scope: updateObjectData.updatedScope,
+					},
+				}
+        // Update the program document with $pull operation to remove specified values
         let updateProgram = await programsQueries.findOneAndUpdate(
-          {
-            _id: programId,
-          },
-          {
-            $pull: { 'scope.entities': { $in: entities } },
-          },
-          { new: true }
-        );
+					{
+						_id: programId,
+					},
+					updateObject,
+					{ new: true }
+				)
         if (!updateProgram || !updateProgram._id) {
           throw {
             message: messageConstants.apiResponses.PROGRAM_NOT_UPDATED,
+            status: httpStatusCode.bad_request.status
           };
         }
 
@@ -830,11 +839,14 @@ module.exports = class ProgramsHelper {
    * @name setScope
    * @param {String} programId - program id.
    * @param {Object} scopeData - scope data.
-	 * @param {Object} userDetails - loggedin user info
+   * @param {String} scopeData.entityType - entity type
+   * @param {Array} scopeData.entities - entities in scope
+   * @param {Array} scopeData.roles - roles in scope
+   * @param {Object} tenantData - tenant data
    * @returns {JSON} - Set scope data.
    */
 
-  static setScope(programId, scopeData, userDetails) {
+  static setScope(programId, scopeData,userDetails) {
     return new Promise(async (resolve, reject) => {
       try {
         // Find program document to update or set scope based on program id
@@ -901,6 +913,18 @@ module.exports = class ProgramsHelper {
             });
             scopeData = _.omit(scopeData, keysCannotBeAdded);
           }
+
+          let tenantDetails = await userService.fetchPublicTenantDetails(userDetails.tenantAndOrgInfo.tenantId);
+          if (!tenantDetails.success || !tenantDetails?.data?.meta) {
+            throw ({
+              status: httpStatusCode['bad_request'].status,
+              message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
+            });
+          }
+          let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+
+          let filteredScope = gen.utils.getFilteredScope(scopeData, tenantPublicDetailsMetaField);
+
                   // }
 
                   const updateObject = {
@@ -908,13 +932,12 @@ module.exports = class ProgramsHelper {
                   }
           
                   // Set the scope in updateObject to the updated scopeData
-                  updateObject['$set']['scope'] = scopeData
+                  updateObject['$set']['scope'] = filteredScope
           
                   // Extract entities from scopeData excluding the 'roles' key
                   const entities = Object.keys(scopeData)
                     .filter((key) => key !== 'roles')
                     .reduce((acc, key) => acc.concat(scopeData[key]), [])
-          
                   // Add the entities array to updateObject
                   updateObject.$set.entities = entities
           
@@ -923,7 +946,6 @@ module.exports = class ProgramsHelper {
           
                   // Add the entityType to updateObject
                   updateObject['$set']['entityType'] = scopeData.entityType
-          
 
         //Updating or set scope in program document
         let updateProgram = await programsQueries.findOneAndUpdate(
@@ -1396,46 +1418,25 @@ module.exports = class ProgramsHelper {
           };
           */
           // filterQuery['scope.entities'] = { $in: entities };
-          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId','organizations']);
+          let userRoleInfo = _.omit(data, ['filter', 'factors', 'role', 'type','tenantId','orgId']);
 
           let tenantDetails = await userService.fetchPublicTenantDetails(data.tenantId);
-					if (!tenantDetails.data || !tenantDetails.data.meta || tenantDetails.success !== true) {
+					if (!tenantDetails.success || !tenantDetails?.data?.meta) {
             return resolve({
               success: false,
               message: messageConstants.apiResponses.FAILED_TO_FETCH_TENANT_DETAILS,
             });
           }
           // factors = [ 'professional_role', 'professional_subroles' ]
-          let factors
-          if (tenantDetails.data.meta.hasOwnProperty('factors') && tenantDetails.data.meta.factors.length > 0) {
-            factors = tenantDetails.data.meta.factors;
-            let queryFilter = gen.utils.factorQuery(factors,userRoleInfo);
-            // append query filter
-            filterQuery['$and'] = queryFilter;
-          }
-          let dataToOmit = ['filter', 'role', 'factors', 'type','tenantId','orgId']
-          // factors.append(dataToOmit)
+          let tenantPublicDetailsMetaField = tenantDetails.data.meta;
+          let builtQuery = gen.utils.targetingQuery(
+            userRoleInfo,
+            tenantPublicDetailsMetaField,
+            messageConstants.common.MANDATORY_SCOPE_FIELD,
+            messageConstants.common.OPTIONAL_SCOPE_FIELD
+          )
 
-          const finalKeysToRemove = [...new Set([...dataToOmit, ...factors])];
-
-          let locationData = []
-
-          Object.keys(_.omit(data, finalKeysToRemove)).forEach((key) => {
-            locationData.push({
-              [`scope.${key}`]: { $in: data[key] },
-            })
-          })
-
-          if(filterQuery['$and']){
-            filterQuery['$and'].push({
-              $or: locationData,
-            });
-          }else{
-            filterQuery['$or'].push({
-              $or: locationData,
-            });
-          }
-
+          filterQuery = {...filterQuery,...builtQuery}
           filterQuery['scope.entityType'] = { $in: entityTypes }
         } else {
           // let userRoleInfo = _.omit(data, ['filter', , 'factors', 'role','type']);
