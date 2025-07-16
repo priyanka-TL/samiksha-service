@@ -92,14 +92,7 @@ jobs:
       with:
         images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
         tags: |
-          # Use the incremented version
           type=raw,value=${{ steps.increment-version.outputs.new_version }}
-          # Optionally keep other tags
-          type=raw,value=latest,enable={{is_default_branch}}
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=release{{date 'YYYYMMDD-HHmmss'}},enable={{is_default_branch}}
 
     - name: Build and push Docker image
       id: build
